@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RideSource Inc. — Employee Policy Acknowledgment</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --navy: #0a1628;
+      --navy-mid: #162040;
+      --red: #c0392b;
+      --gold: #d4a843;
+      --cream: #f9f6f0;
+      --white: #ffffff;
+      --gray-50: #f8f9fa;
+      --gray-100: #f0f0ee;
+      --gray-200: #e0ddd8;
+      --gray-400: #9e9a94;
+      --gray-600: #6b6560;
+      --gray-800: #3a3630;
+      --success: #1a7a4a;
+      --success-bg: #d4f0e3;
+      --shadow-sm: 0 2px 8px rgba(10,22,40,0.08);
+      --shadow-md: 0 8px 32px rgba(10,22,40,0.12);
+      --shadow-lg: 0 20px 60px rgba(10,22,40,0.18);
+      --radius: 10px;
+      --radius-lg: 16px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--navy); min-height: 100vh; color: var(--gray-800); }
+
+    /* ── TOP NAV ── */
+    .top-nav {
+      background: var(--navy-mid);
+      border-bottom: 1px solid rgba(212,168,67,0.25);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 40px; height: 56px; position: sticky; top: 0; z-index: 100;
+    }
+    .nav-logo { font-family: 'DM Serif Display', serif; color: var(--white); font-size: 1.1rem; letter-spacing: 0.5px; }
+    .nav-logo span { color: var(--gold); }
+    .nav-tabs { display: flex; gap: 4px; }
+    .nav-tab {
+      padding: 6px 18px; border-radius: 6px; border: none; background: transparent;
+      color: var(--gray-400); font-family: 'DM Sans', sans-serif; font-size: 0.85rem;
+      font-weight: 500; cursor: pointer; transition: all 0.2s;
+    }
+    .nav-tab:hover { color: var(--white); background: rgba(255,255,255,0.07); }
+    .nav-tab.active { color: var(--white); background: rgba(212,168,67,0.2); }
+    .nav-progress { display: flex; align-items: center; gap: 10px; color: var(--gray-400); font-size: 0.82rem; }
+    .nav-count { color: var(--gold); font-weight: 600; }
+
+    /* ── PAGES ── */
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* ── SESSION GATE ── */
+    .session-gate {
+      position: fixed; inset: 0; background: rgba(10,22,40,0.97);
+      z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px;
+    }
+    .session-gate.hidden { display: none; }
+    .gate-card {
+      background: var(--white); border-radius: 20px; box-shadow: var(--shadow-lg);
+      padding: 48px 40px; width: 100%; max-width: 480px; text-align: center;
+    }
+    .gate-logo { font-family: 'DM Serif Display', serif; font-size: 1.4rem; color: var(--navy); margin-bottom: 6px; }
+    .gate-logo span { color: var(--red); }
+    .gate-sub { font-size: 0.8rem; color: var(--gray-400); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 32px; }
+    .gate-tabs {
+      display: flex; gap: 4px; background: var(--gray-100); border-radius: 10px;
+      padding: 4px; margin-bottom: 28px;
+    }
+    .gate-tab {
+      flex: 1; padding: 8px; border: none; border-radius: 7px; background: transparent;
+      font-family: 'DM Sans', sans-serif; font-size: 0.83rem; font-weight: 500;
+      color: var(--gray-600); cursor: pointer; transition: all 0.2s;
+    }
+    .gate-tab.active { background: var(--white); color: var(--navy); box-shadow: var(--shadow-sm); }
+    .gate-title { font-family: 'DM Serif Display', serif; font-size: 1.7rem; color: var(--navy); margin-bottom: 8px; }
+    .gate-desc { font-size: 0.88rem; color: var(--gray-600); line-height: 1.6; margin-bottom: 24px; }
+    .gate-field { text-align: left; margin-bottom: 14px; }
+    .gate-field label { display: block; font-size: 0.72rem; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: var(--gray-600); margin-bottom: 6px; }
+    .gate-field input {
+      width: 100%; padding: 12px 16px; border: 1.5px solid var(--gray-200); border-radius: 10px;
+      font-family: 'DM Sans', sans-serif; font-size: 0.95rem; color: var(--gray-800);
+      background: var(--cream); transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .gate-field input:focus { outline: none; border-color: var(--navy); box-shadow: 0 0 0 3px rgba(10,22,40,0.1); background: var(--white); }
+    .gate-error { color: var(--red); font-size: 0.82rem; margin-bottom: 12px; display: none; text-align: left; }
+    .gate-error.show { display: block; }
+    .btn-gate {
+      width: 100%; padding: 14px; background: var(--navy); color: var(--white); border: none;
+      border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 0.95rem;
+      font-weight: 600; cursor: pointer; transition: all 0.2s; margin-top: 4px;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-gate:hover:not(:disabled) { background: var(--red); }
+    .btn-gate:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-gate .spinner {
+      width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; display: none;
+    }
+    .btn-gate.loading .spinner { display: block; }
+    .btn-gate.loading .btn-label { display: none; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── EMPLOYEE PAGE ── */
+    .employee-page { padding: 40px 20px 80px; max-width: 900px; margin: 0 auto; }
+    .page-header { text-align: center; padding: 48px 0 40px; }
+    .page-header .label { font-size: 0.75rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); margin-bottom: 12px; }
+    .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.4rem; color: var(--white); line-height: 1.2; margin-bottom: 14px; }
+    .page-header p { color: rgba(255,255,255,0.55); font-size: 0.95rem; max-width: 520px; margin: 0 auto; line-height: 1.6; }
+
+    /* ── IDENTITY BANNER ── */
+    .identity-banner {
+      background: linear-gradient(135deg, var(--navy-mid) 0%, #1d3461 100%);
+      border: 1px solid rgba(212,168,67,0.3); border-radius: var(--radius-lg);
+      padding: 18px 24px; margin-bottom: 20px;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    }
+    .identity-info { display: flex; align-items: center; gap: 14px; }
+    .identity-avatar {
+      width: 42px; height: 42px; border-radius: 50%;
+      background: rgba(212,168,67,0.2); border: 2px solid rgba(212,168,67,0.4);
+      display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;
+    }
+    .identity-name { font-weight: 600; color: var(--white); font-size: 0.95rem; }
+    .identity-meta { font-size: 0.78rem; color: rgba(255,255,255,0.45); margin-top: 2px; }
+    .btn-switch {
+      padding: 7px 16px; background: transparent; border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 7px; color: rgba(255,255,255,0.6); font-family: 'DM Sans', sans-serif;
+      font-size: 0.78rem; cursor: pointer; transition: all 0.2s; white-space: nowrap;
+    }
+    .btn-switch:hover { border-color: var(--gold); color: var(--gold); }
+
+    /* ── CARD ── */
+    .card { background: var(--white); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); margin-bottom: 20px; overflow: hidden; }
+    .card-header { background: var(--navy-mid); padding: 16px 28px; display: flex; align-items: center; gap: 10px; }
+    .card-header h2 { font-family: 'DM Serif Display', serif; font-size: 1.05rem; color: var(--white); font-weight: 400; }
+    .card-body { padding: 28px; }
+
+    /* ── PROGRESS ── */
+    .progress-card .card-body { padding: 24px 28px; }
+    .progress-meta { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
+    .progress-meta h3 { font-size: 0.95rem; color: var(--gray-800); font-weight: 600; }
+    .progress-meta .count { font-size: 0.85rem; color: var(--gray-600); }
+    .progress-meta .count strong { color: var(--navy); font-size: 1.1rem; }
+    .progress-track { background: var(--gray-100); border-radius: 999px; height: 10px; overflow: hidden; }
+    .progress-fill {
+      height: 100%; background: linear-gradient(90deg, var(--navy) 0%, var(--red) 100%);
+      border-radius: 999px; transition: width 0.6s cubic-bezier(0.34,1.56,0.64,1); width: 0%;
+    }
+    .category-progress { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+    .cat-pill { font-size: 0.72rem; padding: 4px 10px; border-radius: 999px; background: var(--gray-100); color: var(--gray-600); font-weight: 500; transition: all 0.3s; }
+    .cat-pill.done { background: var(--success-bg); color: var(--success); }
+
+    /* ── POLICY CATEGORIES ── */
+    .category-section { margin-bottom: 16px; }
+    .category-toggle {
+      width: 100%; background: var(--navy-mid); border: none; border-radius: var(--radius-lg);
+      padding: 18px 24px; display: flex; align-items: center; justify-content: space-between;
+      cursor: pointer; color: var(--white); font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem; font-weight: 500; transition: background 0.2s; margin-bottom: 2px;
+    }
+    .category-toggle:hover { background: #1d2d52; }
+    .category-toggle.open { border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
+    .cat-left { display: flex; align-items: center; gap: 12px; }
+    .cat-icon { font-size: 1.2rem; }
+    .cat-count { font-size: 0.75rem; padding: 3px 10px; border-radius: 999px; background: rgba(212,168,67,0.2); color: var(--gold); font-weight: 600; }
+    .cat-signed { font-size: 0.75rem; padding: 3px 10px; border-radius: 999px; background: var(--success-bg); color: var(--success); font-weight: 600; }
+    .chevron { transition: transform 0.3s; font-size: 0.8rem; color: var(--gray-400); }
+    .category-toggle.open .chevron { transform: rotate(180deg); }
+    .policy-list { display: none; background: var(--white); border-radius: 0 0 var(--radius-lg) var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden; }
+    .policy-list.open { display: block; }
+
+    /* ── POLICY ITEMS ── */
+    .policy-item { border-bottom: 1px solid var(--gray-100); transition: background 0.2s; }
+    .policy-item:last-child { border-bottom: none; }
+    .policy-item.signed { background: #f0faf5; }
+    .policy-header-row { padding: 20px 24px 0; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+    .policy-title { font-weight: 600; font-size: 0.95rem; color: var(--navy); }
+    .policy-number { font-size: 0.7rem; color: var(--gray-400); font-weight: 500; white-space: nowrap; margin-top: 2px; }
+    .signed-badge { display: none; align-items: center; gap: 6px; font-size: 0.78rem; color: var(--success); font-weight: 600; white-space: nowrap; padding: 4px 10px; background: var(--success-bg); border-radius: 999px; }
+    .policy-item.signed .signed-badge { display: flex; }
+    .policy-body { padding: 12px 24px 20px; }
+    .policy-description { font-size: 0.88rem; line-height: 1.65; color: var(--gray-600); margin-bottom: 14px; }
+    .key-points { background: var(--gray-50); border-left: 3px solid var(--navy); border-radius: 0 8px 8px 0; padding: 12px 16px; margin-bottom: 16px; }
+    .key-points h4 { font-size: 0.75rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--navy); margin-bottom: 8px; }
+    .key-points ul { list-style: none; }
+    .key-points li { font-size: 0.82rem; color: var(--gray-600); padding: 3px 0 3px 14px; position: relative; line-height: 1.5; }
+    .key-points li::before { content: '›'; position: absolute; left: 0; color: var(--red); font-weight: 700; }
+    .sig-area { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: end; margin-top: 4px; }
+    .sig-fields { display: flex; gap: 12px; align-items: end; flex: 1; }
+    .sig-fields .field { flex: 1; }
+    .sig-fields .field.date-field { flex: 0 0 160px; }
+    .field label { display: block; font-size: 0.72rem; font-weight: 600; letter-spacing: 1.2px; text-transform: uppercase; color: var(--gray-600); margin-bottom: 6px; }
+    .field input { width: 100%; padding: 10px 14px; border: 1.5px solid var(--gray-200); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; color: var(--gray-800); background: var(--cream); transition: border-color 0.2s; }
+    .field input:focus { outline: none; border-color: var(--navy); background: var(--white); }
+    .field input:disabled { background: var(--gray-100); color: var(--gray-600); cursor: not-allowed; }
+    .check-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+    .check-row input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--navy); cursor: pointer; }
+    .check-row label { font-size: 0.83rem; color: var(--gray-600); cursor: pointer; }
+    .btn-sign { padding: 10px 24px; background: var(--navy); color: var(--white); border: none; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; height: fit-content; }
+    .btn-sign:hover:not(:disabled) { background: var(--red); }
+    .btn-sign:disabled { background: var(--gray-200); color: var(--gray-400); cursor: not-allowed; }
+    .btn-sign.done { background: var(--success); cursor: default; }
+    .sig-confirmed { font-size: 0.8rem; color: var(--success); font-weight: 500; margin-top: 8px; display: none; }
+    .policy-item.signed .sig-confirmed { display: block; }
+
+    /* ── SAVE INDICATOR ── */
+    .save-indicator {
+      position: fixed; bottom: 24px; right: 24px; background: var(--navy-mid);
+      color: rgba(255,255,255,0.85); font-size: 0.78rem; padding: 8px 16px;
+      border-radius: 999px; border: 1px solid rgba(255,255,255,0.1);
+      opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 200;
+    }
+    .save-indicator.show { opacity: 1; }
+    .save-indicator.error { border-color: rgba(192,57,43,0.4); color: #e87b6e; }
+
+    /* ── COMPLETION BANNER ── */
+    .completion-banner { display: none; background: linear-gradient(135deg, var(--navy) 0%, #1a3a6e 100%); border-radius: var(--radius-lg); padding: 40px; text-align: center; margin-top: 20px; border: 1px solid rgba(212,168,67,0.3); }
+    .completion-banner.show { display: block; }
+    .completion-banner .check-icon { font-size: 3rem; margin-bottom: 16px; }
+    .completion-banner h2 { font-family: 'DM Serif Display', serif; color: var(--white); font-size: 1.8rem; margin-bottom: 10px; }
+    .completion-banner p { color: rgba(255,255,255,0.6); font-size: 0.9rem; margin-bottom: 24px; }
+    .btn-download { padding: 14px 36px; background: var(--gold); color: var(--navy); border: none; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+    .btn-download:hover { background: #e8bc50; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(212,168,67,0.35); }
+
+    /* ── ADMIN PAGE ── */
+    .admin-page { padding: 40px 20px 80px; max-width: 1100px; margin: 0 auto; }
+    .admin-header { text-align: center; padding: 40px 0 36px; }
+    .admin-header h1 { font-family: 'DM Serif Display', serif; font-size: 2rem; color: var(--white); margin-bottom: 8px; }
+    .admin-header p { color: rgba(255,255,255,0.45); font-size: 0.9rem; }
+    .admin-controls { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; justify-content: flex-end; }
+    .btn-refresh { padding: 8px 18px; background: rgba(212,168,67,0.15); border: 1px solid rgba(212,168,67,0.3); border-radius: 8px; color: var(--gold); font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .btn-refresh:hover { background: rgba(212,168,67,0.25); }
+    .stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 24px; }
+    .stat-card { background: var(--white); border-radius: var(--radius); padding: 20px; text-align: center; box-shadow: var(--shadow-sm); }
+    .stat-card .val { font-family: 'DM Serif Display', serif; font-size: 2.2rem; color: var(--navy); line-height: 1; margin-bottom: 6px; }
+    .stat-card .lbl { font-size: 0.75rem; color: var(--gray-600); font-weight: 500; text-transform: uppercase; letter-spacing: 0.8px; }
+    .admin-table-card { background: var(--white); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); overflow: hidden; }
+    .table-head { background: var(--navy-mid); padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
+    .table-head h2 { font-family: 'DM Serif Display', serif; color: var(--white); font-size: 1.1rem; font-weight: 400; }
+    .table-head-actions { display: flex; gap: 8px; }
+    .btn-export { padding: 6px 16px; background: rgba(212,168,67,0.15); color: var(--gold); border: 1px solid rgba(212,168,67,0.3); border-radius: 6px; font-family: 'DM Sans', sans-serif; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; }
+    .btn-export:hover { background: rgba(212,168,67,0.25); }
+    .btn-clear { padding: 6px 16px; background: rgba(192,57,43,0.15); color: #e87b6e; border: 1px solid rgba(192,57,43,0.3); border-radius: 6px; font-family: 'DM Sans', sans-serif; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; }
+    .btn-clear:hover { background: rgba(192,57,43,0.3); }
+    table { width: 100%; border-collapse: collapse; }
+    thead th { background: var(--gray-50); padding: 11px 16px; text-align: left; font-size: 0.72rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--gray-600); border-bottom: 1px solid var(--gray-200); }
+    tbody tr { border-bottom: 1px solid var(--gray-100); transition: background 0.15s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: var(--gray-50); }
+    tbody td { padding: 14px 16px; font-size: 0.85rem; color: var(--gray-800); vertical-align: middle; }
+    .td-name { font-weight: 600; color: var(--navy); }
+    .td-actions { text-align: right; white-space: nowrap; }
+    .btn-detail { padding: 4px 12px; background: transparent; border: 1px solid var(--gray-200); border-radius: 6px; font-family: 'DM Sans', sans-serif; font-size: 0.75rem; color: var(--gray-600); cursor: pointer; transition: all 0.2s; }
+    .btn-detail:hover { border-color: var(--navy); color: var(--navy); }
+    .btn-del { padding: 4px 10px; background: transparent; border: 1px solid rgba(192,57,43,0.2); border-radius: 6px; font-family: 'DM Sans', sans-serif; font-size: 0.75rem; color: #c87b6e; cursor: pointer; transition: all 0.2s; margin-left: 6px; }
+    .btn-del:hover { background: rgba(192,57,43,0.1); }
+    .status-pill { display: inline-flex; align-items: center; padding: 4px 12px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
+    .status-pill.complete { background: var(--success-bg); color: var(--success); }
+    .status-pill.partial { background: #fff4e0; color: #b07d1a; }
+    .status-pill.pending { background: var(--gray-100); color: var(--gray-600); }
+    .mini-bar-wrap { display: flex; align-items: center; gap: 8px; }
+    .mini-bar { flex: 1; height: 6px; background: var(--gray-100); border-radius: 999px; overflow: hidden; }
+    .mini-bar-fill { height: 100%; background: linear-gradient(90deg, var(--navy), var(--red)); border-radius: 999px; }
+    .mini-pct { font-size: 0.75rem; color: var(--gray-600); min-width: 36px; text-align: right; }
+    .empty-state { text-align: center; padding: 60px 20px; color: var(--gray-400); }
+    .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
+    .empty-state p { font-size: 0.9rem; }
+    .loading-row { text-align: center; padding: 40px 20px; color: var(--gray-400); font-size: 0.85rem; }
+
+    /* ── ADMIN LOCK ── */
+    .admin-lock { background: var(--white); border-radius: var(--radius-lg); padding: 48px; text-align: center; max-width: 440px; margin: 80px auto; }
+    .admin-lock .lock-icon { font-size: 2.5rem; margin-bottom: 16px; }
+    .admin-lock h2 { font-family: 'DM Serif Display', serif; font-size: 1.5rem; color: var(--navy); margin-bottom: 8px; }
+    .admin-lock p { font-size: 0.85rem; color: var(--gray-600); margin-bottom: 24px; }
+    .admin-lock input { width: 100%; padding: 12px 16px; border: 1.5px solid var(--gray-200); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; color: var(--gray-800); background: var(--cream); margin-bottom: 12px; }
+    .admin-lock input:focus { outline: none; border-color: var(--navy); background: var(--white); }
+    .btn-unlock { width: 100%; padding: 12px; background: var(--navy); color: var(--white); border: none; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+    .btn-unlock:hover { background: var(--red); }
+    .lock-error { color: var(--red); font-size: 0.82rem; margin-top: 8px; display: none; }
+    .lock-error.show { display: block; }
+
+    /* ── DETAIL MODAL ── */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(10,22,40,0.85); z-index: 500; display: none; align-items: center; justify-content: center; padding: 20px; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: var(--white); border-radius: 20px; box-shadow: var(--shadow-lg); width: 100%; max-width: 640px; max-height: 85vh; overflow-y: auto; }
+    .modal-header { background: var(--navy-mid); padding: 20px 28px; border-radius: 20px 20px 0 0; display: flex; justify-content: space-between; align-items: center; }
+    .modal-header h3 { font-family: 'DM Serif Display', serif; color: var(--white); font-size: 1.1rem; font-weight: 400; }
+    .btn-modal-close { background: transparent; border: none; color: rgba(255,255,255,0.5); font-size: 1.2rem; cursor: pointer; transition: color 0.2s; }
+    .btn-modal-close:hover { color: var(--white); }
+    .modal-body { padding: 28px; }
+    .modal-info-row { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+    .modal-info-item { flex: 1; min-width: 120px; background: var(--gray-50); border-radius: 8px; padding: 12px 14px; }
+    .mi-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--gray-400); margin-bottom: 4px; }
+    .mi-val { font-size: 0.88rem; color: var(--navy); font-weight: 600; }
+    .modal-policy-list { list-style: none; }
+    .modal-policy-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--gray-100); font-size: 0.83rem; }
+    .modal-policy-item:last-child { border-bottom: none; }
+    .pol-sig { font-size: 0.75rem; color: var(--gray-400); }
+    .pol-signed { color: var(--success); font-weight: 600; }
+    .pol-pending { color: var(--gray-400); }
+
+    @media (max-width: 600px) {
+      .top-nav { padding: 0 16px; }
+      .stats-row { grid-template-columns: repeat(2,1fr); }
+      .sig-fields { flex-direction: column; }
+      .sig-fields .field.date-field { flex: 1; }
+      .gate-card { padding: 32px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- SESSION GATE -->
+<div class="session-gate" id="sessionGate">
+  <div class="gate-card">
+    <div class="gate-logo">RideSource <span>Inc.</span></div>
+    <div class="gate-sub">Employee Policy Acknowledgment</div>
+    <div class="gate-tabs">
+      <button class="gate-tab active" id="gateTabNew" onclick="switchGateTab('new')">New Employee</button>
+      <button class="gate-tab" id="gateTabReturn" onclick="switchGateTab('return')">Returning Employee</button>
+    </div>
+
+    <!-- NEW -->
+    <div id="gateFormNew">
+      <div class="gate-title">Welcome to RideSource</div>
+      <div class="gate-desc">Enter your information to begin your policy acknowledgment onboarding.</div>
+      <div class="gate-field"><label>Full Name</label><input type="text" id="gateEmpName" placeholder="First and Last Name" /></div>
+      <div class="gate-field"><label>Position / Title</label><input type="text" id="gateEmpPosition" placeholder="e.g. NEMT Driver" /></div>
+      <div class="gate-field"><label>County</label><input type="text" id="gateEmpDept" placeholder="e.g. Oxford County" /></div>
+      <div class="gate-field"><label>Start Date</label><input type="date" id="gateEmpStart" /></div>
+      <div class="gate-error" id="gateErrorNew">Please fill in all fields.</div>
+      <button class="btn-gate" id="btnStartNew" onclick="startNewSession()">
+        <span class="btn-label">Begin Onboarding →</span>
+        <div class="spinner"></div>
+      </button>
+    </div>
+
+    <!-- RETURN -->
+    <div id="gateFormReturn" style="display:none;">
+      <div class="gate-title">Welcome Back</div>
+      <div class="gate-desc">Enter your full name exactly as you did when you first started to resume your progress.</div>
+      <div class="gate-field"><label>Full Name (exact match)</label><input type="text" id="gateReturnName" placeholder="First and Last Name" /></div>
+      <div class="gate-error" id="gateErrorReturn">No record found. Check spelling or start as a new employee.</div>
+      <button class="btn-gate" id="btnResume" onclick="resumeSession()">
+        <span class="btn-label">Resume My Progress →</span>
+        <div class="spinner"></div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalTitle">Employee Detail</h3>
+      <button class="btn-modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<!-- SAVE INDICATOR -->
+<div class="save-indicator" id="saveIndicator">✓ Saved to database</div>
+
+<!-- TOP NAV -->
+<nav class="top-nav">
+  <div class="nav-logo">RideSource <span>Inc.</span></div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" id="tabEmployee" onclick="switchPage('employee',event)">Employee Onboarding</button>
+    <button class="nav-tab" id="tabAdmin" onclick="switchPage('admin',event)">HR Admin View</button>
+  </div>
+  <div class="nav-progress">
+    <span>Signed:</span><span class="nav-count" id="navCount">0</span><span>/ 12</span>
+  </div>
+</nav>
+
+<!-- EMPLOYEE PAGE -->
+<div class="page active" id="page-employee">
+  <div class="employee-page">
+    <div class="page-header">
+      <div class="label">New Employee Onboarding</div>
+      <h1>Policy Acknowledgment<br>& Agreement</h1>
+      <p>Please review each policy carefully, check the acknowledgment box, enter your full name as your electronic signature, and click Sign Policy.</p>
+    </div>
+
+    <div class="identity-banner">
+      <div class="identity-info">
+        <div class="identity-avatar">👤</div>
+        <div>
+          <div class="identity-name" id="identityName">—</div>
+          <div class="identity-meta" id="identityMeta">—</div>
+        </div>
+      </div>
+      <button class="btn-switch" onclick="switchEmployee()">Switch Employee</button>
+    </div>
+
+    <div class="card progress-card">
+      <div class="card-body">
+        <div class="progress-meta">
+          <h3>Completion Progress</h3>
+          <div class="count"><strong id="signedCount">0</strong> of 12 policies signed</div>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+        <div class="category-progress">
+          <span class="cat-pill" id="pill-0">Employment Fundamentals</span>
+          <span class="cat-pill" id="pill-1">Confidentiality & Ethics</span>
+          <span class="cat-pill" id="pill-2">Workplace Safety & Conduct</span>
+          <span class="cat-pill" id="pill-3">Operations & Service Standards</span>
+          <span class="cat-pill" id="pill-4">Technology & Safety</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="policiesContainer"></div>
+
+    <div class="completion-banner" id="completionBanner">
+      <div class="check-icon">✅</div>
+      <h2>All Policies Acknowledged</h2>
+      <p>You have successfully reviewed and signed all 12 required policy acknowledgments. Click below to download your signed certificate for your records.</p>
+      <button class="btn-download" onclick="downloadCertificate()">📄 Download Signed Certificate</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN PAGE -->
+<div class="page" id="page-admin">
+  <div id="adminLockWrap">
+    <div class="admin-lock">
+      <div class="lock-icon">🔒</div>
+      <h2>HR Admin Access</h2>
+      <p>Enter the admin password to view the employee tracking dashboard.</p>
+      <input type="password" id="adminPwInput" placeholder="Password" onkeydown="if(event.key==='Enter')unlockAdmin()" />
+      <div class="lock-error" id="lockError">Incorrect password. Please try again.</div>
+      <button class="btn-unlock" onclick="unlockAdmin()">Unlock Dashboard</button>
+    </div>
+  </div>
+
+  <div id="adminDashWrap" style="display:none;">
+    <div class="admin-page">
+      <div class="admin-header">
+        <h1>HR Admin Dashboard</h1>
+        <p>Live data from Supabase — tracking all employees across all devices</p>
+      </div>
+      <div class="admin-controls">
+        <button class="btn-refresh" onclick="refreshAdminView()">↻ Refresh</button>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="val" id="statTotal">—</div><div class="lbl">Total Employees</div></div>
+        <div class="stat-card"><div class="val" id="statComplete">—</div><div class="lbl">Fully Complete</div></div>
+        <div class="stat-card"><div class="val" id="statPartial">—</div><div class="lbl">In Progress</div></div>
+        <div class="stat-card"><div class="val" id="statPending">—</div><div class="lbl">Not Started</div></div>
+      </div>
+      <div class="admin-table-card">
+        <div class="table-head">
+          <h2>Employee Records</h2>
+          <div class="table-head-actions">
+            <button class="btn-export" onclick="exportCSV()">⬇ Export CSV</button>
+            <button class="btn-clear" onclick="clearAllData()">Clear All</button>
+          </div>
+        </div>
+        <div id="adminTableWrap"><div class="loading-row">Loading…</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// SUPABASE CONFIG  ← your credentials are wired in here
+// ═══════════════════════════════════════════════════════════
+const SUPABASE_URL  = 'https://iasphxpahlmjwkapyxrs.supabase.co';
+const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlhc3BoeHBhaGxtandrYXB5eHJzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEzNDIyNDYsImV4cCI6MjA4NjkxODI0Nn0.ntQxEiEJqZOvXjfX58I-PPQ2ZOoAT_RgLyf3aWMeXds';
+const TABLE         = 'ridesource_employees';
+const ADMIN_PW      = 'RideSource2025';   // ← change this!
+const TOTAL         = 12;
+
+let currentEmployee = null;
+let signedPolicies  = new Set();
+let signatureData   = {};
+let adminUnlocked   = false;
+
+// ═══════════════════════════════════════════════════════════
+// SUPABASE API HELPERS
+// ═══════════════════════════════════════════════════════════
+const headers = {
+  'Content-Type': 'application/json',
+  'apikey': SUPABASE_KEY,
+  'Authorization': `Bearer ${SUPABASE_KEY}`,
+  'Prefer': 'return=representation'
+};
+
+async function sbGet(empName) {
+  const url = `${SUPABASE_URL}/rest/v1/${TABLE}?emp_name=eq.${encodeURIComponent(empName)}&select=*`;
+  const res = await fetch(url, { headers });
+  if (!res.ok) throw new Error(await res.text());
+  const data = await res.json();
+  return data[0] || null;
+}
+
+async function sbUpsert(record) {
+  const url = `${SUPABASE_URL}/rest/v1/${TABLE}`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { ...headers, 'Prefer': 'resolution=merge-duplicates,return=representation' },
+    body: JSON.stringify(record)
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+async function sbGetAll() {
+  const url = `${SUPABASE_URL}/rest/v1/${TABLE}?select=*&order=updated_at.desc`;
+  const res = await fetch(url, { headers });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+async function sbDelete(empName) {
+  const url = `${SUPABASE_URL}/rest/v1/${TABLE}?emp_name=eq.${encodeURIComponent(empName)}`;
+  const res = await fetch(url, { method: 'DELETE', headers });
+  if (!res.ok) throw new Error(await res.text());
+}
+
+async function sbDeleteAll() {
+  const url = `${SUPABASE_URL}/rest/v1/${TABLE}?id=neq.00000000-0000-0000-0000-000000000000`;
+  const res = await fetch(url, { method: 'DELETE', headers });
+  if (!res.ok) throw new Error(await res.text());
+}
+
+// ═══════════════════════════════════════════════════════════
+// SAVE / LOAD
+// ═══════════════════════════════════════════════════════════
+async function saveCurrentEmployee() {
+  if (!currentEmployee) return;
+  try {
+    await sbUpsert({
+      emp_name:       currentEmployee.empName,
+      emp_position:   currentEmployee.empPosition,
+      emp_dept:       currentEmployee.empDept,
+      emp_start:      currentEmployee.empStart,
+      signed:         [...signedPolicies],
+      signature_data: signatureData,
+      updated_at:     new Date().toISOString()
+    });
+    flashSave(false);
+  } catch(e) {
+    flashSave(true);
+    console.error('Save error:', e);
+  }
+}
+
+function flashSave(isError = false) {
+  const el = document.getElementById('saveIndicator');
+  el.textContent = isError ? '⚠ Save failed — check connection' : '✓ Saved to database';
+  el.className = 'save-indicator' + (isError ? ' error' : '');
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+// ═══════════════════════════════════════════════════════════
+// SESSION GATE
+// ═══════════════════════════════════════════════════════════
+function switchGateTab(tab) {
+  document.getElementById('gateTabNew').classList.toggle('active', tab === 'new');
+  document.getElementById('gateTabReturn').classList.toggle('active', tab === 'return');
+  document.getElementById('gateFormNew').style.display    = tab === 'new'    ? '' : 'none';
+  document.getElementById('gateFormReturn').style.display = tab === 'return' ? '' : 'none';
+}
+
+async function startNewSession() {
+  const name     = document.getElementById('gateEmpName').value.trim();
+  const position = document.getElementById('gateEmpPosition').value.trim();
+  const dept     = document.getElementById('gateEmpDept').value.trim();
+  const start    = document.getElementById('gateEmpStart').value;
+  const errEl    = document.getElementById('gateErrorNew');
+  const btn      = document.getElementById('btnStartNew');
+
+  if (!name || !position || !dept || !start) { errEl.classList.add('show'); return; }
+  errEl.classList.remove('show');
+  btn.classList.add('loading'); btn.disabled = true;
+
+  currentEmployee = { empName: name, empPosition: position, empDept: dept, empStart: start };
+  signedPolicies  = new Set();
+  signatureData   = {};
+
+  try {
+    // If a record already exists for this name, resume it instead of overwriting
+    const existing = await sbGet(name);
+    if (existing) {
+      signedPolicies = new Set(existing.signed || []);
+      signatureData  = existing.signature_data || {};
+    } else {
+      await saveCurrentEmployee();
+    }
+  } catch(e) { console.error(e); }
+
+  btn.classList.remove('loading'); btn.disabled = false;
+  openSession();
+}
+
+async function resumeSession() {
+  const name  = document.getElementById('gateReturnName').value.trim();
+  const errEl = document.getElementById('gateErrorReturn');
+  const btn   = document.getElementById('btnResume');
+  if (!name) { errEl.classList.add('show'); return; }
+
+  btn.classList.add('loading'); btn.disabled = true;
+  errEl.classList.remove('show');
+
+  try {
+    const record = await sbGet(name);
+    if (!record) { errEl.classList.add('show'); btn.classList.remove('loading'); btn.disabled = false; return; }
+    currentEmployee = { empName: record.emp_name, empPosition: record.emp_position, empDept: record.emp_dept, empStart: record.emp_start };
+    signedPolicies  = new Set(record.signed || []);
+    signatureData   = record.signature_data || {};
+  } catch(e) {
+    errEl.textContent = 'Connection error. Please try again.';
+    errEl.classList.add('show');
+    btn.classList.remove('loading'); btn.disabled = false;
+    return;
+  }
+
+  btn.classList.remove('loading'); btn.disabled = false;
+  openSession();
+}
+
+function openSession() {
+  document.getElementById('sessionGate').classList.add('hidden');
+  document.getElementById('identityName').textContent = currentEmployee.empName;
+  document.getElementById('identityMeta').textContent =
+    `${currentEmployee.empPosition} · ${currentEmployee.empDept} · Start: ${formatDate(currentEmployee.empStart)}`;
+  renderPolicies();
+  updateProgress();
+}
+
+function switchEmployee() {
+  if (!confirm('Switch employee? Your progress is saved.')) return;
+  currentEmployee = null; signedPolicies = new Set(); signatureData = {};
+  ['gateEmpName','gateEmpPosition','gateEmpDept','gateEmpStart','gateReturnName'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  switchGateTab('new');
+  document.getElementById('sessionGate').classList.remove('hidden');
+}
+
+// ═══════════════════════════════════════════════════════════
+// POLICY DATA
+// ═══════════════════════════════════════════════════════════
+const CATEGORIES = [
+  { id:'employment', icon:'📋', title:'Employment Fundamentals', policies:[
+    { id:'handbook', num:'Policy 1', title:'Employee Handbook Acknowledgment',
+      description:'I acknowledge receiving and reviewing the RideSource Inc. Employee Handbook. I understand it is my responsibility to read and comply with all policies contained in this handbook and any revisions made to it. I understand that employment at RideSource is at-will, meaning either party may end the employment relationship at any time, with or without cause, provided there is no violation of applicable law. Only the owner(s) of RideSource Inc. may authorize any written exception to this policy. RideSource reserves the right to change hours, wages, and working responsibilities at any time. I understand this handbook is neither a contract of employment nor a legal document.',
+      points:['Employment is at-will — either party may end it at any time','Only the company owner(s) may authorize exceptions in writing','RideSource may change hours, wages, and duties at any time','This handbook does not constitute a contract of employment','Employee must read and comply with all policies and updates'] },
+    { id:'fingerprint', num:'Policy 2', title:'Fingerprinting & Background Check Consent',
+      description:'To ensure a qualified and safe workforce, RideSource Inc. conducts state and federal fingerprint record checks on all applicants who accept an offer of employment. All offers of employment are conditioned on receipt of a background check report that is acceptable to RideSource. Reports are kept strictly confidential and reviewed only by individuals directly involved in the hiring process. If background check results would lead RideSource to deny employment, the applicant will have 30 days to dispute the accuracy of the report before a final decision is made.',
+      points:['All employment offers are conditional on an acceptable background check','State and federal fingerprint checks are conducted on all new hires','Reports are confidential — reviewed only by hiring personnel','Applicants have 30 days to dispute any adverse findings','Inability to resolve a dispute may result in withdrawal of the offer'] }
+  ]},
+  { id:'confidentiality', icon:'🔒', title:'Confidentiality & Ethics', policies:[
+    { id:'client-conf', num:'Policy 3', title:'Client Confidentiality Agreement',
+      description:'The purpose of this agreement is to protect the identity and privacy of all RideSource passengers. RideSource staff regularly encounter personal and sensitive information. I agree to keep all passenger information strictly confidential at all times — both during and after my employment. I will not disclose any passenger information to any third party without the express consent of the passenger and the knowledge and consent of RideSource. I understand that violation of this agreement will result in immediate termination and may result in legal action.',
+      points:['Confidential information includes: name, address, phone number, destination, and family information','Passenger immigration status is strictly protected and must never be disclosed','Any abuse, trauma, or persecution information must be kept fully confidential','No disclosure to third parties without passenger consent AND RideSource approval','Confidentiality obligations continue after employment ends'] }
+  ]},
+  { id:'conduct', icon:'🤝', title:'Workplace Safety & Conduct', policies:[
+    { id:'harassment', num:'Policy 4', title:'Sexual Harassment Policy',
+      description:'RideSource Inc. is committed to providing a safe work environment free from all forms of discrimination and harassment, including sexual harassment. RideSource has a zero-tolerance policy for any form of sexual harassment and will treat all incidents seriously, investigating all allegations promptly. Sexual harassment is unwelcome conduct of a sexual nature that makes a person feel offended, humiliated, or intimidated. It includes any condition of employment tied to sexual activity, as well as conduct that creates a hostile or intimidating work environment. Anyone can be a victim regardless of gender, and harassment between people of the same sex is equally prohibited.',
+      points:['Zero-tolerance policy — all allegations are investigated immediately','Prohibited physical conduct: unwanted touching, patting, pinching, or physical violence','Prohibited verbal conduct: sexual comments, jokes, advances, or repeated unwanted invitations','Prohibited non-verbal conduct: suggestive gestures, leering, or display of explicit material','Report incidents to your supervisor or HR — reports can be made confidentially'] },
+    { id:'drugfree', num:'Policy 5', title:'Drug-Free Workplace Policy',
+      description:'RideSource Inc. is committed to maintaining a drug-free, safe workplace. The use, possession, sale, manufacture, or distribution of alcohol or controlled substances while on duty, on company property, or in company vehicles is strictly prohibited. Employees are expected to report to work in a fit condition, free from the influence of alcohol or any substance that impairs their ability to perform their duties safely. Violations of this policy may result in disciplinary action up to and including immediate termination.',
+      points:['No alcohol or controlled substances on duty, on company property, or in company vehicles','Employees must report to work free from any impairing substance','Violation may result in immediate termination','Drug and alcohol testing may be conducted as permitted by law','Prescription medications that may impair performance must be disclosed to your supervisor'] },
+    { id:'vehicleuse', num:'Policy 6', title:'Company Vehicle Use Policy',
+      description:'RideSource company vehicles are to be used exclusively for company business and approved transportation services. Personal use of company vehicles is strictly prohibited unless the employee has received prior written approval from management. Employees authorized to bring a vehicle home for scheduling purposes must understand that the vehicle is not to be used for any type of personal purpose, including personal errands. RideSource monitors vehicle locations and usage.',
+      points:['Company vehicles are for business and approved transportation only','Personal use of company vehicles is prohibited without prior written approval','Vehicles approved for overnight storage must NOT be used for personal errands','Unauthorized passengers, personal shopping, or unapproved stops are prohibited','Violation of this policy may result in termination'] }
+  ]},
+  { id:'operations', icon:'🚐', title:'Operations & Service Standards', policies:[
+    { id:'appearance', num:'Policy 7', title:'Personal Appearance & Professional Standards',
+      description:'RideSource employees are expected to maintain a professional, clean, and appropriate appearance at all times while on duty. Employees represent RideSource Inc. and the quality of service we provide. Clothing should be neat, clean, and appropriate for a professional transportation environment. Uniform requirements, if applicable to your position, are mandatory and must be worn as directed.',
+      points:['Maintain a clean, professional appearance at all times while on duty','Clothing must be neat, clean, and appropriate for a professional setting','Personal hygiene standards must be maintained','Uniforms, where required, must be worn as directed','Appearance reflects on RideSource and the passengers we serve'] },
+    { id:'attendance', num:'Policy 8', title:'Attendance & Punctuality Policy',
+      description:'Regular attendance and punctuality are essential to RideSource\'s ability to provide reliable, scheduled transportation services. Employees are expected to report to work on time, ready to begin their scheduled shift. If you are unable to report to work, you must notify your supervisor as soon as possible and no later than one hour before your scheduled shift begins. Three or more unexcused absences in a rolling 12-month period may result in termination.',
+      points:['Report to work on time and ready for every scheduled shift','Notify your supervisor at least one hour before your shift if you cannot attend','Unexcused absences are defined as any absence without proper notification','Three or more unexcused absences in 12 months may result in termination','Chronic tardiness, even when excused, may lead to disciplinary action'] },
+    { id:'passenger', num:'Policy 9', title:'Passenger Interaction & Service Standards',
+      description:'RideSource drivers and staff are the face of our company and are responsible for delivering safe, dignified, and respectful transportation to every passenger. All passengers must be treated with the highest level of professionalism, courtesy, and respect regardless of their background, condition, or behavior. Conversations should remain professional — personal topics, religion, politics, and any potentially sensitive subject matter must be avoided.',
+      points:['Treat every passenger with dignity, respect, and professionalism','Assist passengers as needed — offer a helping hand, not an intrusive one','Keep conversations professional and avoid sensitive personal topics','Never leave a passenger unattended at or in the vehicle','Any passenger complaints or incidents must be reported immediately to dispatch'] }
+  ]},
+  { id:'technology', icon:'📱', title:'Technology & Safety', policies:[
+    { id:'phone', num:'Policy 10', title:'Cell Phone & Distracted Driving Policy',
+      description:'The use of handheld mobile devices while operating a company vehicle is strictly prohibited and may result in immediate termination. This includes texting, calling, browsing, or using any app while the vehicle is in motion. All non-essential phone activity must be conducted only when the vehicle is safely parked with the engine off.',
+      points:['Handheld phone use while driving is prohibited and may result in termination','No texting, calling, browsing, or app use while the vehicle is in motion','Hands-free calling is permitted only where allowed by state law and only for brief work calls','All personal phone use must occur only when safely parked with engine off','Telematics and in-vehicle systems may be used to monitor and enforce this policy'] },
+    { id:'accident', num:'Policy 11', title:'Accident & Incident Reporting Policy',
+      description:'All accidents, incidents, near-misses, injuries, and property damage involving RideSource vehicles or personnel must be reported immediately — regardless of how minor they may appear. No admissions of fault should be made at the scene. Failure to report an accident or incident is a serious violation that may result in termination.',
+      points:['Report ALL accidents, incidents, and near-misses immediately — no exceptions','First priority: passenger safety. Second: emergency services if needed. Third: notify dispatch','Do not admit fault or discuss the incident with anyone except RideSource or law enforcement','Failure to report an incident may result in immediate termination','All involved employees may be subject to drug and alcohol testing post-incident'] },
+    { id:'social', num:'Policy 12', title:'Social Media & Public Communications Policy',
+      description:'Employees of RideSource Inc. must exercise extreme caution when making any public statements — online or otherwise — that could be associated with RideSource or reflect on its reputation. Employees are strictly prohibited from sharing any information about passengers, routes, dispatching processes, or internal company matters on social media or any public platform.',
+      points:['Never post passenger names, photos, locations, or any identifying information online','Do not share internal company information, routes, or dispatch details publicly','Photographs or videos of passengers are strictly prohibited at all times','Online posts that reflect negatively on RideSource may result in disciplinary action','When in doubt — do not post. Contact your supervisor for guidance'] }
+  ]}
+];
+
+// ═══════════════════════════════════════════════════════════
+// RENDER POLICIES
+// ═══════════════════════════════════════════════════════════
+function renderPolicies() {
+  const container = document.getElementById('policiesContainer');
+  container.innerHTML = '';
+  CATEGORIES.forEach((cat, catIdx) => {
+    const section = document.createElement('div');
+    section.className = 'category-section';
+    const allDone = cat.policies.every(p => signedPolicies.has(p.id));
+    section.innerHTML = `
+      <button class="category-toggle" id="cat-btn-${catIdx}" onclick="toggleCategory(${catIdx})">
+        <div class="cat-left">
+          <span class="cat-icon">${cat.icon}</span>
+          <span>${cat.title}</span>
+          <span class="${allDone?'cat-signed':'cat-count'}">${allDone?'✓ Complete':cat.policies.length+(cat.policies.length===1?' Policy':' Policies')}</span>
+        </div>
+        <span class="chevron">▾</span>
+      </button>
+      <div class="policy-list" id="cat-list-${catIdx}">
+        ${cat.policies.map(p => renderPolicy(p)).join('')}
+      </div>`;
+    container.appendChild(section);
+  });
+
+  signedPolicies.forEach(id => {
+    const item = document.querySelector(`[data-policy="${id}"]`);
+    if (!item) return;
+    item.classList.add('signed');
+    const btn = item.querySelector('.btn-sign');
+    if (btn) { btn.textContent = '✓ Signed'; btn.classList.add('done'); btn.disabled = true; }
+    const conf = item.querySelector('.sig-confirmed');
+    const data = signatureData[id];
+    if (conf && data) conf.textContent = `✓ Signed by ${data.name} on ${formatDate(data.date)}`;
+    const sigIn = item.querySelector('.sig-input');
+    const dateIn = item.querySelector('.sig-date');
+    if (sigIn && data) { sigIn.value = data.name; sigIn.disabled = true; }
+    if (dateIn && data) { dateIn.value = data.date; dateIn.disabled = true; }
+  });
+
+  let opened = false;
+  CATEGORIES.forEach((cat, idx) => {
+    if (!opened && cat.policies.some(p => !signedPolicies.has(p.id))) { toggleCategory(idx); opened = true; }
+  });
+}
+
+function renderPolicy(p) {
+  const isSigned = signedPolicies.has(p.id);
+  return `
+    <div class="policy-item${isSigned?' signed':''}" data-policy="${p.id}">
+      <div class="policy-header-row">
+        <div><div class="policy-number">${p.num}</div><div class="policy-title">${p.title}</div></div>
+        <div class="signed-badge">✓ Signed</div>
+      </div>
+      <div class="policy-body">
+        <div class="policy-description">${p.description}</div>
+        <div class="key-points"><h4>Key Points</h4><ul>${p.points.map(pt=>`<li>${pt}</li>`).join('')}</ul></div>
+        <div class="check-row">
+          <input type="checkbox" id="chk-${p.id}" ${isSigned?'checked disabled':''} onchange="onCheck('${p.id}')"/>
+          <label for="chk-${p.id}">I have read and understand this policy</label>
+        </div>
+        <div class="sig-area">
+          <div class="sig-fields">
+            <div class="field"><label>Electronic Signature (Full Name)</label>
+              <input type="text" class="sig-input" id="sig-${p.id}" placeholder="Type your full name" ${isSigned?'disabled':''}/>
+            </div>
+            <div class="field date-field"><label>Date</label>
+              <input type="date" class="sig-date" id="date-${p.id}" ${isSigned?'disabled':''}/>
+            </div>
+          </div>
+          <button class="btn-sign${isSigned?' done':''}" id="btn-${p.id}" onclick="signPolicy('${p.id}')" ${isSigned?'disabled':'disabled'}>
+            ${isSigned?'✓ Signed':'Sign Policy'}
+          </button>
+        </div>
+        <div class="sig-confirmed" id="conf-${p.id}">
+          ${isSigned&&signatureData[p.id]?`✓ Signed by ${signatureData[p.id].name} on ${formatDate(signatureData[p.id].date)}`:''}
+        </div>
+      </div>
+    </div>`;
+}
+
+function toggleCategory(idx) {
+  const btn  = document.getElementById(`cat-btn-${idx}`);
+  const list = document.getElementById(`cat-list-${idx}`);
+  if (!btn||!list) return;
+  const isOpen = list.classList.contains('open');
+  btn.classList.toggle('open', !isOpen);
+  list.classList.toggle('open', !isOpen);
+}
+
+function onCheck(id) {
+  const chk = document.getElementById(`chk-${id}`);
+  const btn = document.getElementById(`btn-${id}`);
+  if (btn) btn.disabled = !chk.checked;
+}
+
+async function signPolicy(id) {
+  const sigEl  = document.getElementById(`sig-${id}`);
+  const dateEl = document.getElementById(`date-${id}`);
+  const name   = sigEl ? sigEl.value.trim() : '';
+  const date   = dateEl ? dateEl.value : '';
+  if (!name) { alert('Please enter your full name as your electronic signature.'); return; }
+  if (!date) { alert('Please select the date.'); return; }
+
+  signedPolicies.add(id);
+  signatureData[id] = { name, date };
+
+  const item = document.querySelector(`[data-policy="${id}"]`);
+  if (item) {
+    item.classList.add('signed');
+    const btn = item.querySelector('.btn-sign');
+    btn.textContent = '✓ Signed'; btn.classList.add('done'); btn.disabled = true;
+    const conf = document.getElementById(`conf-${id}`);
+    if (conf) conf.textContent = `✓ Signed by ${name} on ${formatDate(date)}`;
+    if (sigEl) sigEl.disabled = true;
+    if (dateEl) dateEl.disabled = true;
+  }
+
+  await saveCurrentEmployee();
+  updateProgress();
+  refreshCategoryHeader(id);
+
+  setTimeout(() => {
+    let nextIdx = -1;
+    CATEGORIES.forEach((cat, idx) => {
+      if (nextIdx === -1 && cat.policies.some(p => !signedPolicies.has(p.id))) nextIdx = idx;
+    });
+    if (nextIdx >= 0) {
+      const list = document.getElementById(`cat-list-${nextIdx}`);
+      if (list && !list.classList.contains('open')) toggleCategory(nextIdx);
+    }
+  }, 400);
+}
+
+function refreshCategoryHeader(policyId) {
+  CATEGORIES.forEach((cat, idx) => {
+    if (!cat.policies.some(p => p.id === policyId)) return;
+    const allDone = cat.policies.every(p => signedPolicies.has(p.id));
+    const btn = document.getElementById(`cat-btn-${idx}`);
+    if (!btn) return;
+    const badge = btn.querySelector('.cat-count, .cat-signed');
+    if (badge) { badge.className = allDone?'cat-signed':'cat-count'; badge.textContent = allDone?'✓ Complete':`${cat.policies.length} Policies`; }
+  });
+}
+
+function updateProgress() {
+  const n = signedPolicies.size;
+  document.getElementById('signedCount').textContent = n;
+  document.getElementById('progressFill').style.width = (n/TOTAL*100)+'%';
+  document.getElementById('navCount').textContent = n;
+  CATEGORIES.forEach((cat, idx) => {
+    const pill = document.getElementById(`pill-${idx}`);
+    if (pill) pill.classList.toggle('done', cat.policies.every(p => signedPolicies.has(p.id)));
+  });
+  document.getElementById('completionBanner').classList.toggle('show', n === TOTAL);
+}
+
+// ═══════════════════════════════════════════════════════════
+// ADMIN
+// ═══════════════════════════════════════════════════════════
+function unlockAdmin() {
+  const pw = document.getElementById('adminPwInput').value;
+  if (pw !== ADMIN_PW) { document.getElementById('lockError').classList.add('show'); return; }
+  adminUnlocked = true;
+  document.getElementById('adminLockWrap').style.display = 'none';
+  document.getElementById('adminDashWrap').style.display = 'block';
+  refreshAdminView();
+}
+
+async function refreshAdminView() {
+  const wrap = document.getElementById('adminTableWrap');
+  wrap.innerHTML = '<div class="loading-row">Loading from Supabase…</div>';
+  let employees;
+  try { employees = await sbGetAll(); } catch(e) {
+    wrap.innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><p>Could not load data.<br>${e.message}</p></div>`; return;
+  }
+
+  document.getElementById('statTotal').textContent    = employees.length;
+  document.getElementById('statComplete').textContent  = employees.filter(e=>(e.signed||[]).length===TOTAL).length;
+  document.getElementById('statPartial').textContent   = employees.filter(e=>(e.signed||[]).length>0&&(e.signed||[]).length<TOTAL).length;
+  document.getElementById('statPending').textContent   = employees.filter(e=>(e.signed||[]).length===0).length;
+
+  if (!employees.length) {
+    wrap.innerHTML = `<div class="empty-state"><div class="icon">📋</div><p>No employee records yet.<br>Employees appear here once they begin onboarding.</p></div>`; return;
+  }
+
+  const allPolicies = CATEGORIES.flatMap(c => c.policies);
+  const rows = employees.map(e => {
+    const n   = (e.signed||[]).length;
+    const pct = Math.round(n/TOTAL*100);
+    const status = n===TOTAL?'complete':n>0?'partial':'pending';
+    const label  = n===TOTAL?'✓ Complete':n>0?'In Progress':'Not Started';
+    return `<tr>
+      <td class="td-name">${e.emp_name||'—'}</td>
+      <td>${e.emp_position||'—'}</td>
+      <td>${e.emp_dept||'—'}</td>
+      <td>${e.emp_start?formatDate(e.emp_start):'—'}</td>
+      <td><span class="status-pill ${status}">${label}</span></td>
+      <td><div class="mini-bar-wrap"><div class="mini-bar"><div class="mini-bar-fill" style="width:${pct}%"></div></div><span class="mini-pct">${n}/${TOTAL}</span></div></td>
+      <td class="td-actions">
+        <button class="btn-detail" onclick='openDetail(${JSON.stringify(e)})'>Details</button>
+        <button class="btn-del" onclick="deleteEmployee('${e.emp_name.replace(/'/g,"\\'")}')">✕</button>
+      </td>
+    </tr>`;
+  }).join('');
+
+  wrap.innerHTML = `<table><thead><tr><th>Name</th><th>Position</th><th>County</th><th>Start Date</th><th>Status</th><th>Progress</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+async function deleteEmployee(name) {
+  if (!confirm(`Remove ${name}? This cannot be undone.`)) return;
+  try { await sbDelete(name); refreshAdminView(); } catch(e) { alert('Delete failed: '+e.message); }
+}
+
+async function clearAllData() {
+  if (!confirm('Clear ALL employee records from the database? This cannot be undone.')) return;
+  try { await sbDeleteAll(); refreshAdminView(); } catch(e) { alert('Failed: '+e.message); }
+}
+
+async function exportCSV() {
+  let employees;
+  try { employees = await sbGetAll(); } catch(e) { alert('Could not load data.'); return; }
+  if (!employees.length) { alert('No records to export.'); return; }
+
+  const allPolicies = CATEGORIES.flatMap(c => c.policies);
+  const header = ['Name','Position','County','Start Date','Status','Policies Signed',...allPolicies.map(p=>p.title)];
+  const rows = employees.map(e => {
+    const n = (e.signed||[]).length;
+    const status = n===TOTAL?'Complete':n>0?'In Progress':'Not Started';
+    const polCols = allPolicies.map(p => {
+      if (!(e.signed||[]).includes(p.id)) return 'Pending';
+      const sd = e.signature_data && e.signature_data[p.id];
+      return sd ? `Signed ${formatDate(sd.date)}` : 'Signed';
+    });
+    return [e.emp_name||'',e.emp_position||'',e.emp_dept||'',e.emp_start?formatDate(e.emp_start):'',status,n,...polCols];
+  });
+
+  const csv = [header,...rows].map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv],{type:'text/csv'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = `RideSource_PolicyTracker_${new Date().toISOString().slice(0,10)}.csv`; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function openDetail(emp) {
+  const signed = emp.signed || [];
+  const sd = emp.signature_data || {};
+  const allPolicies = CATEGORIES.flatMap(c => c.policies);
+  document.getElementById('modalTitle').textContent = emp.emp_name||'Employee Detail';
+  document.getElementById('modalBody').innerHTML = `
+    <div class="modal-info-row">
+      <div class="modal-info-item"><div class="mi-label">Position</div><div class="mi-val">${emp.emp_position||'—'}</div></div>
+      <div class="modal-info-item"><div class="mi-label">County</div><div class="mi-val">${emp.emp_dept||'—'}</div></div>
+      <div class="modal-info-item"><div class="mi-label">Start Date</div><div class="mi-val">${emp.emp_start?formatDate(emp.emp_start):'—'}</div></div>
+      <div class="modal-info-item"><div class="mi-label">Progress</div><div class="mi-val">${signed.length}/${TOTAL} Signed</div></div>
+    </div>
+    <ul class="modal-policy-list">
+      ${allPolicies.map(p => {
+        const isSigned = signed.includes(p.id);
+        const sigData  = sd[p.id];
+        return `<li class="modal-policy-item">
+          <div>
+            <div>${p.num}: ${p.title}</div>
+            ${isSigned&&sigData?`<div class="pol-sig">Signed by ${sigData.name} on ${formatDate(sigData.date)}</div>`:''}
+          </div>
+          <span class="${isSigned?'pol-signed':'pol-pending'}">${isSigned?'✓ Signed':'Pending'}</span>
+        </li>`;
+      }).join('')}
+    </ul>`;
+  document.getElementById('detailModal').classList.add('open');
+}
+
+function closeModal() { document.getElementById('detailModal').classList.remove('open'); }
+
+// ═══════════════════════════════════════════════════════════
+// PAGE SWITCHING
+// ═══════════════════════════════════════════════════════════
+function switchPage(which, event) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(`page-${which}`).classList.add('active');
+  if (event&&event.currentTarget) event.currentTarget.classList.add('active');
+  if (which==='admin'&&adminUnlocked) refreshAdminView();
+}
+
+// ═══════════════════════════════════════════════════════════
+// CERTIFICATE DOWNLOAD
+// ═══════════════════════════════════════════════════════════
+function downloadCertificate() {
+  const name     = currentEmployee?.empName     || 'Employee';
+  const position = currentEmployee?.empPosition || '';
+  const dept     = currentEmployee?.empDept     || '';
+  const startDate = currentEmployee?.empStart ? formatDate(currentEmployee.empStart) : '';
+  const policyRows = CATEGORIES.flatMap(cat=>cat.policies).map(p => {
+    const data = signatureData[p.id];
+    return `<tr><td>${p.num}</td><td>${p.title}</td><td>${data?data.name:''}</td><td>${data?formatDate(data.date):''}</td></tr>`;
+  }).join('');
+  const certHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>Policy Certificate — ${name}</title>
+  <style>body{font-family:Arial,sans-serif;max-width:800px;margin:40px auto;color:#222}h1{color:#0a1628;font-size:1.6rem;margin-bottom:4px}.subtitle{color:#888;font-size:.9rem;margin-bottom:24px}.info-table{width:100%;border-collapse:collapse;margin-bottom:24px;background:#f8f9fa}.info-table td{padding:10px 16px;font-size:.9rem}.info-table td:first-child{font-weight:700;color:#555;width:160px}table.policies{width:100%;border-collapse:collapse}table.policies th{background:#0a1628;color:#fff;padding:10px 14px;text-align:left;font-size:.8rem}table.policies td{padding:10px 14px;border-bottom:1px solid #eee;font-size:.85rem}.footer{margin-top:40px;padding-top:20px;border-top:2px solid #0a1628;display:flex;justify-content:space-between;font-size:.8rem;color:#888}.cert-badge{text-align:center;background:#d4f0e3;color:#1a7a4a;padding:16px;border-radius:8px;margin-bottom:20px;font-size:1.1rem;font-weight:700}</style>
+  </head><body>
+  <h1>RideSource Inc.</h1><div class="subtitle">Employee Policy Acknowledgment Certificate</div>
+  <div class="cert-badge">✅ All 12 Policy Acknowledgments Complete</div>
+  <table class="info-table">
+    <tr><td>Employee Name</td><td>${name}</td></tr>
+    <tr><td>Position</td><td>${position}</td></tr>
+    <tr><td>County</td><td>${dept}</td></tr>
+    <tr><td>Start Date</td><td>${startDate}</td></tr>
+    <tr><td>Completed On</td><td>${new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}</td></tr>
+  </table>
+  <table class="policies"><thead><tr><th>#</th><th>Policy</th><th>Signed By</th><th>Date Signed</th></tr></thead>
+  <tbody>${policyRows}</tbody></table>
+  <div class="footer"><span>RideSource Inc. — Reliable Safe Transportation</span><span>Generated: ${new Date().toLocaleDateString()}</span></div>
+  </body></html>`;
+  const blob = new Blob([certHtml],{type:'text/html'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = `RideSource_PolicyCert_${name.replace(/\s+/g,'_')}.html`; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ═══════════════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════════════
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  try {
+    const [y,m,d] = dateStr.split('-');
+    return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(m,10)-1]+' '+parseInt(d,10)+', '+y;
+  } catch(e) { return dateStr; }
+}
+
+window.addEventListener('load', () => {
+  const today = new Date().toISOString().slice(0,10);
+  const startEl = document.getElementById('gateEmpStart');
+  if (startEl) startEl.value = today;
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.sig-date:not([disabled])').forEach(el => { if (!el.value) el.value = today; });
+  });
+});
+</script>
+</body>
+</html>
