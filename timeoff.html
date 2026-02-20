@@ -1,0 +1,1591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>RideSource — Staff Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --rs-navy: #0f1f3d;
+    --rs-blue: #1a56db;
+    --rs-blue-light: #3b82f6;
+    --rs-accent: #f59e0b;
+    --rs-green: #10b981;
+    --rs-red: #ef4444;
+    --rs-orange: #f97316;
+    --rs-surface: #f8fafc;
+    --rs-card: #ffffff;
+    --rs-border: #e2e8f0;
+    --rs-text: #1e293b;
+    --rs-muted: #64748b;
+    --rs-light: #f1f5f9;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.10);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.14);
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--rs-surface);
+    color: var(--rs-text);
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: var(--rs-navy);
+    color: white;
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+  }
+  .header-brand { display: flex; align-items: center; gap: 12px; }
+  .header-logo {
+    width: 36px; height: 36px;
+    background: var(--rs-accent);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 16px; color: var(--rs-navy);
+  }
+  .header-title { font-size: 17px; font-weight: 600; letter-spacing: -0.3px; }
+  .header-subtitle { font-size: 11px; color: rgba(255,255,255,0.5); letter-spacing: 0.5px; text-transform: uppercase; }
+  .header-user { display: flex; align-items: center; gap: 10px; }
+  .header-user-name { font-size: 13px; color: rgba(255,255,255,0.7); }
+  .btn-logout {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: white;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .btn-logout:hover { background: rgba(255,255,255,0.2); }
+
+  /* ── LANDING ── */
+  .landing {
+    min-height: 100vh;
+    background: var(--rs-navy);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+  }
+  .landing-box {
+    background: white;
+    border-radius: 20px;
+    padding: 48px 40px;
+    width: 100%;
+    max-width: 460px;
+    box-shadow: var(--shadow-lg);
+    text-align: center;
+  }
+  .landing-logo {
+    width: 72px; height: 72px;
+    background: var(--rs-navy);
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; font-weight: 800; color: var(--rs-accent);
+    margin: 0 auto 20px;
+    letter-spacing: -1px;
+  }
+  .landing-title { font-size: 26px; font-weight: 700; color: var(--rs-navy); margin-bottom: 6px; }
+  .landing-sub { font-size: 14px; color: var(--rs-muted); margin-bottom: 36px; }
+  .role-tabs {
+    display: flex;
+    background: var(--rs-light);
+    border-radius: 10px;
+    padding: 4px;
+    margin-bottom: 28px;
+    gap: 4px;
+  }
+  .role-tab {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--rs-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .role-tab.active {
+    background: white;
+    color: var(--rs-navy);
+    box-shadow: var(--shadow-sm);
+    font-weight: 600;
+  }
+  .form-group { margin-bottom: 16px; text-align: left; }
+  .form-label { display: block; font-size: 12px; font-weight: 600; color: var(--rs-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .form-input {
+    width: 100%;
+    padding: 11px 14px;
+    border: 2px solid var(--rs-border);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--rs-text);
+    transition: border-color 0.2s;
+    outline: none;
+    background: white;
+  }
+  .form-input:focus { border-color: var(--rs-blue); }
+  .form-select {
+    width: 100%;
+    padding: 11px 14px;
+    border: 2px solid var(--rs-border);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--rs-text);
+    outline: none;
+    background: white;
+    cursor: pointer;
+  }
+  .form-select:focus { border-color: var(--rs-blue); }
+  .btn-primary {
+    width: 100%;
+    padding: 13px;
+    background: var(--rs-blue);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    margin-top: 8px;
+  }
+  .btn-primary:hover { background: #1348c8; }
+  .btn-primary:active { transform: scale(0.99); }
+  .error-msg {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: var(--rs-red);
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    margin-top: 12px;
+    text-align: left;
+  }
+  .success-msg {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #166534;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    margin-top: 12px;
+    text-align: left;
+  }
+
+  /* ── NAV ── */
+  .nav {
+    background: white;
+    border-bottom: 1px solid var(--rs-border);
+    display: flex;
+    align-items: center;
+    padding: 0 32px;
+    gap: 4px;
+    overflow-x: auto;
+  }
+  .nav-tab {
+    padding: 16px 18px;
+    border: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--rs-muted);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .nav-tab:hover { color: var(--rs-blue); }
+  .nav-tab.active { color: var(--rs-blue); border-bottom-color: var(--rs-blue); font-weight: 600; }
+  .nav-badge {
+    background: var(--rs-red);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 10px;
+    min-width: 18px;
+    text-align: center;
+  }
+
+  /* ── MAIN LAYOUT ── */
+  .main { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+  .section-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--rs-navy);
+    margin-bottom: 6px;
+  }
+  .section-sub { font-size: 14px; color: var(--rs-muted); margin-bottom: 28px; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--rs-card);
+    border: 1px solid var(--rs-border);
+    border-radius: var(--radius);
+    padding: 28px;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 20px;
+  }
+  .card-title { font-size: 16px; font-weight: 700; color: var(--rs-navy); margin-bottom: 4px; }
+  .card-sub { font-size: 13px; color: var(--rs-muted); margin-bottom: 20px; }
+
+  /* ── REQUEST TYPE SELECTOR ── */
+  .request-types {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .request-type-btn {
+    padding: 14px 12px;
+    border: 2px solid var(--rs-border);
+    border-radius: var(--radius-sm);
+    background: white;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--rs-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+  .request-type-btn:hover { border-color: var(--rs-blue); color: var(--rs-blue); }
+  .request-type-btn.selected { border-color: var(--rs-blue); background: #eff6ff; color: var(--rs-blue); font-weight: 600; }
+  .request-type-icon { font-size: 20px; display: block; margin-bottom: 6px; }
+
+  /* ── DATE FIELDS ── */
+  .date-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 500px) { .date-row { grid-template-columns: 1fr; } }
+
+  /* ── STATUS BADGES ── */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+  .badge-pending { background: #fef3c7; color: #92400e; }
+  .badge-approved { background: #d1fae5; color: #065f46; }
+  .badge-denied { background: #fee2e2; color: #991b1b; }
+
+  /* ── REQUESTS TABLE ── */
+  .requests-list { display: flex; flex-direction: column; gap: 12px; }
+  .request-card {
+    background: white;
+    border: 1px solid var(--rs-border);
+    border-radius: var(--radius-sm);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    transition: box-shadow 0.2s;
+  }
+  .request-card:hover { box-shadow: var(--shadow-md); }
+  .request-info { flex: 1; }
+  .request-name { font-size: 14px; font-weight: 600; color: var(--rs-navy); }
+  .request-meta { font-size: 12px; color: var(--rs-muted); margin-top: 3px; }
+  .request-actions { display: flex; gap: 8px; }
+  .btn-approve {
+    padding: 7px 16px;
+    background: var(--rs-green);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .btn-approve:hover { background: #059669; }
+  .btn-deny {
+    padding: 7px 16px;
+    background: white;
+    color: var(--rs-red);
+    border: 2px solid var(--rs-red);
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-deny:hover { background: var(--rs-red); color: white; }
+
+  /* ── CALENDAR ── */
+  .calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .calendar-nav-btn {
+    width: 36px; height: 36px;
+    border: 1px solid var(--rs-border);
+    background: white;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .calendar-nav-btn:hover { background: var(--rs-light); }
+  .calendar-month { font-size: 18px; font-weight: 700; color: var(--rs-navy); }
+  .calendar-grid { width: 100%; border-collapse: collapse; }
+  .calendar-grid th {
+    padding: 8px 4px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--rs-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-align: center;
+  }
+  .calendar-grid td {
+    padding: 4px;
+    vertical-align: top;
+    height: 90px;
+    width: 14.28%;
+  }
+  .cal-day {
+    height: 100%;
+    min-height: 82px;
+    border: 1px solid var(--rs-border);
+    border-radius: 8px;
+    padding: 6px;
+    background: white;
+    position: relative;
+  }
+  .cal-day.today { border-color: var(--rs-blue); background: #eff6ff; }
+  .cal-day.other-month { background: var(--rs-light); opacity: 0.5; }
+  .cal-day-num { font-size: 12px; font-weight: 600; color: var(--rs-muted); margin-bottom: 4px; }
+  .cal-day.today .cal-day-num { color: var(--rs-blue); }
+  .cal-event {
+    font-size: 10px;
+    font-weight: 500;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: white;
+  }
+  .cal-event-timeoff { background: var(--rs-blue); }
+  .cal-event-callout { background: var(--rs-green); }
+  .cal-event-pending { background: var(--rs-accent); color: var(--rs-navy); }
+
+  /* ── COUNTY COLOR DOTS ── */
+  .county-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+
+  /* ── ADMIN DASHBOARD ── */
+  .stats-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; margin-bottom: 28px; }
+  .stat-card {
+    background: white;
+    border: 1px solid var(--rs-border);
+    border-radius: var(--radius);
+    padding: 20px;
+    text-align: center;
+  }
+  .stat-num { font-size: 32px; font-weight: 800; color: var(--rs-navy); line-height: 1; }
+  .stat-label { font-size: 12px; color: var(--rs-muted); margin-top: 6px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  /* ── ADMIN TABLE ── */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead th {
+    background: var(--rs-light);
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--rs-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  tbody tr { border-bottom: 1px solid var(--rs-border); transition: background 0.15s; }
+  tbody tr:hover { background: var(--rs-surface); }
+  tbody td { padding: 12px 14px; color: var(--rs-text); vertical-align: middle; }
+
+  /* ── CALL OUT LOG ── */
+  .callout-reason-btns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 6px;
+  }
+  .reason-btn {
+    padding: 8px 16px;
+    border: 2px solid var(--rs-border);
+    border-radius: 20px;
+    background: white;
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--rs-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .reason-btn.selected { border-color: var(--rs-navy); background: var(--rs-navy); color: white; }
+
+  /* ── LEGEND ── */
+  .legend { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--rs-muted); font-weight: 500; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+
+  /* ── FILTER BAR ── */
+  .filter-bar { display: flex; gap: 10px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
+  .filter-input {
+    padding: 9px 14px;
+    border: 1px solid var(--rs-border);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+    background: white;
+    min-width: 180px;
+  }
+  .filter-input:focus { border-color: var(--rs-blue); }
+  .btn-secondary {
+    padding: 9px 18px;
+    background: white;
+    border: 1px solid var(--rs-border);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--rs-text);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-secondary:hover { background: var(--rs-light); }
+  .btn-danger {
+    padding: 9px 18px;
+    background: white;
+    border: 1px solid #fecaca;
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--rs-red);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-danger:hover { background: #fef2f2; }
+
+  /* ── LOADING ── */
+  .loading { text-align: center; padding: 48px; color: var(--rs-muted); font-size: 14px; }
+  .spinner { width: 28px; height: 28px; border: 3px solid var(--rs-border); border-top-color: var(--rs-blue); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── EMPTY STATE ── */
+  .empty { text-align: center; padding: 48px 24px; color: var(--rs-muted); }
+  .empty-icon { font-size: 40px; margin-bottom: 12px; }
+  .empty-text { font-size: 15px; font-weight: 500; }
+  .empty-sub { font-size: 13px; margin-top: 4px; }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(15,31,61,0.6);
+    z-index: 200;
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(3px);
+  }
+  .modal {
+    background: white;
+    border-radius: 16px;
+    padding: 32px;
+    max-width: 500px;
+    width: 100%;
+    box-shadow: var(--shadow-lg);
+  }
+  .modal-title { font-size: 18px; font-weight: 700; color: var(--rs-navy); margin-bottom: 8px; }
+  .modal-sub { font-size: 13px; color: var(--rs-muted); margin-bottom: 24px; }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
+
+  /* ── HIDDEN ── */
+  .hidden { display: none !important; }
+
+  /* ── TABS within page ── */
+  .page-tabs { display: flex; gap: 8px; margin-bottom: 24px; }
+  .page-tab {
+    padding: 8px 18px;
+    border: 2px solid var(--rs-border);
+    border-radius: 20px;
+    background: white;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--rs-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .page-tab.active { border-color: var(--rs-blue); background: var(--rs-blue); color: white; }
+
+  .textarea-input {
+    width: 100%;
+    padding: 11px 14px;
+    border: 2px solid var(--rs-border);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--rs-text);
+    outline: none;
+    resize: vertical;
+    min-height: 80px;
+    transition: border-color 0.2s;
+  }
+  .textarea-input:focus { border-color: var(--rs-blue); }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════
+     LANDING / LOGIN
+══════════════════════════════════════════════ -->
+<div id="landing-screen" class="landing">
+  <div class="landing-box">
+    <div class="landing-logo">RS</div>
+    <div class="landing-title">RideSource Staff Portal</div>
+    <div class="landing-sub">Time off requests, call-out logging & team calendar</div>
+
+    <div class="role-tabs">
+      <button class="role-tab active" onclick="switchRole('employee')">👤 Employee</button>
+      <button class="role-tab" onclick="switchRole('manager')">🏢 Manager / Admin</button>
+    </div>
+
+    <!-- Employee Login -->
+    <div id="employee-login">
+      <div class="form-group">
+        <label class="form-label">Full Name</label>
+        <input class="form-input" id="emp-name" type="text" placeholder="First and last name"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input class="form-input" id="emp-email" type="email" placeholder="your@email.com"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Your County / Location</label>
+        <select class="form-select" id="emp-county">
+          <option value="">— Select County —</option>
+          <option>Hancock County</option>
+          <option>Washington County</option>
+          <option>Somerset County</option>
+          <option>Waldo County</option>
+          <option>Knox County</option>
+          <option>Androscoggin County</option>
+          <option>Aroostook County</option>
+          <option>Cumberland County</option>
+          <option>Franklin County</option>
+          <option>Kennebec County</option>
+          <option>Lincoln County</option>
+          <option>Oxford County</option>
+          <option>Penobscot County</option>
+          <option>Piscataquis County</option>
+          <option>Sagadahoc County</option>
+          <option>York County</option>
+        </select>
+      </div>
+      <button class="btn-primary" onclick="employeeLogin()">Enter Portal →</button>
+      <div id="emp-error" class="error-msg hidden"></div>
+    </div>
+
+    <!-- Manager Login -->
+    <div id="manager-login" class="hidden">
+      <div class="form-group">
+        <label class="form-label">Manager Name</label>
+        <input class="form-input" id="mgr-name" type="text" placeholder="First and last name"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input class="form-input" id="mgr-email" type="email" placeholder="manager@ridesource.com"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Manager Password</label>
+        <input class="form-input" id="mgr-password" type="password" placeholder="••••••••"/>
+      </div>
+      <button class="btn-primary" onclick="managerLogin()">Access Dashboard →</button>
+      <div id="mgr-error" class="error-msg hidden"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     MAIN APP (shown after login)
+══════════════════════════════════════════════ -->
+<div id="app-screen" class="hidden">
+
+  <div class="header">
+    <div class="header-brand">
+      <div class="header-logo">RS</div>
+      <div>
+        <div class="header-title">RideSource Staff Portal</div>
+        <div class="header-subtitle">Staff Management System</div>
+      </div>
+    </div>
+    <div class="header-user">
+      <span class="header-user-name" id="header-user-display"></span>
+      <button class="btn-logout" onclick="logout()">Sign Out</button>
+    </div>
+  </div>
+
+  <!-- NAV TABS -->
+  <div class="nav" id="main-nav">
+    <!-- filled dynamically based on role -->
+  </div>
+
+  <div class="main" id="main-content">
+    <!-- filled dynamically -->
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     APPROVAL MODAL
+══════════════════════════════════════════════ -->
+<div id="approval-modal" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">Approve Request?</div>
+    <div class="modal-sub" id="modal-sub"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+      <button id="modal-confirm-btn" class="btn-primary" style="width:auto" onclick="confirmApproval()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════
+// SUPABASE CONFIG — update these with your project values
+// ════════════════════════════════════════════════
+const SUPABASE_URL = 'https://iasphxpahlmjwkapyxrs.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlhc3BoeHBhaGxtandrYXB5eHJzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEzNDIyNDYsImV4cCI6MjA4NjkxODI0Nn0.ntQxEiEJqZOvXjfX58I-PPQ2ZOoAT_RgLyf3aWMeXds';
+
+// Manager password — change this to whatever you'd like
+const MANAGER_PASSWORD = 'RideSource2026!';
+
+// Email service endpoint (Supabase Edge Function or EmailJS)
+// See README for setup instructions
+const EMAIL_ENDPOINT = 'YOUR_EMAIL_ENDPOINT';
+
+// ════════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════════
+let currentUser = null;
+let currentRole = 'employee';
+let pendingApprovalData = null;
+let calendarDate = new Date();
+
+const COUNTIES = [
+  'Hancock County','Washington County','Somerset County','Waldo County',
+  'Knox County','Androscoggin County','Aroostook County','Cumberland County',
+  'Franklin County','Kennebec County','Lincoln County','Oxford County',
+  'Penobscot County','Piscataquis County','Sagadahoc County','York County'
+];
+
+const COUNTY_COLORS = {
+  'Hancock County': '#3b82f6',
+  'Washington County': '#ef4444',
+  'Somerset County': '#f97316',
+  'Waldo County': '#f59e0b',
+  'Knox County': '#06b6d4',
+  'Androscoggin County': '#f87171',
+  'Aroostook County': '#4ade80',
+  'Cumberland County': '#22d3ee',
+  'Franklin County': '#9ca3af',
+  'Kennebec County': '#c084fc',
+  'Lincoln County': '#f472b6',
+  'Oxford County': '#a855f7',
+  'Penobscot County': '#dc2626',
+  'Piscataquis County': '#2563eb',
+  'Sagadahoc County': '#ea580c',
+  'York County': '#d97706'
+};
+
+// ════════════════════════════════════════════════
+// SUPABASE HELPERS
+// ════════════════════════════════════════════════
+async function supabaseQuery(table, method = 'GET', body = null, params = '') {
+  const url = `${SUPABASE_URL}/rest/v1/${table}${params}`;
+  const opts = {
+    method,
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': method === 'POST' ? 'return=representation' : 'return=representation'
+    }
+  };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(url, opts);
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(err);
+  }
+  const text = await res.text();
+  return text ? JSON.parse(text) : [];
+}
+
+async function dbGet(table, params = '') {
+  return supabaseQuery(table, 'GET', null, params);
+}
+async function dbPost(table, body) {
+  return supabaseQuery(table, 'POST', body);
+}
+async function dbPatch(table, body, params) {
+  return supabaseQuery(table, 'PATCH', body, params);
+}
+
+// ════════════════════════════════════════════════
+// AUTH
+// ════════════════════════════════════════════════
+function switchRole(role) {
+  currentRole = role;
+  document.querySelectorAll('.role-tab').forEach((t,i) => {
+    t.classList.toggle('active', (i === 0 && role === 'employee') || (i === 1 && role === 'manager'));
+  });
+  document.getElementById('employee-login').classList.toggle('hidden', role !== 'employee');
+  document.getElementById('manager-login').classList.toggle('hidden', role !== 'manager');
+}
+
+async function employeeLogin() {
+  const name = document.getElementById('emp-name').value.trim();
+  const email = document.getElementById('emp-email').value.trim();
+  const county = document.getElementById('emp-county').value;
+  const err = document.getElementById('emp-error');
+  if (!name || !email || !county) { showError(err, 'Please fill in all fields.'); return; }
+  if (!email.includes('@')) { showError(err, 'Please enter a valid email address.'); return; }
+  err.classList.add('hidden');
+  currentUser = { name, email, county, role: 'employee' };
+  enterApp();
+}
+
+function managerLogin() {
+  const name = document.getElementById('mgr-name').value.trim();
+  const email = document.getElementById('mgr-email').value.trim();
+  const pass = document.getElementById('mgr-password').value;
+  const err = document.getElementById('mgr-error');
+  if (!name || !email) { showError(err, 'Please fill in all fields.'); return; }
+  if (pass !== MANAGER_PASSWORD) { showError(err, 'Incorrect password.'); return; }
+  err.classList.add('hidden');
+  currentUser = { name, email, county: 'All Counties', role: 'manager' };
+  enterApp();
+}
+
+function logout() {
+  currentUser = null;
+  document.getElementById('app-screen').classList.add('hidden');
+  document.getElementById('landing-screen').classList.remove('hidden');
+  switchRole('employee');
+}
+
+function enterApp() {
+  document.getElementById('landing-screen').classList.add('hidden');
+  document.getElementById('app-screen').classList.remove('hidden');
+  document.getElementById('header-user-display').textContent = `${currentUser.name} · ${currentUser.county}`;
+  buildNav();
+  showTab('request');
+}
+
+function showError(el, msg) {
+  el.textContent = msg;
+  el.classList.remove('hidden');
+}
+
+// ════════════════════════════════════════════════
+// NAV
+// ════════════════════════════════════════════════
+function buildNav() {
+  const nav = document.getElementById('main-nav');
+  const isManager = currentUser.role === 'manager';
+  const tabs = [
+    { id: 'request', label: 'Request Time Off', icon: '📅' },
+    { id: 'my-requests', label: isManager ? 'All Requests' : 'My Requests', icon: '📋' },
+    ...(isManager ? [
+      { id: 'callout', label: 'Log Call-Out', icon: '📞' },
+      { id: 'calendar', label: 'Team Calendar', icon: '🗓️' },
+      { id: 'admin', label: 'Admin Dashboard', icon: '⚙️' }
+    ] : [])
+  ];
+  nav.innerHTML = tabs.map(t =>
+    `<button class="nav-tab" id="nav-${t.id}" onclick="showTab('${t.id}')">${t.icon} ${t.label}</button>`
+  ).join('');
+}
+
+function showTab(tab) {
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  const activeNav = document.getElementById(`nav-${tab}`);
+  if (activeNav) activeNav.classList.add('active');
+  const content = document.getElementById('main-content');
+  switch(tab) {
+    case 'request': renderRequestForm(content); break;
+    case 'my-requests': renderMyRequests(content); break;
+    case 'callout': renderCallOutForm(content); break;
+    case 'calendar': renderCalendar(content); break;
+    case 'admin': renderAdminDashboard(content); break;
+  }
+}
+
+// ════════════════════════════════════════════════
+// TAB: REQUEST TIME OFF
+// ════════════════════════════════════════════════
+let selectedRequestType = null;
+
+function renderRequestForm(container) {
+  selectedRequestType = null;
+  container.innerHTML = `
+    <div class="section-title">Request Time Off</div>
+    <div class="section-sub">Submit a time off request for supervisor approval.</div>
+    <div class="card">
+      <div class="card-title">What type of time off?</div>
+      <div class="card-sub">Select the option that best describes your request.</div>
+      <div class="request-types">
+        <button class="request-type-btn" onclick="selectRequestType('Full Day')" id="rt-fullday">
+          <span class="request-type-icon">☀️</span>Full Day Off
+        </button>
+        <button class="request-type-btn" onclick="selectRequestType('Multiple Days')" id="rt-multiple">
+          <span class="request-type-icon">📅</span>Multiple Days
+        </button>
+        <button class="request-type-btn" onclick="selectRequestType('Start Late')" id="rt-late">
+          <span class="request-type-icon">🕐</span>Start Late
+        </button>
+        <button class="request-type-btn" onclick="selectRequestType('End Early')" id="rt-early">
+          <span class="request-type-icon">🕔</span>End Early
+        </button>
+        <button class="request-type-btn" onclick="selectRequestType('Mid-Day Appointment')" id="rt-midday">
+          <span class="request-type-icon">🏥</span>Mid-Day Appointment
+        </button>
+      </div>
+      <div id="request-date-fields" class="hidden"></div>
+      <div id="request-common-fields" class="hidden">
+        <div class="form-group" style="margin-top:16px;">
+          <label class="form-label">Reason for Request</label>
+          <textarea class="textarea-input" id="req-reason" placeholder="Optional — provide any relevant details..."></textarea>
+        </div>
+        <div id="req-submit-error" class="error-msg hidden"></div>
+        <button class="btn-primary" onclick="submitTimeOffRequest()" style="margin-top:8px;">Submit Request →</button>
+      </div>
+    </div>
+    <div id="req-success" class="hidden">
+      <div class="card" style="border-color: var(--rs-green);">
+        <div style="text-align:center; padding: 16px 0;">
+          <div style="font-size:48px; margin-bottom:12px;">✅</div>
+          <div class="card-title" style="color: var(--rs-green);">Request Submitted!</div>
+          <div style="font-size:14px; color: var(--rs-muted); margin-top:8px;">
+            Your supervisor has been notified and will respond shortly.<br/>
+            You'll receive an email when a decision is made.
+          </div>
+          <button class="btn-primary" style="width:auto; margin-top:20px; padding: 10px 28px;" onclick="renderRequestForm(document.getElementById('main-content'))">Submit Another Request</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function selectRequestType(type) {
+  selectedRequestType = type;
+  document.querySelectorAll('.request-type-btn').forEach(b => b.classList.remove('selected'));
+  const map = { 'Full Day': 'fullday', 'Multiple Days': 'multiple', 'Start Late': 'late', 'End Early': 'early', 'Mid-Day Appointment': 'midday' };
+  document.getElementById(`rt-${map[type]}`).classList.add('selected');
+
+  const fields = document.getElementById('request-date-fields');
+  const common = document.getElementById('request-common-fields');
+  fields.classList.remove('hidden');
+  common.classList.remove('hidden');
+
+  let html = '';
+  if (type === 'Full Day') {
+    html = `
+      <div class="date-row">
+        <div class="form-group"><label class="form-label">Date</label><input class="form-input" type="date" id="req-start"/></div>
+        <div class="form-group"><label class="form-label">End Date (if multi-day)</label><input class="form-input" type="date" id="req-end"/></div>
+      </div>`;
+  } else if (type === 'Multiple Days') {
+    html = `
+      <div class="date-row">
+        <div class="form-group"><label class="form-label">Start Date</label><input class="form-input" type="date" id="req-start"/></div>
+        <div class="form-group"><label class="form-label">End Date</label><input class="form-input" type="date" id="req-end"/></div>
+      </div>`;
+  } else if (type === 'Start Late') {
+    html = `
+      <div class="date-row">
+        <div class="form-group"><label class="form-label">Date</label><input class="form-input" type="date" id="req-start"/></div>
+        <div class="form-group"><label class="form-label">Arriving at approx.</label><input class="form-input" type="time" id="req-time"/></div>
+      </div>`;
+  } else if (type === 'End Early') {
+    html = `
+      <div class="date-row">
+        <div class="form-group"><label class="form-label">Date</label><input class="form-input" type="date" id="req-start"/></div>
+        <div class="form-group"><label class="form-label">Leaving at approx.</label><input class="form-input" type="time" id="req-time"/></div>
+      </div>`;
+  } else if (type === 'Mid-Day Appointment') {
+    html = `
+      <div class="date-row">
+        <div class="form-group"><label class="form-label">Date</label><input class="form-input" type="date" id="req-start"/></div>
+        <div class="form-group"><label class="form-label">Approx. Time Away</label><input class="form-input" type="time" id="req-time"/></div>
+      </div>`;
+  }
+  fields.innerHTML = html;
+}
+
+async function submitTimeOffRequest() {
+  const errEl = document.getElementById('req-submit-error');
+  const startEl = document.getElementById('req-start');
+  if (!startEl || !startEl.value) { showError(errEl, 'Please select a date.'); return; }
+
+  const endEl = document.getElementById('req-end');
+  const timeEl = document.getElementById('req-time');
+  const reason = document.getElementById('req-reason').value.trim();
+
+  const payload = {
+    employee_name: currentUser.name,
+    employee_email: currentUser.email,
+    county: currentUser.county,
+    request_type: selectedRequestType,
+    start_date: startEl.value,
+    end_date: endEl ? endEl.value : startEl.value,
+    time_detail: timeEl ? timeEl.value : null,
+    reason: reason,
+    status: 'PENDING',
+    submitted_at: new Date().toISOString()
+  };
+
+  try {
+    errEl.classList.add('hidden');
+    const btn = document.querySelector('#request-common-fields .btn-primary');
+    btn.textContent = 'Submitting...';
+    btn.disabled = true;
+
+    await dbPost('time_off_requests', payload);
+    await sendEmail('timeoff_submission', payload);
+
+    document.querySelector('.card').classList.add('hidden');
+    document.getElementById('req-success').classList.remove('hidden');
+  } catch(e) {
+    showError(errEl, 'Submission failed. Please try again or contact HR.');
+    const btn = document.querySelector('#request-common-fields .btn-primary');
+    btn.textContent = 'Submit Request →';
+    btn.disabled = false;
+  }
+}
+
+// ════════════════════════════════════════════════
+// TAB: MY REQUESTS / ALL REQUESTS
+// ════════════════════════════════════════════════
+async function renderMyRequests(container) {
+  const isManager = currentUser.role === 'manager';
+  container.innerHTML = `
+    <div class="section-title">${isManager ? 'All Time Off Requests' : 'My Requests'}</div>
+    <div class="section-sub">${isManager ? 'Review, approve, or deny employee requests.' : 'Track the status of your submitted requests.'}</div>
+    ${isManager ? `
+    <div class="filter-bar">
+      <select class="filter-input" id="filter-county" onchange="filterRequests()" style="min-width:160px;">
+        <option value="">All Counties</option>
+        ${COUNTIES.map(c => `<option>${c}</option>`).join('')}
+      </select>
+      <select class="filter-input" id="filter-status" onchange="filterRequests()">
+        <option value="">All Statuses</option>
+        <option>PENDING</option><option>APPROVED</option><option>DENIED</option>
+      </select>
+      <button class="btn-secondary" onclick="renderMyRequests(document.getElementById('main-content'))">↻ Refresh</button>
+    </div>` : ''}
+    <div id="requests-container"><div class="loading"><div class="spinner"></div>Loading requests...</div></div>
+  `;
+  await loadRequests();
+}
+
+let allRequests = [];
+
+async function loadRequests() {
+  const isManager = currentUser.role === 'manager';
+  try {
+    const params = isManager
+      ? '?order=submitted_at.desc'
+      : `?employee_email=eq.${encodeURIComponent(currentUser.email)}&order=submitted_at.desc`;
+    allRequests = await dbGet('time_off_requests', params);
+    renderRequestsList(allRequests);
+  } catch(e) {
+    document.getElementById('requests-container').innerHTML = `<div class="error-msg">Failed to load requests. Check Supabase connection.</div>`;
+  }
+}
+
+function filterRequests() {
+  const county = document.getElementById('filter-county')?.value || '';
+  const status = document.getElementById('filter-status')?.value || '';
+  const filtered = allRequests.filter(r => {
+    return (!county || r.county === county) && (!status || r.status === status);
+  });
+  renderRequestsList(filtered);
+}
+
+function renderRequestsList(requests) {
+  const container = document.getElementById('requests-container');
+  const isManager = currentUser.role === 'manager';
+
+  if (!requests.length) {
+    container.innerHTML = `<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">No requests found</div><div class="empty-sub">Requests will appear here once submitted.</div></div>`;
+    return;
+  }
+
+  const pendingCount = requests.filter(r => r.status === 'PENDING').length;
+
+  container.innerHTML = `
+    ${isManager && pendingCount > 0 ? `<div class="success-msg" style="margin-bottom:16px;">⚡ ${pendingCount} request${pendingCount > 1 ? 's' : ''} awaiting your approval.</div>` : ''}
+    <div class="card" style="padding:0; overflow:hidden;">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Employee</th>
+              ${isManager ? '<th>County</th>' : ''}
+              <th>Type</th>
+              <th>Date(s)</th>
+              <th>Reason</th>
+              <th>Status</th>
+              <th>Submitted</th>
+              ${isManager ? '<th>Actions</th>' : ''}
+            </tr>
+          </thead>
+          <tbody>
+            ${requests.map(r => `
+              <tr>
+                <td><strong>${r.employee_name}</strong><br/><span style="font-size:11px;color:var(--rs-muted)">${r.employee_email}</span></td>
+                ${isManager ? `<td><span class="county-dot" style="background:${COUNTY_COLORS[r.county]||'#94a3b8'}"></span>${r.county}</td>` : ''}
+                <td>${r.request_type}</td>
+                <td>${formatDate(r.start_date)}${r.end_date && r.end_date !== r.start_date ? ' – ' + formatDate(r.end_date) : ''}${r.time_detail ? '<br/><span style="font-size:11px;color:var(--rs-muted)">~' + r.time_detail + '</span>' : ''}</td>
+                <td style="max-width:160px; font-size:12px;">${r.reason || '—'}</td>
+                <td><span class="badge badge-${r.status.toLowerCase()}">${r.status}</span></td>
+                <td style="font-size:12px; color:var(--rs-muted)">${formatDateTime(r.submitted_at)}</td>
+                ${isManager ? `
+                <td>
+                  ${r.status === 'PENDING' ? `
+                    <div style="display:flex;gap:6px;">
+                      <button class="btn-approve" onclick="openApprovalModal(${JSON.stringify(r).replace(/"/g, '&quot;')}, 'APPROVED')">✓ Approve</button>
+                      <button class="btn-deny" onclick="openApprovalModal(${JSON.stringify(r).replace(/"/g, '&quot;')}, 'DENIED')">✗ Deny</button>
+                    </div>` : '<span style="font-size:12px;color:var(--rs-muted)">Decided</span>'}
+                </td>` : ''}
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+// ════════════════════════════════════════════════
+// APPROVAL MODAL
+// ════════════════════════════════════════════════
+let pendingApproval = null;
+let pendingDecision = null;
+
+function openApprovalModal(request, decision) {
+  pendingApproval = request;
+  pendingDecision = decision;
+  const modal = document.getElementById('approval-modal');
+  const title = document.getElementById('modal-title');
+  const sub = document.getElementById('modal-sub');
+  const btn = document.getElementById('modal-confirm-btn');
+
+  title.textContent = decision === 'APPROVED' ? '✅ Approve this request?' : '❌ Deny this request?';
+  sub.innerHTML = `<strong>${request.employee_name}</strong> — ${request.request_type}<br/>${formatDate(request.start_date)}${request.end_date && request.end_date !== request.start_date ? ' to ' + formatDate(request.end_date) : ''}<br/><span style="color:var(--rs-muted);font-size:12px;">${request.county}</span>`;
+  btn.style.background = decision === 'APPROVED' ? 'var(--rs-green)' : 'var(--rs-red)';
+  btn.textContent = decision === 'APPROVED' ? 'Confirm Approval' : 'Confirm Denial';
+  modal.classList.remove('hidden');
+}
+
+function closeModal() {
+  document.getElementById('approval-modal').classList.add('hidden');
+  pendingApproval = null;
+  pendingDecision = null;
+}
+
+async function confirmApproval() {
+  if (!pendingApproval || !pendingDecision) return;
+  const btn = document.getElementById('modal-confirm-btn');
+  btn.textContent = 'Processing...';
+  btn.disabled = true;
+  try {
+    await dbPatch('time_off_requests', { status: pendingDecision, decided_at: new Date().toISOString(), decided_by: currentUser.name }, `?id=eq.${pendingApproval.id}`);
+    await sendEmail('timeoff_decision', { ...pendingApproval, status: pendingDecision, decided_by: currentUser.name });
+    closeModal();
+    await loadRequests();
+  } catch(e) {
+    btn.textContent = 'Error — Try Again';
+    btn.disabled = false;
+  }
+}
+
+// ════════════════════════════════════════════════
+// TAB: LOG CALL-OUT (Manager only)
+// ════════════════════════════════════════════════
+let selectedCalloutReason = null;
+
+function renderCallOutForm(container) {
+  selectedCalloutReason = null;
+  container.innerHTML = `
+    <div class="section-title">Log a Call-Out</div>
+    <div class="section-sub">Record an unplanned employee absence on their behalf.</div>
+    <div class="card" style="max-width: 600px;">
+      <div class="card-title">Call-Out Details</div>
+      <div class="card-sub">Complete all required fields and submit to record the absence.</div>
+      <div class="form-group">
+        <label class="form-label">Employee Name *</label>
+        <input class="form-input" type="text" id="co-employee" placeholder="Employee full name"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Employee County / Location *</label>
+        <select class="form-select" id="co-county">
+          <option value="">— Select County —</option>
+          ${COUNTIES.map(c => `<option>${c}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Date of Absence *</label>
+        <input class="form-input" type="date" id="co-date"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Reason *</label>
+        <div class="callout-reason-btns">
+          ${['Sick','Family Emergency','Weather','No reason provided','Other'].map(r =>
+            `<button class="reason-btn" onclick="selectReason('${r}')" id="reason-${r.replace(/ /g,'-')}">${r}</button>`
+          ).join('')}
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notes</label>
+        <textarea class="textarea-input" id="co-notes" placeholder="Any additional context..."></textarea>
+      </div>
+      <div id="co-error" class="error-msg hidden"></div>
+      <button class="btn-primary" onclick="submitCallOut()">Log Call-Out →</button>
+    </div>
+    <div id="co-success" class="hidden">
+      <div class="card" style="border-color: var(--rs-green); max-width:600px;">
+        <div style="text-align:center; padding:16px 0;">
+          <div style="font-size:48px; margin-bottom:12px;">✅</div>
+          <div class="card-title" style="color:var(--rs-green);">Call-Out Logged!</div>
+          <div style="font-size:14px;color:var(--rs-muted);margin-top:8px;">Supervisors have been notified. The absence has been recorded.</div>
+          <button class="btn-primary" style="width:auto;margin-top:20px;padding:10px 28px;" onclick="renderCallOutForm(document.getElementById('main-content'))">Log Another</button>
+        </div>
+      </div>
+    </div>
+  `;
+  // Set today's date as default
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('co-date').value = today;
+}
+
+function selectReason(reason) {
+  selectedCalloutReason = reason;
+  document.querySelectorAll('.reason-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById(`reason-${reason.replace(/ /g,'-')}`).classList.add('selected');
+}
+
+async function submitCallOut() {
+  const errEl = document.getElementById('co-error');
+  const employee = document.getElementById('co-employee').value.trim();
+  const county = document.getElementById('co-county').value;
+  const date = document.getElementById('co-date').value;
+  const notes = document.getElementById('co-notes').value.trim();
+
+  if (!employee) { showError(errEl, 'Please enter the employee name.'); return; }
+  if (!county) { showError(errEl, 'Please select a county.'); return; }
+  if (!date) { showError(errEl, 'Please select a date.'); return; }
+  if (!selectedCalloutReason) { showError(errEl, 'Please select a reason.'); return; }
+
+  const payload = {
+    employee_name: employee,
+    county: county,
+    callout_date: date,
+    reason: selectedCalloutReason,
+    notes: notes,
+    logged_by: currentUser.name,
+    logged_by_email: currentUser.email,
+    logged_at: new Date().toISOString()
+  };
+
+  try {
+    errEl.classList.add('hidden');
+    const btn = document.querySelector('#co-error + button') || document.querySelector('.card .btn-primary');
+    btn.textContent = 'Logging...';
+    btn.disabled = true;
+
+    await dbPost('call_out_log', payload);
+    await sendEmail('callout', payload);
+    await checkAttendanceFlag(employee, county);
+
+    document.querySelector('.card').classList.add('hidden');
+    document.getElementById('co-success').classList.remove('hidden');
+  } catch(e) {
+    showError(errEl, 'Failed to log call-out. Please try again.');
+    const btn = document.querySelector('.card .btn-primary');
+    if (btn) { btn.textContent = 'Log Call-Out →'; btn.disabled = false; }
+  }
+}
+
+async function checkAttendanceFlag(employeeName, county) {
+  // Check for 3 call-outs in 30 days
+  try {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const dateStr = thirtyDaysAgo.toISOString().split('T')[0];
+    const records = await dbGet('call_out_log', `?employee_name=eq.${encodeURIComponent(employeeName)}&callout_date=gte.${dateStr}`);
+    if (records.length >= 3) {
+      await sendEmail('attendance_flag', { employee_name: employeeName, county, count: records.length });
+    }
+  } catch(e) { /* non-critical */ }
+}
+
+// ════════════════════════════════════════════════
+// TAB: CALENDAR (Manager only)
+// ════════════════════════════════════════════════
+async function renderCalendar(container) {
+  container.innerHTML = `
+    <div class="section-title">Team Calendar</div>
+    <div class="section-sub">Approved time off and logged call-outs across all counties.</div>
+    <div class="filter-bar">
+      <select class="filter-input" id="cal-county-filter" onchange="renderCalendarGrid()" style="min-width:160px;">
+        <option value="">All Counties</option>
+        ${COUNTIES.map(c => `<option>${c}</option>`).join('')}
+      </select>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--rs-blue)"></div>Approved Time Off</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--rs-green)"></div>Call-Out</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--rs-accent)"></div>Pending</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="calendar-header">
+        <button class="calendar-nav-btn" onclick="changeMonth(-1)">‹</button>
+        <div class="calendar-month" id="cal-month-label"></div>
+        <button class="calendar-nav-btn" onclick="changeMonth(1)">›</button>
+      </div>
+      <div id="calendar-body"><div class="loading"><div class="spinner"></div>Loading calendar...</div></div>
+    </div>
+  `;
+  calendarDate = new Date();
+  await renderCalendarGrid();
+}
+
+async function changeMonth(dir) {
+  calendarDate.setMonth(calendarDate.getMonth() + dir);
+  await renderCalendarGrid();
+}
+
+async function renderCalendarGrid() {
+  const label = document.getElementById('cal-month-label');
+  if (!label) return;
+
+  const year = calendarDate.getFullYear();
+  const month = calendarDate.getMonth();
+  label.textContent = calendarDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+
+  const body = document.getElementById('calendar-body');
+  body.innerHTML = '<div class="loading"><div class="spinner"></div>Loading...</div>';
+
+  const countyFilter = document.getElementById('cal-county-filter')?.value || '';
+
+  try {
+    const startOfMonth = `${year}-${String(month+1).padStart(2,'0')}-01`;
+    const endOfMonth = `${year}-${String(month+1).padStart(2,'0')}-${new Date(year, month+1, 0).getDate()}`;
+
+    const [timeOffData, calloutData] = await Promise.all([
+      dbGet('time_off_requests', `?start_date=gte.${startOfMonth}&start_date=lte.${endOfMonth}${countyFilter ? `&county=eq.${encodeURIComponent(countyFilter)}` : ''}`),
+      dbGet('call_out_log', `?callout_date=gte.${startOfMonth}&callout_date=lte.${endOfMonth}${countyFilter ? `&county=eq.${encodeURIComponent(countyFilter)}` : ''}`)
+    ]);
+
+    const events = {};
+    timeOffData.forEach(r => {
+      const d = r.start_date;
+      if (!events[d]) events[d] = [];
+      const cls = r.status === 'APPROVED' ? 'cal-event-timeoff' : r.status === 'PENDING' ? 'cal-event-pending' : '';
+      if (cls) events[d].push({ label: r.employee_name.split(' ')[0], cls, color: COUNTY_COLORS[r.county] });
+    });
+    calloutData.forEach(r => {
+      const d = r.callout_date;
+      if (!events[d]) events[d] = [];
+      events[d].push({ label: '⚠ ' + r.employee_name.split(' ')[0], cls: 'cal-event-callout', color: null });
+    });
+
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month+1, 0).getDate();
+    const today = new Date();
+
+    let html = `<table class="calendar-grid">
+      <thead><tr>${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d=>`<th>${d}</th>`).join('')}</tr></thead>
+      <tbody><tr>`;
+
+    let dayCount = 1;
+    for (let i = 0; i < firstDay; i++) html += `<td><div class="cal-day other-month"></div></td>`;
+
+    while (dayCount <= daysInMonth) {
+      const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(dayCount).padStart(2,'0')}`;
+      const isToday = today.getFullYear()===year && today.getMonth()===month && today.getDate()===dayCount;
+      const dayEvents = events[dateStr] || [];
+      html += `<td><div class="cal-day${isToday?' today':''}">
+        <div class="cal-day-num">${dayCount}</div>
+        ${dayEvents.slice(0,3).map(e => `<div class="cal-event ${e.cls}" ${e.color?`style="background:${e.color}"`:''}>${e.label}</div>`).join('')}
+        ${dayEvents.length > 3 ? `<div style="font-size:9px;color:var(--rs-muted);padding:1px 4px">+${dayEvents.length-3} more</div>` : ''}
+      </div></td>`;
+      dayCount++;
+      if ((firstDay + dayCount - 1) % 7 === 0 && dayCount <= daysInMonth) html += `</tr><tr>`;
+    }
+
+    const remaining = 7 - ((firstDay + daysInMonth) % 7);
+    if (remaining < 7) for (let i = 0; i < remaining; i++) html += `<td><div class="cal-day other-month"></div></td>`;
+    html += `</tr></tbody></table>`;
+    body.innerHTML = html;
+  } catch(e) {
+    body.innerHTML = `<div class="error-msg">Failed to load calendar data.</div>`;
+  }
+}
+
+// ════════════════════════════════════════════════
+// TAB: ADMIN DASHBOARD
+// ════════════════════════════════════════════════
+async function renderAdminDashboard(container) {
+  container.innerHTML = `
+    <div class="section-title">Admin Dashboard</div>
+    <div class="section-sub">Live overview of all requests, call-outs, and attendance flags.</div>
+    <div class="page-tabs">
+      <button class="page-tab active" onclick="switchAdminTab('overview', this)">📊 Overview</button>
+      <button class="page-tab" onclick="switchAdminTab('callouts', this)">📞 Call-Out Log</button>
+      <button class="page-tab" onclick="switchAdminTab('flags', this)">🚩 Attendance Flags</button>
+    </div>
+    <div id="admin-tab-content"><div class="loading"><div class="spinner"></div>Loading...</div></div>
+  `;
+  await loadAdminOverview();
+}
+
+function switchAdminTab(tab, btn) {
+  document.querySelectorAll('.page-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (tab === 'overview') loadAdminOverview();
+  else if (tab === 'callouts') loadAdminCallouts();
+  else if (tab === 'flags') loadAdminFlags();
+}
+
+async function loadAdminOverview() {
+  const content = document.getElementById('admin-tab-content');
+  content.innerHTML = '<div class="loading"><div class="spinner"></div>Loading...</div>';
+  try {
+    const [requests, callouts] = await Promise.all([
+      dbGet('time_off_requests', '?order=submitted_at.desc'),
+      dbGet('call_out_log', '?order=callout_date.desc&limit=20')
+    ]);
+    const pending = requests.filter(r => r.status === 'PENDING').length;
+    const approved = requests.filter(r => r.status === 'APPROVED').length;
+    const denied = requests.filter(r => r.status === 'DENIED').length;
+
+    content.innerHTML = `
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-num">${requests.length}</div><div class="stat-label">Total Requests</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:var(--rs-accent)">${pending}</div><div class="stat-label">Pending</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:var(--rs-green)">${approved}</div><div class="stat-label">Approved</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:var(--rs-red)">${denied}</div><div class="stat-label">Denied</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:var(--rs-orange)">${callouts.length}</div><div class="stat-label">Recent Call-Outs</div></div>
+      </div>
+      <div class="card" style="padding:0; overflow:hidden;">
+        <div style="padding:16px 20px; border-bottom:1px solid var(--rs-border); display:flex; justify-content:space-between; align-items:center;">
+          <div class="card-title" style="margin:0;">Recent Requests</div>
+          <button class="btn-secondary" onclick="exportCSV()">⬇ Export CSV</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Employee</th><th>County</th><th>Type</th><th>Dates</th><th>Status</th><th>Submitted</th></tr></thead>
+            <tbody>
+              ${requests.slice(0,30).map(r => `<tr>
+                <td><strong>${r.employee_name}</strong></td>
+                <td><span class="county-dot" style="background:${COUNTY_COLORS[r.county]||'#94a3b8'}"></span>${r.county}</td>
+                <td>${r.request_type}</td>
+                <td>${formatDate(r.start_date)}${r.end_date && r.end_date !== r.start_date ? ' – '+formatDate(r.end_date) : ''}</td>
+                <td><span class="badge badge-${r.status.toLowerCase()}">${r.status}</span></td>
+                <td style="font-size:12px;color:var(--rs-muted)">${formatDateTime(r.submitted_at)}</td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>`;
+  } catch(e) {
+    content.innerHTML = `<div class="error-msg">Failed to load dashboard data.</div>`;
+  }
+}
+
+async function loadAdminCallouts() {
+  const content = document.getElementById('admin-tab-content');
+  content.innerHTML = '<div class="loading"><div class="spinner"></div>Loading...</div>';
+  try {
+    const callouts = await dbGet('call_out_log', '?order=callout_date.desc');
+    content.innerHTML = `
+      <div class="card" style="padding:0; overflow:hidden;">
+        <div style="padding:16px 20px; border-bottom:1px solid var(--rs-border);">
+          <div class="card-title">Call-Out Log</div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Employee</th><th>County</th><th>Date</th><th>Reason</th><th>Notes</th><th>Logged By</th></tr></thead>
+            <tbody>
+              ${callouts.length ? callouts.map(r => `<tr>
+                <td><strong>${r.employee_name}</strong></td>
+                <td><span class="county-dot" style="background:${COUNTY_COLORS[r.county]||'#94a3b8'}"></span>${r.county}</td>
+                <td>${formatDate(r.callout_date)}</td>
+                <td>${r.reason}</td>
+                <td style="font-size:12px;color:var(--rs-muted)">${r.notes || '—'}</td>
+                <td style="font-size:12px;color:var(--rs-muted)">${r.logged_by}</td>
+              </tr>`).join('') : '<tr><td colspan="6" style="text-align:center;color:var(--rs-muted);padding:32px">No call-outs recorded.</td></tr>'}
+            </tbody>
+          </table>
+        </div>
+      </div>`;
+  } catch(e) {
+    content.innerHTML = `<div class="error-msg">Failed to load call-out data.</div>`;
+  }
+}
+
+async function loadAdminFlags() {
+  const content = document.getElementById('admin-tab-content');
+  content.innerHTML = '<div class="loading"><div class="spinner"></div>Checking attendance flags...</div>';
+  try {
+    const callouts = await dbGet('call_out_log', '?order=callout_date.desc');
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    // Group by employee, count in last 30 days
+    const empCounts = {};
+    callouts.forEach(r => {
+      const d = new Date(r.callout_date);
+      if (d >= thirtyDaysAgo) {
+        const key = `${r.employee_name}|${r.county}`;
+        if (!empCounts[key]) empCounts[key] = { name: r.employee_name, county: r.county, count: 0, dates: [] };
+        empCounts[key].count++;
+        empCounts[key].dates.push(r.callout_date);
+      }
+    });
+
+    const flagged = Object.values(empCounts).filter(e => e.count >= 3).sort((a,b) => b.count - a.count);
+
+    content.innerHTML = `
+      <div style="margin-bottom:16px;" class="success-msg">Employees with 3+ call-outs in the last 30 days are flagged per attendance policy.</div>
+      ${flagged.length ? `
+      <div class="card" style="padding:0; overflow:hidden;">
+        <div style="padding:16px 20px; border-bottom:1px solid var(--rs-border);">
+          <div class="card-title">🚩 Flagged Employees (${flagged.length})</div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Employee</th><th>County</th><th>Call-Outs (30 days)</th><th>Action Required</th></tr></thead>
+            <tbody>
+              ${flagged.map(e => `<tr>
+                <td><strong>${e.name}</strong></td>
+                <td><span class="county-dot" style="background:${COUNTY_COLORS[e.county]||'#94a3b8'}"></span>${e.county}</td>
+                <td><span class="badge badge-denied">${e.count} call-outs</span></td>
+                <td style="font-size:12px;">${e.count <= 3 ? 'Verbal coaching + written follow-up' : e.count <= 6 ? 'Formal meeting + PIP / final warning' : '⚠️ Review for termination'}</td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>` : `<div class="empty"><div class="empty-icon">✅</div><div class="empty-text">No flags</div><div class="empty-sub">No employees have 3+ call-outs in the last 30 days.</div></div>`}
+    `;
+  } catch(e) {
+    content.innerHTML = `<div class="error-msg">Failed to load attendance data.</div>`;
+  }
+}
+
+// ════════════════════════════════════════════════
+// EMAIL (via Supabase Edge Function or EmailJS)
+// ════════════════════════════════════════════════
+async function sendEmail(type, data) {
+  // This calls a Supabase Edge Function or your email endpoint
+  // See README for setup instructions
+  try {
+    if (!EMAIL_ENDPOINT || EMAIL_ENDPOINT === 'YOUR_EMAIL_ENDPOINT') {
+      console.log('Email would be sent:', type, data);
+      return; // Graceful no-op during setup
+    }
+    await fetch(EMAIL_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type, data, sender: currentUser })
+    });
+  } catch(e) {
+    console.error('Email send failed:', e);
+  }
+}
+
+// ════════════════════════════════════════════════
+// EXPORT
+// ════════════════════════════════════════════════
+async function exportCSV() {
+  try {
+    const requests = await dbGet('time_off_requests', '?order=submitted_at.desc');
+    const headers = ['Name','Email','County','Type','Start Date','End Date','Reason','Status','Submitted','Decided By'];
+    const rows = requests.map(r => [
+      r.employee_name, r.employee_email, r.county, r.request_type,
+      r.start_date, r.end_date||'', r.reason||'', r.status,
+      r.submitted_at, r.decided_by||''
+    ]);
+    const csv = [headers, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `ridesource_requests_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+  } catch(e) { alert('Export failed.'); }
+}
+
+// ════════════════════════════════════════════════
+// HELPERS
+// ════════════════════════════════════════════════
+function formatDate(str) {
+  if (!str) return '';
+  const d = new Date(str + 'T12:00:00');
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+function formatDateTime(str) {
+  if (!str) return '';
+  const d = new Date(str);
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' ' +
+    d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+}
+</script>
+</body>
+</html>
