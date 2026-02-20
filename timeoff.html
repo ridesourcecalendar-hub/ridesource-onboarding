@@ -937,7 +937,6 @@ function selectRequestType(type) {
     html = `
       <div class="date-row">
         <div class="form-group"><label class="form-label">Date</label><input class="form-input" type="date" id="req-start"/></div>
-        <div class="form-group"><label class="form-label">End Date (if multi-day)</label><input class="form-input" type="date" id="req-end"/></div>
       </div>`;
   } else if (type === 'Multiple Days') {
     html = `
@@ -961,7 +960,10 @@ function selectRequestType(type) {
     html = `
       <div class="date-row">
         <div class="form-group"><label class="form-label">Date</label><input class="form-input" type="date" id="req-start"/></div>
-        <div class="form-group"><label class="form-label">Approx. Time Away</label><input class="form-input" type="time" id="req-time"/></div>
+      </div>
+      <div class="date-row">
+        <div class="form-group"><label class="form-label">Approx. Time Leaving</label><input class="form-input" type="time" id="req-time"/></div>
+        <div class="form-group"><label class="form-label">Approx. Time Returning</label><input class="form-input" type="time" id="req-time-return"/></div>
       </div>`;
   }
   fields.innerHTML = html;
@@ -974,6 +976,10 @@ async function submitTimeOffRequest() {
 
   const endEl = document.getElementById('req-end');
   const timeEl = document.getElementById('req-time');
+  const timeReturnEl = document.getElementById('req-time-return');
+  const timeDetail = timeEl && timeReturnEl && timeReturnEl.value
+    ? `${timeEl.value} – ${timeReturnEl.value}`
+    : timeEl ? timeEl.value : null;
   const reason = document.getElementById('req-reason').value.trim();
 
   const payload = {
@@ -983,7 +989,7 @@ async function submitTimeOffRequest() {
     request_type: selectedRequestType,
     start_date: startEl.value,
     end_date: endEl ? endEl.value : startEl.value,
-    time_detail: timeEl ? timeEl.value : null,
+    time_detail: timeDetail,
     reason: reason,
     status: 'PENDING',
     submitted_at: new Date().toISOString()
