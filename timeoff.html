@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>RideSource — Staff Portal</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
   :root {
     --rs-navy: #0f1f3d;
@@ -700,12 +701,17 @@
 const SUPABASE_URL = 'https://iasphxpahlmjwkapyxrs.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlhc3BoeHBhaGxtandrYXB5eHJzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEzNDIyNDYsImV4cCI6MjA4NjkxODI0Nn0.ntQxEiEJqZOvXjfX58I-PPQ2ZOoAT_RgLyf3aWMeXds';
 
-// Manager password — change this to whatever you'd like
+// Manager password
 const MANAGER_PASSWORD = 'RideSource2026!';
 
-// Email service endpoint (Supabase Edge Function or EmailJS)
-// See README for setup instructions
-const EMAIL_ENDPOINT = 'YOUR_EMAIL_ENDPOINT';
+// EmailJS Configuration
+const EMAILJS_SERVICE_ID = 'ridesource_calendar';
+const EMAILJS_PUBLIC_KEY = 'AoArkSo12DpQtsvZZ';
+const SUPERVISOR_EMAIL = 'tiffanyb@ridesourcemaine.com';
+const SENDER_NAME = 'RideSource Time Off Request';
+
+// Initialize EmailJS
+emailjs.init(EMAILJS_PUBLIC_KEY);
 
 // ════════════════════════════════════════════════
 // STATE
@@ -1540,20 +1546,46 @@ async function loadAdminFlags() {
 // EMAIL (via Supabase Edge Function or EmailJS)
 // ════════════════════════════════════════════════
 async function sendEmail(type, data) {
-  // This calls a Supabase Edge Function or your email endpoint
-  // See README for setup instructions
   try {
-    if (!EMAIL_ENDPOINT || EMAIL_ENDPOINT === 'YOUR_EMAIL_ENDPOINT') {
-      console.log('Email would be sent:', type, data);
-      return; // Graceful no-op during setup
+    if (type === 'timeoff_submission') {
+      // Notify supervisor of new request
+      await emailjs.send(EMAILJS_SERVICE_ID, 'template_26w7bfc', {
+        to_email: SUPERVISOR_EMAIL,
+        from_name: SENDER_NAME,
+        employee_name: data.employee_name,
+        employee_email: data.employee_email,
+        county: data.county,
+        request_type: data.request_type,
+        start_date: formatDate(data.start_date),
+        end_date: data.end_date && data.end_date !== data.start_date ? formatDate(data.end_date) : formatDate(data.start_date),
+        time_detail: data.time_detail || 'N/A',
+        reason: data.reason || 'None provided',
+        portal_url: 'https://ridesourcecalendar-hub.github.io/ridesource-onboarding/timeoff.html'
+      });
+    } else if (type === 'timeoff_decision') {
+      // Notify employee of approval/denial
+      await emailjs.send(EMAILJS_SERVICE_ID, 'template_kciym9d', {
+        to_email: data.employee_email,
+        from_name: SENDER_NAME,
+        employee_name: data.employee_name,
+        status: data.status,
+        request_type: data.request_type,
+        start_date: formatDate(data.start_date),
+        end_date: data.end_date && data.end_date !== data.start_date ? formatDate(data.end_date) : formatDate(data.start_date),
+        decided_by: data.decided_by,
+        reason: data.reason || 'None provided'
+      });
+    } else if (type === 'callout') {
+      // Call-out email template coming soon
+      console.log('Call-out logged to Supabase — email notification pending template setup');
+    } else if (type === 'attendance_flag') {
+      // Attendance flag email template coming soon
+      console.log('Attendance flag logged — email notification pending template setup');
     }
-    await fetch(EMAIL_ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type, data, sender: currentUser })
-    });
+    console.log('Email sent:', type);
   } catch(e) {
     console.error('Email send failed:', e);
+    // Non-fatal — data is still saved to Supabase
   }
 }
 
