@@ -6,7 +6,7 @@
 <title>RideSource Staff Portal</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.min.js"></script>
+<script src="https://unpkg.com/docx@8.5.0/build/index.min.js"></script>
 <style>
 :root{--navy:#1B2A4A;--red:#C0392B;--light:#EAF0FB;--border:#D0D9EC;--success:#27AE60;--warn:#E67E22;--gray:#F7F9FC;}
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -53,7 +53,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 .sidebar-label{font-size:10px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;padding:8px 16px 4px;}
 .nav-item{display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;font-size:13px;color:#555;font-weight:500;transition:all .15s;margin:1px 8px;border-radius:8px;}
 .nav-item:hover{background:var(--light);color:var(--navy);}
-.nav-item.active{background:var(--navy);color:#fff;}
+.nav-item.active{background:var(--navy);color:#fff;border-color:var(--navy);}
 .nav-icon{font-size:16px;width:20px;text-align:center;}
 .nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;}
 .nav-item.active .nav-badge{background:rgba(255,255,255,.25);}
@@ -76,7 +76,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 .doc-nav-title{color:#fff;font-size:15px;font-weight:700;}
 .doc-nav-progress{color:rgba(255,255,255,.65);font-size:12px;}
 .doc-tabs{display:flex;background:var(--gray);border-bottom:1px solid var(--border);overflow-x:auto;}
-.doc-tab{padding:12px 20px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;color:#777;border-bottom:3px solid transparent;transition:all .15s;}
+.doc-tab{padding:12px 20px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;color:#777;border-bottom:3px solid transparent;border:1px solid transparent;border-radius:6px 6px 0 0;transition:all .15s;}
 .doc-tab:hover{color:var(--navy);}
 .doc-tab.active{color:var(--navy);border-bottom-color:var(--navy);background:#fff;}
 .doc-tab.completed{color:var(--success);}
@@ -216,7 +216,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 <div id="screen-landing" class="screen active">
   <div class="landing-wrap">
     <div class="landing-card">
-      <div class="landing-brand">Ride<span>Source</span> Inc.</div>
+      <div style="margin-bottom:4px;display:flex;justify-content:center;"><svg viewBox="0 0 270 72" width="230" xmlns="http://www.w3.org/2000/svg" style="display:block;"><text x="2" y="44" font-family="Arial Black,Arial" font-weight="900" font-size="40" fill="#1B2A4A">Ride</text><g transform="translate(82,26)"><circle cx="0" cy="0" r="12" fill="none" stroke="#1B2A4A" stroke-width="1.8"/><polygon points="0,-10 3,-4 0,-6 -3,-4" fill="#C0392B"/><polygon points="0,10 3,4 0,6 -3,4" fill="#1B2A4A"/><polygon points="-10,0 -4,-3 -6,0 -4,3" fill="#1B2A4A"/><polygon points="10,0 4,-3 6,0 4,3" fill="#1B2A4A"/><circle cx="0" cy="0" r="2" fill="#1B2A4A"/></g><text x="97" y="44" font-family="Arial Black,Arial" font-weight="900" font-size="40" fill="#C0392B">Source</text><text x="244" y="22" font-family="Arial,sans-serif" font-weight="700" font-size="12" fill="#1B2A4A">Inc.</text><rect x="2" y="49" width="260" height="2.5" fill="#C0392B"/><text x="2" y="66" font-family="Arial Black,Arial" font-weight="900" font-size="11" fill="#1B2A4A">Reliable</text><text x="56" y="66" font-family="Arial Black,Arial" font-weight="900" font-size="11" fill="#C0392B">Safe</text><g transform="translate(84,59)"><circle cx="0" cy="0" r="5" fill="none" stroke="#1B2A4A" stroke-width="1"/><polygon points="0,-4 1.2,-1.5 0,-2.5 -1.2,-1.5" fill="#C0392B"/><polygon points="0,4 1.2,1.5 0,2.5 -1.2,1.5" fill="#1B2A4A"/><polygon points="-4,0 -1.5,-1.2 -2.5,0 -1.5,1.2" fill="#1B2A4A"/><polygon points="4,0 1.5,-1.2 2.5,0 1.5,1.2" fill="#1B2A4A"/></g><text x="94" y="66" font-family="Arial Black,Arial" font-weight="900" font-size="11" fill="#1B2A4A">Transportation</text></svg></div>
       <div class="landing-sub">Reliable Safe Transportation</div>
 
       <div class="portal-tabs">
@@ -259,8 +259,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 <div id="screen-portal" class="screen">
   <div class="header">
     <div>
-      <div class="brand">Ride<span>Source</span> Inc.</div>
-      <div class="tagline">Employee Portal</div>
+      <div><svg viewBox="0 0 270 72" width="150" xmlns="http://www.w3.org/2000/svg" style="display:block;"><text x="2" y="44" font-family="Arial Black,Arial" font-weight="900" font-size="40" fill="#fff">Ride</text><g transform="translate(82,26)"><circle cx="0" cy="0" r="12" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="1.8"/><polygon points="0,-10 3,-4 0,-6 -3,-4" fill="#ff6b6b"/><polygon points="0,10 3,4 0,6 -3,4" fill="rgba(255,255,255,0.8)"/><polygon points="-10,0 -4,-3 -6,0 -4,3" fill="rgba(255,255,255,0.8)"/><polygon points="10,0 4,-3 6,0 4,3" fill="rgba(255,255,255,0.8)"/><circle cx="0" cy="0" r="2" fill="#fff"/></g><text x="97" y="44" font-family="Arial Black,Arial" font-weight="900" font-size="40" fill="#ff6b6b">Source</text><rect x="2" y="49" width="260" height="2" fill="rgba(255,255,255,0.4)"/><text x="2" y="63" font-family="Arial,sans-serif" font-size="10" fill="rgba(255,255,255,0.6)">ReliableSafe Transportation</text></svg></div>
     </div>
     <div class="header-right">
       <div class="header-user">Welcome, <strong id="display-name"></strong></div>
@@ -400,6 +399,10 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
             <p>Your supervisor has been notified. You'll receive an email when a decision is made.</p>
             <button class="btn-primary" style="margin-top:12px;background:rgba(255,255,255,.2);border:2px solid rgba(255,255,255,.5);" onclick="resetTimeOff()">Submit Another Request</button>
           </div>
+          <div class="card" style="margin-top:16px;">
+            <div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:12px;">📋 My Submitted Requests</div>
+            <div id="my-requests-list"><p style="color:#888;font-size:13px;">Loading...</p></div>
+          </div>
         </div>
       </div>
 
@@ -410,7 +413,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 <!-- ════════ ADMIN PORTAL ════════ -->
 <div id="screen-admin" class="screen">
   <div class="header">
-    <div><div class="brand">Ride<span>Source</span> Inc.</div><div class="tagline">Admin &amp; Manager Portal</div></div>
+    <div><div><svg viewBox="0 0 270 72" width="150" xmlns="http://www.w3.org/2000/svg" style="display:block;"><text x="2" y="44" font-family="Arial Black,Arial" font-weight="900" font-size="40" fill="#fff">Ride</text><g transform="translate(82,26)"><circle cx="0" cy="0" r="12" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="1.8"/><polygon points="0,-10 3,-4 0,-6 -3,-4" fill="#ff6b6b"/><polygon points="0,10 3,4 0,6 -3,4" fill="rgba(255,255,255,0.8)"/><polygon points="-10,0 -4,-3 -6,0 -4,3" fill="rgba(255,255,255,0.8)"/><polygon points="10,0 4,-3 6,0 4,3" fill="rgba(255,255,255,0.8)"/><circle cx="0" cy="0" r="2" fill="#fff"/></g><text x="97" y="44" font-family="Arial Black,Arial" font-weight="900" font-size="40" fill="#ff6b6b">Source</text><rect x="2" y="49" width="260" height="2" fill="rgba(255,255,255,0.4)"/><text x="2" y="63" font-family="Arial,sans-serif" font-size="10" fill="rgba(255,255,255,0.6)">ReliableSafe Transportation</text></svg></div></div>
     <div class="header-right">
       <div class="header-badge">ADMIN</div>
       <span style="color:rgba(255,255,255,.7);font-size:13px;" id="admin-display"></span>
@@ -503,6 +506,13 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
           <div class="template-card" onclick="openTemplate('warn-callout')"><div class="template-icon">📵</div><div class="template-name">Attendance Warning — Call-Out After Trip</div><div class="template-desc">Warning for call-outs after manifest finalized.</div></div>
           <div class="template-card" onclick="openTemplate('warn-final')"><div class="template-icon">🚨</div><div class="template-name">Final Written Warning</div><div class="template-desc">Last step before termination.</div></div>
         </div>
+        <div style="font-size:12px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin:20px 0 10px;">Performance Management</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;">
+          <div class="template-card" onclick="openTemplate('eval30')"><div class="template-icon">📊</div><div class="template-name">30-Day Evaluation</div><div class="template-desc">Introductory performance review at 30 days.</div></div>
+          <div class="template-card" onclick="openTemplate('eval60')"><div class="template-icon">📊</div><div class="template-name">60-Day Evaluation</div><div class="template-desc">Mid-probation performance review at 60 days.</div></div>
+          <div class="template-card" onclick="openTemplate('eval90')"><div class="template-icon">🏆</div><div class="template-name">90-Day Evaluation</div><div class="template-desc">Final introductory period performance review.</div></div>
+          <div class="template-card" onclick="openTemplate('pip')"><div class="template-icon">⚠️</div><div class="template-name">Performance Improvement Plan</div><div class="template-desc">Formal PIP when goals are not being met.</div></div>
+        </div>
       </div>
 
       <div id="section-adm-warnings" class="admin-section">
@@ -558,7 +568,27 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
         <div class="card">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
             <button class="btn btn-secondary btn-sm" onclick="changeMonth(-1)">← Previous</button>
-            <div style="font-size:16px;font-weight:700;color:var(--navy);" id="cal-title"></div>
+            <div style="font-size:16px;font-weight:700;color:var(--navy);" id="cal-title">
+    <select id="cal-county-filter" onchange="renderCalendar()" style="padding:6px 12px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-weight:600;">
+      <option value="ALL">All Counties</option>
+      <option value="Hancock">Hancock</option>
+<option value="Washington">Washington</option>
+<option value="Somerset">Somerset</option>
+<option value="Waldo">Waldo</option>
+<option value="Knox">Knox</option>
+<option value="Androscoggin">Androscoggin</option>
+<option value="Cumberland">Cumberland</option>
+<option value="Franklin">Franklin</option>
+<option value="Kennebec">Kennebec</option>
+<option value="Lincoln">Lincoln</option>
+<option value="Oxford">Oxford</option>
+<option value="Penobscot">Penobscot</option>
+<option value="Piscataquis">Piscataquis</option>
+<option value="Sagadahoc">Sagadahoc</option>
+<option value="York">York</option>
+<option value="Aroostook">Aroostook</option>
+    </select>
+  </div>
             <button class="btn btn-secondary btn-sm" onclick="changeMonth(1)">Next →</button>
           </div>
           <div id="cal-grid"></div>
@@ -595,10 +625,11 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
             <a href="https://ridesourcecalendar-hub.github.io/ridesource-onboarding/RideSource_Manager_Guide_vF1.docx" download style="display:inline-flex;align-items:center;gap:8px;background:var(--navy);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;">⬇️ Download .docx</a>
           </div>
         </div>
-        <div class="card" style="margin-top:20px;background:var(--light);border-color:#b8ccf0;">
-          <div style="font-size:13px;color:var(--navy);font-weight:600;margin-bottom:6px;">📌 How to make documents available for download</div>
-          <p style="font-size:12px;color:#555;line-height:1.7;margin:0;">Upload the four .docx files to your GitHub repository alongside <code>index.html</code>. The filenames must match exactly:<br>
-          <code>RideSource_Employee_Handbook_v6.docx</code> &nbsp;·&nbsp; <code>RideSource_Driver_Training_Guide_v2_1.docx</code> &nbsp;·&nbsp; <code>RideSource_Onboarding_Checklist.docx</code> &nbsp;·&nbsp; <code>RideSource_Manager_Guide_vF1.docx</code></p>
+        <div class="card" style="margin-top:20px;background:#fff8ee;border-color:#f0c060;">
+          <div style="font-size:13px;color:#8a5e00;font-weight:600;margin-bottom:6px;">📌 Making documents available for download</div>
+          <p style="font-size:12px;color:#7a5000;line-height:1.7;margin:0;">Upload the four .docx files to your GitHub repository alongside <code>index.html</code> with these exact filenames, and the download buttons above will work directly:<br>
+          <code>RideSource_Employee_Handbook_v6.docx</code> &nbsp;·&nbsp; <code>RideSource_Driver_Training_Guide_v2_1.docx</code> &nbsp;·&nbsp; <code>RideSource_Onboarding_Checklist.docx</code> &nbsp;·&nbsp; <code>RideSource_Manager_Guide_vF1.docx</code><br><br>
+          <strong>Alternatively,</strong> you can also print any document directly from within the portal — click a Download button, open the file, and print from Word or Google Docs.</p>
         </div>
       </div>
 
@@ -606,16 +637,30 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
   </div>
 </div>
 <div class="modal-overlay" id="policy-modal">
-  <div class="modal">
+  <div class="modal" style="max-width:640px;">
     <button class="modal-close" onclick="closePolicyModal()">✕</button>
     <h3 id="modal-title">Policy Title</h3>
-    <p id="modal-desc">Please read the policy below, then provide your signature.</p>
-    <div class="modal-body" id="modal-body" onscroll="checkModalScroll()"></div>
-    <div class="sig-field"><label>Electronic Signature (type your full legal name)</label><input type="text" id="modal-sig" placeholder="Type your full name to sign..." oninput="checkModalSig()"></div>
-    <div class="sig-legal">By typing your name, you are providing a legally binding electronic signature (E-SIGN Act).</div>
+    <p id="modal-desc" style="color:#666;font-size:13px;margin-bottom:12px;">Please read the full policy below, then check the box and provide your electronic signature.</p>
+    <div class="modal-body" id="modal-body" onscroll="checkModalScroll()" style="max-height:340px;"></div>
+    <div style="background:#f8f9fa;border:1px solid var(--border);border-radius:8px;padding:14px;margin-top:12px;">
+      <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:13px;">
+        <input type="checkbox" id="modal-understand-check" onchange="checkModalSig()" style="margin-top:2px;width:16px;height:16px;accent-color:var(--navy);">
+        <span>I have read and understand this policy in its entirety, and I agree to comply with all terms and conditions described above.</span>
+      </label>
+    </div>
+    <div class="sig-field" style="margin-top:12px;">
+      <label>Electronic Signature — Type your full legal name *</label>
+      <input type="text" id="modal-sig" placeholder="Type your full name to sign..." oninput="checkModalSig()">
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+      <label style="font-size:12px;color:#666;min-width:90px;">Date Signed:</label>
+      <input type="date" id="modal-date" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;">
+    </div>
+    <div class="sig-legal" style="margin-top:8px;">By typing your name above, you are providing a legally binding electronic signature under the E-SIGN Act.</div>
+    <div style="color:#888;font-size:11px;margin-top:4px;" id="modal-scroll-note">📖 Please scroll to the bottom of the policy before signing.</div>
     <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;">
       <button class="btn-secondary" onclick="closePolicyModal()">Cancel</button>
-      <button class="btn-primary" id="modal-sign-btn" onclick="signPolicy()" disabled>Sign &amp; Acknowledge</button>
+      <button class="btn-primary" id="modal-sign-btn" onclick="signPolicy()" disabled>✍ Sign &amp; Acknowledge</button>
     </div>
   </div>
 </div>
@@ -651,6 +696,13 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 
 <script>
 // ── CONFIG ──
+// Ensure docx library is accessible
+function getDocx(){
+  if(typeof docx!=='undefined')return docx;
+  if(window.docx)return window.docx;
+  if(typeof Document!=='undefined'&&typeof Packer!=='undefined')return window;
+  return null;
+}
 const SUPABASE_URL='https://iasphxpahlmjwkapyxrs.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlhc3BoeHBhaGxtandrYXB5eHJzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEzNDIyNDYsImV4cCI6MjA4NjkxODI0Nn0.ntQxEiEJqZOvXjfX58I-PPQ2ZOoAT_RgLyf3aWMeXds';
 const EMAILJS_SERVICE_ID='ridesource_calendar';
@@ -729,6 +781,7 @@ function showSection(id){
   document.getElementById('section-'+id).style.display='block';
   document.getElementById('nav-'+id).classList.add('active');
 }
+  if(id==='timeoff'){loadMyRequests();}
 function showAdmin(id){
   document.querySelectorAll('.admin-section').forEach(el=>el.style.display='none');
   document.querySelectorAll('#screen-admin .nav-item').forEach(el=>el.classList.remove('active'));
@@ -761,12 +814,105 @@ const POLICIES=[
 
 // ── TRAINING SECTIONS ──
 const TRAINING_SECTIONS=[
-  {title:'Welcome',content:`<h1>Welcome to RideSource!</h1><p>We are excited to have you on board. This guide walks you through everything from your first day of online training to your first day driving solo.</p><div class="callout"><strong>Your Training Journey at a Glance</strong><table style="width:100%;font-size:13px;margin-top:8px;border-collapse:collapse;"><tr style="background:#dde8f7;"><th style="padding:6px 10px;text-align:left;">Stage</th><th style="padding:6px 10px;text-align:left;">Timing</th><th style="padding:6px 10px;text-align:left;">What Happens</th></tr><tr><td style="padding:6px 10px;border-bottom:1px solid #ccc;">Online Training</td><td style="padding:6px 10px;border-bottom:1px solid #ccc;">Days 1–2 (at home)</td><td style="padding:6px 10px;border-bottom:1px solid #ccc;">PASS, Defensive Driving, Online CPR/AED/First Aid — unpaid</td></tr><tr><td style="padding:6px 10px;border-bottom:1px solid #ccc;">Day 3</td><td style="padding:6px 10px;border-bottom:1px solid #ccc;">At office/in vehicle</td><td style="padding:6px 10px;border-bottom:1px solid #ccc;">Ride with seasoned driver — observe, learn vehicle basics</td></tr><tr><td style="padding:6px 10px;border-bottom:1px solid #ccc;">Day 4</td><td style="padding:6px 10px;border-bottom:1px solid #ccc;">In vehicle</td><td style="padding:6px 10px;border-bottom:1px solid #ccc;">Continue ride-along, begin Android dispatch device training</td></tr><tr><td style="padding:6px 10px;border-bottom:1px solid #ccc;">Day 5</td><td style="padding:6px 10px;border-bottom:1px solid #ccc;">In vehicle</td><td style="padding:6px 10px;border-bottom:1px solid #ccc;">You drive — trainer observes. Company phone issued.</td></tr><tr><td style="padding:6px 10px;border-bottom:1px solid #ccc;">Day 6</td><td style="padding:6px 10px;border-bottom:1px solid #ccc;">At office</td><td style="padding:6px 10px;border-bottom:1px solid #ccc;">Policies, handbook, badge photo, timesheet, fuel card</td></tr><tr><td style="padding:6px 10px;">Day 7+</td><td style="padding:6px 10px;">Solo</td><td style="padding:6px 10px;">You are on the road independently!</td></tr></table></div><p><strong>RideSource covers the cost of all required online courses.</strong></p>`},
-  {title:'Days 1–2: Online',content:`<h1>Days 1–2 — Online Training (At Home)</h1><p>Complete all three courses on Days 1 and 2 before your first hands-on day.</p><h2>Required Courses</h2><div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>PASS Training</strong><br>Complete the full PASS course online. Certificate required.</div></div><div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Defensive Driving</strong><br>Complete the full Defensive Driving course online. Certificate required.</div></div><div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Online CPR / AED / First Aid</strong><br>Complete the online course. Certificate required.</div></div><div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Submit all three certificates to your supervisor</strong><br>Email or bring printed copies on Day 3.</div></div><div class="callout" style="border-left-color:var(--warn);background:#fff8ee;"><strong>&#9888; In-Person CPR/AED — Required Within 60 Days of Hire</strong><br>Separate from the online course. HR will schedule this session.</div>`},
-  {title:'Day 3: Vehicle',content:`<h1>Day 3 — Vehicle Basics &amp; Ride-Along</h1><p>Today you ride as a passenger with your trainer. Observe, ask questions, and get comfortable with the vehicle and daily routine.</p><h2>Vehicle Familiarization</h2><div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Pre-trip inspection procedure</strong></div></div><div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Interior layout &amp; controls</strong></div></div><div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Wheelchair lift / ramp operation</strong></div></div><div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Safety equipment locations</strong></div></div><div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Fuel card &amp; fueling procedure</strong></div></div><div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Car seats — locations and securement</strong></div></div><h2>Daily Operations</h2><div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Manifest review</strong></div></div><div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Dispatch communication</strong></div></div><div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Passenger pick-up &amp; drop-off procedures</strong></div></div><div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>End-of-day procedures</strong></div></div>`},
-  {title:'Day 4: Android',content:`<h1>Day 4 — Android Dispatch Device Training</h1><p>Today you begin hands-on training with the Android dispatch device while riding along.</p><div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Device overview and login</strong></div></div><div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Viewing your manifest on the device</strong></div></div><div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Starting your route</strong></div></div><div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Passenger status updates — pick-ups, drop-offs, no-shows</strong></div></div><div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Communicating with Dispatch through the app</strong></div></div><div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>GPS &amp; navigation features</strong></div></div><div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>End-of-route closeout</strong></div></div><div class="callout"><strong>Technical Issues</strong>If you experience a technical issue with the dispatch app, contact your supervisor immediately.</div>`},
-  {title:'Day 5: Solo Eval',content:`<h1>Day 5 — Solo Drive with Observer</h1><p>Today you are in the driver's seat. Your trainer rides along to observe — but <strong>you</strong> are running the route.</p><div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Pre-trip inspection completed independently</strong></div></div><div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Manifest reviewed and route understood before departure</strong></div></div><div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Android device operated throughout the route</strong></div></div><div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Passenger boarding &amp; safety protocols followed</strong></div></div><div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Safe and professional driving demonstrated</strong></div></div><div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>End-of-route closeout completed</strong></div></div><h2>Equipment Issued Today</h2><div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Company phone issued &amp; set up</strong></div></div><div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Full-Time: Vehicle keys issued</strong></div></div><div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Part-Time: Key storage orientation</strong></div></div>`},
-  {title:'Day 6: Office',content:`<h1>Day 6 — Office Orientation Session</h1><p>This session covers the administrative side of your role.</p><h2>Policies &amp; Handbook</h2><div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Employee Handbook review</strong></div></div><div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Policy acknowledgments via Digital Signature Tracker</strong></div></div><div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Attendance &amp; Punctuality Standards</strong></div></div><div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Drug &amp; Alcohol-Free Workplace</strong></div></div><h2>Administrative Setup</h2><div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Badge ID photo taken</strong></div></div><div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Timesheet process reviewed</strong></div></div><div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Time Off Request Portal walkthrough</strong></div></div><div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Fuel card issued &amp; protocols reviewed</strong></div></div><div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Pay schedule &amp; direct deposit confirmed</strong></div></div><div class="callout"><strong>Training Complete!</strong>You have received, reviewed, and understood all policies, procedures, and operational requirements. Welcome to the team!</div>`}
+  {title:'Welcome',content:`<h1>Welcome to RideSource!</h1><p>We are excited to have you on board. This guide walks you through everything from your first day of online training to your first day driving solo. Your trainer will work through the hands-on sections with you step by step.</p>
+<div class="callout"><strong>Your Training Journey at a Glance</strong>
+<table style="width:100%;font-size:13px;margin-top:8px;border-collapse:collapse;">
+<tr style="background:#dde8f7;"><th style="padding:6px 10px;text-align:left;">Stage</th><th style="padding:6px 10px;text-align:left;">Timing</th><th style="padding:6px 10px;text-align:left;">What Happens</th></tr>
+<tr><td style="padding:6px 10px;border-bottom:1px solid #ddd;"><strong>Online Training</strong></td><td style="padding:6px 10px;border-bottom:1px solid #ddd;">Days 1–2 (at home)</td><td style="padding:6px 10px;border-bottom:1px solid #ddd;">PASS, Defensive Driving, and Online CPR/AED/First Aid — completed at your own pace, unpaid</td></tr>
+<tr><td style="padding:6px 10px;border-bottom:1px solid #ddd;"><strong>Day 3</strong></td><td style="padding:6px 10px;border-bottom:1px solid #ddd;">At office/in vehicle</td><td style="padding:6px 10px;border-bottom:1px solid #ddd;">Ride with seasoned driver — observe, learn vehicle basics and daily routine</td></tr>
+<tr><td style="padding:6px 10px;border-bottom:1px solid #ddd;"><strong>Day 4</strong></td><td style="padding:6px 10px;border-bottom:1px solid #ddd;">In vehicle</td><td style="padding:6px 10px;border-bottom:1px solid #ddd;">Ride with seasoned driver — continue observing, begin operating the Android dispatch device</td></tr>
+<tr><td style="padding:6px 10px;border-bottom:1px solid #ddd;"><strong>Day 5</strong></td><td style="padding:6px 10px;border-bottom:1px solid #ddd;">In vehicle</td><td style="padding:6px 10px;border-bottom:1px solid #ddd;">You drive — trainer observes. Company phone issued. Keys (FT) or vehicle key orientation (PT)</td></tr>
+<tr><td style="padding:6px 10px;border-bottom:1px solid #ddd;"><strong>Day 6 (Monday)</strong></td><td style="padding:6px 10px;border-bottom:1px solid #ddd;">At office</td><td style="padding:6px 10px;border-bottom:1px solid #ddd;">Policies, handbook, badge photo, timesheet, time off, fuel card &amp; protocols</td></tr>
+<tr><td style="padding:6px 10px;"><strong>Day 7+</strong></td><td style="padding:6px 10px;">Solo</td><td style="padding:6px 10px;">You are on the road independently!</td></tr>
+</table></div>
+<p style="margin-top:12px;"><strong>RideSource covers the cost of all required online courses.</strong> Employees are not paid for online training, which is completed at home.</p>`},
+  {title:'Days 1–2: Online',content:`<h1>Days 1–2 — Online Training (At Home)</h1>
+<p>Your online training courses will be ordered by HR and sent to you before your start date. Complete all three courses on Days 1 and 2. Days 3, 4, and 5 will be your hands-on vehicle training.</p>
+<h2>Required Courses</h2>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>PASS Training</strong><br>Complete the full PASS course online. Certificate of completion required.</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Defensive Driving</strong><br>Complete the full Defensive Driving course online. Certificate of completion required.</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Online CPR / AED / First Aid</strong><br>Complete the online First Aid, CPR, and AED course. Certificate of completion required.</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Submit all three completion certificates to your supervisor</strong><br>Email or bring printed copies on Day 3.</div></div>
+<div class="callout" style="border-left-color:var(--warn);background:#fff8ee;"><strong>⚠ In-Person CPR/AED Certification — Required Within 60 Days of Hire</strong><br>This is separate from the online course above and must be completed in person. HR will schedule your hands-on CPR session. Watch for that communication.</div>`},
+  {title:'Day 3: Vehicle',content:`<h1>Day 3 — Vehicle Basics &amp; Ride-Along</h1>
+<p>Today you ride as a passenger with your trainer. Your job is to observe, ask questions, and get comfortable with the vehicle and the daily routine. <strong>You will not operate any equipment today.</strong></p>
+<h2>Vehicle Familiarization</h2>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Pre-trip inspection procedure and vehicle walk-around</strong><br>Step-by-step walkthrough of the daily pre-trip inspection checklist; exterior inspection points: lights, tires, body condition, fuel level.</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Interior layout &amp; controls</strong><br>Driver seat adjustment, mirrors, dashboard, safety equipment locations.</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Wheelchair lift / ramp operation</strong><br>How to safely deploy and stow the lift or ramp.</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Safety equipment locations</strong><br>First aid kit, fire extinguisher, emergency exits.</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Fuel card &amp; fueling procedure</strong><br>Where to fuel, how to use the fuel card, what to record.</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Car seats — front-facing and booster seat locations and securement</strong><br>Where to store these, how to determine safe installation, when to use.</div></div>
+<h2>Daily Routine &amp; Operations</h2>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Manifest review</strong><br>How to read your daily manifest — passenger info, pickup times, vehicle assignment.</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Key storage procedure (Part-Time)</strong><br>How to locate your assigned vehicle on the manifest and retrieve the correct key.</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Vehicle keys (Full-Time)</strong><br>Full-time drivers are assigned a dedicated vehicle and take keys home.</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Dispatch communication</strong><br>How to communicate with dispatch while on route — including no-shows, cancellations, etc.</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Passenger pick-up &amp; drop-off procedures</strong><br>Proper greeting, boarding assistance, safety protocols, and documentation.</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Incident &amp; accident awareness</strong><br>What to watch for; who to call and what to document if something happens.</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>End-of-day procedures</strong><br>Return route, vehicle check-in, paperwork, and key return (PT).</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>After-hours assistance — On-Call procedure and numbers</strong><br>When to call, who to call, what you should call for.</div></div>`},
+  {title:'Day 4: Android',content:`<h1>Day 4 — Android Dispatch Device Training</h1>
+<p>Today you ride as a passenger again with your trainer. In addition to continuing to observe daily operations, you will begin hands-on training with the Android dispatch device.</p>
+<h2>Android Device — Dispatch Software Training</h2>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Device overview</strong><br>Hardware basics: powering on/off, charging, care and handling of the company device.</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Logging in to the dispatch app</strong><br>Username, password, and what to do if you have login issues.</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Viewing your manifest on the device</strong><br>How your daily route and passenger list appear in the app.</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Starting your route</strong><br>How to start or preview your route.</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Passenger status updates</strong><br>Marking pick-ups, drop-offs, no-shows, and exceptions in real time.</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Communicating with Dispatch</strong><br>Relaying information regarding trips, member information, cancellations, no-shows, etc.</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>GPS &amp; navigation features</strong><br>How the app integrates with navigation; what to do if routing is incorrect.</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Completing end-of-route closeout</strong><br>How to properly close out your route at the end of the day.</div></div>
+<div class="callout"><strong>Technical Issues</strong>If you experience any technical issue with the dispatch app, contact your supervisor immediately so IT and billing can be notified and the issue documented.</div>`},
+  {title:'Day 5: Solo Eval',content:`<h1>Day 5 — Solo Drive with Observer</h1>
+<p>Today you are in the driver's seat. Your trainer rides along to observe and support — but <strong>you</strong> are running the route and operating the Android device. This is your final hands-on evaluation before going solo.</p>
+<h2>Driving Evaluation Checklist</h2>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Pre-trip inspection completed independently</strong><br>Driver performs full pre-trip without prompting.</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Manifest reviewed and route understood before departure</strong><br>Driver confirms all stops, times, and passenger notes.</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Android device operated throughout the route</strong><br>All pick-ups, drop-offs, and status updates logged correctly in real time.</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Passenger boarding &amp; safety protocols followed</strong><br>Proper greeting, assistance, securement, and documentation observed.</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Dispatch communication handled appropriately</strong><br>Driver contacts dispatch correctly when needed.</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Safe and professional driving demonstrated</strong><br>Defensive driving techniques, speed, following distance, and demeanor.</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>End-of-route closeout completed</strong><br>Route closed out correctly in the app; vehicle returned and secured.</div></div>
+<h2>Equipment Issued Today</h2>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Company phone issued &amp; set up</strong><br>Driver's name, login credentials, and dispatch app installed and tested.</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Full-Time Drivers: Vehicle keys issued</strong><br>Assigned vehicle confirmed; driver authorized to take vehicle home.</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Part-Time Drivers: Vehicle key storage and orientation</strong><br>Location of key board confirmed; how to identify assigned vehicle on manifest reviewed.</div></div>`},
+  {title:'Day 6: Office',content:`<h1>Day 6 — Office Orientation Session</h1>
+<p>Report to the office at your scheduled arrival time. This session covers the administrative side of your role — policies, systems, and everything you need to know to manage your employment at RideSource.</p>
+<h2>Policies &amp; Handbook Review</h2>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Employee Handbook review</strong><br>Walk through key sections with HR; opportunity to ask questions.</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>At-Will Employment</strong><br>Understanding what this means for both you and RideSource.</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Attendance &amp; Punctuality Standards</strong><br>Expectations, call-in procedures, and how attendance patterns are monitored.</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Code of Business Conduct &amp; Ethics</strong><br>Professional standards, conflict of interest, and gifts policy.</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Confidentiality &amp; Information Security</strong><br>Protecting client and company information; social media guidelines.</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Anti-Harassment Policy</strong><br>Zero tolerance; definitions, reporting steps, and your protections.</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Drug &amp; Alcohol-Free Workplace</strong><br>Policy, testing, and consequences.</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Workplace Safety &amp; Emergency Procedures</strong><br>Your responsibilities; who to call; incident reporting.</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Equal Opportunity &amp; Non-Discrimination</strong><br>EEO commitment and how to request accommodations.</div></div>
+<h2>Digital Signature Tracker — Policy Acknowledgments</h2>
+<p>Your Supervisor will walk you through the Digital Signature Tracker. You will read and acknowledge each of the following policies:</p>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div>1. Handbook Receipt &amp; Acknowledgment</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div>2. Fingerprinting, Background and Motor Vehicle Check Consent</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div>3. Client Confidentiality Agreement</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div>4. Sexual Harassment</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div>5. Drug Free Workplace</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div>6. Company Vehicle Use</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div>7. Personal Appearance</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div>8. Attendance and Punctuality</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div>9. Passenger Interaction and Service Standards</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div>10. Cell Phone and Distracted Driving Policy</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div>11. Accident and Incident Reporting Policy</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div>12. Social Media and Public Communications Policy</div></div>
+<h2>Administrative Setup</h2>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Badge ID photo taken</strong><br>HR will photograph you for your RideSource employee ID badge.</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Timesheet process reviewed</strong><br>How to log your hours, timesheet deadlines, and approval process.</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Time Off Request Portal walkthrough</strong><br>How to submit planned time off through the Staff Portal.</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Call-out procedure</strong><br>For unplanned absences — call your supervisor directly; manager logs the call-out on your behalf.</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Fuel card issued &amp; protocols reviewed</strong><br>How to use your fuel card, what to record, and what is not permitted.</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Pay schedule &amp; direct deposit confirmed</strong><br>Pay periods, paydays, and how to view your pay stub.</div></div>
+<div class="checklist-item"><span class="check-box">&#9744;</span><div><strong>Benefits overview</strong><br>Health, dental, vision, 401(k) — enrollment windows and next steps.</div></div>
+<div class="callout"><strong>✅ Training Complete!</strong><br>By completing all stages, you confirm that you have received, reviewed, and understood all policies, procedures, and operational requirements covered in this guide. Welcome to the RideSource team!</div>`}
 ];
 
 // ── HANDBOOK SECTIONS ──
@@ -907,20 +1053,41 @@ function openPolicyModal(idx){
   currentPolicyIndex=idx;modalScrolled=false;
   const p=POLICIES[idx];
   document.getElementById('modal-title').textContent=p.name;
-  document.getElementById('modal-desc').textContent='Read the full policy below, then type your name to sign.';
+  document.getElementById('modal-desc').textContent='Read the full policy below, check the box, then type your name to sign.';
   document.getElementById('modal-body').innerHTML=p.content;
   document.getElementById('modal-body').scrollTop=0;
   document.getElementById('modal-sig').value='';
   document.getElementById('modal-sign-btn').disabled=true;
+  const cb=document.getElementById('modal-understand-check');
+  if(cb)cb.checked=false;
+  const dateEl=document.getElementById('modal-date');
+  if(dateEl)dateEl.value=new Date().toISOString().split('T')[0];
+  const note=document.getElementById('modal-scroll-note');
+  if(note)note.textContent='📖 Please scroll to the bottom of the policy before signing.';
   document.getElementById('policy-modal').classList.add('open');
+  // After render, check if content fits without scrolling
+  setTimeout(()=>checkModalScroll(),300);
 }
 function closePolicyModal(){document.getElementById('policy-modal').classList.remove('open');}
 function checkModalScroll(){
   const body=document.getElementById('modal-body');
-  if(body.scrollHeight-body.scrollTop-body.clientHeight<40&&!modalScrolled){modalScrolled=true;checkModalSig();}
+  const note=document.getElementById('modal-scroll-note');
+  if(body.scrollHeight-body.scrollTop-body.clientHeight<40&&!modalScrolled){
+    modalScrolled=true;
+    if(note)note.textContent='✅ Policy read. Please check the box and sign below.';
+    checkModalSig();
+  }
+  // Also auto-mark as read if content fits without scrolling
+  if(!modalScrolled&&body.scrollHeight<=body.clientHeight+20){
+    modalScrolled=true;
+    if(note)note.textContent='✅ Please check the box and sign below.';
+    checkModalSig();
+  }
 }
 function checkModalSig(){
-  document.getElementById('modal-sign-btn').disabled=!(document.getElementById('modal-sig').value.trim()&&modalScrolled);
+  const sig=document.getElementById('modal-sig').value.trim();
+  const checked=document.getElementById('modal-understand-check')?.checked;
+  document.getElementById('modal-sign-btn').disabled=!(sig&&checked&&modalScrolled);
 }
 async function signPolicy(){
   const p=POLICIES[currentPolicyIndex];
@@ -1006,6 +1173,38 @@ function resetTimeOff(){
   document.querySelectorAll('.req-type-btn').forEach(b=>{b.style.background='transparent';b.style.color='var(--navy)';});
 }
 
+async function loadMyRequests(){
+  const myReqEl=document.getElementById('my-requests-list');
+  if(!myReqEl)return;
+  try{
+    const {data}=await db.from('time_off_requests').select('*').eq('employee_email',user.email).order('submitted_at',{ascending:false});
+    if(!data||data.length===0){myReqEl.innerHTML='<p style="color:#888;font-size:13px;">No requests submitted yet.</p>';return;}
+    myReqEl.innerHTML=data.map(r=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;">
+      <div><strong>${r.request_type}</strong> — ${r.start_date}${r.end_date&&r.end_date!==r.start_date?' to '+r.end_date:''}<br><span style="color:#888;">${r.reason||''}</span></div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="badge badge-${r.status.toLowerCase()}">${r.status}</span>
+        ${r.status==='PENDING'?`<button onclick="deleteMyRequest(${r.id})" style="background:none;border:1px solid #ccc;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;color:#888;" title="Cancel request">✕ Cancel</button>`:''}
+      </div>
+    </div>`).join('');
+  }catch(e){myReqEl.innerHTML='<p style="color:#888;font-size:13px;">Unable to load requests.</p>';}
+}
+
+async function deleteMyRequest(id){
+  if(!confirm('Cancel this time off request?'))return;
+  try{
+    await db.from('time_off_requests').delete().eq('id',id).eq('employee_email',user.email).eq('status','PENDING');
+    loadMyRequests();
+  }catch(e){alert('Unable to cancel request. Please contact your supervisor.');}
+}
+
+async function deleteCallOut(id){
+  if(!confirm('Delete this call-out entry? This cannot be undone.'))return;
+  try{
+    await db.from('call_out_log').delete().eq('id',id);
+    loadCallOuts();loadFlags();loadDashboard();
+  }catch(e){alert('Unable to delete call-out.');}
+}
+
 // ── CERTIFICATE ──
 function generateCertificate(){
   const now=new Date();
@@ -1035,13 +1234,7 @@ const MGR_SECTIONS=[
   {title:'Sec 6: Support',content:`<h1>Section 6: Supporting New Employees</h1><h2>First Week Solo</h2><p>Check in daily during the first solo week. Verify Parascope usage, trip documentation, vehicle cleanliness, and proactive communication.</p><h2>When to Contact HR Immediately</h2><ul><li>Employee reports harassment or hostile work environment</li><li>You need to issue a written warning</li><li>Employee discloses medical condition, disability, or pregnancy</li><li>Employee requests FMLA or leave of absence</li><li>Attendance concern escalates beyond a supportive conversation</li></ul><div class="callout"><strong>When in Doubt</strong>Always ask your management team before acting on sensitive situations.</div>`}
 ];
 
-const HB_REF_SECTIONS=[
-  {title:'Sec 1-2',content:`<h1>Sections 1–2: Welcome & Employment</h1><p>RideSource Inc. is a Non-Emergency Medical Transportation (NEMT) company based in Norway, Maine.</p><p><strong>At-Will Employment:</strong> Either party may end the relationship at any time without cause. 90-day introductory period for all new employees.</p>`},
-  {title:'Sec 3-4',content:`<h1>Sections 3–4: Conduct & Attendance</h1><p><strong>Confidentiality:</strong> All passenger information strictly confidential. HIPAA violations may result in immediate termination.</p><p><strong>Attendance:</strong> Notify supervisor 1 hour before start. Planned time off 2 weeks in advance. Progressive discipline for no-call/no-shows.</p>`},
-  {title:'Sec 5-6',content:`<h1>Sections 5–6: Compensation & Benefits</h1><p><strong>Pay:</strong> Biweekly. Paydays generally Wednesdays. Direct deposit required. Performance reviews annual — not automatic increases.</p><p><strong>Workers' Comp:</strong> All employees covered. Report any injury immediately.</p>`},
-  {title:'Sec 7-8',content:`<h1>Sections 7–8: Safety & Operations</h1><p><strong>Drug-Free:</strong> No substances on duty. Pre-employment, reasonable suspicion, and post-accident testing.</p><p><strong>Incidents:</strong> Report all accidents immediately. Keep calm → Contact dispatcher → Protect passengers → Complete reports.</p><p><strong>Hands-Free:</strong> Maine law prohibits holding devices while driving. Company Bluetooth required.</p>`},
-  {title:'Sec 9-10',content:`<h1>Sections 9–10: Development & Separation</h1><p><strong>Discipline:</strong> Verbal → Written → Final/PIP → Termination. Immediate termination for HIPAA violations, falsification, impaired driving, harassment.</p><p><strong>Separation:</strong> 2 weeks notice requested. Job abandonment (3 missed days) = ineligible for rehire.</p><p><strong>Non-Compete:</strong> 24 months within 50 miles of any RideSource office.</p>`}
-];
+const HB_REF_SECTIONS=HANDBOOK_SECTIONS
 
 function buildMgrGuide(){
   document.getElementById('mgr-tabs').innerHTML=MGR_SECTIONS.map((s,i)=>`<div class="doc-tab ${i===0?'active':''}" onclick="goMgrSection(${i})">${s.title}</div>`).join('');
@@ -1060,9 +1253,10 @@ function changeHbRefSection(dir){const n=hbRefSection+dir;if(n>=0&&n<HB_REF_SECT
 
 // ── ADMIN DASHBOARD ──
 async function loadDashboard(){
-  const {data:reqs}=await db.from('time_off_requests').select('*').eq('status','PENDING').order('submitted_at',{ascending:false});
-  const {data:callouts}=await db.from('call_out_log').select('*').order('callout_date',{ascending:false}).limit(100);
-  const {data:sigs}=await db.from('policy_signatures').select('employee_email').order('signed_at',{ascending:false});
+  let reqs=[],callouts=[],sigs=[];
+  try{const r=await db.from('time_off_requests').select('*').eq('status','PENDING').order('submitted_at',{ascending:false});reqs=r.data||[];}catch(e){}
+  try{const r=await db.from('call_out_log').select('*').order('callout_date',{ascending:false}).limit(100);callouts=r.data||[];}catch(e){}
+  try{const r=await db.from('policy_signatures').select('employee_email').order('signed_at',{ascending:false});sigs=r.data||[];}catch(e){}
   const unique=sigs?[...new Set(sigs.map(s=>s.employee_email))].length:0;
   document.getElementById('dash-stats').innerHTML=`<div class="stat-card"><div class="stat-icon" style="background:#fff3cd;">⏳</div><div><div class="stat-val">${reqs?reqs.length:0}</div><div class="stat-label">Pending Requests</div></div></div><div class="stat-card"><div class="stat-icon" style="background:#fdecea;">📞</div><div><div class="stat-val">${callouts?callouts.length:0}</div><div class="stat-label">Total Call-Outs</div></div></div><div class="stat-card"><div class="stat-icon" style="background:#d4edda;">✅</div><div><div class="stat-val">${unique}</div><div class="stat-label">Employees w/ Signed Policies</div></div></div>`;
   const pendList=document.getElementById('dash-pending-list');
@@ -1169,8 +1363,8 @@ async function loadCallOuts(){
   const {data}=await db.from('call_out_log').select('*').order('callout_date',{ascending:false}).limit(50);
   const el=document.getElementById('callout-table');
   if(!data||data.length===0){el.innerHTML='<p style="color:#888;font-size:13px;">No call-outs logged yet.</p>';return;}
-  el.innerHTML=`<table class="data-table"><thead><tr><th>Employee</th><th>County</th><th>Date</th><th>Reason</th><th>Notes</th><th>Logged By</th></tr></thead><tbody>`+
-    data.map(c=>`<tr><td><strong>${c.employee_name}</strong></td><td>${c.county}</td><td>${c.callout_date}</td><td>${c.reason}</td><td>${c.notes||'—'}</td><td>${c.logged_by}</td></tr>`).join('')+
+  el.innerHTML=`<table class="data-table"><thead><tr><th>Employee</th><th>County</th><th>Date</th><th>Reason</th><th>Notes</th><th>Logged By</th><th>Del</th></tr></thead><tbody>`+
+    data.map(c=>`<tr><td><strong>${c.employee_name}</strong></td><td>${c.county}</td><td>${c.callout_date}</td><td>${c.reason}</td><td>${c.notes||'—'}</td><td>${c.logged_by}</td><td><button onclick="deleteCallOut(${c.id})" style="background:none;border:1px solid #ddd;border-radius:4px;padding:2px 8px;font-size:11px;cursor:pointer;color:#c00;" title="Delete entry">✕</button></td></tr>`).join('')+
     '</tbody></table>';
 }
 async function logCallOut(){
@@ -1201,10 +1395,16 @@ async function manualLookup(){
 
 // ── ONBOARDING TRACKER ──
 async function loadOnboarding(){
-  const {data:sigs}=await db.from('policy_signatures').select('*').order('signed_at',{ascending:false});
-  const {data:hbSigs}=await db.from('handbook_signatures').select('*').order('signed_at',{ascending:false}).catch(()=>({data:[]}));
+  let sigs=[],hbSigs=[];
+  try{const r=await db.from('policy_signatures').select('*').order('signed_at',{ascending:false});sigs=r.data||[];}catch(e){console.log('policy_signatures:',e);}
+  try{const r=await db.from('handbook_signatures').select('*').order('signed_at',{ascending:false});hbSigs=r.data||[];}catch(e){console.log('handbook_signatures:',e);}
   const el=document.getElementById('onboarding-data');
-  if(!sigs||sigs.length===0){el.innerHTML='<p style="color:#888;font-size:13px;">No onboarding signatures recorded yet.</p>';return;}
+  const printList=document.getElementById('print-requests-list');
+  if(sigs.length===0&&hbSigs.length===0){
+    el.innerHTML='<p style="color:#888;font-size:13px;">No onboarding signatures recorded yet. Signatures will appear here once employees complete their policy acknowledgments.</p>';
+    if(printList)printList.innerHTML='No printed copy requests yet.';
+    return;
+  }
   const byEmployee={};
   sigs.forEach(s=>{if(!byEmployee[s.employee_email])byEmployee[s.employee_email]={name:s.employee_name,email:s.employee_email,county:s.county,policies:[],handbookSigned:false,printRequested:false};byEmployee[s.employee_email].policies.push(s.policy_name);});
   if(hbSigs){hbSigs.forEach(h=>{if(byEmployee[h.employee_email]){byEmployee[h.employee_email].handbookSigned=true;byEmployee[h.employee_email].printRequested=h.print_requested;}});}
@@ -1218,7 +1418,8 @@ async function loadOnboarding(){
 
 // ── HR TEMPLATES ──
 const MANAGERS={
-  tiffany:{name:'Tiffany Gallagher',title:'Regional Operations Manager',office:'207-743-7433',direct:'207-812-5357',mobile:'207-515-3808',email:'tiffanyb@ridesourcemaine.com'}
+  tiffany:{name:'Tiffany Gallagher',title:'Regional Operations Manager',office:'207-743-7433',direct:'207-812-5357',mobile:'207-515-3808',email:'tiffanyb@ridesourcemaine.com',address:'1 Alcott Street Suite 102, Norway, ME 04268'},
+  nicole:{name:'Nicole Geel',title:'Operations Manager',office:'207-743-7433',direct:'',mobile:'',email:'Nicolegeel@ridesourcemaine.com',address:'1 Alcott Street Suite 102, Norway, ME 04268'}
 };
 
 const TEMPLATES={
@@ -1231,7 +1432,11 @@ const TEMPLATES={
   resignation:{title:'Voluntary Resignation Acknowledgment',filename:'Resignation_Acknowledgment',hasManager:false,fields:[{id:'date',label:'Date',type:'date',required:true},{id:'employee',label:'Employee Full Name',type:'text',required:true},{id:'position',label:'Position / Title',type:'text',required:false},{id:'county',label:'Location / County',type:'text',required:false},{id:'supervisor',label:'Supervisor',type:'text',required:false},{id:'lastDay',label:'Last Day of Work',type:'date',required:false},{id:'reason',label:'Reason for Leaving (if provided)',type:'textarea',required:false}]},
   'warn-standard':{title:'Attendance Warning — Standard',filename:'Attendance_Warning_Standard',hasManager:false,fields:[{id:'empName',label:'Employee Name',type:'text',required:true},{id:'warnDate',label:'Date of Warning',type:'date',required:true},{id:'position',label:'Position / Title',type:'text',required:false},{id:'county',label:'Department / County',type:'text',required:false},{id:'callCount',label:'Total Call-Outs (Last 90 Days)',type:'number',required:false},{id:'description',label:'Description of Issue',type:'textarea',required:false}]},
   'warn-callout':{title:'Attendance Warning — Call-Out After Trip',filename:'Attendance_Warning_CallOut',hasManager:false,fields:[{id:'empName',label:'Employee Name',type:'text',required:true},{id:'warnDate',label:'Date of Warning',type:'date',required:true},{id:'incDate',label:'Date of Incident',type:'date',required:false},{id:'description',label:'Description',type:'textarea',required:false}]},
-  'warn-final':{title:'Final Written Warning',filename:'Attendance_Warning_Final',hasManager:false,fields:[{id:'empName',label:'Employee Name',type:'text',required:true},{id:'warnDate',label:'Date of Warning',type:'date',required:true},{id:'callCount',label:'Total Call-Outs (Last 90 Days)',type:'number',required:false},{id:'description',label:'Description',type:'textarea',required:false}]}
+  'warn-final':{title:'Final Written Warning',filename:'Attendance_Warning_Final',hasManager:false,fields:[{id:'empName',label:'Employee Name',type:'text',required:true},{id:'warnDate',label:'Date of Warning',type:'date',required:true},{id:'callCount',label:'Total Call-Outs (Last 90 Days)',type:'number',required:false},{id:'description',label:'Description',type:'textarea',required:false}]},
+  eval30:{title:'30-Day Performance Evaluation',filename:'30_Day_Performance_Evaluation',hasManager:true,fields:[{id:'date',label:'Date',type:'date',required:true},{id:'employeeName',label:'Employee Full Name',type:'text',required:true},{id:'position',label:'Position',type:'text',required:true},{id:'startDate',label:'Start Date',type:'date',required:true},{id:'county',label:'Location/County',type:'text',required:true}]},
+  eval60:{title:'60-Day Performance Evaluation',filename:'60_Day_Performance_Evaluation',hasManager:true,fields:[{id:'date',label:'Date',type:'date',required:true},{id:'employeeName',label:'Employee Full Name',type:'text',required:true},{id:'position',label:'Position',type:'text',required:true},{id:'startDate',label:'Start Date',type:'date',required:true},{id:'county',label:'Location/County',type:'text',required:true}]},
+  eval90:{title:'90-Day Performance Evaluation',filename:'90_Day_Performance_Evaluation',hasManager:true,fields:[{id:'date',label:'Date',type:'date',required:true},{id:'employeeName',label:'Employee Full Name',type:'text',required:true},{id:'position',label:'Position',type:'text',required:true},{id:'startDate',label:'Start Date',type:'date',required:true},{id:'county',label:'Location/County',type:'text',required:true}]},
+  pip:{title:'Performance Improvement Plan (PIP)',filename:'Performance_Improvement_Plan',hasManager:true,fields:[{id:'date',label:'Date',type:'date',required:true},{id:'employeeName',label:'Employee Full Name',type:'text',required:true},{id:'position',label:'Position',type:'text',required:true},{id:'county',label:'Location/County',type:'text',required:true},{id:'pipStart',label:'PIP Start Date',type:'date',required:true},{id:'pipEnd',label:'PIP End Date (90 days)',type:'date',required:true},{id:'concerns',label:'Performance Concerns (describe specific issues)',type:'textarea',required:true},{id:'goals',label:'Goals & Expectations During PIP Period',type:'textarea',required:true},{id:'support',label:'Support/Resources Being Provided',type:'textarea',required:false}]}
 };
 
 let currentTemplate=null;
@@ -1284,7 +1489,9 @@ async function downloadTemplate(){
 
 // ── DOCX BUILDER (simplified but functional) ──
 async function buildDocx(templateId,mgr){
-  const {Document,Packer,Paragraph,TextRun,AlignmentType,BorderStyle}=docx;
+  const docxLib=getDocx();
+  if(!docxLib){throw new Error('docx library not loaded');}
+  const {Document,Packer,Paragraph,TextRun,AlignmentType,BorderStyle,HeadingLevel,Table,TableRow,TableCell,WidthType,ShadingType,UnderlineType}=docxLib;
   const txt=(text,opts={})=>new TextRun({text,font:'Arial',...opts});
   const body=(text,opts={})=>new Paragraph({spacing:{after:120},children:[txt(text,{size:20,...opts})]});
   const heading=(text)=>new Paragraph({spacing:{before:240,after:120},children:[txt(text,{bold:true,size:24,color:'1B2A4A'})]});
@@ -1325,6 +1532,98 @@ async function buildDocx(templateId,mgr){
     children.push(sp());children.push(body('Sincerely,'));children.push(sp());children.push(sp());
     if(mgr){children.push(body(mgr.name,{bold:true}));children.push(body(mgr.title));children.push(body('RideSource Inc.'));}
   }
+  else if(['eval30','eval60','eval90'].includes(templateId)){
+    const days=templateId==='eval30'?30:templateId==='eval60'?60:90;
+    const empName=getVal('employeeName')||'[Employee Name]';
+    const pos=getVal('position')||'[Position]';
+    const county=getVal('county')||'[Location]';
+    const sd=fmtDate(getVal('startDate'));
+    const dt=fmtDate(getVal('date'));
+    children.push(heading(`${days}-DAY PERFORMANCE EVALUATION`));
+    children.push(body(`Date: ${dt}`));
+    children.push(body(`Employee: ${empName}`));
+    children.push(body(`Position: ${pos}`));
+    children.push(body(`Location/County: ${county}`));
+    children.push(body(`Start Date: ${sd}`));
+    if(mgr){children.push(body(`Evaluating Supervisor: ${mgr.name}`));}
+    children.push(sp());
+    const categories=[
+      {label:'Attendance & Punctuality',desc:'Reports to work on time; notifies supervisor appropriately when absent.'},
+      {label:'Professionalism & Conduct',desc:'Demonstrates professional demeanor with passengers, coworkers, and the public.'},
+      {label:'Passenger Interaction & Service',desc:'Handles passenger boarding, assistance, and service standards correctly.'},
+      {label:'Vehicle Operation & Safety',desc:'Drives safely; completes pre-trip/post-trip inspections; follows all vehicle policies.'},
+      {label:'Parascope / Dispatch System Use',desc:'Uses the dispatch system accurately and in real time.'},
+      {label:'Policy Compliance',desc:'Follows all RideSource policies including HIPAA, drug-free workplace, and code of conduct.'},
+      {label:'Communication',desc:'Communicates effectively with dispatch, supervisor, and the office.'},
+      {label:'Initiative & Attitude',desc:'Shows willingness to learn, asks questions, and contributes positively to the team.'}
+    ];
+    const ratingScale=new Paragraph({spacing:{after:120},children:[txt('Rating Scale: ',{bold:true,size:20}),txt('1 = Needs Improvement   2 = Developing   3 = Meets Expectations   4 = Exceeds Expectations   5 = Outstanding',{size:18,color:'555555'})]});
+    children.push(ratingScale);
+    categories.forEach((cat,i)=>{
+      children.push(new Paragraph({spacing:{before:100,after:40},children:[txt(`${i+1}. ${cat.label}`,{bold:true,size:22,color:'1B2A4A'})]}));
+      children.push(new Paragraph({spacing:{after:60},children:[txt(cat.desc,{size:18,color:'555555',italics:true})]}));
+      children.push(new Paragraph({spacing:{after:20},children:[txt('Rating (circle one):  1     2     3     4     5',{size:20})]}));
+      children.push(new Paragraph({spacing:{after:80},children:[txt('Comments: ___________________________________________________________',{size:20})]}));
+    });
+    children.push(sp());
+    children.push(new Paragraph({spacing:{before:120,after:60},children:[txt('Overall Performance Rating:',{bold:true,size:22,color:'1B2A4A'})]}));
+    children.push(new Paragraph({spacing:{after:80},children:[txt('Overall Rating (circle one):  1     2     3     4     5',{size:22})]}));
+    children.push(new Paragraph({spacing:{after:80},children:[txt('Summary Comments: _________________________________________________',{size:20}),txt('___________________________________________________________________',{size:20})]}));
+    children.push(sp());
+    children.push(new Paragraph({spacing:{before:120,after:60},children:[txt(`${days}-Day Goals & Expectations`,{bold:true,size:22,color:'1B2A4A'})]}));
+    children.push(new Paragraph({spacing:{after:80},children:[txt('Goals for next period: _____________________________________________',{size:20}),txt('___________________________________________________________________',{size:20})]}));
+    children.push(sp());children.push(sp());
+    children.push(new Paragraph({border:{bottom:{style:BorderStyle.SINGLE,size:4,color:'D0D9EC'}},spacing:{after:80},children:[]}));
+    children.push(body('Employee Signature: _________________________________ Date: _____________'));
+    children.push(body(`${mgr?mgr.name+' Signature':'Supervisor Signature'}: _________________ Date: _____________`));
+    children.push(new Paragraph({spacing:{after:60},children:[txt('Employee Comments: ',{bold:true,size:18}),txt('I agree with this evaluation. / I disagree with this evaluation (please explain):',{size:18,color:'555555',italics:true})]}));
+    children.push(body('________________________________________________________________________'));
+  }
+  else if(templateId==='pip'){
+    const empName=getVal('employeeName')||'[Employee Name]';
+    const pos=getVal('position')||'[Position]';
+    const county=getVal('county')||'[Location]';
+    const pipStart=fmtDate(getVal('pipStart'));
+    const pipEnd=fmtDate(getVal('pipEnd'));
+    const concerns=getVal('concerns')||'[Describe specific performance or conduct concerns]';
+    const goals=getVal('goals')||'[List specific, measurable goals the employee must achieve]';
+    const support=getVal('support')||'Training, coaching, and regular check-ins with supervisor.';
+    const dt=fmtDate(getVal('date'));
+    children.push(heading('PERFORMANCE IMPROVEMENT PLAN'));
+    children.push(body(`Date Issued: ${dt}`));
+    children.push(body(`Employee: ${empName}`));
+    children.push(body(`Position: ${pos}`));
+    children.push(body(`Location/County: ${county}`));
+    children.push(body(`PIP Period: ${pipStart} through ${pipEnd} (90 days)`));
+    if(mgr){children.push(body(`Issuing Supervisor: ${mgr.name}, ${mgr.title}`));}
+    children.push(sp());
+    children.push(heading('Purpose'));
+    children.push(body('This Performance Improvement Plan (PIP) is designed to clearly outline performance expectations, identify areas requiring improvement, and provide the employee with the support and structure needed to succeed in their role at RideSource Inc. This is not a disciplinary document; it is a structured support tool.'));
+    children.push(sp());
+    children.push(heading('Performance Concerns'));
+    children.push(body(concerns));
+    children.push(sp());
+    children.push(heading('Goals & Expectations During PIP Period'));
+    children.push(body(goals));
+    children.push(sp());
+    children.push(heading('Support & Resources Being Provided'));
+    children.push(body(support));
+    children.push(sp());
+    children.push(heading('Check-In Schedule'));
+    children.push(body('The supervisor will conduct weekly check-in meetings with the employee to review progress, provide feedback, and document any concerns or improvements. Check-ins will be documented and shared with the employee.'));
+    children.push(sp());
+    children.push(heading('Consequences'));
+    children.push(body('Failure to meet the goals and expectations outlined in this plan during the 90-day PIP period may result in further disciplinary action, up to and including termination of employment. Successful completion of the PIP will result in removal from the improvement plan and a return to regular performance monitoring.'));
+    children.push(sp());children.push(sp());
+    children.push(new Paragraph({border:{bottom:{style:BorderStyle.SINGLE,size:4,color:'D0D9EC'}},spacing:{after:80},children:[]}));
+    children.push(body('Employee Signature: _________________________________ Date: _____________'));
+    children.push(body(`${mgr?mgr.name+' Signature':'Supervisor Signature'}: _________________ Date: _____________`));
+    children.push(body('HR Representative Signature: _________________________ Date: _____________'));
+    children.push(sp());
+    children.push(new Paragraph({spacing:{after:60},children:[txt('Employee Statement (optional): ',{bold:true,size:18})]}));
+    children.push(body('________________________________________________________________________'));
+    children.push(body('________________________________________________________________________'));
+  }
   else{
     // Generic template for all others
     const tpl=TEMPLATES[templateId];
@@ -1348,36 +1647,46 @@ async function buildDocx(templateId,mgr){
 // ── CALENDAR ──
 const COUNTY_COLORS={Hancock:'#2980B9',Washington:'#C0392B',Somerset:'#E67E22',Waldo:'#F39C12',Knox:'#16A085',Androscoggin:'#E74C3C',Cumberland:'#1ABC9C',Franklin:'#95A5A6',Kennebec:'#8E44AD',Lincoln:'#EC407A',Oxford:'#7E57C2',Penobscot:'#2471A3',Piscataquis:'#1565C0',Sagadahoc:'#D84315',York:'#F57F17',Aroostook:'#27AE60'};
 
-async function renderCalendar(){
+async async function renderCalendar(){
   document.getElementById('cal-title').textContent=new Date(calYear,calMonth).toLocaleDateString('en-US',{month:'long',year:'numeric'});
-  const {data:timeoff}=await db.from('time_off_requests').select('*').eq('status','APPROVED');
-  const {data:callouts}=await db.from('call_out_log').select('*');
+  let timeoff=[],callouts=[];
+  try{const r=await db.from('time_off_requests').select('*').eq('status','APPROVED');timeoff=r.data||[];}catch(e){}
+  try{const r=await db.from('call_out_log').select('*');callouts=r.data||[];}catch(e){}
+  
+  // County filter
+  const filterCounty=document.getElementById('cal-county-filter')?.value||'ALL';
+  
   const events={};
-  (timeoff||[]).forEach(r=>{
+  (timeoff||[]).filter(r=>filterCounty==='ALL'||r.county===filterCounty).forEach(r=>{
     const start=new Date(r.start_date+'T00:00:00'),end=new Date((r.end_date||r.start_date)+'T00:00:00');
     for(let d=new Date(start);d<=end;d.setDate(d.getDate()+1)){
-      if(d.getMonth()===calMonth&&d.getFullYear()===calYear){const k=d.getDate();if(!events[k])events[k]=[];events[k].push({label:r.employee_name.split(' ')[0]+' (TO)',color:COUNTY_COLORS[r.county]||'#555'});}
+      if(d.getMonth()===calMonth&&d.getFullYear()===calYear){
+        const k=d.getDate();if(!events[k])events[k]=[];
+        events[k].push({label:r.employee_name.split(' ')[0]+' (off)',color:COUNTY_COLORS[r.county]||'#555'});
+      }
     }
   });
-  (callouts||[]).forEach(c=>{
+  (callouts||[]).filter(c=>filterCounty==='ALL'||c.county===filterCounty).forEach(c=>{
     const d=new Date(c.callout_date+'T00:00:00');
-    if(d.getMonth()===calMonth&&d.getFullYear()===calYear){const k=d.getDate();if(!events[k])events[k]=[];events[k].push({label:c.employee_name.split(' ')[0]+' (CO)',color:'#E74C3C'});}
+    if(d.getMonth()===calMonth&&d.getFullYear()===calYear){
+      const k=d.getDate();if(!events[k])events[k]=[];
+      events[k].push({label:c.employee_name.split(' ')[0]+' (CO)','color':'#27AE60'});
+    }
   });
   const firstDay=new Date(calYear,calMonth,1).getDay();
   const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
-  let html=`<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;">`;
-  ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d=>html+=`<div style="text-align:center;font-size:11px;font-weight:700;color:#888;padding:6px 0;">${d}</div>`);
-  for(let i=0;i<firstDay;i++)html+=`<div style="min-height:80px;"></div>`;
+  let calHtml=`<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;">`;
+  ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d=>calHtml+=`<div style="text-align:center;font-size:11px;font-weight:700;color:#888;padding:6px 0;">${d}</div>`);
+  for(let i=0;i<firstDay;i++)calHtml+=`<div style="min-height:80px;"></div>`;
   for(let d=1;d<=daysInMonth;d++){
     const isToday=new Date().getDate()===d&&new Date().getMonth()===calMonth&&new Date().getFullYear()===calYear;
     const evs=events[d]||[];
-    html+=`<div style="min-height:80px;border:1px solid #e8e8e8;border-radius:4px;padding:4px;background:${isToday?'#EAF0FB':'#fff'};"><div style="font-size:12px;font-weight:${isToday?'800':'600'};color:${isToday?'var(--navy)':'#333'};margin-bottom:3px;">${d}</div>${evs.map(e=>`<div style="background:${e.color};color:#fff;font-size:10px;padding:2px 5px;border-radius:3px;margin-bottom:2px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">${e.label}</div>`).join('')}</div>`;
+    calHtml+=`<div style="min-height:80px;border:1px solid #e8e8e8;border-radius:4px;padding:4px;background:${isToday?'#EAF0FB':'#fff'};"><div style="font-size:12px;font-weight:${isToday?'800':'600'};color:${isToday?'var(--navy)':'#333'};margin-bottom:3px;">${d}</div>${evs.map(e=>`<div style="background:${e.color};color:#fff;font-size:10px;padding:2px 5px;border-radius:3px;margin-bottom:2px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">${e.label}</div>`).join('')}</div>`;
   }
-  html+=`</div>`;
-  document.getElementById('cal-grid').innerHTML=html;
-  document.getElementById('cal-legend').innerHTML=`<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;"><span style="width:12px;height:12px;background:#E74C3C;border-radius:2px;display:inline-block;"></span>Call-Out</span> `+Object.entries(COUNTY_COLORS).map(([c,col])=>`<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;"><span style="width:12px;height:12px;background:${col};border-radius:2px;display:inline-block;"></span>${c}</span>`).join(' ');
+  calHtml+=`</div>`;
+  document.getElementById('cal-grid').innerHTML=calHtml;
+  document.getElementById('cal-legend').innerHTML=
+    `<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;"><span style="width:12px;height:12px;background:#27AE60;border-radius:2px;display:inline-block;"></span>Call-Out</span> `+
+    Object.entries(COUNTY_COLORS).map(([c,col])=>`<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;"><span style="width:12px;height:12px;background:${col};border-radius:2px;display:inline-block;"></span>${c}</span>`).join(' ');
 }
-function changeMonth(dir){calMonth+=dir;if(calMonth>11){calMonth=0;calYear++;}else if(calMonth<0){calMonth=11;calYear--;}renderCalendar();}
-</script>
-</body>
-</html>
+
