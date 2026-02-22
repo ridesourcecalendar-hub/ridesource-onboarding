@@ -509,12 +509,13 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
           <div class="template-card" onclick="openTemplate('warn-callout')"><div class="template-icon">📵</div><div class="template-name">Attendance Warning — Call-Out After Trip</div><div class="template-desc">Warning for call-outs after manifest finalized.</div></div>
           <div class="template-card" onclick="openTemplate('warn-final')"><div class="template-icon">🚨</div><div class="template-name">Final Written Warning</div><div class="template-desc">Last step before termination.</div></div>
         </div>
-        <div style="font-size:12px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin:20px 0 10px;">Performance Management</div>
+        <div style="font-size:12px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin:20px 0 6px;">Performance Management</div>
+        <p style="color:#888;font-size:12px;margin:0 0 10px;">Pre-built templates — click to download the blank form, then fill in Word.</p>
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;">
-          <div class="template-card" onclick="openTemplate('eval30')"><div class="template-icon">📊</div><div class="template-name">30-Day Evaluation</div><div class="template-desc">Introductory performance review at 30 days.</div></div>
-          <div class="template-card" onclick="openTemplate('eval60')"><div class="template-icon">📊</div><div class="template-name">60-Day Evaluation</div><div class="template-desc">Mid-probation performance review at 60 days.</div></div>
-          <div class="template-card" onclick="openTemplate('eval90')"><div class="template-icon">🏆</div><div class="template-name">90-Day Evaluation</div><div class="template-desc">Final introductory period performance review.</div></div>
-          <div class="template-card" onclick="openTemplate('pip')"><div class="template-icon">⚠️</div><div class="template-name">Performance Improvement Plan</div><div class="template-desc">Formal PIP when goals are not being met.</div></div>
+          <div class="template-card" onclick="tryDownload('RideSource_30Day_Performance_Evaluation.docx',this)"><div class="template-icon">📊</div><div class="template-name">30-Day Evaluation</div><div class="template-desc">Download blank evaluation form.</div></div>
+          <div class="template-card" onclick="tryDownload('RideSource_60Day_Performance_Evaluation.docx',this)"><div class="template-icon">📊</div><div class="template-name">60-Day Evaluation</div><div class="template-desc">Download blank evaluation form.</div></div>
+          <div class="template-card" onclick="tryDownload('RideSource_90Day_Performance_Evaluation.docx',this)"><div class="template-icon">🏆</div><div class="template-name">90-Day Evaluation</div><div class="template-desc">Download blank evaluation form.</div></div>
+          <div class="template-card" onclick="tryDownload('RideSource_Performance_Improvement_Plan.docx',this)"><div class="template-icon">⚠️</div><div class="template-name">Performance Improvement Plan</div><div class="template-desc">Download blank PIP form.</div></div>
         </div>
       </div>
 
@@ -628,11 +629,39 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
             <button onclick="tryDownload('RideSource_Manager_Guide_vF1.docx',this)" style="display:inline-flex;align-items:center;gap:8px;background:var(--navy);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:700;border:none;cursor:pointer;">⬇️ Download .docx</button>
           </div>
         </div>
+        <div style="font-size:14px;font-weight:800;color:var(--navy);margin:28px 0 12px;letter-spacing:.3px;">📊 Performance Evaluations &amp; HR Forms</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;">
+          <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:24px;">
+            <div style="font-size:32px;margin-bottom:10px;">📊</div>
+            <div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px;">30-Day Performance Evaluation</div>
+            <div style="font-size:12px;color:#888;margin-bottom:16px;line-height:1.5;">February 2026 · Introductory period evaluation template with 10 rated categories, goals, and supervisor recommendation.</div>
+            <button onclick="tryDownload('RideSource_30Day_Performance_Evaluation.docx',this)" style="display:inline-flex;align-items:center;gap:8px;background:var(--navy);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:700;border:none;cursor:pointer;">⬇️ Download .docx</button>
+          </div>
+          <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:24px;">
+            <div style="font-size:32px;margin-bottom:10px;">📊</div>
+            <div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px;">60-Day Performance Evaluation</div>
+            <div style="font-size:12px;color:#888;margin-bottom:16px;line-height:1.5;">February 2026 · Mid-probation evaluation template with 10 rated categories, goals, and supervisor recommendation.</div>
+            <button onclick="tryDownload('RideSource_60Day_Performance_Evaluation.docx',this)" style="display:inline-flex;align-items:center;gap:8px;background:var(--navy);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:700;border:none;cursor:pointer;">⬇️ Download .docx</button>
+          </div>
+          <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:24px;">
+            <div style="font-size:32px;margin-bottom:10px;">🏆</div>
+            <div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px;">90-Day Performance Evaluation</div>
+            <div style="font-size:12px;color:#888;margin-bottom:16px;line-height:1.5;">February 2026 · Final introductory period evaluation with solo clearance recommendation and extend/separate options.</div>
+            <button onclick="tryDownload('RideSource_90Day_Performance_Evaluation.docx',this)" style="display:inline-flex;align-items:center;gap:8px;background:var(--navy);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:700;border:none;cursor:pointer;">⬇️ Download .docx</button>
+          </div>
+          <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:24px;">
+            <div style="font-size:32px;margin-bottom:10px;">⚠️</div>
+            <div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px;">Performance Improvement Plan (PIP)</div>
+            <div style="font-size:12px;color:#888;margin-bottom:16px;line-height:1.5;">February 2026 · Full 7-section PIP with goals table, 13-week check-in log, outcome section, and signature block.</div>
+            <button onclick="tryDownload('RideSource_Performance_Improvement_Plan.docx',this)" style="display:inline-flex;align-items:center;gap:8px;background:var(--navy);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:700;border:none;cursor:pointer;">⬇️ Download .docx</button>
+          </div>
+        </div>
         <div class="card" style="margin-top:20px;background:#e8f5e9;border-color:#81c784;">
           <div style="font-size:13px;color:#2e7d32;font-weight:600;margin-bottom:6px;">📌 How to enable document downloads</div>
           <p style="font-size:12px;color:#1b5e20;line-height:1.7;margin:0;">Upload your .docx files directly to your GitHub repository (same folder as <code>index.html</code>). Use these exact filenames:<br>
-          <code>RideSource_Employee_Handbook_v6.docx</code> &nbsp;·&nbsp; <code>RideSource_Driver_Training_Guide_v2_1.docx</code> &nbsp;·&nbsp; <code>RideSource_Onboarding_Checklist.docx</code> &nbsp;·&nbsp; <code>RideSource_Manager_Guide_vF1.docx</code><br><br>
-          Once uploaded, the Download buttons above will work automatically. The buttons currently show a message if the file hasn't been uploaded yet.</p>
+          <strong>Onboarding:</strong> <code>RideSource_Employee_Handbook_v6.docx</code> · <code>RideSource_Driver_Training_Guide_v2_1.docx</code> · <code>RideSource_Onboarding_Checklist.docx</code> · <code>RideSource_Manager_Guide_vF1.docx</code><br>
+          <strong>Evaluations:</strong> <code>RideSource_30Day_Performance_Evaluation.docx</code> · <code>RideSource_60Day_Performance_Evaluation.docx</code> · <code>RideSource_90Day_Performance_Evaluation.docx</code> · <code>RideSource_Performance_Improvement_Plan.docx</code><br><br>
+          Once uploaded, the Download buttons above will work automatically. The buttons will show a message if a file hasn't been uploaded yet.</p>
         </div>
       </div>
 
@@ -1509,11 +1538,7 @@ const TEMPLATES={
   resignation:{title:'Voluntary Resignation Acknowledgment',filename:'Resignation_Acknowledgment',hasManager:false,fields:[{id:'date',label:'Date',type:'date',required:true},{id:'employee',label:'Employee Full Name',type:'text',required:true},{id:'position',label:'Position / Title',type:'text',required:false},{id:'county',label:'Location / County',type:'text',required:false},{id:'supervisor',label:'Supervisor',type:'text',required:false},{id:'lastDay',label:'Last Day of Work',type:'date',required:false},{id:'reason',label:'Reason for Leaving (if provided)',type:'textarea',required:false}]},
   'warn-standard':{title:'Attendance Warning — Standard',filename:'Attendance_Warning_Standard',hasManager:false,fields:[{id:'empName',label:'Employee Name',type:'text',required:true},{id:'warnDate',label:'Date of Warning',type:'date',required:true},{id:'position',label:'Position / Title',type:'text',required:false},{id:'county',label:'Department / County',type:'text',required:false},{id:'callCount',label:'Total Call-Outs (Last 90 Days)',type:'number',required:false},{id:'description',label:'Description of Issue',type:'textarea',required:false}]},
   'warn-callout':{title:'Attendance Warning — Call-Out After Trip',filename:'Attendance_Warning_CallOut',hasManager:false,fields:[{id:'empName',label:'Employee Name',type:'text',required:true},{id:'warnDate',label:'Date of Warning',type:'date',required:true},{id:'incDate',label:'Date of Incident',type:'date',required:false},{id:'description',label:'Description',type:'textarea',required:false}]},
-  'warn-final':{title:'Final Written Warning',filename:'Attendance_Warning_Final',hasManager:false,fields:[{id:'empName',label:'Employee Name',type:'text',required:true},{id:'warnDate',label:'Date of Warning',type:'date',required:true},{id:'callCount',label:'Total Call-Outs (Last 90 Days)',type:'number',required:false},{id:'description',label:'Description',type:'textarea',required:false}]},
-  eval30:{title:'30-Day Performance Evaluation',filename:'30_Day_Performance_Evaluation',hasManager:true,fields:[{id:'date',label:'Date',type:'date',required:true},{id:'employeeName',label:'Employee Full Name',type:'text',required:true},{id:'position',label:'Position',type:'text',required:true},{id:'startDate',label:'Start Date',type:'date',required:true},{id:'county',label:'Location/County',type:'text',required:true}]},
-  eval60:{title:'60-Day Performance Evaluation',filename:'60_Day_Performance_Evaluation',hasManager:true,fields:[{id:'date',label:'Date',type:'date',required:true},{id:'employeeName',label:'Employee Full Name',type:'text',required:true},{id:'position',label:'Position',type:'text',required:true},{id:'startDate',label:'Start Date',type:'date',required:true},{id:'county',label:'Location/County',type:'text',required:true}]},
-  eval90:{title:'90-Day Performance Evaluation',filename:'90_Day_Performance_Evaluation',hasManager:true,fields:[{id:'date',label:'Date',type:'date',required:true},{id:'employeeName',label:'Employee Full Name',type:'text',required:true},{id:'position',label:'Position',type:'text',required:true},{id:'startDate',label:'Start Date',type:'date',required:true},{id:'county',label:'Location/County',type:'text',required:true}]},
-  pip:{title:'Performance Improvement Plan (PIP)',filename:'Performance_Improvement_Plan',hasManager:true,fields:[{id:'date',label:'Date',type:'date',required:true},{id:'employeeName',label:'Employee Full Name',type:'text',required:true},{id:'position',label:'Position',type:'text',required:true},{id:'county',label:'Location/County',type:'text',required:true},{id:'pipStart',label:'PIP Start Date',type:'date',required:true},{id:'pipEnd',label:'PIP End Date (90 days)',type:'date',required:true},{id:'concerns',label:'Performance Concerns (describe specific issues)',type:'textarea',required:true},{id:'goals',label:'Goals & Expectations During PIP Period',type:'textarea',required:true},{id:'support',label:'Support/Resources Being Provided',type:'textarea',required:false}]}
+  'warn-final':{title:'Final Written Warning',filename:'Attendance_Warning_Final',hasManager:false,fields:[{id:'empName',label:'Employee Name',type:'text',required:true},{id:'warnDate',label:'Date of Warning',type:'date',required:true},{id:'callCount',label:'Total Call-Outs (Last 90 Days)',type:'number',required:false},{id:'description',label:'Description',type:'textarea',required:false}]}
 };
 
 let currentTemplate=null;
