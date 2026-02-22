@@ -2482,7 +2482,7 @@ async function buildDocx(templateId, mgr) {
     const checkItem = label => new Table({width:{size:CW,type:WidthType.DXA},columnWidths:[700,CW-700],rows:[new TableRow({children:[
       new TableCell({borders:solidBorder(BORDER_C),shading:{fill:GRAY,type:ShadingType.CLEAR},margins:{top:70,bottom:70,left:120,right:120},width:{size:700,type:WidthType.DXA},verticalAlign:VerticalAlign.CENTER,children:[new Paragraph({alignment:AlignmentType.CENTER,children:[txt('☐',{size:22})]})]}),
       new TableCell({borders:solidBorder(BORDER_C),margins:{top:70,bottom:70,left:120,right:120},width:{size:CW-700,type:WidthType.DXA},children:[new Paragraph({children:[txt(label,{size:20})]})]}),
-    ]})]}); );
+    ]})]}));
     children = [
       companyLogo(), sp(80), divider(), sp(80),
       headerBar('VOLUNTARY RESIGNATION ACKNOWLEDGMENT','RideSource Inc. — HR Department'), sp(120),
