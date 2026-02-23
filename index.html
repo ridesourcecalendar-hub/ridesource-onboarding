@@ -211,6 +211,14 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 .preview-box{background:var(--gray);border:1px solid var(--border);border-radius:8px;padding:20px 24px;margin:14px 0;font-size:13px;line-height:1.8;white-space:pre-wrap;font-family:Arial,sans-serif;max-height:350px;overflow-y:auto;}
 
 @media(max-width:768px){.sidebar{display:none;}.main-content{padding:16px;}.doc-body{padding:20px;}}
+
+/* ── REQUEST TABS ── */
+.req-tab{padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer;border:none;background:none;color:#888;border-bottom:3px solid transparent;margin-bottom:-2px;border-radius:0;transition:all .15s;white-space:nowrap;}
+.req-tab:hover{color:var(--navy);}
+.req-tab-active{color:var(--navy);border-bottom-color:var(--navy);}
+.req-tab-approved.req-tab-active{color:var(--success);border-bottom-color:var(--success);}
+.req-tab-denied.req-tab-active{color:var(--red);border-bottom-color:var(--red);}
+.req-count{display:inline-block;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:5px;font-weight:700;}
 </style>
 </head>
 <body>
@@ -542,7 +550,13 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 
       <div id="section-adm-requests" class="admin-section">
         <div style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:4px;">📅 Time Off Requests</div>
-        <p style="color:#888;font-size:13px;margin-bottom:20px;">Review and approve or deny employee time off requests.</p>
+        <p style="color:#888;font-size:13px;margin-bottom:14px;">Review and approve or deny employee time off requests.</p>
+        <div style="display:flex;gap:2px;border-bottom:2px solid var(--border);margin-bottom:18px;">
+          <button id="req-tab-PENDING"  class="req-tab req-tab-active"   onclick="setReqTab('PENDING')">🕐 Pending<span class="req-count" id="req-count-PENDING"  style="background:var(--red);color:#fff;">0</span></button>
+          <button id="req-tab-APPROVED" class="req-tab req-tab-approved" onclick="setReqTab('APPROVED')">✅ Approved<span class="req-count" id="req-count-APPROVED" style="background:#ddd;color:#555;">0</span></button>
+          <button id="req-tab-DENIED"   class="req-tab req-tab-denied"   onclick="setReqTab('DENIED')">✗ Denied<span class="req-count" id="req-count-DENIED"   style="background:#ddd;color:#555;">0</span></button>
+          <button id="req-tab-ALL"      class="req-tab" style="margin-left:auto;" onclick="setReqTab('ALL')">All</button>
+        </div>
         <div id="requests-table">Loading...</div>
       </div>
 
@@ -1481,17 +1495,64 @@ function printWarning(){
 }
 
 // ── TIME OFF REQUESTS ──
-async function loadRequests(){
-  const {data}=await db.from('time_off_requests').select('*').order('submitted_at',{ascending:false});
-  document.getElementById('badge-requests').textContent=(data||[]).filter(r=>r.status==='PENDING').length||'0';
+let currentReqTab='PENDING';
+let allRequestsCache=[];
+
+function setReqTab(tab){
+  currentReqTab=tab;
+  ['PENDING','APPROVED','DENIED','ALL'].forEach(t=>{
+    const btn=document.getElementById('req-tab-'+t);
+    if(!btn)return;
+    btn.classList.remove('req-tab-active');
+  });
+  const active=document.getElementById('req-tab-'+tab);
+  if(active)active.classList.add('req-tab-active');
+  renderRequestsTable();
+}
+
+function renderRequestsTable(){
   const el=document.getElementById('requests-table');
-  if(!data||data.length===0){el.innerHTML='<p style="color:#888;font-size:13px;">No requests found.</p>';return;}
-  el.innerHTML=`<table class="data-table"><thead><tr><th>Employee</th><th>County</th><th>Type</th><th>Date(s)</th><th>Reason</th><th>Status</th><th>Actions</th></tr></thead><tbody>`+
-    data.map(r=>`<tr><td><strong>${r.employee_name}</strong></td><td>${r.county}</td><td>${r.request_type}</td><td>${r.start_date}${r.end_date&&r.end_date!==r.start_date?' → '+r.end_date:''}</td><td>${r.reason||'—'}</td><td><span class="badge badge-${r.status.toLowerCase()}">${r.status}</span></td><td style="white-space:nowrap;">${r.status==='PENDING'?`<button class="btn btn-green btn-sm" onclick="decideRequest(${r.id},'APPROVED')">✓ Approve</button> <button class="btn btn-sm" style="background:#f8d7da;color:#721c24;margin-left:4px;" onclick="decideRequest(${r.id},'DENIED')">✗ Deny</button>`:'—'}</td></tr>`).join('')+
+  const data=allRequestsCache;
+  const filtered=currentReqTab==='ALL'?data:data.filter(r=>r.status===currentReqTab);
+  if(!filtered||filtered.length===0){
+    const labels={PENDING:'No pending requests.',APPROVED:'No approved requests yet.',DENIED:'No denied requests yet.',ALL:'No requests found.'};
+    el.innerHTML='<p style="color:#888;font-size:13px;padding:12px 0;">'+labels[currentReqTab]+'</p>';
+    return;
+  }
+  const showActions=currentReqTab==='PENDING'||currentReqTab==='ALL';
+  el.innerHTML='<table class="data-table"><thead><tr><th>Employee</th><th>County</th><th>Type</th><th>Date(s)</th><th>Reason</th><th>Submitted</th>'+(showActions?'<th>Status</th><th>Actions</th>':'<th>Status</th><th>Decided</th>')+'</tr></thead><tbody>'+
+    filtered.map(r=>{
+      const submitted=r.submitted_at?new Date(r.submitted_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'—';
+      const decided=r.decided_at?new Date(r.decided_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+' by '+(r.decided_by||'admin'):'—';
+      const statusBadge='<span class="badge badge-'+r.status.toLowerCase()+'">'+r.status+'</span>';
+      const actions=r.status==='PENDING'
+        ?'<button class="btn btn-green btn-sm" onclick="decideRequest('+r.id+',\'APPROVED\')">✓ Approve</button> <button class="btn btn-sm" style="background:#f8d7da;color:#721c24;margin-left:4px;" onclick="decideRequest('+r.id+',\'DENIED\')">✗ Deny</button>'
+        :(showActions?'<span style="font-size:12px;color:#aaa;">processed</span>':'');
+      return '<tr><td><strong>'+r.employee_name+'</strong></td><td>'+r.county+'</td><td>'+r.request_type+'</td><td>'+r.start_date+(r.end_date&&r.end_date!==r.start_date?' → '+r.end_date:'')+'</td><td>'+(r.reason||'—')+'</td><td style="font-size:12px;color:#888;">'+submitted+'</td><td>'+statusBadge+'</td><td style="white-space:nowrap;">'+(showActions?actions:decided)+'</td></tr>';
+    }).join('')+
     '</tbody></table>';
 }
+
+async function loadRequests(){
+  const {data}=await db.from('time_off_requests').select('*').order('submitted_at',{ascending:false});
+  allRequestsCache=data||[];
+  const pending=allRequestsCache.filter(r=>r.status==='PENDING').length;
+  const approved=allRequestsCache.filter(r=>r.status==='APPROVED').length;
+  const denied=allRequestsCache.filter(r=>r.status==='DENIED').length;
+  document.getElementById('badge-requests').textContent=pending||'0';
+  const cp=document.getElementById('req-count-PENDING');
+  const ca=document.getElementById('req-count-APPROVED');
+  const cd=document.getElementById('req-count-DENIED');
+  if(cp)cp.textContent=pending;
+  if(ca){ca.textContent=approved;ca.style.background=approved?'#27AE60':'#ddd';ca.style.color=approved?'#fff':'#555';}
+  if(cd){cd.textContent=denied;cd.style.background=denied?'#c0392b':'#ddd';cd.style.color=denied?'#fff':'#555';}
+  renderRequestsTable();
+}
+
 async function decideRequest(id,status){
   await db.from('time_off_requests').update({status,decided_at:new Date().toISOString(),decided_by:adminName}).eq('id',id);
+  // After approving/denying, switch to pending tab so processed item disappears naturally
+  if(currentReqTab!=='ALL')currentReqTab='PENDING';
   loadRequests();loadDashboard();
 }
 
