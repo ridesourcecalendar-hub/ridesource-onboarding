@@ -408,7 +408,14 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
         <div class="card-title" style="font-size:22px;color:var(--navy);margin-bottom:4px;">✍️ Policy Acknowledgments</div>
         <p style="color:#888;font-size:14px;margin-bottom:20px;">Read and sign each policy below. All must be completed before your onboarding is finalized.</p>
         <div class="policy-list" id="policy-list"></div>
-        <div id="all-signed-banner" style="display:none;margin-top:24px;" class="success-banner">
+        <div id="db-diag-wrap" style="display:none;margin-top:20px;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+    <div style="font-size:12px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;">&#128269; Database Diagnostic Log</div>
+    <button onclick="document.getElementById('db-diag-wrap').style.display='none'" style="font-size:11px;color:#aaa;background:none;border:none;cursor:pointer;">Hide</button>
+  </div>
+  <div id="db-diag-panel" style="background:#f8f9fa;border:1px solid #e0e0e0;border-radius:6px;padding:10px;max-height:160px;overflow-y:auto;"></div>
+</div>
+<div id="all-signed-banner" style="display:none;margin-top:24px;" class="success-banner">
           <div class="big-check">🎉</div>
           <h2>All Policies Signed!</h2>
           <p>Your onboarding acknowledgments are complete. Your supervisor has been notified. Welcome to the RideSource team!</p>
@@ -871,12 +878,14 @@ function loadSavedState(){
 async function loadSignedPolicies(){
   try{
     const {data,error}=await db.from('policy_signatures').select('*').eq('employee_email',user.email);
-    if(error||!data)return;
+    if(error){logDbStatus('loadSignedPolicies SELECT',false,error);return;}
+    if(!data){logDbStatus('loadSignedPolicies SELECT',false,{message:'No data returned'});return;}
+    logDbStatus('loadSignedPolicies SELECT ('+data.length+' rows)',true,null);
     data.forEach(row=>{
       const p=POLICIES.find(p=>p.id===row.policy_id);
       if(!p)return;
       const item=document.getElementById('pol-'+p.id);
-      if(!item)return;
+      if(!item){console.warn('DOM element missing for policy:',p.id);return;}
       const ts=new Date(row.signed_at).toLocaleString('en-US',{dateStyle:'medium',timeStyle:'short'});
       item.classList.add('signed');item.dataset.signed='1';
       document.getElementById('check-'+p.id).textContent='✓';
@@ -886,7 +895,7 @@ async function loadSignedPolicies(){
     });
     updateBadge();updateDashboard();
     if(data.length===POLICIES.length){document.getElementById('all-signed-banner').style.display='block';}
-  }catch(e){console.log('loadSignedPolicies error:',e);}
+  }catch(e){logDbStatus('loadSignedPolicies',false,e);console.error('loadSignedPolicies error:',e);}
 }
 
 // ── CHECKLIST TOGGLE ──
@@ -1088,6 +1097,22 @@ function checkModalSig(){
   const checked=document.getElementById('modal-understand-check')?.checked;
   document.getElementById('modal-sign-btn').disabled=!(sig&&checked&&modalScrolled);
 }
+// ── DB DIAGNOSTIC ──
+function logDbStatus(op, success, err){
+  const panel=document.getElementById('db-diag-panel');
+  if(!panel)return;
+  const ts=new Date().toLocaleTimeString();
+  const color=success?'#27AE60':'#C0392B';
+  const icon=success?'&#10003;':'&#10007;';
+  const errText=err?(err.message||err.code||JSON.stringify(err)):'';
+  const line=document.createElement('div');
+  line.style.cssText='font-size:11px;font-family:monospace;padding:2px 0;border-bottom:1px solid #eee;color:'+color;
+  line.innerHTML='['+ts+'] <b>'+icon+' '+op+'</b>'+(errText?' &mdash; '+errText:'');
+  panel.insertBefore(line,panel.firstChild);
+  // Keep max 20 entries
+  while(panel.children.length>20)panel.removeChild(panel.lastChild);
+  document.getElementById('db-diag-wrap').style.display='block';
+}
 async function signPolicy(){
   const p=POLICIES[currentPolicyIndex];
   const sig=document.getElementById('modal-sig').value.trim();
@@ -1095,26 +1120,40 @@ async function signPolicy(){
   btn.disabled=true;btn.textContent='Saving...';
   const now=new Date();
   const ts=now.toLocaleString('en-US',{dateStyle:'medium',timeStyle:'short'});
+  const row={employee_name:user.name,employee_email:user.email,county:user.county,
+    policy_id:p.id,policy_name:p.name,signature:sig,signed_at:now.toISOString()};
 
-  // Save to Supabase and verify it succeeded before updating the DOM
   let saved=false;
+  let lastError=null;
+
+  // Strategy 1: delete existing row then insert fresh (no unique constraint needed)
   try{
-    const {error}=await db.from('policy_signatures').upsert(
-      [{employee_name:user.name,employee_email:user.email,county:user.county,
-        policy_id:p.id,policy_name:p.name,signature:sig,signed_at:now.toISOString()}],
-      {onConflict:'employee_email,policy_id'}
-    );
-    if(!error)saved=true;
-    else console.error('Supabase upsert error:',error);
-  }catch(e){console.error('signPolicy exception:',e);}
+    await db.from('policy_signatures').delete().eq('employee_email',user.email).eq('policy_id',p.id);
+    const {error:insErr}=await db.from('policy_signatures').insert([row]);
+    if(!insErr){saved=true;}
+    else{lastError=insErr;console.error('Insert error:',insErr);}
+  }catch(e){lastError=e;console.error('Delete+insert exception:',e);}
+
+  // Strategy 2: upsert fallback
+  if(!saved){
+    try{
+      const {error:upErr}=await db.from('policy_signatures').upsert([row],{onConflict:'employee_email,policy_id'});
+      if(!upErr){saved=true;}
+      else{lastError=upErr;console.error('Upsert error:',upErr);}
+    }catch(e){lastError=e;console.error('Upsert exception:',e);}
+  }
+
+  // Log result to diagnostic panel
+  logDbStatus('signPolicy('+p.id+')', saved, lastError);
 
   if(!saved){
-    btn.disabled=false;btn.textContent='✍ Sign & Acknowledge';
-    alert('There was a problem saving your signature. Please check your connection and try again.');
+    btn.disabled=false;btn.textContent='✝ Sign & Acknowledge';
+    const msg=lastError&&(lastError.message||lastError.code)?
+      (lastError.message||lastError.code):'Unknown database error';
+    alert('Signature could not be saved.\n\nReason: '+msg+'\n\nSee diagnostic panel (bottom of Policies page) for full details.');
     return;
   }
 
-  // Confirmed saved — update DOM
   const item=document.getElementById('pol-'+p.id);
   item.classList.add('signed');item.dataset.signed='1';
   document.getElementById('check-'+p.id).textContent='✓';
@@ -1123,6 +1162,7 @@ async function signPolicy(){
   document.getElementById('pbtn-'+p.id).className='policy-btn policy-btn-done';
   closePolicyModal();updateBadge();updateDashboard();checkAllSigned();
 }
+
 function updateBadge(){
   const done=POLICIES.filter(p=>{const el=document.getElementById('pol-'+p.id);return el&&el.dataset.signed==='1';}).length;
   document.getElementById('badge-policies').textContent=`${done}/${POLICIES.length}`;
