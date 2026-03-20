@@ -1799,6 +1799,21 @@ async function loadRequests(){
 }
 async function decideRequest(id,status){
   await db.from('time_off_requests').update({status,decided_at:new Date().toISOString(),decided_by:adminName}).eq('id',id);
+  try{
+    const req=allRequestsCache.find(r=>r.id===id);
+    if(req&&typeof emailjs!=='undefined'){
+      await emailjs.send(EMAILJS_SERVICE_ID,'timeoff_decision',{
+        employee_name:req.employee_name,
+        employee_email:req.employee_email,
+        request_type:req.request_type,
+        status:status==='APPROVED'?'Approved ✅':'Denied ✗',
+        start_date:req.start_date,
+        end_date:req.end_date||req.start_date,
+        decided_by:adminName,
+        to_email:req.employee_email
+      });
+    }
+  }catch(e){console.log('Email notification error:',e);}
   loadRequests();loadDashboard();
 }
 function openEditRequest(id,type,start,end,reason){
