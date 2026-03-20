@@ -650,6 +650,10 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
             <div class="form-field"><label>Call-Out Date</label><input type="date" id="co-date"></div>
             <div class="form-field"><label>Reason</label><select id="co-reason"><option>Sick</option><option>Family Emergency</option><option>Weather</option><option>No reason provided</option><option>Other</option></select></div>
           </div>
+          <div class="form-row">
+            <div class="form-field"><label>Call Type</label><select id="co-call-type"><option>Call In Advance</option><option>Call After List</option><option>Call Mid Shift</option><option>N/A</option></select></div>
+            <div class="form-field"><label>Notes</label><input type="text" id="co-notes" placeholder="Optional notes..."></div>
+          </div>
           <div class="form-field"><label>Notes</label><input type="text" id="co-notes" placeholder="Optional notes..."></div>
           <button class="btn btn-primary" onclick="logCallOut()">Log Call-Out</button>
           <span id="co-msg" style="font-size:13px;color:var(--success);margin-left:12px;display:none;">✓ Logged!</span>
@@ -1574,8 +1578,11 @@ async function loadCallOuts(){
   const {data}=await db.from('call_out_log').select('*').order('callout_date',{ascending:false}).limit(50);
   const el=document.getElementById('callout-table');
   if(!data||data.length===0){el.innerHTML='<p style="color:#888;font-size:13px;">No call-outs logged yet.</p>';return;}
-  el.innerHTML='<div style="overflow-x:auto;"><table class="data-table"><thead><tr><th>Employee</th><th>County</th><th>Date</th><th>Reason</th><th>Notes</th><th>Logged By</th><th></th></tr></thead><tbody>'+
-    data.map(c=>`<tr><td><strong>${c.employee_name}</strong></td><td>${c.county}</td><td>${c.callout_date}</td><td>${c.reason}</td><td>${c.notes||'—'}</td><td>${c.logged_by}</td><td><button onclick="deleteCallOut(${c.id})" style="background:none;border:1px solid #ddd;border-radius:4px;padding:2px 8px;font-size:11px;cursor:pointer;color:#c00;">✕</button></td></tr>`).join('')+
+  el.innerHTML='<div style="overflow-x:auto;"><table class="data-table"><thead><tr><th>Employee</th><th>County</th><th>Date</th><th>Reason</th><th>Call Type</th><th>Notes</th><th>Logged By</th><th></th></tr></thead><tbody>'+
+    data.map(c=>{
+      const callTypeBadge=c.call_type==='Call After List'?`<span class="badge badge-flag">${c.call_type}</span>`:c.call_type==='Call Mid Shift'?`<span class="badge badge-warning">${c.call_type}</span>`:c.call_type?`<span class="badge badge-pending">${c.call_type}</span>`:'—';
+      return `<tr><td><strong>${c.employee_name}</strong></td><td>${c.county}</td><td>${c.callout_date}</td><td>${c.reason}</td><td>${callTypeBadge}</td><td>${c.notes||'—'}</td><td>${c.logged_by}</td><td><button onclick="deleteCallOut(${c.id})" style="background:none;border:1px solid #ddd;border-radius:4px;padding:2px 8px;font-size:11px;cursor:pointer;color:#c00;">✕</button></td></tr>`;
+    }).join('')+
     '</tbody></table></div>';
 }
 async function logCallOut(){
@@ -1583,9 +1590,10 @@ async function logCallOut(){
   const county=document.getElementById('co-county').value;
   const date=document.getElementById('co-date').value;
   const reason=document.getElementById('co-reason').value;
+  const callType=document.getElementById('co-call-type').value;
   const notes=document.getElementById('co-notes').value;
   if(!name||!county||!date){alert('Please fill in employee name, county, and date.');return;}
-  await db.from('call_out_log').insert([{employee_name:name,county,callout_date:date,reason,notes,logged_by:adminName,logged_at:new Date().toISOString()}]);
+  await db.from('call_out_log').insert([{employee_name:name,county,callout_date:date,reason,call_type:callType,notes,logged_by:adminName,logged_at:new Date().toISOString()}]);
   document.getElementById('co-name').value='';document.getElementById('co-date').value='';document.getElementById('co-notes').value='';
   const msg=document.getElementById('co-msg');msg.style.display='inline';setTimeout(()=>msg.style.display='none',3000);
   loadCallOuts();loadFlags();loadDashboard();
