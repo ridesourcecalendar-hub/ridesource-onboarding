@@ -804,6 +804,7 @@ const EMAILJS_PUBLIC_KEY='AoArkSo12DpQtsvZZ';
 const SUPERVISOR_EMAIL='tiffanyb@ridesourcemaine.com';
 const PORTAL_URL='https://ridesourcecalendar-hub.github.io/ridesource-onboarding/index.html';
 const ADMIN_PASSWORD='RideSource2026!';
+if(typeof supabase==='undefined'){console.error('Supabase failed to load');alert('Portal failed to load. Please refresh the page.');}
 const {createClient}=supabase;
 const db=createClient(SUPABASE_URL,SUPABASE_KEY);
 if(typeof emailjs!=='undefined'){emailjs.init({publicKey:EMAILJS_PUBLIC_KEY});}
@@ -2024,15 +2025,14 @@ async function buildDocx(templateId){
   function ratingTable(categories){
     return new Table({width:{size:100,type:WidthType.PERCENTAGE},rows:[
       new TableRow({children:[
-        new TableCell({shading:{type:ShadingType.SOLID,color:'1B2A4A'},children:[new Paragraph({children:[new TextRun({text:'Category',bold:true,color:'FFFFFF',size:20})]})]}),...
-        [1,2,3,4,5].map(n=>new TableCell({shading:{type:ShadingType.SOLID,color:'1B2A4A'},children:[new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:n+'',bold:true,color:'FFFFFF',size:20})]})]}))
+        new TableCell({shading:{type:ShadingType.SOLID,color:'1B2A4A'},children:[new Paragraph({children:[new TextRun({text:'Category',bold:true,color:'FFFFFF',size:20})]})]}),...[1,2,3,4,5].map(n=>new TableCell({shading:{type:ShadingType.SOLID,color:'1B2A4A'},children:[new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:n+'',bold:true,color:'FFFFFF',size:20})]})]}))
       ]}),...categories.map(c=>ratingRow(c))
     ]});
   }
   function pipGoalTable(){
     return new Table({width:{size:100,type:WidthType.PERCENTAGE},rows:[
-      new TableRow({children:['Goal / Expectation','Target / Metric','Deadline','Status'].map(h=>new TableCell({shading:{type:ShadingType.SOLID,color:'1B2A4A'},children:[new Paragraph({children:[new TextRun({text:h,bold:true,color:'FFFFFF',size:18})]})]}))}),...
-      [1,2,3].map(()=>new TableRow({children:['','','',''].map(()=>new TableCell({children:[new Paragraph({children:[new TextRun({text:' ',size:20})]})]})),[new TableCell({children:[new Paragraph({children:[new TextRun({text:' '})]})]})]}))
+      new TableRow({children:['Goal / Expectation','Target / Metric','Deadline','Status'].map(h=>new TableCell({shading:{type:ShadingType.SOLID,color:'1B2A4A'},children:[new Paragraph({children:[new TextRun({text:h,bold:true,color:'FFFFFF',size:18})]})]}))}),...[1,2,3].map(()=>new TableRow({children:['','','',''].map(()=>new TableCell({children:[new Paragraph({children:[new TextRun({text:' ',size:20})]})]}))}))
+
     ]});
   }
   function pipCheckInTable(){
@@ -2392,15 +2392,13 @@ async function buildDocx(templateId){
       para(getVal('primary_concern')||' '),blank(),blank(),blank(),
       hdr2('Section 3: Prior Coaching & Warnings'),
       new Table({width:{size:100,type:WidthType.PERCENTAGE},rows:[
-        new TableRow({children:['Date','Type','Summary','Acknowledged (Y/N)'].map(h=>new TableCell({shading:{type:ShadingType.SOLID,color:'1B2A4A'},children:[new Paragraph({children:[new TextRun({text:h,bold:true,color:'FFFFFF',size:18})]})]}))}),...
-        [1,2,3].map(()=>new TableRow({children:['','','',''].map(()=>new TableCell({children:[new Paragraph({children:[new TextRun({text:' ',size:20})]})]}))}))]
+        new TableRow({children:['Date','Type','Summary','Acknowledged (Y/N)'].map(h=>new TableCell({shading:{type:ShadingType.SOLID,color:'1B2A4A'},children:[new Paragraph({children:[new TextRun({text:h,bold:true,color:'FFFFFF',size:18})]})]}))}),...[1,2,3].map(()=>new TableRow({children:['','','',''].map(()=>new TableCell({children:[new Paragraph({children:[new TextRun({text:' ',size:20})]})]}))}))]
       }),blank(),
       hdr2('Section 4: Goals & Expectations'),
       pipGoalTable(),blank(),
       hdr2('Section 5: Support & Resources'),
       new Table({width:{size:100,type:WidthType.PERCENTAGE},rows:[
-        new TableRow({children:['Resource / Support Provided','Who Is Responsible','Timeline'].map(h=>new TableCell({shading:{type:ShadingType.SOLID,color:'1B2A4A'},children:[new Paragraph({children:[new TextRun({text:h,bold:true,color:'FFFFFF',size:18})]})]}))}),...
-        [1,2].map(()=>new TableRow({children:['','',''].map(()=>new TableCell({children:[new Paragraph({children:[new TextRun({text:' ',size:20})]})]}))}))]
+        new TableRow({children:['Resource / Support Provided','Who Is Responsible','Timeline'].map(h=>new TableCell({shading:{type:ShadingType.SOLID,color:'1B2A4A'},children:[new Paragraph({children:[new TextRun({text:h,bold:true,color:'FFFFFF',size:18})]})]}))}),...[1,2].map(()=>new TableRow({children:['','',''].map(()=>new TableCell({children:[new Paragraph({children:[new TextRun({text:' ',size:20})]})]}))}))]
       }),blank(),
       hdr2('Section 6: 13-Week Check-In Log'),
       pipCheckInTable(),blank(),
