@@ -1090,6 +1090,11 @@ function startPortal(){
   const county=document.getElementById('login-county').value;
   if(!name||!email||!county){document.getElementById('login-error').style.display='block';return;}
   document.getElementById('login-error').style.display='none';
+  // Reset ALL state before loading new user
+  trainingSection=0;handbookSection=0;
+  trainingSectionRead={};handbookSectionRead={};
+  trainingComplete=false;handbookComplete=false;handbookSigChoice=null;
+  currentReqType=null;selectedIssueTypes=[];selectedFile=null;
   user={name,email,county};
   document.getElementById('display-name').textContent=name;
   document.getElementById('screen-landing').classList.remove('active');
@@ -1097,6 +1102,8 @@ function startPortal(){
   loadSavedState();buildTraining();buildHandbook();buildPolicies();updateDashboard();loadSignedPolicies();
   buildTimesheetRows();
   document.getElementById('vr-date').value=new Date().toISOString().split('T')[0];
+  // Hide completion banner until Supabase confirms
+  document.getElementById('all-signed-banner').style.display='none';
 }
 function logout(){
   saveState();user=null;trainingSection=0;handbookSection=0;
