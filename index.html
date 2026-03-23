@@ -132,7 +132,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 .policy-btn{padding:8px 16px;font-size:13px;font-weight:600;border-radius:6px;cursor:pointer;border:none;}
 .policy-btn-read{background:var(--navy);color:#fff;}
 .policy-btn-done{background:var(--success);color:#fff;cursor:default;}
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;display:none;align-items:center;justify-content:center;padding:24px;}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:99999;display:none;align-items:center;justify-content:center;padding:24px;}
 .modal-overlay.open{display:flex;}
 .modal{background:#fff;border-radius:16px;padding:32px;width:100%;max-width:700px;max-height:90vh;overflow-y:auto;position:relative;}
 .modal-close{position:absolute;top:16px;right:20px;background:none;border:none;font-size:22px;cursor:pointer;color:#aaa;}
@@ -981,77 +981,6 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
   </div><!-- end portal-layout -->
 </div><!-- end screen-admin -->
 
-<!-- MODALS -->
-<div class="modal-overlay" id="policy-modal">
-  <div class="modal" style="max-width:640px;">
-    <button class="modal-close" onclick="closePolicyModal()">✕</button>
-    <h3 id="modal-title">Policy Title</h3>
-    <p id="modal-desc" style="color:#666;font-size:13px;margin-bottom:12px;">Please read the full policy below, then check the box and provide your electronic signature.</p>
-    <div class="modal-body" id="modal-body" onscroll="checkModalScroll()" style="max-height:340px;"></div>
-    <div style="background:#f8f9fa;border:1px solid var(--border);border-radius:8px;padding:14px;margin-top:12px;">
-      <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:13px;">
-        <input type="checkbox" id="modal-understand-check" onchange="checkModalSig()" style="margin-top:2px;width:16px;height:16px;accent-color:var(--navy);">
-        <span>I have read and understand this policy in its entirety, and I agree to comply with all terms and conditions described above.</span>
-      </label>
-    </div>
-    <div class="sig-field" style="margin-top:12px;"><label>Electronic Signature — Type your full legal name *</label><input type="text" id="modal-sig" placeholder="Type your full name to sign..." oninput="checkModalSig()"></div>
-    <div style="display:flex;align-items:center;gap:8px;margin-top:8px;"><label style="font-size:12px;color:#666;min-width:90px;">Date Signed:</label><input type="date" id="modal-date" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;"></div>
-    <div class="sig-legal" style="margin-top:8px;">By typing your name above, you are providing a legally binding electronic signature under the E-SIGN Act.</div>
-    <div style="color:#888;font-size:11px;margin-top:4px;" id="modal-scroll-note">📖 Please scroll to the bottom of the policy before signing.</div>
-    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;">
-      <button class="btn-secondary" onclick="closePolicyModal()">Cancel</button>
-      <button class="btn-primary" id="modal-sign-btn" onclick="signPolicy()" disabled>✍ Sign &amp; Acknowledge</button>
-    </div>
-  </div>
-</div>
-
-<div class="modal-overlay" id="template-modal">
-  <div class="modal">
-    <button class="modal-close" onclick="closeModal('template-modal')">✕</button>
-    <h3 id="tmpl-title">Template</h3>
-    <p id="tmpl-desc">Fill in the fields below, then download your Word document.</p>
-    <div id="tmpl-form"></div>
-    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;">
-      <button class="btn btn-secondary" onclick="closeModal('template-modal')">Cancel</button>
-      <button class="btn btn-primary" id="tmpl-download-btn" onclick="downloadTemplate()">⬇️ Download Word Doc</button>
-    </div>
-  </div>
-</div>
-
-<div class="modal-overlay" id="warning-modal">
-  <div class="modal">
-    <button class="modal-close" onclick="closeModal('warning-modal')">✕</button>
-    <h3 id="warn-modal-title">Attendance Warning</h3>
-    <p id="warn-modal-desc">Review and edit the warning below before generating.</p>
-    <div id="warn-form"></div>
-    <div class="preview-box" id="warn-preview" style="display:none;"></div>
-    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px;">
-      <button class="btn btn-secondary" onclick="closeModal('warning-modal')">Cancel</button>
-      <button class="btn btn-red" id="warn-gen-btn" onclick="generateWarning()">Generate Warning Letter</button>
-    </div>
-  </div>
-</div>
-
-<div class="modal-overlay" id="edit-request-modal">
-  <div class="modal" style="max-width:500px;">
-    <button class="modal-close" onclick="closeModal('edit-request-modal')">✕</button>
-    <h3>Edit Time Off Request</h3>
-    <p style="font-size:13px;color:#888;margin-bottom:16px;">Update the details below. Changes will be saved immediately.</p>
-    <input type="hidden" id="edit-req-id">
-    <div class="form-field"><label>Request Type</label><select id="edit-req-type"><option>Full Day Off</option><option>Multiple Days</option><option>Start Late</option><option>End Early</option><option>Mid-Day Appointment</option><option>Use PTO Hours</option></select></div>
-    <div class="form-row">
-      <div class="form-field"><label>Start Date</label><input type="date" id="edit-req-start"></div>
-      <div class="form-field"><label>End Date</label><input type="date" id="edit-req-end"></div>
-    </div>
-    <div class="form-field"><label>Reason</label><input type="text" id="edit-req-reason" placeholder="Brief reason..."></div>
-    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;">
-      <button class="btn btn-red btn-sm" onclick="deleteAdminRequest()" style="margin-right:auto;">🗑️ Delete Request</button>
-      <button class="btn btn-secondary" onclick="closeModal('edit-request-modal')">Cancel</button>
-      <button class="btn btn-primary" onclick="saveEditedRequest()">Save Changes</button>
-    </div>
-  </div>
-</div>
-
 <script>
 const SUPABASE_URL='https://iasphxpahlmjwkapyxrs.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlhc3BoeHBhaGxtandrYXB5eHJzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEzNDIyNDYsImV4cCI6MjA4NjkxODI0Nn0.ntQxEiEJqZOvXjfX58I-PPQ2ZOoAT_RgLyf3aWMeXds';
@@ -1327,18 +1256,29 @@ async function submitHandbookSig(){
 // POLICIES ENGINE
 function buildPolicies(){
   const list=document.getElementById('policy-list');
-  list.innerHTML=POLICIES.map((p,i)=>`<div class="policy-item" id="pol-${p.id}" data-signed="0"><div class="policy-check" id="check-${p.id}">–</div><div class="policy-info"><div class="policy-name">${p.name}</div><div class="policy-desc">${p.desc}</div><div class="policy-time" id="time-${p.id}"></div></div><button class="policy-btn policy-btn-read" id="pbtn-${p.id}" data-policyidx="${i}">Read &amp; Sign</button></div>`).join('');
+  list.innerHTML=POLICIES.map((p,i)=>`<div class="policy-item" id="pol-${p.id}" data-signed="0"><div class="policy-check" id="check-${p.id}">–</div><div class="policy-info"><div class="policy-name">${p.name}</div><div class="policy-desc">${p.desc}</div><div class="policy-time" id="time-${p.id}"></div></div><span class="policy-btn policy-btn-read" id="pbtn-${p.id}" data-policyidx="${i}" style="cursor:pointer;display:inline-block;padding:8px 16px;font-size:13px;font-weight:600;border-radius:6px;background:var(--navy);color:#fff;user-select:none;">Read &amp; Sign</span></div>`).join('');
   updateBadge();
 }
 // Single document-level listener for policy buttons — set up once, never blocked
 document.addEventListener('click',function(e){
-  var btn=e.target;
-  if(btn&&btn.classList&&btn.classList.contains('policy-btn-read')){
-    var idx=btn.getAttribute('data-policyidx');
-    if(idx!==null)openPolicyModal(parseInt(idx));
+  // Only process if employee portal is active
+  if(!document.getElementById('screen-portal').classList.contains('active'))return;
+  var el=e.target;
+  while(el&&el!==document){
+    if(el.hasAttribute&&el.hasAttribute('data-policyidx')){
+      var idx=el.getAttribute('data-policyidx');
+      if(idx!==null&&el.id&&el.id.indexOf('pbtn-')===0){
+        openPolicyModal(parseInt(idx));
+        return;
+      }
+    }
+    el=el.parentNode;
   }
 });
 window.openPolicyModal=function openPolicyModal(idx){
+  // Only open if employee portal is active
+  const portal=document.getElementById('screen-portal');
+  if(!portal||!portal.classList.contains('active'))return;
   currentPolicyIndex=idx;modalScrolled=false;
   const p=POLICIES[idx];
   document.getElementById('modal-title').textContent=p.name;
@@ -2719,5 +2659,76 @@ async function buildDocx(templateId){
 }
 
 </script>
+<!-- MODALS -->
+<div class="modal-overlay" id="policy-modal">
+  <div class="modal" style="max-width:640px;">
+    <button class="modal-close" onclick="closePolicyModal()">✕</button>
+    <h3 id="modal-title">Policy Title</h3>
+    <p id="modal-desc" style="color:#666;font-size:13px;margin-bottom:12px;">Please read the full policy below, then check the box and provide your electronic signature.</p>
+    <div class="modal-body" id="modal-body" onscroll="checkModalScroll()" style="max-height:340px;"></div>
+    <div style="background:#f8f9fa;border:1px solid var(--border);border-radius:8px;padding:14px;margin-top:12px;">
+      <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:13px;">
+        <input type="checkbox" id="modal-understand-check" onchange="checkModalSig()" style="margin-top:2px;width:16px;height:16px;accent-color:var(--navy);">
+        <span>I have read and understand this policy in its entirety, and I agree to comply with all terms and conditions described above.</span>
+      </label>
+    </div>
+    <div class="sig-field" style="margin-top:12px;"><label>Electronic Signature — Type your full legal name *</label><input type="text" id="modal-sig" placeholder="Type your full name to sign..." oninput="checkModalSig()"></div>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:8px;"><label style="font-size:12px;color:#666;min-width:90px;">Date Signed:</label><input type="date" id="modal-date" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;"></div>
+    <div class="sig-legal" style="margin-top:8px;">By typing your name above, you are providing a legally binding electronic signature under the E-SIGN Act.</div>
+    <div style="color:#888;font-size:11px;margin-top:4px;" id="modal-scroll-note">📖 Please scroll to the bottom of the policy before signing.</div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;">
+      <button class="btn-secondary" onclick="closePolicyModal()">Cancel</button>
+      <button class="btn-primary" id="modal-sign-btn" onclick="signPolicy()" disabled>✍ Sign &amp; Acknowledge</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="template-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('template-modal')">✕</button>
+    <h3 id="tmpl-title">Template</h3>
+    <p id="tmpl-desc">Fill in the fields below, then download your Word document.</p>
+    <div id="tmpl-form"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;">
+      <button class="btn btn-secondary" onclick="closeModal('template-modal')">Cancel</button>
+      <button class="btn btn-primary" id="tmpl-download-btn" onclick="downloadTemplate()">⬇️ Download Word Doc</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="warning-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('warning-modal')">✕</button>
+    <h3 id="warn-modal-title">Attendance Warning</h3>
+    <p id="warn-modal-desc">Review and edit the warning below before generating.</p>
+    <div id="warn-form"></div>
+    <div class="preview-box" id="warn-preview" style="display:none;"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px;">
+      <button class="btn btn-secondary" onclick="closeModal('warning-modal')">Cancel</button>
+      <button class="btn btn-red" id="warn-gen-btn" onclick="generateWarning()">Generate Warning Letter</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="edit-request-modal">
+  <div class="modal" style="max-width:500px;">
+    <button class="modal-close" onclick="closeModal('edit-request-modal')">✕</button>
+    <h3>Edit Time Off Request</h3>
+    <p style="font-size:13px;color:#888;margin-bottom:16px;">Update the details below. Changes will be saved immediately.</p>
+    <input type="hidden" id="edit-req-id">
+    <div class="form-field"><label>Request Type</label><select id="edit-req-type"><option>Full Day Off</option><option>Multiple Days</option><option>Start Late</option><option>End Early</option><option>Mid-Day Appointment</option><option>Use PTO Hours</option></select></div>
+    <div class="form-row">
+      <div class="form-field"><label>Start Date</label><input type="date" id="edit-req-start"></div>
+      <div class="form-field"><label>End Date</label><input type="date" id="edit-req-end"></div>
+    </div>
+    <div class="form-field"><label>Reason</label><input type="text" id="edit-req-reason" placeholder="Brief reason..."></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;">
+      <button class="btn btn-red btn-sm" onclick="deleteAdminRequest()" style="margin-right:auto;">🗑️ Delete Request</button>
+      <button class="btn btn-secondary" onclick="closeModal('edit-request-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEditedRequest()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
