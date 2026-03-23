@@ -1255,30 +1255,10 @@ async function submitHandbookSig(){
 
 // POLICIES ENGINE
 function buildPolicies(){
-  const list=document.getElementById('policy-list');
-  list.innerHTML=POLICIES.map((p,i)=>`<div class="policy-item" id="pol-${p.id}" data-signed="0"><div class="policy-check" id="check-${p.id}">–</div><div class="policy-info"><div class="policy-name">${p.name}</div><div class="policy-desc">${p.desc}</div><div class="policy-time" id="time-${p.id}"></div></div><span class="policy-btn policy-btn-read" id="pbtn-${p.id}" data-policyidx="${i}" style="cursor:pointer;display:inline-block;padding:8px 16px;font-size:13px;font-weight:600;border-radius:6px;background:var(--navy);color:#fff;user-select:none;">Read &amp; Sign</span></div>`).join('');
+  document.getElementById('policy-list').innerHTML=POLICIES.map((p,i)=>`<div class="policy-item" id="pol-${p.id}" data-signed="0"><div class="policy-check" id="check-${p.id}">–</div><div class="policy-info"><div class="policy-name">${p.name}</div><div class="policy-desc">${p.desc}</div><div class="policy-time" id="time-${p.id}"></div></div><button class="policy-btn policy-btn-read" id="pbtn-${p.id}" onclick="openPolicyModal(${i})">Read & Sign</button></div>`).join('');
   updateBadge();
 }
-// Single document-level listener for policy buttons — set up once, never blocked
-document.addEventListener('click',function(e){
-  // Only process if employee portal is active
-  if(!document.getElementById('screen-portal').classList.contains('active'))return;
-  var el=e.target;
-  while(el&&el!==document){
-    if(el.hasAttribute&&el.hasAttribute('data-policyidx')){
-      var idx=el.getAttribute('data-policyidx');
-      if(idx!==null&&el.id&&el.id.indexOf('pbtn-')===0){
-        openPolicyModal(parseInt(idx));
-        return;
-      }
-    }
-    el=el.parentNode;
-  }
-});
 window.openPolicyModal=function openPolicyModal(idx){
-  // Only open if employee portal is active
-  const portal=document.getElementById('screen-portal');
-  if(!portal||!portal.classList.contains('active'))return;
   currentPolicyIndex=idx;modalScrolled=false;
   const p=POLICIES[idx];
   document.getElementById('modal-title').textContent=p.name;
