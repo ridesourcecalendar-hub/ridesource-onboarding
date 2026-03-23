@@ -1328,17 +1328,13 @@ async function submitHandbookSig(){
 function buildPolicies(){
   const list=document.getElementById('policy-list');
   list.innerHTML=POLICIES.map((p,i)=>`<div class="policy-item" id="pol-${p.id}" data-signed="0"><div class="policy-check" id="check-${p.id}">–</div><div class="policy-info"><div class="policy-name">${p.name}</div><div class="policy-desc">${p.desc}</div><div class="policy-time" id="time-${p.id}"></div></div><button class="policy-btn policy-btn-read" id="pbtn-${p.id}">Read &amp; Sign</button></div>`).join('');
-  setTimeout(function(){
-    POLICIES.forEach(function(p,i){
-      const btn=document.getElementById('pbtn-'+p.id);
-      if(btn){
-        btn.onclick=function(){openPolicyModal(i);};
-      }
-    });
-  },100);
+  POLICIES.forEach(function(p,i){
+    var btn=document.getElementById('pbtn-'+p.id);
+    if(btn){btn.setAttribute('onclick','openPolicyModal('+i+')');}
+  });
   updateBadge();
 }
-function openPolicyModal(idx){
+window.openPolicyModal=function openPolicyModal(idx){
   currentPolicyIndex=idx;modalScrolled=false;
   const p=POLICIES[idx];
   document.getElementById('modal-title').textContent=p.name;
