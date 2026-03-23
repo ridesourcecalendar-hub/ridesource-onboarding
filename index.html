@@ -1033,6 +1033,9 @@ function startPortal(){
   document.getElementById('vr-date').value=new Date().toISOString().split('T')[0];
   // Hide completion banner until Supabase confirms
   document.getElementById('all-signed-banner').style.display='none';
+  // Move policy modal to body to escape any CSS containment
+  var pm=document.getElementById('policy-modal');
+  if(pm&&pm.parentNode!==document.body)document.body.appendChild(pm);
 }
 function logout(){
   saveState();user=null;trainingSection=0;handbookSection=0;
