@@ -1327,12 +1327,10 @@ async function submitHandbookSig(){
 // POLICIES ENGINE
 function buildPolicies(){
   const list=document.getElementById('policy-list');
-  list.innerHTML=POLICIES.map((p,i)=>`<div class="policy-item" id="pol-${p.id}" data-signed="0" data-idx="${i}"><div class="policy-check" id="check-${p.id}">–</div><div class="policy-info"><div class="policy-name">${p.name}</div><div class="policy-desc">${p.desc}</div><div class="policy-time" id="time-${p.id}"></div></div><button class="policy-btn policy-btn-read" id="pbtn-${p.id}" data-idx="${i}">Read &amp; Sign</button></div>`).join('');
-  const newList=list.cloneNode(true);
-  list.parentNode.replaceChild(newList,list);
-  newList.addEventListener('click',function(e){
-    const btn=e.target.closest('button.policy-btn-read');
-    if(btn){const idx=parseInt(btn.dataset.idx);openPolicyModal(idx);}
+  list.innerHTML=POLICIES.map((p,i)=>`<div class="policy-item" id="pol-${p.id}" data-signed="0"><div class="policy-check" id="check-${p.id}">–</div><div class="policy-info"><div class="policy-name">${p.name}</div><div class="policy-desc">${p.desc}</div><div class="policy-time" id="time-${p.id}"></div></div><button class="policy-btn policy-btn-read" id="pbtn-${p.id}">Read &amp; Sign</button></div>`).join('');
+  POLICIES.forEach(function(p,i){
+    const btn=document.getElementById('pbtn-'+p.id);
+    if(btn){btn.addEventListener('click',function(){openPolicyModal(i);});}
   });
   updateBadge();
 }
