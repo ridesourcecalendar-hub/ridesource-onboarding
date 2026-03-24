@@ -215,6 +215,27 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 .file-upload-area{border:2px dashed var(--border);border-radius:8px;padding:24px;text-align:center;cursor:pointer;transition:all .2s;background:var(--gray);}
 .file-upload-area:hover,.file-upload-area.has-file{border-color:var(--success);background:#f0faf4;}
 @media(max-width:768px){.sidebar{display:none;}.main-content{padding:16px;}.doc-body{padding:20px;}}
+.profile-header{background:linear-gradient(135deg,var(--navy) 0%,#2c3e6b 100%);border-radius:12px;padding:28px 32px;color:#fff;display:flex;align-items:center;gap:24px;margin-bottom:20px;}
+.profile-avatar{width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:900;color:#fff;flex-shrink:0;border:2px solid rgba(255,255,255,.3);}
+.profile-name{font-size:22px;font-weight:900;margin-bottom:2px;}
+.profile-meta{font-size:13px;opacity:.75;margin-bottom:6px;}
+.profile-badge{display:inline-block;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);border-radius:10px;padding:2px 10px;font-size:11px;font-weight:700;margin-right:6px;}
+.profile-tab{padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer;border:none;background:none;color:#888;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .15s;white-space:nowrap;}
+.profile-tab:hover{color:var(--navy);}
+.profile-tab.active{color:var(--navy);border-bottom-color:var(--navy);}
+.profile-tab-panel{display:none;}
+.profile-tab-panel.active{display:block;}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
+.info-field{background:var(--gray);border-radius:8px;padding:12px 16px;}
+.info-label{font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
+.info-value{font-size:14px;color:var(--navy);font-weight:600;}
+.info-value.empty{color:#bbb;font-weight:400;font-style:italic;}
+.profile-list-item{display:flex;align-items:flex-start;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.profile-list-item:last-child{border-bottom:none;}
+.folder-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:12px;cursor:pointer;transition:all .2s;}
+.folder-card:hover{border-color:var(--navy);box-shadow:0 2px 8px rgba(0,0,0,.08);}
+.folder-card-name{font-size:16px;font-weight:800;color:var(--navy);margin-bottom:2px;}
+.folder-card-meta{font-size:12px;color:#888;}
 </style>
 </head>
 <body>
@@ -505,6 +526,8 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
         <div class="nav-item" onclick="showAdmin('templates')" id="nav-adm-templates"><span class="nav-icon">📄</span>HR Templates</div>
         <div class="nav-item" onclick="showAdmin('warnings')" id="nav-adm-warnings"><span class="nav-icon">⚠️</span>Attendance Warnings<span class="nav-badge" id="badge-flags">0</span></div>
         <div class="nav-item" onclick="showAdmin('onboarding-tracker')" id="nav-adm-onboarding-tracker"><span class="nav-icon">✅</span>Onboarding Tracker</div>
+        <div class="sidebar-label">Employee Folders</div>
+        <div class="nav-item" onclick="showAdmin('employee-folders')" id="nav-adm-employee-folders"><span class="nav-icon">🗂️</span>Employee Profiles</div>
         <div class="sidebar-label">Time Off</div>
         <div class="nav-item" onclick="showAdmin('requests')" id="nav-adm-requests"><span class="nav-icon">📅</span>Time Off Requests<span class="nav-badge" id="badge-requests">0</span></div>
         <div class="nav-item" onclick="showAdmin('callouts')" id="nav-adm-callouts"><span class="nav-icon">📞</span>Call-Out Log</div>
@@ -655,6 +678,95 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
           <input type="text" id="req-search" placeholder="🔍  Search by employee name..." oninput="renderRequestsTable()" style="padding:9px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;width:280px;">
         </div>
         <div id="requests-table">Loading...</div>
+      </div>
+
+      <!-- EMPLOYEE FOLDERS -->
+      <div id="section-adm-employee-folders" class="admin-section">
+        <div style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:4px;">🗂️ Employee Profiles</div>
+        <p style="color:#888;font-size:13px;margin-bottom:16px;">Auto-generated on onboarding completion. Admin can also create profiles manually.</p>
+
+        <!-- LIST VIEW -->
+        <div id="emp-folder-list-view">
+          <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap;">
+            <input type="text" id="emp-folder-search" placeholder="🔍  Search by name or county..." oninput="filterEmployeeFolders()" style="padding:9px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;flex:1;min-width:200px;">
+            <button class="btn btn-primary btn-sm" onclick="openCreateProfileModal()">＋ Create Profile</button>
+          </div>
+          <div id="emp-folder-grid"><p style="color:#888;font-size:13px;">Loading profiles...</p></div>
+        </div>
+
+        <!-- PROFILE DETAIL VIEW (hidden until a profile is opened) -->
+        <div id="emp-folder-detail-view" style="display:none;">
+          <button onclick="closeProfileDetail()" class="btn btn-secondary btn-sm" style="margin-bottom:16px;">← Back to All Profiles</button>
+
+          <!-- Profile Header Card -->
+          <div class="profile-header" id="emp-profile-header">
+            <div class="profile-avatar" id="emp-profile-avatar">?</div>
+            <div style="flex:1;">
+              <div class="profile-name" id="emp-profile-name">—</div>
+              <div class="profile-meta" id="emp-profile-meta">—</div>
+              <div id="emp-profile-badges"></div>
+            </div>
+            <button onclick="openEditProfileModal()" class="btn btn-sm" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);">✏️ Edit Profile</button>
+          </div>
+
+          <!-- Profile Tabs -->
+          <div style="display:flex;gap:2px;border-bottom:2px solid var(--border);margin-bottom:20px;flex-wrap:wrap;">
+            <button class="profile-tab active" id="ptab-info" onclick="switchProfileTab('info')">👤 Info</button>
+            <button class="profile-tab" id="ptab-warnings" onclick="switchProfileTab('warnings')">⚠️ Warning History</button>
+            <button class="profile-tab" id="ptab-callouts" onclick="switchProfileTab('callouts')">📞 Call-Out History</button>
+            <button class="profile-tab" id="ptab-timeoff" onclick="switchProfileTab('timeoff')">📅 Time Off</button>
+          </div>
+
+          <!-- Info Tab -->
+          <div class="profile-tab-panel active" id="ppanel-info">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+              <div>
+                <div style="font-size:12px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Employment</div>
+                <div class="info-grid" style="grid-template-columns:1fr;">
+                  <div class="info-field"><div class="info-label">Position</div><div class="info-value" id="pinfo-position">—</div></div>
+                  <div class="info-field"><div class="info-label">Hire Date</div><div class="info-value" id="pinfo-hire-date">—</div></div>
+                  <div class="info-field"><div class="info-label">County</div><div class="info-value" id="pinfo-county">—</div></div>
+                </div>
+              </div>
+              <div>
+                <div style="font-size:12px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Contact</div>
+                <div class="info-grid" style="grid-template-columns:1fr;">
+                  <div class="info-field"><div class="info-label">Email</div><div class="info-value" id="pinfo-email">—</div></div>
+                  <div class="info-field"><div class="info-label">Phone</div><div class="info-value" id="pinfo-phone">—</div></div>
+                  <div class="info-field"><div class="info-label">Address</div><div class="info-value" id="pinfo-address">—</div></div>
+                </div>
+              </div>
+            </div>
+            <div style="margin-top:20px;">
+              <div style="font-size:12px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Emergency Contact</div>
+              <div class="info-grid">
+                <div class="info-field"><div class="info-label">Name</div><div class="info-value" id="pinfo-ec-name">—</div></div>
+                <div class="info-field"><div class="info-label">Phone</div><div class="info-value" id="pinfo-ec-phone">—</div></div>
+                <div class="info-field"><div class="info-label">Relationship</div><div class="info-value" id="pinfo-ec-relation">—</div></div>
+              </div>
+            </div>
+            <div style="margin-top:20px;">
+              <div style="font-size:12px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Notes</div>
+              <div class="info-field"><div class="info-value" id="pinfo-notes" style="font-weight:400;line-height:1.6;">—</div></div>
+            </div>
+          </div>
+
+          <!-- Warnings Tab -->
+          <div class="profile-tab-panel" id="ppanel-warnings">
+            <div id="pdata-warnings"><p style="color:#888;font-size:13px;">Loading...</p></div>
+          </div>
+
+          <!-- Call-Outs Tab -->
+          <div class="profile-tab-panel" id="ppanel-callouts">
+            <div id="pdata-callouts"><p style="color:#888;font-size:13px;">Loading...</p></div>
+          </div>
+
+          <!-- Time Off Tab -->
+          <div class="profile-tab-panel" id="ppanel-timeoff">
+            <div id="pdata-timeoff"><p style="color:#888;font-size:13px;">Loading...</p></div>
+          </div>
+
+        </div><!-- end detail view -->
       </div>
 
       <!-- CALL-OUT LOG -->
@@ -950,6 +1062,7 @@ function showAdmin(id){
   document.querySelectorAll('#screen-admin .nav-item').forEach(el=>el.classList.remove('active'));
   document.getElementById('section-adm-'+id).style.display='block';
   document.getElementById('nav-adm-'+id).classList.add('active');
+  if(id==='employee-folders')loadEmployeeFolders();
 }
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 
@@ -1455,8 +1568,245 @@ function generateCertificate(){
   window.open(URL.createObjectURL(new Blob([certHTML],{type:'text/html'})),'_blank');
 }
 async function notifyCompletion(){
+  // Auto-create employee profile on onboarding completion
+  try{
+    const {data:existing}=await db.from('employee_profiles').select('id').eq('employee_email',user.email).limit(1);
+    if(!existing||existing.length===0){
+      await db.from('employee_profiles').insert([{
+        employee_name:user.name,
+        employee_email:user.email,
+        county:user.county,
+        notes:'Profile auto-created on onboarding completion — '+new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}),
+        created_by:'System (Onboarding)',
+        created_at:new Date().toISOString(),
+        updated_at:new Date().toISOString()
+      }]);
+    }
+  }catch(e){console.log('Profile auto-create:',e);}
   if(typeof emailjs==='undefined')return;
   try{await emailjs.send(EMAILJS_SERVICE_ID,'timeoff_submission',{employee_name:user.name,employee_email:user.email,county:user.county,request_type:'ONBOARDING COMPLETE',start_date:new Date().toLocaleDateString(),end_date:'',time_detail:'All policies signed.',reason:user.name+' has completed all onboarding acknowledgments.',portal_url:PORTAL_URL,to_email:SUPERVISOR_EMAIL});}catch(e){console.log(e);}
+}
+
+// ── EMPLOYEE PROFILES ──
+let allProfilesCache=[];
+let currentProfileId=null;
+
+async function loadEmployeeFolders(){
+  const el=document.getElementById('emp-folder-grid');
+  if(!el)return;
+  try{
+    const {data}=await db.from('employee_profiles').select('*').order('employee_name',{ascending:true});
+    allProfilesCache=data||[];
+    renderEmployeeFolderGrid(allProfilesCache);
+  }catch(e){if(el)el.innerHTML='<p style="color:#888;font-size:13px;">Unable to load profiles.</p>';}
+}
+function filterEmployeeFolders(){
+  const q=(document.getElementById('emp-folder-search')?.value||'').toLowerCase();
+  const filtered=allProfilesCache.filter(p=>(p.employee_name||'').toLowerCase().includes(q)||(p.county||'').toLowerCase().includes(q));
+  renderEmployeeFolderGrid(filtered);
+}
+function renderEmployeeFolderGrid(profiles){
+  const el=document.getElementById('emp-folder-grid');
+  if(!el)return;
+  if(!profiles||profiles.length===0){
+    el.innerHTML=`<div style="text-align:center;padding:40px;color:#888;">
+      <div style="font-size:40px;margin-bottom:12px;">🗂️</div>
+      <div style="font-weight:700;margin-bottom:6px;">No profiles yet</div>
+      <div style="font-size:13px;">Profiles are created automatically when employees complete onboarding, or you can create one manually.</div>
+    </div>`;
+    return;
+  }
+  el.innerHTML=profiles.map(p=>{
+    const initials=(p.employee_name||'?').split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+    const hireDate=p.hire_date?new Date(p.hire_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'No hire date set';
+    const createdDate=p.created_at?new Date(p.created_at).toLocaleDateString('en-US',{month:'short',year:'numeric'}):'';
+    return `<div class="folder-card" onclick="openProfileDetail(${p.id})">
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div style="width:44px;height:44px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff;flex-shrink:0;">${initials}</div>
+        <div style="flex:1;">
+          <div class="folder-card-name">${p.employee_name}</div>
+          <div class="folder-card-meta">${p.county||'No county'} ${p.position?'· '+p.position:''} ${hireDate!=='No hire date set'?'· Hired '+hireDate:''}</div>
+        </div>
+        <div style="font-size:12px;color:#bbb;">${createdDate}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+async function openProfileDetail(id){
+  const p=allProfilesCache.find(x=>x.id===id);
+  if(!p)return;
+  currentProfileId=id;
+  // Render header
+  const initials=(p.employee_name||'?').split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+  document.getElementById('emp-profile-avatar').textContent=initials;
+  document.getElementById('emp-profile-name').textContent=p.employee_name||'—';
+  document.getElementById('emp-profile-meta').textContent=(p.position||'Position not set')+' · '+(p.county||'No county')+(p.employee_email?' · '+p.employee_email:'');
+  const badges=[];
+  if(p.hire_date)badges.push('Hired '+new Date(p.hire_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}));
+  if(p.created_by)badges.push('Profile: '+p.created_by);
+  document.getElementById('emp-profile-badges').innerHTML=badges.map(b=>`<span class="profile-badge">${b}</span>`).join('');
+  // Info tab
+  const setVal=(id,val)=>{const el=document.getElementById(id);if(el){el.textContent=val||'—';el.className='info-value'+(val?'':' empty');}};
+  setVal('pinfo-position',p.position);
+  setVal('pinfo-hire-date',p.hire_date?new Date(p.hire_date+'T00:00:00').toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}):null);
+  setVal('pinfo-county',p.county);
+  setVal('pinfo-email',p.employee_email);
+  setVal('pinfo-phone',p.phone);
+  setVal('pinfo-address',p.address);
+  setVal('pinfo-ec-name',p.emergency_contact_name);
+  setVal('pinfo-ec-phone',p.emergency_contact_phone);
+  setVal('pinfo-ec-relation',p.emergency_contact_relation);
+  setVal('pinfo-notes',p.notes);
+  // Show detail view
+  document.getElementById('emp-folder-list-view').style.display='none';
+  document.getElementById('emp-folder-detail-view').style.display='block';
+  switchProfileTab('info');
+  // Load tab data
+  loadProfileWarnings(p.employee_name,p.county);
+  loadProfileCallOuts(p.employee_name,p.county);
+  loadProfileTimeOff(p.employee_email);
+}
+function closeProfileDetail(){
+  currentProfileId=null;
+  document.getElementById('emp-folder-detail-view').style.display='none';
+  document.getElementById('emp-folder-list-view').style.display='block';
+}
+function switchProfileTab(tab){
+  ['info','warnings','callouts','timeoff'].forEach(t=>{
+    document.getElementById('ptab-'+t)?.classList.toggle('active',t===tab);
+    document.getElementById('ppanel-'+t)?.classList.toggle('active',t===tab);
+  });
+}
+async function loadProfileWarnings(name,county){
+  const el=document.getElementById('pdata-warnings');
+  if(!el)return;
+  try{
+    const {data:callouts}=await db.from('call_out_log').select('*').ilike('employee_name','%'+name.split(' ')[0]+'%').order('callout_date',{ascending:false});
+    const {data:warnStatus}=await db.from('warning_status').select('*').ilike('employee_name','%'+name.split(' ')[0]+'%').order('updated_at',{ascending:false});
+    let html='';
+    if(warnStatus&&warnStatus.length>0){
+      html+=`<div style="margin-bottom:16px;"><div style="font-size:12px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Warning Stage History</div>`;
+      html+=warnStatus.map(w=>{
+        const s=WARN_STAGES.find(x=>x.id===w.stage)||{label:w.stage,color:'#f0f0f0',text:'#555'};
+        return `<div class="profile-list-item">
+          <div><span style="background:${s.color};color:${s.text};padding:2px 10px;border-radius:10px;font-size:11px;font-weight:700;">${s.label}</span>
+          ${w.note?`<span style="margin-left:8px;font-size:12px;color:#666;">${w.note}</span>`:''}
+          </div>
+          <div style="font-size:11px;color:#aaa;white-space:nowrap;">${new Date(w.updated_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})} · ${w.updated_by||'Admin'}</div>
+        </div>`;
+      }).join('');
+      html+='</div>';
+    }
+    if(!warnStatus||warnStatus.length===0)html='<p style="color:#888;font-size:13px;padding:20px 0;">No warning stages recorded for this employee.</p>';
+    el.innerHTML=html;
+  }catch(e){el.innerHTML='<p style="color:#888;font-size:13px;">Unable to load warning history.</p>';}
+}
+async function loadProfileCallOuts(name){
+  const el=document.getElementById('pdata-callouts');
+  if(!el)return;
+  try{
+    const {data}=await db.from('call_out_log').select('*').ilike('employee_name','%'+name.split(' ')[0]+'%').order('callout_date',{ascending:false});
+    if(!data||data.length===0){el.innerHTML='<p style="color:#888;font-size:13px;padding:20px 0;">No call-outs on record.</p>';return;}
+    el.innerHTML=`<div style="font-size:13px;color:#888;margin-bottom:12px;">${data.length} total call-out(s) on record</div>`+
+      data.map(c=>`<div class="profile-list-item">
+        <div><strong>${c.callout_date}</strong> — ${c.reason} ${c.call_type&&c.call_type!=='N/A'?`<span style="background:#fef3e8;color:var(--warn);padding:1px 7px;border-radius:8px;font-size:11px;margin-left:4px;">${c.call_type}</span>`:''}
+        ${c.notes?`<div style="font-size:12px;color:#888;margin-top:2px;">${c.notes}</div>`:''}
+        </div>
+        <div style="font-size:11px;color:#aaa;">Logged by ${c.logged_by||'Admin'}</div>
+      </div>`).join('');
+  }catch(e){el.innerHTML='<p style="color:#888;font-size:13px;">Unable to load call-out history.</p>';}
+}
+async function loadProfileTimeOff(email){
+  const el=document.getElementById('pdata-timeoff');
+  if(!el)return;
+  if(!email){el.innerHTML='<p style="color:#888;font-size:13px;padding:20px 0;">No email on file — cannot look up time off requests.</p>';return;}
+  try{
+    const {data}=await db.from('time_off_requests').select('*').eq('employee_email',email).order('submitted_at',{ascending:false});
+    if(!data||data.length===0){el.innerHTML='<p style="color:#888;font-size:13px;padding:20px 0;">No time off requests on record.</p>';return;}
+    el.innerHTML=data.map(r=>{
+      const badgeClass=r.status==='APPROVED'?'approved':r.status==='DENIED'?'denied':r.status==='PTO_PENDING'?'pto_pending':'pending';
+      const badgeLabel=r.status==='PTO_PENDING'?'PTO PENDING':r.status;
+      return `<div class="profile-list-item">
+        <div><strong>${r.request_type}</strong> — ${r.start_date}${r.end_date&&r.end_date!==r.start_date?' → '+r.end_date:''}
+        ${r.time_detail?`<span style="font-size:12px;color:#888;"> (${r.time_detail})</span>`:''}
+        ${r.reason?`<div style="font-size:12px;color:#888;margin-top:2px;">${r.reason}</div>`:''}
+        </div>
+        <span class="badge badge-${badgeClass}">${badgeLabel}</span>
+      </div>`;
+    }).join('');
+  }catch(e){el.innerHTML='<p style="color:#888;font-size:13px;">Unable to load time off history.</p>';}
+}
+function openCreateProfileModal(){
+  document.getElementById('cpm-name').value='';
+  document.getElementById('cpm-email').value='';
+  document.getElementById('cpm-county').value='';
+  document.getElementById('cpm-position').value='';
+  document.getElementById('cpm-hire-date').value='';
+  document.getElementById('cpm-phone').value='';
+  document.getElementById('cpm-address').value='';
+  document.getElementById('cpm-ec-name').value='';
+  document.getElementById('cpm-ec-phone').value='';
+  document.getElementById('cpm-ec-relation').value='';
+  document.getElementById('cpm-notes').value='';
+  document.getElementById('cpm-id').value='';
+  document.getElementById('create-profile-modal-title').textContent='Create Employee Profile';
+  document.getElementById('create-profile-modal').classList.add('open');
+}
+function openEditProfileModal(){
+  const p=allProfilesCache.find(x=>x.id===currentProfileId);
+  if(!p)return;
+  document.getElementById('cpm-id').value=p.id;
+  document.getElementById('cpm-name').value=p.employee_name||'';
+  document.getElementById('cpm-email').value=p.employee_email||'';
+  document.getElementById('cpm-county').value=p.county||'';
+  document.getElementById('cpm-position').value=p.position||'';
+  document.getElementById('cpm-hire-date').value=p.hire_date||'';
+  document.getElementById('cpm-phone').value=p.phone||'';
+  document.getElementById('cpm-address').value=p.address||'';
+  document.getElementById('cpm-ec-name').value=p.emergency_contact_name||'';
+  document.getElementById('cpm-ec-phone').value=p.emergency_contact_phone||'';
+  document.getElementById('cpm-ec-relation').value=p.emergency_contact_relation||'';
+  document.getElementById('cpm-notes').value=p.notes||'';
+  document.getElementById('create-profile-modal-title').textContent='Edit Employee Profile';
+  document.getElementById('create-profile-modal').classList.add('open');
+}
+async function saveProfile(){
+  const id=document.getElementById('cpm-id').value;
+  const name=document.getElementById('cpm-name').value.trim();
+  const email=document.getElementById('cpm-email').value.trim();
+  if(!name){alert('Employee name is required.');return;}
+  const profile={
+    employee_name:name,employee_email:email,
+    county:document.getElementById('cpm-county').value,
+    position:document.getElementById('cpm-position').value.trim(),
+    hire_date:document.getElementById('cpm-hire-date').value||null,
+    phone:document.getElementById('cpm-phone').value.trim(),
+    address:document.getElementById('cpm-address').value.trim(),
+    emergency_contact_name:document.getElementById('cpm-ec-name').value.trim(),
+    emergency_contact_phone:document.getElementById('cpm-ec-phone').value.trim(),
+    emergency_contact_relation:document.getElementById('cpm-ec-relation').value.trim(),
+    notes:document.getElementById('cpm-notes').value.trim(),
+    updated_at:new Date().toISOString()
+  };
+  const btn=document.getElementById('cpm-save-btn');
+  btn.disabled=true;btn.textContent='Saving...';
+  try{
+    if(id){
+      await db.from('employee_profiles').update(profile).eq('id',id);
+    }else{
+      profile.created_by=adminName;
+      profile.created_at=new Date().toISOString();
+      await db.from('employee_profiles').insert([profile]);
+    }
+    closeModal('create-profile-modal');
+    await loadEmployeeFolders();
+    if(id){
+      // refresh detail view
+      const updated=allProfilesCache.find(x=>x.id===parseInt(id));
+      if(updated)openProfileDetail(parseInt(id));
+    }
+  }catch(e){alert('Error saving profile: '+e.message);}
+  btn.disabled=false;btn.textContent='Save Profile';
 }
 
 // ADMIN MANAGER GUIDE
@@ -3062,6 +3412,46 @@ async function buildDocx(templateId){
       <button class="btn btn-red btn-sm" onclick="deleteAdminRequest()" style="margin-right:auto;">🗑️ Delete Request</button>
       <button class="btn btn-secondary" onclick="closeModal('edit-request-modal')">Cancel</button>
       <button class="btn btn-primary" onclick="saveEditedRequest()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="create-profile-modal">
+  <div class="modal" style="max-width:640px;">
+    <button class="modal-close" onclick="closeModal('create-profile-modal')">✕</button>
+    <h3 id="create-profile-modal-title" style="color:var(--navy);margin-bottom:4px;">Create Employee Profile</h3>
+    <p style="font-size:13px;color:#888;margin-bottom:20px;">Fill in what you know now — all fields except name are optional and can be updated anytime.</p>
+    <input type="hidden" id="cpm-id">
+    <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Basic Info</div>
+    <div class="form-row">
+      <div class="form-field"><label>Full Name *</label><input type="text" id="cpm-name" placeholder="e.g. Jane Smith"></div>
+      <div class="form-field"><label>Email</label><input type="email" id="cpm-email" placeholder="e.g. jane@email.com"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-field"><label>County</label>
+        <select id="cpm-county" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+          <option value="">Select county</option>
+          <option>Androscoggin</option><option>Aroostook</option><option>Cumberland</option><option>Franklin</option><option>Hancock</option><option>Kennebec</option><option>Knox</option><option>Lincoln</option><option>Oxford</option><option>Penobscot</option><option>Piscataquis</option><option>Sagadahoc</option><option>Somerset</option><option>Waldo</option><option>Washington</option><option>York</option>
+        </select>
+      </div>
+      <div class="form-field"><label>Position</label><input type="text" id="cpm-position" placeholder="e.g. Driver, Volunteer Driver"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-field"><label>Hire Date</label><input type="date" id="cpm-hire-date"></div>
+      <div class="form-field"><label>Phone</label><input type="text" id="cpm-phone" placeholder="207-555-0000"></div>
+    </div>
+    <div class="form-field"><label>Address</label><input type="text" id="cpm-address" placeholder="Street, City, State, ZIP"></div>
+    <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin:16px 0 10px;">Emergency Contact</div>
+    <div class="form-row">
+      <div class="form-field"><label>Name</label><input type="text" id="cpm-ec-name" placeholder="Contact name"></div>
+      <div class="form-field"><label>Phone</label><input type="text" id="cpm-ec-phone" placeholder="207-555-0000"></div>
+    </div>
+    <div class="form-field"><label>Relationship</label><input type="text" id="cpm-ec-relation" placeholder="e.g. Spouse, Parent, Sibling"></div>
+    <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin:16px 0 10px;">Notes</div>
+    <div class="form-field"><textarea id="cpm-notes" placeholder="Any additional notes about this employee..." style="min-height:70px;"></textarea></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;">
+      <button class="btn btn-secondary" onclick="closeModal('create-profile-modal')">Cancel</button>
+      <button class="btn btn-primary" id="cpm-save-btn" onclick="saveProfile()">Save Profile</button>
     </div>
   </div>
 </div>
