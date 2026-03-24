@@ -480,257 +480,6 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 </div><!-- end screen-portal -->
 
 <!-- ADMIN PORTAL -->
-<div id="screen-admin" class="screen">
-  <div class="header">
-    <div class="header-logo">
-      <div class="header-logo-text">Ride<span>Source</span></div>
-      <div class="header-logo-sub">Reliable · Safe · Transportation</div>
-    </div>
-    <div class="header-right">
-      <div class="header-badge">ADMIN</div>
-      <span style="color:rgba(255,255,255,.7);font-size:13px;" id="admin-display"></span>
-      <button class="btn-logout" onclick="adminLogout()">Sign Out</button>
-    </div>
-  </div>
-  <div class="portal-layout">
-    <div class="sidebar">
-      <div style="padding:0 8px;">
-        <div class="sidebar-label">Overview</div>
-        <div class="nav-item active" onclick="showAdmin('dashboard')" id="nav-adm-dashboard"><span class="nav-icon">📊</span>Dashboard</div>
-        <div class="sidebar-label">Reference</div>
-        <div class="nav-item" onclick="showAdmin('manager-guide')" id="nav-adm-manager-guide"><span class="nav-icon">📘</span>Manager Guide</div>
-        <div class="nav-item" onclick="showAdmin('handbook-ref')" id="nav-adm-handbook-ref"><span class="nav-icon">📖</span>Employee Handbook</div>
-        <div class="sidebar-label">HR Tools</div>
-        <div class="nav-item" onclick="showAdmin('templates')" id="nav-adm-templates"><span class="nav-icon">📄</span>HR Templates</div>
-        <div class="nav-item" onclick="showAdmin('warnings')" id="nav-adm-warnings"><span class="nav-icon">⚠️</span>Attendance Warnings<span class="nav-badge" id="badge-flags">0</span></div>
-        <div class="nav-item" onclick="showAdmin('onboarding-tracker')" id="nav-adm-onboarding-tracker"><span class="nav-icon">✅</span>Onboarding Tracker</div>
-        <div class="sidebar-label">Time Off</div>
-        <div class="nav-item" onclick="showAdmin('requests')" id="nav-adm-requests"><span class="nav-icon">📅</span>Time Off Requests<span class="nav-badge" id="badge-requests">0</span></div>
-        <div class="nav-item" onclick="showAdmin('callouts')" id="nav-adm-callouts"><span class="nav-icon">📞</span>Call-Out Log</div>
-        <div class="nav-item" onclick="showAdmin('calendar')" id="nav-adm-calendar"><span class="nav-icon">🗓️</span>Team Calendar</div>
-        <div class="sidebar-label">Operations</div>
-        <div class="nav-item" onclick="showAdmin('timesheets')" id="nav-adm-timesheets"><span class="nav-icon">🕐</span>Timesheets<span class="nav-badge" id="badge-timesheets">0</span></div>
-        <div class="nav-item" onclick="showAdmin('vehicle-records')" id="nav-adm-vehicle-records"><span class="nav-icon">🚐</span>Vehicle Records</div>
-        <div class="sidebar-label">Resources</div>
-        <div class="nav-item" onclick="showAdmin('documents')" id="nav-adm-documents"><span class="nav-icon">📥</span>Document Library</div>
-      </div>
-    </div>
-    <div class="main-content">
-
-      <!-- ADMIN DASHBOARD -->
-      <div id="section-adm-dashboard" class="admin-section" style="display:block;">
-        <div style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:4px;">Admin Dashboard</div>
-        <p style="color:#888;font-size:13px;margin-bottom:20px;">Welcome back, <strong id="dash-admin-name"></strong>. Here's your team at a glance.</p>
-        <div class="stats-grid" id="dash-stats"></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-          <div class="card"><div class="card-title">⏳ Pending Time Off Requests</div><div id="dash-pending-list" style="font-size:13px;color:#888;">Loading...</div></div>
-          <div class="card"><div class="card-title">🚩 Attendance Flags</div><div id="dash-flags-list" style="font-size:13px;color:#888;">Loading...</div></div>
-        </div>
-      </div>
-
-      <!-- MANAGER GUIDE -->
-      <div id="section-adm-manager-guide" class="admin-section">
-        <div style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:4px;">📘 Supervisor &amp; Manager Guide</div>
-        <p style="color:#888;font-size:13px;margin-bottom:20px;">Version 1.0 · February 2026 · Confidential</p>
-        <div class="doc-reader">
-          <div class="doc-nav"><div class="doc-nav-title">RideSource Supervisor &amp; Manager Guide</div></div>
-          <div class="doc-tabs" id="mgr-tabs"></div>
-          <div class="doc-body" id="mgr-body"></div>
-          <div class="doc-footer">
-            <div style="font-size:12px;color:#888;">Confidential — Management Use Only</div>
-            <div style="display:flex;gap:8px;"><button class="btn btn-secondary btn-sm" onclick="changeMgrSection(-1)">← Previous</button><button class="btn btn-primary btn-sm" onclick="changeMgrSection(1)">Next →</button></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- HANDBOOK REF -->
-      <div id="section-adm-handbook-ref" class="admin-section">
-        <div style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:4px;">📖 Employee Handbook Reference</div>
-        <div class="card" style="padding:16px 20px;background:var(--light);border-color:#b8ccf0;margin-bottom:16px;">
-          <p style="font-size:13px;color:var(--navy);font-weight:600;">📌 Printed Copy Requests</p>
-          <div id="print-requests-list" style="margin-top:12px;font-size:13px;color:#888;">Loading...</div>
-        </div>
-        <div class="doc-reader">
-          <div class="doc-nav"><div class="doc-nav-title">Employee Handbook v3.0 — Reference Copy</div></div>
-          <div class="doc-tabs" id="hb-ref-tabs"></div>
-          <div class="doc-body" id="hb-ref-body"></div>
-          <div class="doc-footer">
-            <div style="font-size:12px;color:#888;">Read-only reference</div>
-            <div style="display:flex;gap:8px;"><button class="btn btn-secondary btn-sm" onclick="changeHbRefSection(-1)">← Previous</button><button class="btn btn-primary btn-sm" onclick="changeHbRefSection(1)">Next →</button></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- HR TEMPLATES -->
-      <div id="section-adm-templates" class="admin-section">
-        <div style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:4px;">📄 HR Templates</div>
-        <p style="color:#888;font-size:13px;margin-bottom:20px;">Fill out any template below and download it as a Word document (.docx).</p>
-        <div style="font-size:12px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Hiring</div>
-        <div class="template-grid" style="margin-bottom:24px;">
-          <div class="template-card" onclick="openTemplate('welcome')"><div class="template-icon">🎉</div><div class="template-name">Welcome Aboard Letter</div><div class="template-desc">New hire welcome letter with training instructions.</div></div>
-          <div class="template-card" onclick="openTemplate('rejection')"><div class="template-icon">📨</div><div class="template-name">Letter of Rejection</div><div class="template-desc">Professional rejection letter for applicants not selected.</div></div>
-          <div class="template-card" onclick="openTemplate('interview')"><div class="template-icon">🗣️</div><div class="template-name">Interview Questions Form</div><div class="template-desc">Standardized driver interview form with hire decision.</div></div>
-        </div>
-        <div style="font-size:12px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">New Employee Forms</div>
-        <div class="template-grid" style="margin-bottom:24px;">
-          <div class="template-card" onclick="openTemplate('driverinfo')"><div class="template-icon">🪪</div><div class="template-name">Driver Info Form</div><div class="template-desc">New driver candidate information.</div></div>
-          <div class="template-card" onclick="openTemplate('emergency')"><div class="template-icon">🚨</div><div class="template-name">Emergency Contact Form</div><div class="template-desc">Employee emergency contacts with signature block.</div></div>
-          <div class="template-card" onclick="openTemplate('consent')"><div class="template-icon">📋</div><div class="template-name">Consent for Certification Release</div><div class="template-desc">Authorization for release of training certifications.</div></div>
-        </div>
-        <div style="font-size:12px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Recognition &amp; Complaints</div>
-        <div class="template-grid" style="margin-bottom:24px;">
-          <div class="template-card" onclick="openTemplate('accolades')"><div class="template-icon">⭐</div><div class="template-name">Employee Accolades Form</div><div class="template-desc">Record a compliment or commendation about an employee.</div></div>
-          <div class="template-card" onclick="openTemplate('complaint')"><div class="template-icon">📢</div><div class="template-name">Employee Complaint Form</div><div class="template-desc">Formal workplace concern submission form.</div></div>
-          <div class="template-card" onclick="openTemplate('investigation')"><div class="template-icon">🔍</div><div class="template-name">Supervisor Investigation Form</div><div class="template-desc">Internal investigation form — HR use only.</div></div>
-        </div>
-        <div style="font-size:12px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Separation &amp; HR</div>
-        <div class="template-grid" style="margin-bottom:24px;">
-          <div class="template-card" onclick="openTemplate('resignation')"><div class="template-icon">📝</div><div class="template-name">Voluntary Resignation Acknowledgment</div><div class="template-desc">Formal acknowledgment with off-boarding checklist.</div></div>
-          <div class="template-card" onclick="openTemplate('warn-standard')"><div class="template-icon">⚠️</div><div class="template-name">Attendance Warning — Standard</div><div class="template-desc">Written attendance warning for general call-out concerns.</div></div>
-          <div class="template-card" onclick="openTemplate('warn-callout')"><div class="template-icon">📵</div><div class="template-name">Attendance Warning — Call-Out After Trip</div><div class="template-desc">Warning for call-outs after manifest finalized.</div></div>
-          <div class="template-card" onclick="openTemplate('warn-final')"><div class="template-icon">🚨</div><div class="template-name">Final Written Warning</div><div class="template-desc">Last step before termination.</div></div>
-        </div>
-        <div style="font-size:12px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin:0 0 10px;">Performance Management</div>
-        <div class="template-grid">
-          <div class="template-card" onclick="openTemplate('eval30')"><div class="template-icon">📊</div><div class="template-name">30-Day Evaluation</div><div class="template-desc">Introductory performance review at 30 days.</div></div>
-          <div class="template-card" onclick="openTemplate('eval60')"><div class="template-icon">📊</div><div class="template-name">60-Day Evaluation</div><div class="template-desc">Mid-probation performance review at 60 days.</div></div>
-          <div class="template-card" onclick="openTemplate('eval90')"><div class="template-icon">🏆</div><div class="template-name">90-Day Evaluation</div><div class="template-desc">Final introductory period performance review.</div></div>
-          <div class="template-card" onclick="openTemplate('pip')"><div class="template-icon">⚠️</div><div class="template-name">Performance Improvement Plan</div><div class="template-desc">Full 7-section PIP with 13-week check-in log.</div></div>
-        </div>
-      </div>
-
-      <!-- ATTENDANCE WARNINGS -->
-      <div id="section-adm-warnings" class="admin-section">
-        <div style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:4px;">⚠️ Attendance Warning Generator</div>
-        <p style="color:#888;font-size:13px;margin-bottom:20px;">System automatically detects employees with 3+ call-outs in 30 days.</p>
-        <div id="flagged-employees" style="margin-bottom:20px;"><p style="font-size:13px;color:#888;">Loading attendance data...</p></div>
-        <div class="card">
-          <div class="card-title">🔍 Manual Warning Lookup</div>
-          <div class="form-row" style="margin-bottom:12px;">
-            <div class="form-field"><label>Employee Name</label><input type="text" id="manual-name" placeholder="Enter employee name..."></div>
-            <div class="form-field"><label>County</label><select id="manual-county"><option value="">All Counties</option><option>Androscoggin</option><option>Aroostook</option><option>Cumberland</option><option>Franklin</option><option>Hancock</option><option>Kennebec</option><option>Knox</option><option>Lincoln</option><option>Oxford</option><option>Penobscot</option><option>Piscataquis</option><option>Sagadahoc</option><option>Somerset</option><option>Waldo</option><option>Washington</option><option>York</option></select></div>
-          </div>
-          <button class="btn btn-primary btn-sm" onclick="manualLookup()">Search Call-Out History</button>
-          <div id="manual-results" style="margin-top:14px;"></div>
-        </div>
-      </div>
-
-      <!-- ONBOARDING TRACKER -->
-      <div id="section-adm-onboarding-tracker" class="admin-section">
-        <div style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:4px;">✅ Onboarding Tracker</div>
-        <p style="color:#888;font-size:13px;margin-bottom:20px;">Track which employees have completed policy acknowledgments.</p>
-        <div id="onboarding-data" style="font-size:13px;color:#888;">Loading...</div>
-      </div>
-
-      <!-- TIME OFF REQUESTS -->
-      <div id="section-adm-requests" class="admin-section">
-        <div style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:4px;">📅 Time Off Requests</div>
-        <p style="color:#888;font-size:13px;margin-bottom:14px;">Review and approve or deny employee time off requests.</p>
-        <div style="display:flex;gap:2px;border-bottom:2px solid var(--border);margin-bottom:18px;flex-wrap:wrap;">
-          <button id="req-tab-PENDING" class="req-tab req-tab-active" onclick="setReqTab('PENDING')">🕐 Pending<span class="req-count" id="req-count-PENDING" style="background:var(--red);color:#fff;">0</span></button>
-          <button id="req-tab-APPROVED" class="req-tab req-tab-approved" onclick="setReqTab('APPROVED')">✅ Approved<span class="req-count" id="req-count-APPROVED" style="background:#ddd;color:#555;">0</span></button>
-          <button id="req-tab-DENIED" class="req-tab req-tab-denied" onclick="setReqTab('DENIED')">✗ Denied<span class="req-count" id="req-count-DENIED" style="background:#ddd;color:#555;">0</span></button>
-          <button id="req-tab-PTO" class="req-tab req-tab-pto" onclick="setReqTab('PTO')">💰 PTO<span class="req-count" id="req-count-PTO" style="background:#ddd;color:#555;">0</span></button>
-          <button id="req-tab-ALL" class="req-tab" style="margin-left:auto;" onclick="setReqTab('ALL')">All</button>
-        </div>
-        <div id="requests-table">Loading...</div>
-      </div>
-
-      <!-- CALL-OUT LOG -->
-      <div id="section-adm-callouts" class="admin-section">
-        <div style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:4px;">📞 Call-Out Log</div>
-        <p style="color:#888;font-size:13px;margin-bottom:20px;">Log employee call-outs. This data powers the attendance warning system automatically.</p>
-        <div class="card" style="margin-bottom:16px;">
-          <div class="card-title">Log a New Call-Out</div>
-          <div class="form-row">
-            <div class="form-field"><label>Employee Name</label><input type="text" id="co-name" placeholder="Full name..."></div>
-            <div class="form-field"><label>County</label><select id="co-county"><option value="">Select county</option><option>Androscoggin</option><option>Aroostook</option><option>Cumberland</option><option>Franklin</option><option>Hancock</option><option>Kennebec</option><option>Knox</option><option>Lincoln</option><option>Oxford</option><option>Penobscot</option><option>Piscataquis</option><option>Sagadahoc</option><option>Somerset</option><option>Waldo</option><option>Washington</option><option>York</option></select></div>
-          </div>
-          <div class="form-row">
-            <div class="form-field"><label>Call-Out Date</label><input type="date" id="co-date"></div>
-            <div class="form-field"><label>Reason</label><select id="co-reason"><option>Sick</option><option>Family Emergency</option><option>Weather</option><option>No reason provided</option><option>Other</option></select></div>
-          </div>
-          <div class="form-row">
-            <div class="form-field"><label>Call Type</label><select id="co-call-type"><option>Call In Advance</option><option>Call After List</option><option>Call Mid Shift</option><option>N/A</option></select></div>
-            <div class="form-field"><label>Notes</label><input type="text" id="co-notes" placeholder="Optional notes..."></div>
-          </div>
-          <div class="form-field"><label>Notes</label><input type="text" id="co-notes" placeholder="Optional notes..."></div>
-          <button class="btn btn-primary" onclick="logCallOut()">Log Call-Out</button>
-          <span id="co-msg" style="font-size:13px;color:var(--success);margin-left:12px;display:none;">✓ Logged!</span>
-        </div>
-        <div class="card"><div class="card-title">Recent Call-Outs</div><div id="callout-table">Loading...</div></div>
-      </div>
-
-      <!-- TEAM CALENDAR -->
-      <div id="section-adm-calendar" class="admin-section">
-        <div style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:4px;">🗓️ Team Calendar</div>
-        <p style="color:#888;font-size:13px;margin-bottom:20px;">Approved time off and call-outs, color-coded by county.</p>
-        <div class="card">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
-            <button class="btn btn-secondary btn-sm" onclick="changeMonth(-1)">← Previous</button>
-            <div style="display:flex;align-items:center;gap:12px;">
-              <span style="font-size:16px;font-weight:700;color:var(--navy);" id="cal-month-label"></span>
-              <select id="cal-county-filter" onchange="renderCalendar()" style="padding:6px 12px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-weight:600;">
-                <option value="ALL">All Counties</option>
-                <option value="Hancock">Hancock</option><option value="Washington">Washington</option><option value="Waldo">Waldo</option><option value="Knox">Knox</option><option value="Somerset">Somerset</option><option value="Androscoggin">Androscoggin</option><option value="Cumberland">Cumberland</option><option value="Franklin">Franklin</option><option value="Kennebec">Kennebec</option><option value="Lincoln">Lincoln</option><option value="Oxford">Oxford</option><option value="Penobscot">Penobscot</option><option value="Piscataquis">Piscataquis</option><option value="Sagadahoc">Sagadahoc</option><option value="York">York</option><option value="Aroostook">Aroostook</option>
-              </select>
-            </div>
-            <button class="btn btn-secondary btn-sm" onclick="changeMonth(1)">Next →</button>
-          </div>
-          <div id="cal-grid"></div>
-          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;" id="cal-legend"></div>
-        </div>
-      </div>
-
-      <!-- TIMESHEETS ADMIN -->
-      <div id="section-adm-timesheets" class="admin-section">
-        <div style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:4px;">🕐 Timesheet Review</div>
-        <p style="color:#888;font-size:13px;margin-bottom:14px;">Review employee submitted timesheets. Compare against TWE and approve.</p>
-        <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center;">
-          <button class="btn btn-secondary btn-sm" onclick="filterTimesheets('PENDING')" id="ts-filter-pending">⏳ Pending</button>
-          <button class="btn btn-secondary btn-sm" onclick="filterTimesheets('APPROVED')" id="ts-filter-approved">✅ Approved</button>
-          <button class="btn btn-secondary btn-sm" onclick="filterTimesheets('ALL')" id="ts-filter-all">All</button>
-          <button class="btn btn-primary btn-sm" onclick="exportTimesheets()" style="margin-left:auto;">⬇️ Export CSV</button>
-        </div>
-        <div id="timesheets-table">Loading...</div>
-      </div>
-
-      <!-- VEHICLE RECORDS ADMIN -->
-      <div id="section-adm-vehicle-records" class="admin-section">
-        <div style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:4px;">🚐 Vehicle Records</div>
-        <p style="color:#888;font-size:13px;margin-bottom:14px;">All vehicle reports submitted by drivers. Filter by vehicle ID or issue type.</p>
-        <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center;">
-          <input type="text" id="vr-filter-vehicle" placeholder="Filter by vehicle ID..." style="padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;" oninput="filterVehicleRecords()">
-          <select id="vr-filter-type" onchange="filterVehicleRecords()" style="padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;">
-            <option value="">All Types</option><option>Damage</option><option>Mechanical Issue</option><option>Oil Change Receipt</option><option>Repair Receipt</option><option>Windshield / Glass</option><option>Tire Issue</option><option>Interior Issue</option><option>Other</option>
-          </select>
-          <button class="btn btn-primary btn-sm" onclick="exportVehicleRecords()" style="margin-left:auto;">⬇️ Export CSV</button>
-        </div>
-        <div id="vehicle-records-table">Loading...</div>
-      </div>
-
-      <!-- DOCUMENT LIBRARY -->
-      <div id="section-adm-documents" class="admin-section">
-        <div style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:4px;">📥 Document Library</div>
-        <p style="color:#888;font-size:13px;margin-bottom:20px;">Download official RideSource documents for printing or offline reference.</p>
-
-        <div style="font-size:12px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Core Documents</div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:28px;">
-        <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:24px;"><div style="font-size:32px;margin-bottom:10px;">📖</div><div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px;">Employee Handbook</div><div style="font-size:12px;color:#888;margin-bottom:16px;">Version 6 · February 2026</div><a href="https://ridesourcecalendar-hub.github.io/ridesource-onboarding/RideSource_Employee_Handbook_v6.docx" download style="display:inline-flex;align-items:center;gap:8px;background:var(--navy);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;">⬇️ Download .docx</a></div><div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:24px;"><div style="font-size:32px;margin-bottom:10px;">📋</div><div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px;">Driver Training Guide</div><div style="font-size:12px;color:#888;margin-bottom:16px;">Version 2.1 · February 2026</div><a href="https://ridesourcecalendar-hub.github.io/ridesource-onboarding/RideSource_Driver_Training_Guide_v2_1.docx" download style="display:inline-flex;align-items:center;gap:8px;background:var(--navy);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;">⬇️ Download .docx</a></div><div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:24px;"><div style="font-size:32px;margin-bottom:10px;">✅</div><div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px;">New Employee Onboarding Checklist</div><div style="font-size:12px;color:#888;margin-bottom:16px;">Updated 2026</div><a href="https://ridesourcecalendar-hub.github.io/ridesource-onboarding/RideSource_Onboarding_Checklist.docx" download style="display:inline-flex;align-items:center;gap:8px;background:var(--navy);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;">⬇️ Download .docx</a></div><div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:24px;"><div style="font-size:32px;margin-bottom:10px;">📘</div><div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px;">Supervisor &amp; Manager Guide</div><div style="font-size:12px;color:#888;margin-bottom:16px;">Version F1 · Confidential</div><a href="https://ridesourcecalendar-hub.github.io/ridesource-onboarding/RideSource_Manager_Guide_vF1.docx" download style="display:inline-flex;align-items:center;gap:8px;background:var(--navy);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;">⬇️ Download .docx</a></div>
-        </div><div style="font-size:12px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin:24px 0 10px;">Hiring</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:28px;">
-        <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:24px;"><div style="font-size:32px;margin-bottom:10px;">🎉</div><div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px;">Welcome Aboard Letter</div><div style="font-size:12px;color:#888;margin-bottom:16px;">New hire welcome letter with training instructions</div><a href="https://ridesourcecalendar-hub.github.io/ridesource-onboarding/Welcome_Aboard_Letter.docx" download style="display:inline-flex;align-items:center;gap:8px;background:var(--navy);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;">⬇️ Download .docx</a></div><div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:24px;"><div style="font-size:32px;margin-bottom:10px;">📨</div><div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px;">Letter of Rejection</div><div style="font-size:12px;color:#888;margin-bottom:16px;">Professional rejection letter for applicants not selected</div><a href="https://ridesourcecalendar-hub.github.io/ridesource-onboarding/Letter_of_Rejection.docx" download style="display:inline-flex;align-items:center;gap:8px;background:var(--navy);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;">⬇️ Download .docx</a></div><div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:24px;"><div style="font-size:32px;margin-bottom:10px;">🗣️</div><div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px;">Interview Questions Form</div><div style="font-size:12px;color:#888;margin-bottom:16px;">Standardized driver interview form with hire decision</div><a href="https://ridesourcecalendar-hub.github.io/ridesource-onboarding/Interview_Questions.docx" download style="display:inline-flex;align-items:center;gap:8px;background:var(--navy);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;">⬇️ Download .docx</a></div>
-        </div><div style="font-size:12px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin:24px 0 10px;">Attendance Warnings</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:28px;">
-        <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:24px;"><div style="font-size:32px;margin-bottom:10px;">⚠️</div><div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px;">Attendance Warning — Standard</div><div style="font-size:12px;color:#888;margin-bottom:16px;">Written attendance warning for general call-out concerns</div><a href="https://ridesourcecalendar-hub.github.io/ridesource-onboarding/Attendance_Warning_Standard_-_Copy.docx" download style="display:inline-flex;align-items:center;gap:8px;background:var(--navy);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;">⬇️ Download .docx</a></div><div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:24px;"><div style="font-size:32px;margin-bottom:10px;">📵</div><div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px;">Attendance Warning — Call-Out After Trip</div><div style="font-size:12px;color:#888;margin-bottom:16px;">Warning for call-outs after manifest finalized</div><a href="https://ridesourcecalendar-hub.github.io/ridesource-onboarding/Attendance_Warning_CallOuts.docx" download style="display:inline-flex;align-items:center;gap:8px;background:var(--navy);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;">⬇️ Download .docx</a></div><div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:24px;"><div style="font-size:32px;margin-bottom:10px;">🚨</div><div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px;">Attendance Warning — Final Written</div><div style="font-size:12px;color:#888;margin-bottom:16px;">Last step before termination</div><a href="https://ridesourcecalendar-hub.github.io/ridesource-onboarding/Attendance_Warning_Final.docx" download style="display:inline-flex;align-items:center;gap:8px;background:var(--navy);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;">⬇️ Download .docx</a></div>
-        </div><div style="font-size:12px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin:24px 0 10px;">Recognition & Complaints</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:28px;">
-        <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:24px;"><div style="font-size:32px;margin-bottom:10px;">⭐</div><div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px;">Employee Accolades Form</div><div style="font-size:12px;color:#888;margin-bottom:16px;">Record a compliment or commendation about an employee</div><a href="https://ridesourcecalendar-hub.github.io/ridesource-onboarding/RideSource_Employee_Accolades_Form.docx" download style="display:inline-flex;align-items:center;gap:8px;background:var(--navy);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;">⬇️ Download .docx</a></div><div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:24px;"><div style="font-size:32px;margin-bottom:10px;">📢</div><div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px;">Employee Complaint Form</div><div style="font-size:12px;color:#888;margin-bottom:16px;">Formal workplace concern submission form</div><a href="https://ridesourcecalendar-hub.github.io/ridesource-onboarding/RideSource_Employee_Complaint_Form.docx" download style="display:inline-flex;align-items:center;gap:8px;background:var(--navy);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;">⬇️ Download .docx</a></div><div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:24px;"><div style="font-size:32px;margin-bottom:10px;">🔍</div><div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px;">Supervisor Investigation Form</div><div style="font-size:12px;color:#888;margin-bottom:16px;">Internal investigation form — HR use only</div><a href="https://ridesourcecalendar-hub.github.io/ridesource-onboarding/RideSource_Supervisor_Investigation_Form.docx" download style="display:inline-flex;align-items:center;gap:8px;background:var(--navy);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;">⬇️ Download .docx</a></div>
-        </div><div style="font-size:12px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin:24px 0 10px;">Performance Management</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:28px;">
-        <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:24px;"><div style="font-size:32px;margin-bottom:10px;">📊</div><div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px;">30-Day Performance Evaluation</div><div style="font-size:12px;color:#888;margin-bottom:16px;">10 categories · Supervisor recommendation</div><a href="https://ridesourcecalendar-hub.github.io/ridesource-onboarding/RideSource_30Day_Performance_Evaluation.docx" download style="display:inline-flex;align-items:center;gap:8px;background:var(--navy);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;">⬇️ Download .docx</a></div><div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:24px;"><div style="font-size:32px;margin-bottom:10px;">📊</div><div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px;">60-Day Performance Evaluation</div><div style="font-size:12px;color:#888;margin-bottom:16px;">10 categories · Mid-probation review</div><a href="https://ridesourcecalendar-hub.github.io/ridesource-onboarding/RideSource_60Day_Performance_Evaluation.docx" download style="display:inline-flex;align-items:center;gap:8px;background:var(--navy);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;">⬇️ Download .docx</a></div><div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:24px;"><div style="font-size:32px;margin-bottom:10px;">🏆</div><div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px;">90-Day Performance Evaluation</div><div style="font-size:12px;color:#888;margin-bottom:16px;">Final review · Extend/Separate options</div><a href="https://ridesourcecalendar-hub.github.io/ridesource-onboarding/RideSource_90Day_Performance_Evaluation.docx" download style="display:inline-flex;align-items:center;gap:8px;background:var(--navy);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;">⬇️ Download .docx</a></div><div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:24px;"><div style="font-size:32px;margin-bottom:10px;">⚠️</div><div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px;">Performance Improvement Plan (PIP)</div><div style="font-size:12px;color:#888;margin-bottom:16px;">7 sections · 13-week check-in log</div><a href="https://ridesourcecalendar-hub.github.io/ridesource-onboarding/RideSource_Performance_Improvement_Plan.docx" download style="display:inline-flex;align-items:center;gap:8px;background:var(--navy);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;">⬇️ Download .docx</a></div>
-        </div>
-
-      </div><!-- end main-content -->
-  </div><!-- end portal-layout -->
-</div><!-- end screen-portal -->
-
 <!-- ADMIN PORTAL -->
 <div id="screen-admin" class="screen">
   <div class="header">
@@ -906,7 +655,6 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
             <div class="form-field"><label>Call Type</label><select id="co-call-type"><option>Call In Advance</option><option>Call After List</option><option>Call Mid Shift</option><option>N/A</option></select></div>
             <div class="form-field"><label>Notes</label><input type="text" id="co-notes" placeholder="Optional notes..."></div>
           </div>
-          <div class="form-field"><label>Notes</label><input type="text" id="co-notes" placeholder="Optional notes..."></div>
           <button class="btn btn-primary" onclick="logCallOut()">Log Call-Out</button>
           <span id="co-msg" style="font-size:13px;color:var(--success);margin-left:12px;display:none;">✓ Logged!</span>
         </div>
@@ -950,11 +698,81 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
       <!-- VEHICLE RECORDS ADMIN -->
       <div id="section-adm-vehicle-records" class="admin-section">
         <div style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:4px;">🚐 Vehicle Records</div>
-        <p style="color:#888;font-size:13px;margin-bottom:14px;">All vehicle reports submitted by drivers. Filter by vehicle ID or issue type.</p>
+        <p style="color:#888;font-size:13px;margin-bottom:16px;">All vehicle reports from drivers and admin. Filter, update status, or create a new admin report below.</p>
+
+        <!-- ADMIN REPORT FORM (collapsible) -->
+        <div class="card" style="margin-bottom:16px;border:2px solid var(--navy);">
+          <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="toggleAdminVRForm()">
+            <div class="card-title" style="margin-bottom:0;">🛠️ Create Admin Vehicle Report</div>
+            <span id="admin-vr-toggle-icon" style="font-size:18px;color:var(--navy);font-weight:700;">＋</span>
+          </div>
+          <div id="admin-vr-form" style="display:none;margin-top:20px;">
+            <div style="background:var(--light);border-left:4px solid var(--navy);border-radius:0 8px 8px 0;padding:10px 14px;margin-bottom:16px;font-size:13px;color:var(--navy);">Use this form to log a report for any vehicle — including unassigned, stored, or out-of-service vehicles.</div>
+            <div class="form-row">
+              <div class="form-field"><label>Vehicle ID / Asset Tag *</label><input type="text" id="avr-vehicle-id" placeholder="e.g. 876-CQD"></div>
+              <div class="form-field"><label>Date of Report *</label><input type="date" id="avr-date"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-field"><label>Reported By *</label><input type="text" id="avr-reported-by" placeholder="Name of person filing this report..."></div>
+              <div class="form-field"><label>Last Used By</label><input type="text" id="avr-last-used-by" placeholder="Driver name or 'Unassigned'..."></div>
+            </div>
+            <div class="form-row">
+              <div class="form-field"><label>Vehicle Status</label>
+                <select id="avr-vehicle-status" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                  <option value="">— Select Status —</option>
+                  <option>In Use</option>
+                  <option>Parked at Depot</option>
+                  <option>Parked Off-Site</option>
+                  <option>Out of Service</option>
+                  <option>Awaiting Repair</option>
+                </select>
+              </div>
+              <div class="form-field"><label>Storage / Parking Location</label><input type="text" id="avr-location" placeholder="Where is the vehicle stored or parked?"></div>
+            </div>
+            <div class="form-field"><label>Issue Type(s) — Select all that apply</label>
+              <div class="issue-type-grid" id="avr-issue-type-grid">
+                <div class="issue-type-btn" onclick="toggleAdminIssueType(this,'Damage')">🔧 Damage</div>
+                <div class="issue-type-btn" onclick="toggleAdminIssueType(this,'Mechanical Issue')">⚙️ Mechanical Issue</div>
+                <div class="issue-type-btn" onclick="toggleAdminIssueType(this,'Oil Change Receipt')">🛢️ Oil Change Receipt</div>
+                <div class="issue-type-btn" onclick="toggleAdminIssueType(this,'Repair Receipt')">🧾 Repair Receipt</div>
+                <div class="issue-type-btn" onclick="toggleAdminIssueType(this,'Windshield / Glass')">🪟 Windshield / Glass</div>
+                <div class="issue-type-btn" onclick="toggleAdminIssueType(this,'Tire Issue')">🔄 Tire Issue</div>
+                <div class="issue-type-btn" onclick="toggleAdminIssueType(this,'Interior Issue')">💺 Interior Issue</div>
+                <div class="issue-type-btn" onclick="toggleAdminIssueType(this,'Status Update Only')">📋 Status Update Only</div>
+                <div class="issue-type-btn" onclick="toggleAdminIssueType(this,'Other')">📝 Other</div>
+              </div>
+            </div>
+            <div class="form-field"><label>Description / Notes *</label>
+              <textarea id="avr-description" placeholder="Describe the issue, condition, or reason for this report..." style="width:100%;min-height:80px;padding:10px;border:2px solid var(--border);border-radius:8px;font-size:13px;font-family:Arial,sans-serif;outline:none;resize:vertical;"></textarea>
+            </div>
+            <div class="form-row">
+              <div class="form-field"><label>Mechanic Notes</label>
+                <textarea id="avr-mechanic-notes" placeholder="Any mechanic findings, recommendations, or repair notes..." style="width:100%;min-height:60px;padding:10px;border:2px solid var(--border);border-radius:8px;font-size:13px;font-family:Arial,sans-serif;outline:none;resize:vertical;"></textarea>
+              </div>
+              <div class="form-field">
+                <label>Appointment Date &amp; Time</label>
+                <input type="datetime-local" id="avr-appt-datetime" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;margin-bottom:8px;">
+                <label>Appointment Location</label>
+                <input type="text" id="avr-appt-location" placeholder="Shop name, address..." style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;margin-top:8px;">
+              <button class="btn btn-primary" onclick="submitAdminVehicleReport()">📋 Submit Admin Report</button>
+              <span id="avr-msg" style="font-size:13px;color:var(--success);display:none;">✓ Report saved!</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- FILTER BAR -->
         <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center;">
           <input type="text" id="vr-filter-vehicle" placeholder="Filter by vehicle ID..." style="padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;" oninput="filterVehicleRecords()">
           <select id="vr-filter-type" onchange="filterVehicleRecords()" style="padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;">
-            <option value="">All Types</option><option>Damage</option><option>Mechanical Issue</option><option>Oil Change Receipt</option><option>Repair Receipt</option><option>Windshield / Glass</option><option>Tire Issue</option><option>Interior Issue</option><option>Other</option>
+            <option value="">All Types</option><option>Damage</option><option>Mechanical Issue</option><option>Oil Change Receipt</option><option>Repair Receipt</option><option>Windshield / Glass</option><option>Tire Issue</option><option>Interior Issue</option><option>Status Update Only</option><option>Other</option>
+          </select>
+          <select id="vr-filter-source" onchange="filterVehicleRecords()" style="padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;">
+            <option value="">All Sources</option>
+            <option value="driver">Driver Reports</option>
+            <option value="admin">Admin Reports</option>
           </select>
           <button class="btn btn-primary btn-sm" onclick="exportVehicleRecords()" style="margin-left:auto;">⬇️ Export CSV</button>
         </div>
@@ -1004,6 +822,23 @@ let adminName='',mgrSection=0,hbRefSection=0;
 let calYear=new Date().getFullYear(),calMonth=new Date().getMonth(),warningData=null;
 let allRequestsCache=[],allTimesheetsCache=[],allVehicleRecordsCache=[];
 
+// SESSION RESTORE — re-login automatically on page refresh
+window.addEventListener('load',function(){
+  try{
+    const s=sessionStorage.getItem('rs_session');
+    if(!s)return;
+    const sess=JSON.parse(s);
+    if(sess.type==='employee'&&sess.name&&sess.email&&sess.county){
+      startPortal({name:sess.name,email:sess.email,county:sess.county});
+    } else if(sess.type==='admin'&&sess.name){
+      document.getElementById('admin-name').value=sess.name;
+      document.getElementById('admin-pass').value=ADMIN_PASSWORD;
+      adminLogin();
+      document.getElementById('admin-pass').value=''; // clear after auto-login
+    }
+  }catch(e){sessionStorage.removeItem('rs_session');}
+});
+
 // LANDING
 function switchLanding(mode){
   document.getElementById('landing-employee').style.display=mode==='employee'?'block':'none';
@@ -1013,18 +848,23 @@ function switchLanding(mode){
 }
 
 // EMPLOYEE AUTH
-function startPortal(){
-  const name=document.getElementById('login-name').value.trim();
-  const email=document.getElementById('login-email').value.trim();
-  const county=document.getElementById('login-county').value;
-  if(!name||!email||!county){document.getElementById('login-error').style.display='block';return;}
-  document.getElementById('login-error').style.display='none';
+function startPortal(opts){
+  let name,email,county;
+  if(opts){name=opts.name;email=opts.email;county=opts.county;}
+  else{
+    name=document.getElementById('login-name').value.trim();
+    email=document.getElementById('login-email').value.trim();
+    county=document.getElementById('login-county').value;
+    if(!name||!email||!county){document.getElementById('login-error').style.display='block';return;}
+    document.getElementById('login-error').style.display='none';
+  }
   // Reset ALL state before loading new user
   trainingSection=0;handbookSection=0;
   trainingSectionRead={};handbookSectionRead={};
   trainingComplete=false;handbookComplete=false;handbookSigChoice=null;
   currentReqType=null;selectedIssueTypes=[];selectedFile=null;
   user={name,email,county};
+  sessionStorage.setItem('rs_session',JSON.stringify({type:'employee',name,email,county}));
   document.getElementById('display-name').textContent=name;
   document.getElementById('screen-landing').classList.remove('active');
   document.getElementById('screen-portal').classList.add('active');
@@ -1040,6 +880,10 @@ function startPortal(){
 function logout(){
   saveState();user=null;trainingSection=0;handbookSection=0;
   trainingSectionRead={};handbookSectionRead={};trainingComplete=false;handbookComplete=false;
+  // Clear all personal data lists so next user doesn't see previous user's data
+  const clearIds=['my-requests-list','my-timesheets-list','my-vehicle-reports-list'];
+  clearIds.forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='<p style="color:#888;font-size:13px;">Loading...</p>';});
+  sessionStorage.removeItem('rs_session');
   document.getElementById('screen-portal').classList.remove('active');
   document.getElementById('screen-landing').classList.add('active');
 }
@@ -1053,6 +897,7 @@ function adminLogin(){
   adminName=name;
   document.getElementById('admin-display').textContent=name;
   document.getElementById('dash-admin-name').textContent=name.split(' ')[0];
+  sessionStorage.setItem('rs_session',JSON.stringify({type:'admin',name}));
   document.getElementById('screen-landing').classList.remove('active');
   document.getElementById('screen-admin').classList.add('active');
   buildMgrGuide();buildHbRef();
@@ -1060,6 +905,7 @@ function adminLogin(){
   loadTimesheets();loadVehicleRecords();
 }
 function adminLogout(){
+  sessionStorage.removeItem('rs_session');
   document.getElementById('screen-admin').classList.remove('active');
   document.getElementById('screen-landing').classList.add('active');
   document.getElementById('admin-pass').value='';
@@ -1399,6 +1245,7 @@ function resetTimeOff(){
 }
 async function loadMyRequests(){
   const el=document.getElementById('my-requests-list');if(!el)return;
+  el.innerHTML='<p style="color:#888;font-size:13px;">Loading...</p>'; // clear immediately
   try{
     const {data}=await db.from('time_off_requests').select('*').eq('employee_email',user.email).order('submitted_at',{ascending:false});
     if(!data||data.length===0){el.innerHTML='<p style="color:#888;font-size:13px;">No requests submitted yet.</p>';return;}
@@ -1431,11 +1278,11 @@ function buildTimesheetRows(){
   container.innerHTML=DAYS.map(day=>`
     <div class="timesheet-row">
       <div style="font-weight:600;font-size:13px;">${day}</div>
-      <div><input type="text" id="ts-${day}-vehicle" placeholder="e.g. 876-CQD" onchange="calcRowTotal('${day}')"></div>
-      <div><input type="time" id="ts-${day}-s1start" onchange="calcRowTotal('${day}')"></div>
-      <div><input type="time" id="ts-${day}-s1end" onchange="calcRowTotal('${day}')"></div>
-      <div><input type="time" id="ts-${day}-s2start" onchange="calcRowTotal('${day}')"></div>
-      <div><input type="time" id="ts-${day}-s2end" onchange="calcRowTotal('${day}')"></div>
+      <div><input type="text" id="ts-${day}-vehicle" placeholder="e.g. 876-CQD"></div>
+      <div><input type="time" id="ts-${day}-s1start" oninput="calcRowTotal('${day}')" onchange="calcRowTotal('${day}')"></div>
+      <div><input type="time" id="ts-${day}-s1end" oninput="calcRowTotal('${day}')" onchange="calcRowTotal('${day}')"></div>
+      <div><input type="time" id="ts-${day}-s2start" oninput="calcRowTotal('${day}')" onchange="calcRowTotal('${day}')"></div>
+      <div><input type="time" id="ts-${day}-s2end" oninput="calcRowTotal('${day}')" onchange="calcRowTotal('${day}')"></div>
       <div class="timesheet-total" id="ts-${day}-total">—</div>
     </div>`).join('');
   // Default week ending to next Friday
@@ -1448,16 +1295,35 @@ function calcRowTotal(day){
   const s1e=document.getElementById(`ts-${day}-s1end`)?.value;
   const s2s=document.getElementById(`ts-${day}-s2start`)?.value;
   const s2e=document.getElementById(`ts-${day}-s2end`)?.value;
+  function toMins(t){if(!t)return null;const[h,m]=t.split(':').map(Number);return h*60+m;}
   let total=0;
-  if(s1s&&s1e){const[h1,m1]=s1s.split(':').map(Number);const[h2,m2]=s1e.split(':').map(Number);const d=(h2*60+m2)-(h1*60+m1);if(d>0)total+=d/60;}
-  if(s2s&&s2e){const[h1,m1]=s2s.split(':').map(Number);const[h2,m2]=s2e.split(':').map(Number);const d=(h2*60+m2)-(h1*60+m1);if(d>0)total+=d/60;}
-  document.getElementById(`ts-${day}-total`).textContent=total>0?total.toFixed(2)+' hrs':'—';
+  const s1start=toMins(s1s),s1end=toMins(s1e);
+  if(s1start!==null&&s1end!==null){
+    let d=s1end-s1start;
+    if(d<0)d+=24*60; // overnight
+    total+=d;
+  }
+  const s2start=toMins(s2s),s2end=toMins(s2e);
+  if(s2start!==null&&s2end!==null){
+    let d=s2end-s2start;
+    if(d<0)d+=24*60; // overnight
+    total+=d;
+  }
+  const hrs=total/60;
+  document.getElementById(`ts-${day}-total`).textContent=hrs>0?hrs.toFixed(2)+' hrs':'—';
   updateTotalHours();
 }
 function updateTotalHours(){
   let grand=0;
-  DAYS.forEach(day=>{const el=document.getElementById(`ts-${day}-total`);if(el&&el.textContent!=='—')grand+=parseFloat(el.textContent);});
-  const display=document.getElementById('ts-total-display');if(display)display.textContent=`Total: ${grand.toFixed(2)} hrs`;
+  DAYS.forEach(day=>{
+    const el=document.getElementById(`ts-${day}-total`);
+    if(el&&el.textContent!=='—'){
+      const val=parseFloat(el.textContent);
+      if(!isNaN(val))grand+=val;
+    }
+  });
+  const display=document.getElementById('ts-total-display');
+  if(display)display.textContent=`Total: ${grand.toFixed(2)} hrs`;
 }
 async function submitTimesheet(){
   const weekEnding=document.getElementById('ts-week-ending')?.value;
@@ -1885,6 +1751,62 @@ function exportTimesheets(){
 }
 
 // VEHICLE RECORDS ADMIN
+let adminIssueTypes=[];
+function toggleAdminVRForm(){
+  const form=document.getElementById('admin-vr-form');
+  const icon=document.getElementById('admin-vr-toggle-icon');
+  const open=form.style.display==='none';
+  form.style.display=open?'block':'none';
+  icon.textContent=open?'－':'＋';
+  if(open){
+    document.getElementById('avr-date').value=new Date().toISOString().split('T')[0];
+    document.getElementById('avr-reported-by').value=adminName||'';
+  }
+}
+function toggleAdminIssueType(btn,type){
+  btn.classList.toggle('selected');
+  if(btn.classList.contains('selected')){if(!adminIssueTypes.includes(type))adminIssueTypes.push(type);}
+  else{adminIssueTypes=adminIssueTypes.filter(t=>t!==type);}
+}
+async function submitAdminVehicleReport(){
+  const vehicleId=document.getElementById('avr-vehicle-id').value.trim();
+  const date=document.getElementById('avr-date').value;
+  const reportedBy=document.getElementById('avr-reported-by').value.trim();
+  const description=document.getElementById('avr-description').value.trim();
+  if(!vehicleId||!date||!reportedBy||!description){alert('Please fill in Vehicle ID, Date, Reported By, and Description.');return;}
+  const issueTypes=adminIssueTypes.length>0?adminIssueTypes.join(', '):'Status Update Only';
+  const lastUsedBy=document.getElementById('avr-last-used-by').value.trim();
+  const vehicleStatus=document.getElementById('avr-vehicle-status').value;
+  const location=document.getElementById('avr-location').value.trim();
+  const mechanicNotes=document.getElementById('avr-mechanic-notes').value.trim();
+  const apptDatetime=document.getElementById('avr-appt-datetime').value;
+  const apptLocation=document.getElementById('avr-appt-location').value.trim();
+  // Build extended notes string to store in existing description field supplement
+  const adminExtra=JSON.stringify({last_used_by:lastUsedBy,vehicle_status:vehicleStatus,storage_location:location,mechanic_notes:mechanicNotes,appt_datetime:apptDatetime,appt_location:apptLocation});
+  try{
+    await db.from('vehicle_reports').insert([{
+      employee_name:reportedBy,
+      employee_email:'admin@ridesource',
+      county:'Admin',
+      vehicle_id:vehicleId,
+      report_date:date,
+      issue_types:issueTypes,
+      description:description,
+      admin_extra:adminExtra,
+      is_admin_report:true,
+      status:'NEW',
+      submitted_at:new Date().toISOString()
+    }]);
+    const msg=document.getElementById('avr-msg');msg.style.display='inline';setTimeout(()=>msg.style.display='none',3000);
+    // Reset form
+    ['avr-vehicle-id','avr-last-used-by','avr-location','avr-description','avr-mechanic-notes','avr-appt-location'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    document.getElementById('avr-vehicle-status').value='';
+    document.getElementById('avr-appt-datetime').value='';
+    document.querySelectorAll('#avr-issue-type-grid .issue-type-btn').forEach(b=>b.classList.remove('selected'));
+    adminIssueTypes=[];
+    loadVehicleRecords();
+  }catch(e){alert('Error saving report: '+e.message);}
+}
 async function loadVehicleRecords(){
   const {data}=await db.from('vehicle_reports').select('*').order('submitted_at',{ascending:false});
   allVehicleRecordsCache=data||[];
@@ -1897,14 +1819,45 @@ function renderVehicleRecordsTable(){
   const el=document.getElementById('vehicle-records-table');
   const vehicleFilter=document.getElementById('vr-filter-vehicle')?.value.toLowerCase()||'';
   const typeFilter=document.getElementById('vr-filter-type')?.value||'';
+  const sourceFilter=document.getElementById('vr-filter-source')?.value||'';
   let filtered=allVehicleRecordsCache;
   if(vehicleFilter)filtered=filtered.filter(r=>r.vehicle_id&&r.vehicle_id.toLowerCase().includes(vehicleFilter));
   if(typeFilter)filtered=filtered.filter(r=>r.issue_types&&r.issue_types.includes(typeFilter));
+  if(sourceFilter==='admin')filtered=filtered.filter(r=>r.is_admin_report);
+  if(sourceFilter==='driver')filtered=filtered.filter(r=>!r.is_admin_report);
   if(!filtered||filtered.length===0){el.innerHTML='<p style="color:#888;font-size:13px;padding:12px 0;">No vehicle records found.</p>';return;}
-  el.innerHTML='<div style="overflow-x:auto;"><table class="data-table"><thead><tr><th>Employee</th><th>County</th><th>Vehicle ID</th><th>Date</th><th>Issue Type(s)</th><th>Description</th><th>Photo/Receipt</th><th>Status</th><th>Actions</th></tr></thead><tbody>'+
+  el.innerHTML='<div style="overflow-x:auto;"><table class="data-table"><thead><tr><th>Source</th><th>Reported By</th><th>Vehicle ID</th><th>Date</th><th>Status</th><th>Issue Type(s)</th><th>Description</th><th>Details</th><th>Photo</th><th>Record Status</th><th>Actions</th></tr></thead><tbody>'+
     filtered.map(r=>{
+      const isAdmin=r.is_admin_report;
       const photo=r.file_url?`<a href="${r.file_url}" target="_blank" style="color:var(--navy);font-size:12px;">View 📎</a>`:'—';
-      return `<tr><td><strong>${r.employee_name}</strong></td><td>${r.county}</td><td><strong>${r.vehicle_id}</strong></td><td>${r.report_date}</td><td style="font-size:12px;">${r.issue_types}</td><td style="font-size:12px;max-width:180px;">${r.description.substring(0,80)}${r.description.length>80?'...':''}</td><td>${photo}</td><td><span class="badge badge-${r.status==='RESOLVED'?'approved':r.status==='IN_PROGRESS'?'warning':'flag'}">${r.status}</span></td><td style="white-space:nowrap;"><select onchange="updateVehicleStatus(${r.id},this.value)" style="padding:4px 8px;border:1px solid var(--border);border-radius:4px;font-size:11px;"><option ${r.status==='NEW'?'selected':''}>NEW</option><option ${r.status==='IN_PROGRESS'?'selected':''}>IN_PROGRESS</option><option ${r.status==='RESOLVED'?'selected':''}>RESOLVED</option></select></td></tr>`;
+      const sourceBadge=isAdmin
+        ?`<span class="badge" style="background:#e8f4fd;color:#1565c0;">🛠️ Admin</span>`
+        :`<span class="badge badge-pending">👤 Driver</span>`;
+      // Parse admin extra fields
+      let extra={};
+      try{if(r.admin_extra)extra=JSON.parse(r.admin_extra);}catch(e){}
+      const vehicleStatusBadge=extra.vehicle_status
+        ?`<span class="badge ${extra.vehicle_status==='In Use'?'badge-approved':extra.vehicle_status==='Out of Service'||extra.vehicle_status==='Awaiting Repair'?'badge-flag':'badge-warning'}">${extra.vehicle_status}</span>`
+        :'—';
+      const detailLines=[];
+      if(extra.last_used_by)detailLines.push(`<span style="color:#666;">Last used by: <strong>${extra.last_used_by}</strong></span>`);
+      if(extra.storage_location)detailLines.push(`<span style="color:#666;">Location: <strong>${extra.storage_location}</strong></span>`);
+      if(extra.mechanic_notes)detailLines.push(`<span style="color:#888;font-style:italic;">🔧 ${extra.mechanic_notes}</span>`);
+      if(extra.appt_datetime)detailLines.push(`<span style="color:#888;">📅 Appt: ${new Date(extra.appt_datetime).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}${extra.appt_location?' @ '+extra.appt_location:''}</span>`);
+      const details=detailLines.length?`<div style="font-size:11px;line-height:1.7;">${detailLines.join('<br>')}</div>`:'—';
+      return `<tr style="${isAdmin?'background:#f8fbff;':''}">
+        <td>${sourceBadge}</td>
+        <td><strong>${r.employee_name}</strong>${!isAdmin?`<br><span style="font-size:11px;color:#aaa;">${r.county}</span>`:''}</td>
+        <td><strong>${r.vehicle_id}</strong></td>
+        <td style="font-size:12px;">${r.report_date}</td>
+        <td>${vehicleStatusBadge}</td>
+        <td style="font-size:12px;">${r.issue_types}</td>
+        <td style="font-size:12px;max-width:160px;">${(r.description||'').substring(0,80)}${(r.description||'').length>80?'...':''}</td>
+        <td style="min-width:160px;">${details}</td>
+        <td>${photo}</td>
+        <td><span class="badge badge-${r.status==='RESOLVED'?'approved':r.status==='IN_PROGRESS'?'warning':'flag'}">${r.status}</span></td>
+        <td style="white-space:nowrap;"><select onchange="updateVehicleStatus(${r.id},this.value)" style="padding:4px 8px;border:1px solid var(--border);border-radius:4px;font-size:11px;"><option ${r.status==='NEW'?'selected':''}>NEW</option><option ${r.status==='IN_PROGRESS'?'selected':''}>IN_PROGRESS</option><option ${r.status==='RESOLVED'?'selected':''}>RESOLVED</option></select></td>
+      </tr>`;
     }).join('')+
     '</tbody></table></div>';
 }
@@ -1914,8 +1867,11 @@ async function updateVehicleStatus(id,status){
 }
 function exportVehicleRecords(){
   if(!allVehicleRecordsCache||allVehicleRecordsCache.length===0){alert('No vehicle records to export.');return;}
-  const headers=['Employee','Email','County','Vehicle ID','Date','Issue Types','Description','File URL','Status','Submitted'];
-  const rows=allVehicleRecordsCache.map(r=>[r.employee_name,r.employee_email,r.county,r.vehicle_id,r.report_date,r.issue_types,r.description,r.file_url||'',r.status,r.submitted_at].map(v=>`"${(v||'').toString().replace(/"/g,'""')}"`));
+  const headers=['Source','Reported By','County','Vehicle ID','Date','Vehicle Status','Storage Location','Issue Types','Description','Mechanic Notes','Appt Date/Time','Appt Location','Last Used By','File URL','Record Status','Submitted'];
+  const rows=allVehicleRecordsCache.map(r=>{
+    let extra={};try{if(r.admin_extra)extra=JSON.parse(r.admin_extra);}catch(e){}
+    return [r.is_admin_report?'Admin':'Driver',r.employee_name,r.county||'',r.vehicle_id,r.report_date,extra.vehicle_status||'',extra.storage_location||'',r.issue_types,r.description,extra.mechanic_notes||'',extra.appt_datetime||'',extra.appt_location||'',extra.last_used_by||'',r.file_url||'',r.status,r.submitted_at].map(v=>`"${(v||'').toString().replace(/"/g,'""')}"`);
+  });
   const csv=[headers.join(','),...rows.map(r=>r.join(','))].join('\n');
   const blob=new Blob([csv],{type:'text/csv'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`RideSource_VehicleRecords_${new Date().toISOString().split('T')[0]}.csv`;a.click();
@@ -1936,7 +1892,16 @@ async function renderCalendar(){
     for(let d=new Date(start);d<=end;d.setDate(d.getDate()+1)){
       if(d.getMonth()===calMonth&&d.getFullYear()===calYear){
         const k=d.getDate();if(!events[k])events[k]=[];
-        events[k].push({label:r.employee_name.split(' ')[0]+' (off)',color:COUNTY_COLORS[r.county]||'#555'});
+        function reqLabel(t){
+          if(!t)return'off';
+          if(t==='Use PTO Hours')return'PTO';
+          if(t==='Full Day Off'||t==='Multiple Days')return'off';
+          if(t==='Start Late')return'late start';
+          if(t==='End Early')return'early end';
+          if(t==='Mid-Day Appointment')return'appt';
+          return'off';
+        }
+        events[k].push({label:r.employee_name.split(' ')[0]+' ('+reqLabel(r.request_type)+')',color:COUNTY_COLORS[r.county]||'#555'});
       }
     }
   });
