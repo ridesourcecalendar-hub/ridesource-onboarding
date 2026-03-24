@@ -627,12 +627,15 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
       <div id="section-adm-requests" class="admin-section">
         <div style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:4px;">📅 Time Off Requests</div>
         <p style="color:#888;font-size:13px;margin-bottom:14px;">Review and approve or deny employee time off requests.</p>
-        <div style="display:flex;gap:2px;border-bottom:2px solid var(--border);margin-bottom:18px;flex-wrap:wrap;">
+        <div style="display:flex;gap:2px;border-bottom:2px solid var(--border);margin-bottom:14px;flex-wrap:wrap;">
           <button id="req-tab-PENDING" class="req-tab req-tab-active" onclick="setReqTab('PENDING')">🕐 Pending<span class="req-count" id="req-count-PENDING" style="background:var(--red);color:#fff;">0</span></button>
           <button id="req-tab-APPROVED" class="req-tab req-tab-approved" onclick="setReqTab('APPROVED')">✅ Approved<span class="req-count" id="req-count-APPROVED" style="background:#ddd;color:#555;">0</span></button>
           <button id="req-tab-DENIED" class="req-tab req-tab-denied" onclick="setReqTab('DENIED')">✗ Denied<span class="req-count" id="req-count-DENIED" style="background:#ddd;color:#555;">0</span></button>
           <button id="req-tab-PTO" class="req-tab req-tab-pto" onclick="setReqTab('PTO')">💰 PTO<span class="req-count" id="req-count-PTO" style="background:#ddd;color:#555;">0</span></button>
           <button id="req-tab-ALL" class="req-tab" style="margin-left:auto;" onclick="setReqTab('ALL')">All</button>
+        </div>
+        <div style="margin-bottom:14px;">
+          <input type="text" id="req-search" placeholder="🔍  Search by employee name..." oninput="renderRequestsTable()" style="padding:9px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;width:280px;">
         </div>
         <div id="requests-table">Loading...</div>
       </div>
@@ -1565,11 +1568,13 @@ function setReqTab(tab){
 }
 function renderRequestsTable(){
   const el=document.getElementById('requests-table');
+  const searchTerm=(document.getElementById('req-search')?.value||'').toLowerCase().trim();
   let filtered=allRequestsCache;
   if(currentReqTab==='PENDING')filtered=allRequestsCache.filter(r=>r.status==='PENDING');
   else if(currentReqTab==='APPROVED')filtered=allRequestsCache.filter(r=>r.status==='APPROVED');
   else if(currentReqTab==='DENIED')filtered=allRequestsCache.filter(r=>r.status==='DENIED');
   else if(currentReqTab==='PTO')filtered=allRequestsCache.filter(r=>r.status==='PTO_PENDING'||r.request_type==='Use PTO Hours');
+  if(searchTerm)filtered=filtered.filter(r=>(r.employee_name||'').toLowerCase().includes(searchTerm));
   if(!filtered||filtered.length===0){
     const labels={PENDING:'No pending requests.',APPROVED:'No approved requests yet.',DENIED:'No denied requests yet.',PTO:'No PTO requests yet.',ALL:'No requests found.'};
     el.innerHTML='<p style="color:#888;font-size:13px;padding:12px 0;">'+(labels[currentReqTab]||'No requests found.')+'</p>';return;
@@ -1726,15 +1731,71 @@ function renderTimesheetsTable(){
   const el=document.getElementById('timesheets-table');
   const filtered=tsFilterStatus==='ALL'?allTimesheetsCache:allTimesheetsCache.filter(t=>t.status===tsFilterStatus);
   if(!filtered||filtered.length===0){el.innerHTML='<p style="color:#888;font-size:13px;padding:12px 0;">No timesheets found.</p>';return;}
-  el.innerHTML='<div style="overflow-x:auto;"><table class="data-table"><thead><tr><th>Employee</th><th>County</th><th>Week Ending</th><th>Mileage Note</th><th>Notes / Missed Punches</th><th>Submitted</th><th>Status</th><th>Actions</th></tr></thead><tbody>'+
+  el.innerHTML='<div style="overflow-x:auto;"><table class="data-table"><thead><tr><th><input type="checkbox" id="ts-check-all" onchange="toggleAllTimesheetChecks(this)" style="accent-color:var(--navy);"></th><th>Employee</th><th>County</th><th>Week Ending</th><th>Mileage Note</th><th>Notes / Missed Punches</th><th>Submitted</th><th>Status</th><th>Actions</th></tr></thead><tbody>'+
     filtered.map(t=>{
       const submitted=new Date(t.submitted_at).toLocaleDateString('en-US',{month:'short',day:'numeric'});
-      const actions=t.status==='PENDING'
-        ?`<button class="btn btn-green btn-sm" onclick="approveTimesheet(${t.id})">✓ Approve</button>`
-        :'<span style="font-size:12px;color:#aaa;">processed</span>';
-      return `<tr><td><strong>${t.employee_name}</strong></td><td>${t.county}</td><td>${t.week_ending}</td><td style="font-size:12px;">${t.mileage_note||'—'}</td><td style="font-size:12px;max-width:200px;">${t.notes||'—'}</td><td style="font-size:12px;color:#888;">${submitted}</td><td><span class="badge badge-${t.status==='APPROVED'?'approved':'pending'}">${t.status}</span></td><td>${actions}</td></tr>`;
+      const approveBtn=t.status==='PENDING'?`<button class="btn btn-green btn-sm" onclick="approveTimesheet(${t.id})" style="margin-bottom:3px;">✓ Approve</button><br>`:'';
+      return `<tr><td><input type="checkbox" class="ts-row-check" data-id="${t.id}" style="accent-color:var(--navy);"></td><td><strong>${t.employee_name}</strong></td><td>${t.county}</td><td>${t.week_ending}</td><td style="font-size:12px;">${t.mileage_note||'—'}</td><td style="font-size:12px;max-width:180px;">${(t.notes||'—').substring(0,60)}${(t.notes||'').length>60?'...':''}</td><td style="font-size:12px;color:#888;">${submitted}</td><td><span class="badge badge-${t.status==='APPROVED'?'approved':'pending'}">${t.status}</span></td><td style="white-space:nowrap;">${approveBtn}<button class="btn btn-sm" style="background:#e8f4fd;color:#1565c0;" onclick="openTimesheetModal(${t.id})">📋 View</button></td></tr>`;
     }).join('')+
-    '</tbody></table></div>';
+    '</tbody></table></div><div style="display:flex;align-items:center;gap:10px;margin-top:12px;"><button class="btn btn-sm" style="background:#fdecea;color:var(--red);border:1px solid #f5c6c2;" onclick="deleteSelectedTimesheets()">🗑️ Delete Selected</button><span style="font-size:12px;color:#888;">Check rows to select, then delete after exporting.</span></div>';
+}
+function toggleAllTimesheetChecks(master){
+  document.querySelectorAll('.ts-row-check').forEach(cb=>cb.checked=master.checked);
+}
+async function deleteSelectedTimesheets(){
+  const ids=[...document.querySelectorAll('.ts-row-check:checked')].map(cb=>parseInt(cb.dataset.id));
+  if(ids.length===0){alert('No timesheets selected. Check the boxes next to the rows you want to delete.');return;}
+  if(!confirm(`Delete ${ids.length} timesheet(s)? Make sure you have exported them first. This cannot be undone.`))return;
+  try{
+    await db.from('timesheets').delete().in('id',ids);
+    loadTimesheets();
+  }catch(e){alert('Error deleting: '+e.message);}
+}
+function openTimesheetModal(id){
+  const t=allTimesheetsCache.find(x=>x.id===id);
+  if(!t)return;
+  let rows={};
+  try{if(t.hours_data)rows=JSON.parse(t.hours_data);}catch(e){}
+  const DAYS=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+  const dayRows=DAYS.map(day=>{
+    const d=rows[day]||{};
+    const total=d.total?d.total+' hrs':'—';
+    const hasData=d.s1s||d.s1e||d.s2s||d.s2e;
+    if(!hasData)return'';
+    return `<tr style="background:${hasData?'#fff':'#fafafa'};">
+      <td style="font-weight:600;">${day}</td>
+      <td>${d.vehicle||'—'}</td>
+      <td>${d.s1s||'—'}</td>
+      <td>${d.s1e||'—'}</td>
+      <td>${d.s2s||'—'}</td>
+      <td>${d.s2e||'—'}</td>
+      <td style="font-weight:700;color:var(--navy);">${total}</td>
+    </tr>`;
+  }).filter(Boolean).join('');
+  const emptyMsg=dayRows?'':'<tr><td colspan="7" style="text-align:center;color:#aaa;padding:20px;">No daily hours recorded.</td></tr>';
+  document.getElementById('ts-modal-body').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+      <div style="background:var(--light);border-radius:8px;padding:12px 16px;">
+        <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Employee</div>
+        <div style="font-size:15px;font-weight:700;color:var(--navy);">${t.employee_name}</div>
+        <div style="font-size:12px;color:#888;">${t.county}</div>
+      </div>
+      <div style="background:var(--light);border-radius:8px;padding:12px 16px;">
+        <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Week Ending</div>
+        <div style="font-size:15px;font-weight:700;color:var(--navy);">${t.week_ending}</div>
+        <div style="font-size:12px;color:#888;">Submitted ${new Date(t.submitted_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</div>
+      </div>
+    </div>
+    <div style="overflow-x:auto;margin-bottom:16px;">
+      <table class="data-table">
+        <thead><tr><th>Day</th><th>Vehicle</th><th>Shift 1 Start</th><th>Shift 1 End</th><th>Shift 2 Start</th><th>Shift 2 End</th><th>Total</th></tr></thead>
+        <tbody>${dayRows||emptyMsg}</tbody>
+      </table>
+    </div>
+    ${t.mileage_note?`<div style="background:#fff3cd;border-left:4px solid var(--warn);border-radius:0 8px 8px 0;padding:10px 14px;margin-bottom:12px;font-size:13px;"><strong>🛢️ Mileage Note:</strong> ${t.mileage_note}</div>`:''}
+    ${t.notes?`<div style="background:#fdecea;border-left:4px solid var(--red);border-radius:0 8px 8px 0;padding:10px 14px;font-size:13px;"><strong>⚠️ Missed Punches / Notes:</strong><br>${t.notes}</div>`:''}
+  `;
+  document.getElementById('timesheet-view-modal').classList.add('open');
 }
 async function approveTimesheet(id){
   await db.from('timesheets').update({status:'APPROVED',approved_at:new Date().toISOString(),approved_by:adminName}).eq('id',id);
@@ -1781,31 +1842,65 @@ async function submitAdminVehicleReport(){
   const mechanicNotes=document.getElementById('avr-mechanic-notes').value.trim();
   const apptDatetime=document.getElementById('avr-appt-datetime').value;
   const apptLocation=document.getElementById('avr-appt-location').value.trim();
-  // Build extended notes string to store in existing description field supplement
+  // Pack all admin-specific fields into admin_extra + fold key info into description as fallback
   const adminExtra=JSON.stringify({last_used_by:lastUsedBy,vehicle_status:vehicleStatus,storage_location:location,mechanic_notes:mechanicNotes,appt_datetime:apptDatetime,appt_location:apptLocation});
+  // Build a rich description that carries context even if extra columns aren't present
+  let fullDesc=description;
+  if(vehicleStatus)fullDesc+=`\n[Status: ${vehicleStatus}]`;
+  if(lastUsedBy)fullDesc+=`\n[Last used by: ${lastUsedBy}]`;
+  if(location)fullDesc+=`\n[Location: ${location}]`;
+  if(mechanicNotes)fullDesc+=`\n[Mechanic notes: ${mechanicNotes}]`;
+  if(apptDatetime)fullDesc+=`\n[Appointment: ${apptDatetime}${apptLocation?' @ '+apptLocation:''}]`;
+  const btn=document.querySelector('#admin-vr-form button.btn-primary');
+  if(btn){btn.disabled=true;btn.textContent='Saving...';}
+  // Try with new columns first, fall back to base columns if schema not yet updated
+  let saved=false;
+  let lastErr=null;
   try{
-    await db.from('vehicle_reports').insert([{
+    const {error}=await db.from('vehicle_reports').insert([{
       employee_name:reportedBy,
       employee_email:'admin@ridesource',
       county:'Admin',
       vehicle_id:vehicleId,
       report_date:date,
       issue_types:issueTypes,
-      description:description,
+      description:fullDesc,
       admin_extra:adminExtra,
       is_admin_report:true,
       status:'NEW',
       submitted_at:new Date().toISOString()
     }]);
-    const msg=document.getElementById('avr-msg');msg.style.display='inline';setTimeout(()=>msg.style.display='none',3000);
-    // Reset form
-    ['avr-vehicle-id','avr-last-used-by','avr-location','avr-description','avr-mechanic-notes','avr-appt-location'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-    document.getElementById('avr-vehicle-status').value='';
-    document.getElementById('avr-appt-datetime').value='';
-    document.querySelectorAll('#avr-issue-type-grid .issue-type-btn').forEach(b=>b.classList.remove('selected'));
-    adminIssueTypes=[];
-    loadVehicleRecords();
-  }catch(e){alert('Error saving report: '+e.message);}
+    if(!error)saved=true;else lastErr=error;
+  }catch(e){lastErr=e;}
+  // Fallback: try without the two new columns in case SQL migration hasn't been run
+  if(!saved){
+    try{
+      const {error}=await db.from('vehicle_reports').insert([{
+        employee_name:reportedBy,
+        employee_email:'admin@ridesource',
+        county:'Admin',
+        vehicle_id:vehicleId,
+        report_date:date,
+        issue_types:issueTypes,
+        description:fullDesc,
+        status:'NEW',
+        submitted_at:new Date().toISOString()
+      }]);
+      if(!error)saved=true;else lastErr=error;
+    }catch(e){lastErr=e;}
+  }
+  if(btn){btn.disabled=false;btn.textContent='📋 Submit Admin Report';}
+  if(!saved){
+    alert('Could not save report.\n\nReason: '+(lastErr?.message||lastErr?.code||JSON.stringify(lastErr)||'Unknown error')+'\n\nIf this says "column does not exist", please run the Supabase SQL migration:\nALTER TABLE vehicle_reports ADD COLUMN IF NOT EXISTS is_admin_report boolean DEFAULT false, ADD COLUMN IF NOT EXISTS admin_extra text;');
+    return;
+  }
+  const msg=document.getElementById('avr-msg');msg.style.display='inline';setTimeout(()=>msg.style.display='none',3000);
+  ['avr-vehicle-id','avr-last-used-by','avr-location','avr-description','avr-mechanic-notes','avr-appt-location'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('avr-vehicle-status').value='';
+  document.getElementById('avr-appt-datetime').value='';
+  document.querySelectorAll('#avr-issue-type-grid .issue-type-btn').forEach(b=>b.classList.remove('selected'));
+  adminIssueTypes=[];
+  loadVehicleRecords();
 }
 async function loadVehicleRecords(){
   const {data}=await db.from('vehicle_reports').select('*').order('submitted_at',{ascending:false});
@@ -2779,6 +2874,18 @@ async function buildDocx(templateId){
       <button class="btn btn-red btn-sm" onclick="deleteAdminRequest()" style="margin-right:auto;">🗑️ Delete Request</button>
       <button class="btn btn-secondary" onclick="closeModal('edit-request-modal')">Cancel</button>
       <button class="btn btn-primary" onclick="saveEditedRequest()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="timesheet-view-modal">
+  <div class="modal" style="max-width:760px;">
+    <button class="modal-close" onclick="closeModal('timesheet-view-modal')">✕</button>
+    <h3 style="color:var(--navy);margin-bottom:4px;">🕐 Timesheet Detail</h3>
+    <p style="font-size:13px;color:#888;margin-bottom:20px;">Full submitted hours breakdown for this week.</p>
+    <div id="ts-modal-body"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">
+      <button class="btn btn-secondary" onclick="closeModal('timesheet-view-modal')">Close</button>
     </div>
   </div>
 </div>
