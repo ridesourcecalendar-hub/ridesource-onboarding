@@ -1826,25 +1826,18 @@ function renderVehicleRecordsTable(){
   if(sourceFilter==='admin')filtered=filtered.filter(r=>r.is_admin_report);
   if(sourceFilter==='driver')filtered=filtered.filter(r=>!r.is_admin_report);
   if(!filtered||filtered.length===0){el.innerHTML='<p style="color:#888;font-size:13px;padding:12px 0;">No vehicle records found.</p>';return;}
-  el.innerHTML='<div style="overflow-x:auto;"><table class="data-table"><thead><tr><th>Source</th><th>Reported By</th><th>Vehicle ID</th><th>Date</th><th>Status</th><th>Issue Type(s)</th><th>Description</th><th>Details</th><th>Photo</th><th>Record Status</th><th>Actions</th></tr></thead><tbody>'+
+  el.innerHTML='<div style="overflow-x:auto;"><table class="data-table"><thead><tr><th>Source</th><th>Reported By</th><th>Vehicle ID</th><th>Date</th><th>Vehicle Status</th><th>Issue Type(s)</th><th>Description</th><th>Record Status</th><th>Actions</th></tr></thead><tbody>'+
     filtered.map(r=>{
       const isAdmin=r.is_admin_report;
-      const photo=r.file_url?`<a href="${r.file_url}" target="_blank" style="color:var(--navy);font-size:12px;">View 📎</a>`:'—';
       const sourceBadge=isAdmin
         ?`<span class="badge" style="background:#e8f4fd;color:#1565c0;">🛠️ Admin</span>`
         :`<span class="badge badge-pending">👤 Driver</span>`;
-      // Parse admin extra fields
       let extra={};
       try{if(r.admin_extra)extra=JSON.parse(r.admin_extra);}catch(e){}
       const vehicleStatusBadge=extra.vehicle_status
         ?`<span class="badge ${extra.vehicle_status==='In Use'?'badge-approved':extra.vehicle_status==='Out of Service'||extra.vehicle_status==='Awaiting Repair'?'badge-flag':'badge-warning'}">${extra.vehicle_status}</span>`
         :'—';
-      const detailLines=[];
-      if(extra.last_used_by)detailLines.push(`<span style="color:#666;">Last used by: <strong>${extra.last_used_by}</strong></span>`);
-      if(extra.storage_location)detailLines.push(`<span style="color:#666;">Location: <strong>${extra.storage_location}</strong></span>`);
-      if(extra.mechanic_notes)detailLines.push(`<span style="color:#888;font-style:italic;">🔧 ${extra.mechanic_notes}</span>`);
-      if(extra.appt_datetime)detailLines.push(`<span style="color:#888;">📅 Appt: ${new Date(extra.appt_datetime).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}${extra.appt_location?' @ '+extra.appt_location:''}</span>`);
-      const details=detailLines.length?`<div style="font-size:11px;line-height:1.7;">${detailLines.join('<br>')}</div>`:'—';
+      const hasAdminNotes=extra.mechanic_notes||extra.appt_datetime||extra.last_used_by;
       return `<tr style="${isAdmin?'background:#f8fbff;':''}">
         <td>${sourceBadge}</td>
         <td><strong>${r.employee_name}</strong>${!isAdmin?`<br><span style="font-size:11px;color:#aaa;">${r.county}</span>`:''}</td>
@@ -1852,11 +1845,12 @@ function renderVehicleRecordsTable(){
         <td style="font-size:12px;">${r.report_date}</td>
         <td>${vehicleStatusBadge}</td>
         <td style="font-size:12px;">${r.issue_types}</td>
-        <td style="font-size:12px;max-width:160px;">${(r.description||'').substring(0,80)}${(r.description||'').length>80?'...':''}</td>
-        <td style="min-width:160px;">${details}</td>
-        <td>${photo}</td>
+        <td style="font-size:12px;max-width:160px;">${(r.description||'').substring(0,60)}${(r.description||'').length>60?'...':''}${hasAdminNotes?'<br><span style="font-size:10px;color:#1565c0;">📝 Admin notes added</span>':''}</td>
         <td><span class="badge badge-${r.status==='RESOLVED'?'approved':r.status==='IN_PROGRESS'?'warning':'flag'}">${r.status}</span></td>
-        <td style="white-space:nowrap;"><select onchange="updateVehicleStatus(${r.id},this.value)" style="padding:4px 8px;border:1px solid var(--border);border-radius:4px;font-size:11px;"><option ${r.status==='NEW'?'selected':''}>NEW</option><option ${r.status==='IN_PROGRESS'?'selected':''}>IN_PROGRESS</option><option ${r.status==='RESOLVED'?'selected':''}>RESOLVED</option></select></td>
+        <td style="white-space:nowrap;">
+          <button class="btn btn-primary btn-sm" onclick="openVehicleReportModal(${r.id})" style="margin-bottom:4px;">📋 Open</button><br>
+          <select onchange="updateVehicleStatus(${r.id},this.value)" style="padding:4px 8px;border:1px solid var(--border);border-radius:4px;font-size:11px;margin-top:2px;"><option ${r.status==='NEW'?'selected':''}>NEW</option><option ${r.status==='IN_PROGRESS'?'selected':''}>IN_PROGRESS</option><option ${r.status==='RESOLVED'?'selected':''}>RESOLVED</option></select>
+        </td>
       </tr>`;
     }).join('')+
     '</tbody></table></div>';
@@ -1864,6 +1858,117 @@ function renderVehicleRecordsTable(){
 async function updateVehicleStatus(id,status){
   await db.from('vehicle_reports').update({status}).eq('id',id);
   loadVehicleRecords();
+}
+function openVehicleReportModal(id){
+  const r=allVehicleRecordsCache.find(x=>x.id===id);
+  if(!r)return;
+  let extra={};
+  try{if(r.admin_extra)extra=JSON.parse(r.admin_extra);}catch(e){}
+  const isAdmin=r.is_admin_report;
+  const issueList=['Damage','Mechanical Issue','Oil Change Receipt','Repair Receipt','Windshield / Glass','Tire Issue','Interior Issue','Status Update Only','Other'];
+  const currentIssues=(r.issue_types||'').split(', ').map(s=>s.trim());
+  const photo=r.file_url?`<div style="margin-top:4px;"><a href="${r.file_url}" target="_blank" class="btn btn-sm btn-secondary" style="font-size:12px;">View Attached Photo/File 📎</a></div>`:'';
+  document.getElementById('vr-modal-body').innerHTML=`
+    <input type="hidden" id="vrm-id" value="${r.id}">
+    <input type="hidden" id="vrm-original-status" value="${r.status}">
+    <!-- SOURCE BANNER -->
+    <div style="background:${isAdmin?'#e8f4fd':'#f0faf4'};border-left:4px solid ${isAdmin?'#1565c0':'var(--success)'};border-radius:0 8px 8px 0;padding:10px 14px;margin-bottom:20px;font-size:13px;">
+      ${isAdmin?'🛠️ <strong>Admin Report</strong>':'👤 <strong>Driver Report</strong> — submitted by '+r.employee_name+(r.county?' ('+r.county+')':'')}
+      &nbsp;·&nbsp; <span style="color:#888;">${r.submitted_at?new Date(r.submitted_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}):'—'}</span>
+      ${r.file_url?'&nbsp;·&nbsp; <a href="'+r.file_url+'" target="_blank" style="color:var(--navy);font-weight:700;">📎 View Attachment</a>':''}
+    </div>
+    <!-- CORE FIELDS -->
+    <div style="font-size:12px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Report Details</div>
+    <div class="form-row">
+      <div class="form-field"><label>Vehicle ID / Asset Tag</label><input type="text" id="vrm-vehicle-id" value="${r.vehicle_id||''}"></div>
+      <div class="form-field"><label>Date of Report</label><input type="date" id="vrm-date" value="${r.report_date||''}"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-field"><label>Reported By</label><input type="text" id="vrm-reported-by" value="${r.employee_name||''}"></div>
+      <div class="form-field"><label>Last Used By</label><input type="text" id="vrm-last-used-by" value="${extra.last_used_by||''}" placeholder="Driver name or 'Unassigned'"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-field"><label>Vehicle Status</label>
+        <select id="vrm-vehicle-status" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+          <option value="">— Select Status —</option>
+          ${['In Use','Parked at Depot','Parked Off-Site','Out of Service','Awaiting Repair'].map(s=>`<option ${extra.vehicle_status===s?'selected':''}>${s}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-field"><label>Storage / Parking Location</label><input type="text" id="vrm-location" value="${extra.storage_location||''}" placeholder="Where is the vehicle stored or parked?"></div>
+    </div>
+    <div class="form-field"><label>Issue Type(s)</label>
+      <div class="issue-type-grid" id="vrm-issue-grid">
+        ${issueList.map(t=>`<div class="issue-type-btn ${currentIssues.includes(t)?'selected':''}" onclick="this.classList.toggle('selected')">${t}</div>`).join('')}
+      </div>
+    </div>
+    <div class="form-field"><label>Description</label>
+      <textarea id="vrm-description" style="width:100%;min-height:80px;padding:10px;border:2px solid var(--border);border-radius:8px;font-size:13px;font-family:Arial,sans-serif;outline:none;resize:vertical;">${r.description||''}</textarea>
+    </div>
+    <!-- ADMIN NOTES SECTION -->
+    <div style="font-size:12px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin:20px 0 10px;padding-top:16px;border-top:2px solid var(--border);">🛠️ Supervisor Notes &amp; Follow-Up</div>
+    <div class="form-field"><label>Mechanic Notes</label>
+      <textarea id="vrm-mechanic-notes" placeholder="Mechanic findings, repair notes, recommendations..." style="width:100%;min-height:60px;padding:10px;border:2px solid var(--border);border-radius:8px;font-size:13px;font-family:Arial,sans-serif;outline:none;resize:vertical;">${extra.mechanic_notes||''}</textarea>
+    </div>
+    <div class="form-row">
+      <div class="form-field">
+        <label>Appointment Date &amp; Time</label>
+        <input type="datetime-local" id="vrm-appt-datetime" value="${extra.appt_datetime||''}" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+      </div>
+      <div class="form-field">
+        <label>Appointment Location</label>
+        <input type="text" id="vrm-appt-location" value="${extra.appt_location||''}" placeholder="Shop name, address..." style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-field"><label>Record Status</label>
+        <select id="vrm-status" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+          ${['NEW','IN_PROGRESS','RESOLVED'].map(s=>`<option ${r.status===s?'selected':''}>${s}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+  `;
+  document.getElementById('vehicle-report-modal').classList.add('open');
+}
+async function saveVehicleReport(){
+  const id=document.getElementById('vrm-id').value;
+  const originalStatus=document.getElementById('vrm-original-status').value;
+  const vehicleId=document.getElementById('vrm-vehicle-id').value.trim();
+  const date=document.getElementById('vrm-date').value;
+  const reportedBy=document.getElementById('vrm-reported-by').value.trim();
+  const description=document.getElementById('vrm-description').value.trim();
+  const lastUsedBy=document.getElementById('vrm-last-used-by').value.trim();
+  const vehicleStatus=document.getElementById('vrm-vehicle-status').value;
+  const location=document.getElementById('vrm-location').value.trim();
+  const mechanicNotes=document.getElementById('vrm-mechanic-notes').value.trim();
+  const apptDatetime=document.getElementById('vrm-appt-datetime').value;
+  const apptLocation=document.getElementById('vrm-appt-location').value.trim();
+  // Collect selected issue types from modal grid
+  const selectedIssues=[...document.querySelectorAll('#vrm-issue-grid .issue-type-btn.selected')].map(b=>b.textContent.trim());
+  const issueTypes=selectedIssues.length>0?selectedIssues.join(', '):'Status Update Only';
+  // Auto-advance to IN_PROGRESS if notes were added and status was NEW
+  const hasAdminContent=mechanicNotes||apptDatetime||lastUsedBy||vehicleStatus;
+  let newStatus=document.getElementById('vrm-status').value;
+  if(hasAdminContent&&originalStatus==='NEW')newStatus='IN_PROGRESS';
+  const adminExtra=JSON.stringify({last_used_by:lastUsedBy,vehicle_status:vehicleStatus,storage_location:location,mechanic_notes:mechanicNotes,appt_datetime:apptDatetime,appt_location:apptLocation});
+  const btn=document.getElementById('vrm-save-btn');
+  btn.disabled=true;btn.textContent='Saving...';
+  try{
+    await db.from('vehicle_reports').update({
+      vehicle_id:vehicleId,
+      report_date:date,
+      employee_name:reportedBy,
+      issue_types:issueTypes,
+      description,
+      admin_extra:adminExtra,
+      status:newStatus,
+      is_admin_report:true  // once admin touches it, it gets full admin fields
+    }).eq('id',id);
+    closeModal('vehicle-report-modal');
+    loadVehicleRecords();
+  }catch(e){
+    alert('Error saving: '+e.message);
+    btn.disabled=false;btn.textContent='💾 Save Changes';
+  }
 }
 function exportVehicleRecords(){
   if(!allVehicleRecordsCache||allVehicleRecordsCache.length===0){alert('No vehicle records to export.');return;}
@@ -2674,6 +2779,19 @@ async function buildDocx(templateId){
       <button class="btn btn-red btn-sm" onclick="deleteAdminRequest()" style="margin-right:auto;">🗑️ Delete Request</button>
       <button class="btn btn-secondary" onclick="closeModal('edit-request-modal')">Cancel</button>
       <button class="btn btn-primary" onclick="saveEditedRequest()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="vehicle-report-modal">
+  <div class="modal" style="max-width:720px;">
+    <button class="modal-close" onclick="closeModal('vehicle-report-modal')">✕</button>
+    <h3 style="color:var(--navy);margin-bottom:4px;">🚐 Vehicle Report</h3>
+    <p style="font-size:13px;color:#888;margin-bottom:20px;">View and edit all details. Admin notes are saved directly to this report.</p>
+    <div id="vr-modal-body"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">
+      <button class="btn btn-secondary" onclick="closeModal('vehicle-report-modal')">Cancel</button>
+      <button class="btn btn-primary" id="vrm-save-btn" onclick="saveVehicleReport()">💾 Save Changes</button>
     </div>
   </div>
 </div>
