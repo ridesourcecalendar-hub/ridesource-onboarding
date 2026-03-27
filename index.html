@@ -172,6 +172,11 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 .data-table td{padding:10px 14px;font-size:13px;border-bottom:1px solid #f0f0f0;}
 .data-table tr:hover td{background:var(--gray);}
 .badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;}
+.badge-status-active{background:#d4edda;color:#155724;}
+.badge-status-perdiem{background:#e8f4fd;color:#1565c0;}
+.badge-status-seasonal{background:#fff3cd;color:#856404;}
+.badge-status-inactive{background:#f0f0f0;color:#666;}
+.badge-status-separated{background:#f8d7da;color:#721c24;}
 .badge-pending{background:#fff3cd;color:#856404;}
 .badge-approved{background:#d4edda;color:#155724;}
 .badge-denied{background:#f8d7da;color:#721c24;}
@@ -299,7 +304,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
         <div class="nav-item" onclick="showSection('training')" id="nav-training"><span class="nav-icon">📋</span>Driver Training Guide</div>
         <div class="nav-item" onclick="showSection('handbook')" id="nav-handbook"><span class="nav-icon">📖</span>Employee Handbook</div>
         <div class="sidebar-label">Actions</div>
-        <div class="nav-item" onclick="showSection('policies')" id="nav-policies"><span class="nav-icon">✍️</span>Policy Sign-Offs<span class="nav-badge" id="badge-policies">0/7</span></div>
+        <div class="nav-item" onclick="showSection('policies')" id="nav-policies"><span class="nav-icon">✍️</span>Policy Sign-Offs<span class="nav-badge" id="badge-policies">0/12</span></div>
         <div class="nav-item" onclick="showSection('timeoff')" id="nav-timeoff"><span class="nav-icon">📅</span>Request Time Off</div>
         <div class="nav-item" onclick="showSection('timesheet')" id="nav-timesheet"><span class="nav-icon">🕐</span>Submit Timesheet</div>
         <div class="nav-item" onclick="showSection('vehicle')" id="nav-vehicle"><span class="nav-icon">🚐</span>Vehicle Report</div>
@@ -315,8 +320,8 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
         </div>
         <div class="welcome-grid">
           <div class="stat-card"><div class="stat-icon" style="background:var(--light);">📄</div><div><div class="stat-val" id="stat-docs">0/2</div><div class="stat-label">Documents Read</div></div></div>
-          <div class="stat-card"><div class="stat-icon" style="background:#e8f8ee;">✍️</div><div><div class="stat-val" id="stat-sigs">0/7</div><div class="stat-label">Policies Signed</div></div></div>
-          <div class="stat-card"><div class="stat-icon" style="background:#fef3e8;">⏳</div><div><div class="stat-val" id="stat-remaining">9</div><div class="stat-label">Items Remaining</div></div></div>
+          <div class="stat-card"><div class="stat-icon" style="background:#e8f8ee;">✍️</div><div><div class="stat-val" id="stat-sigs">0/12</div><div class="stat-label">Policies Signed</div></div></div>
+          <div class="stat-card"><div class="stat-icon" style="background:#fef3e8;">⏳</div><div><div class="stat-val" id="stat-remaining">14</div><div class="stat-label">Items Remaining</div></div></div>
         </div>
         <div class="card"><div class="card-title">📝 Your Onboarding Checklist</div><ul class="checklist" id="dash-checklist"></ul></div>
       </div>
@@ -709,6 +714,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
             <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;">
               <button onclick="openEditProfileModal()" class="btn btn-sm" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);">✏️ Edit Profile</button>
               <button onclick="openPacketModal()" class="btn btn-sm" style="background:#C0392B;color:#fff;border:none;">📋 Generate Onboarding Packet</button>
+              <button onclick="confirmDeleteProfile()" class="btn btn-sm" style="background:rgba(255,255,255,.08);color:rgba(255,255,255,.65);border:1px solid rgba(255,255,255,.15);font-size:11px;">🗄️ Archive / Delete</button>
             </div>
           </div>
 
@@ -726,6 +732,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
               <div>
                 <div style="font-size:12px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Employment</div>
                 <div class="info-grid" style="grid-template-columns:1fr;">
+                  <div class="info-field"><div class="info-label">Status</div><div class="info-value" id="pinfo-status">—</div></div>
                   <div class="info-field"><div class="info-label">Position</div><div class="info-value" id="pinfo-position">—</div></div>
                   <div class="info-field"><div class="info-label">Hire Date</div><div class="info-value" id="pinfo-hire-date">—</div></div>
                   <div class="info-field"><div class="info-label">County</div><div class="info-value" id="pinfo-county">—</div></div>
@@ -920,16 +927,43 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
       <!-- DOCUMENT LIBRARY -->
       <div id="section-adm-documents" class="admin-section">
         <div style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:4px;">📥 Document Library</div>
-        <p style="color:#888;font-size:13px;margin-bottom:20px;">Download official RideSource documents for printing or offline reference.</p>
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;">
-          <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:24px;"><div style="font-size:32px;margin-bottom:10px;">📖</div><div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px;">Employee Handbook</div><div style="font-size:12px;color:#888;margin-bottom:16px;">Version 6 · February 2026</div><a href="https://ridesourcecalendar-hub.github.io/ridesource-onboarding/RideSource_Employee_Handbook_v6.docx" download style="display:inline-flex;align-items:center;gap:8px;background:var(--navy);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;">⬇️ Download .docx</a></div>
-          <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:24px;"><div style="font-size:32px;margin-bottom:10px;">📋</div><div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px;">Driver Training Guide</div><div style="font-size:12px;color:#888;margin-bottom:16px;">Version 2.1 · February 2026</div><a href="https://ridesourcecalendar-hub.github.io/ridesource-onboarding/RideSource_Driver_Training_Guide_v2_1.docx" download style="display:inline-flex;align-items:center;gap:8px;background:var(--navy);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;">⬇️ Download .docx</a></div>
-          <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:24px;"><div style="font-size:32px;margin-bottom:10px;">✅</div><div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px;">New Employee Onboarding Checklist</div><div style="font-size:12px;color:#888;margin-bottom:16px;">Updated 2026</div><a href="https://ridesourcecalendar-hub.github.io/ridesource-onboarding/RideSource_Onboarding_Checklist.docx" download style="display:inline-flex;align-items:center;gap:8px;background:var(--navy);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;">⬇️ Download .docx</a></div>
-          <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:24px;"><div style="font-size:32px;margin-bottom:10px;">📘</div><div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px;">Supervisor &amp; Manager Guide</div><div style="font-size:12px;color:#888;margin-bottom:16px;">Version F1 · Confidential</div><a href="https://ridesourcecalendar-hub.github.io/ridesource-onboarding/RideSource_Manager_Guide_vF1.docx" download style="display:inline-flex;align-items:center;gap:8px;background:var(--navy);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;">⬇️ Download .docx</a></div>
-          <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:24px;"><div style="font-size:32px;margin-bottom:10px;">📊</div><div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px;">30-Day Performance Evaluation</div><div style="font-size:12px;color:#888;margin-bottom:16px;">10 categories · Supervisor recommendation</div><a href="https://ridesourcecalendar-hub.github.io/ridesource-onboarding/RideSource_30Day_Performance_Evaluation.docx" download style="display:inline-flex;align-items:center;gap:8px;background:var(--navy);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;">⬇️ Download .docx</a></div>
-          <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:24px;"><div style="font-size:32px;margin-bottom:10px;">📊</div><div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px;">60-Day Performance Evaluation</div><div style="font-size:12px;color:#888;margin-bottom:16px;">10 categories · Mid-probation review</div><a href="https://ridesourcecalendar-hub.github.io/ridesource-onboarding/RideSource_60Day_Performance_Evaluation.docx" download style="display:inline-flex;align-items:center;gap:8px;background:var(--navy);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;">⬇️ Download .docx</a></div>
-          <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:24px;"><div style="font-size:32px;margin-bottom:10px;">🏆</div><div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px;">90-Day Performance Evaluation</div><div style="font-size:12px;color:#888;margin-bottom:16px;">Final review · Extend/Separate options</div><a href="https://ridesourcecalendar-hub.github.io/ridesource-onboarding/RideSource_90Day_Performance_Evaluation.docx" download style="display:inline-flex;align-items:center;gap:8px;background:var(--navy);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;">⬇️ Download .docx</a></div>
-          <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:24px;"><div style="font-size:32px;margin-bottom:10px;">⚠️</div><div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px;">Performance Improvement Plan (PIP)</div><div style="font-size:12px;color:#888;margin-bottom:16px;">7 sections · 13-week check-in log</div><a href="https://ridesourcecalendar-hub.github.io/ridesource-onboarding/RideSource_Performance_Improvement_Plan.docx" download style="display:inline-flex;align-items:center;gap:8px;background:var(--navy);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;">⬇️ Download .docx</a></div>
+        <p style="color:#888;font-size:13px;margin-bottom:24px;">Download official RideSource documents for printing or offline reference.</p>
+
+        <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">📚 Core Documents</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-bottom:28px;">
+          <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px;"><div style="font-size:28px;margin-bottom:8px;">📖</div><div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:3px;">Employee Handbook</div><div style="font-size:11px;color:#888;margin-bottom:14px;">Version 6 · February 2026</div><a href="https://ridesourcecalendar-hub.github.io/ridesource-onboarding/RideSource_Employee_Handbook_v6__3_.docx" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:var(--navy);color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;">⬇️ Download</a></div>
+          <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px;"><div style="font-size:28px;margin-bottom:8px;">🚐</div><div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:3px;">Driver Training Guide</div><div style="font-size:11px;color:#888;margin-bottom:14px;">Version 2.1 · February 2026</div><a href="https://ridesourcecalendar-hub.github.io/ridesource-onboarding/RideSource_Driver_Training_Guide_v2_1__3_.docx" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:var(--navy);color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;">⬇️ Download</a></div>
+          <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px;"><div style="font-size:28px;margin-bottom:8px;">📘</div><div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:3px;">Supervisor & Manager Guide</div><div style="font-size:11px;color:#888;margin-bottom:14px;">Version F1 · Confidential</div><a href="https://ridesourcecalendar-hub.github.io/ridesource-onboarding/RideSource_Manager_Guide_vF1.docx" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:var(--navy);color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;">⬇️ Download</a></div>
+          <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px;"><div style="font-size:28px;margin-bottom:8px;">✅</div><div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:3px;">New Employee Onboarding Checklist</div><div style="font-size:11px;color:#888;margin-bottom:14px;">Updated 2026</div><a href="https://ridesourcecalendar-hub.github.io/ridesource-onboarding/RideSource_Onboarding_Checklist__3_.docx" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:var(--navy);color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;">⬇️ Download</a></div>
+        </div>
+
+        <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">📋 Hiring & Onboarding</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-bottom:28px;">
+          <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px;"><div style="font-size:28px;margin-bottom:8px;">🎉</div><div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:3px;">Welcome Aboard Letter</div><div style="font-size:11px;color:#888;margin-bottom:14px;">New hire welcome with training instructions</div><a href="https://ridesourcecalendar-hub.github.io/ridesource-onboarding/Welcome_Aboard_Letter__1_.docx" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:var(--navy);color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;">⬇️ Download</a></div>
+          <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px;"><div style="font-size:28px;margin-bottom:8px;">🗣️</div><div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:3px;">Interview Questions Form</div><div style="font-size:11px;color:#888;margin-bottom:14px;">Standardized driver interview with hire decision</div><a href="https://ridesourcecalendar-hub.github.io/ridesource-onboarding/Interview_Questions__1_.docx" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:var(--navy);color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;">⬇️ Download</a></div>
+          <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px;"><div style="font-size:28px;margin-bottom:8px;">📨</div><div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:3px;">Letter of Rejection</div><div style="font-size:11px;color:#888;margin-bottom:14px;">Professional rejection letter for applicants</div><a href="https://ridesourcecalendar-hub.github.io/ridesource-onboarding/Letter_of_Rejection__1_.docx" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:var(--navy);color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;">⬇️ Download</a></div>
+        </div>
+
+        <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">📊 Performance & Evaluations</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-bottom:28px;">
+          <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px;"><div style="font-size:28px;margin-bottom:8px;">📊</div><div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:3px;">30-Day Performance Evaluation</div><div style="font-size:11px;color:#888;margin-bottom:14px;">Introductory review at 30 days</div><a href="https://ridesourcecalendar-hub.github.io/ridesource-onboarding/RideSource_30Day_Performance_Evaluation__1_.docx" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:var(--navy);color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;">⬇️ Download</a></div>
+          <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px;"><div style="font-size:28px;margin-bottom:8px;">📊</div><div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:3px;">60-Day Performance Evaluation</div><div style="font-size:11px;color:#888;margin-bottom:14px;">Mid-probation review at 60 days</div><a href="https://ridesourcecalendar-hub.github.io/ridesource-onboarding/RideSource_60Day_Performance_Evaluation.docx" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:var(--navy);color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;">⬇️ Download</a></div>
+          <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px;"><div style="font-size:28px;margin-bottom:8px;">🏆</div><div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:3px;">90-Day Performance Evaluation</div><div style="font-size:11px;color:#888;margin-bottom:14px;">Final review · Extend/Separate recommendation</div><a href="https://ridesourcecalendar-hub.github.io/ridesource-onboarding/RideSource_90Day_Performance_Evaluation.docx" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:var(--navy);color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;">⬇️ Download</a></div>
+          <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px;"><div style="font-size:28px;margin-bottom:8px;">⚠️</div><div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:3px;">Performance Improvement Plan (PIP)</div><div style="font-size:11px;color:#888;margin-bottom:14px;">7 sections · 13-week check-in log</div><a href="https://ridesourcecalendar-hub.github.io/ridesource-onboarding/RideSource_Performance_Improvement_Plan__2_.docx" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:var(--navy);color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;">⬇️ Download</a></div>
+        </div>
+
+        <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">⚠️ Attendance & Discipline</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-bottom:28px;">
+          <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px;"><div style="font-size:28px;margin-bottom:8px;">⚠️</div><div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:3px;">Attendance Warning — Standard</div><div style="font-size:11px;color:#888;margin-bottom:14px;">Written warning for general call-out concerns</div><a href="https://ridesourcecalendar-hub.github.io/ridesource-onboarding/Attendance_Warning_Standard__1_.docx" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:var(--navy);color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;">⬇️ Download</a></div>
+          <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px;"><div style="font-size:28px;margin-bottom:8px;">📵</div><div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:3px;">Attendance Warning — Call-Out After Trip</div><div style="font-size:11px;color:#888;margin-bottom:14px;">Warning for call-outs after manifest finalized</div><a href="https://ridesourcecalendar-hub.github.io/ridesource-onboarding/Attendance_Warning_CallOuts.docx" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:var(--navy);color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;">⬇️ Download</a></div>
+          <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px;"><div style="font-size:28px;margin-bottom:8px;">🚨</div><div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:3px;">Final Written Warning</div><div style="font-size:11px;color:#888;margin-bottom:14px;">Last step before termination</div><a href="https://ridesourcecalendar-hub.github.io/ridesource-onboarding/Attendance_Warning_Final.docx" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:var(--navy);color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;">⬇️ Download</a></div>
+        </div>
+
+        <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">📁 HR Forms</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;">
+          <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px;"><div style="font-size:28px;margin-bottom:8px;">⭐</div><div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:3px;">Employee Accolades Form</div><div style="font-size:11px;color:#888;margin-bottom:14px;">Record a compliment or commendation</div><a href="https://ridesourcecalendar-hub.github.io/ridesource-onboarding/RideSource_Employee_Accolades_Form.docx" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:var(--navy);color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;">⬇️ Download</a></div>
+          <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px;"><div style="font-size:28px;margin-bottom:8px;">📢</div><div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:3px;">Employee Complaint Form</div><div style="font-size:11px;color:#888;margin-bottom:14px;">Formal workplace concern submission</div><a href="https://ridesourcecalendar-hub.github.io/ridesource-onboarding/RideSource_Employee_Complaint_Form__1_.docx" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:var(--navy);color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;">⬇️ Download</a></div>
+          <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px;"><div style="font-size:28px;margin-bottom:8px;">🔍</div><div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:3px;">Supervisor Investigation Form</div><div style="font-size:11px;color:#888;margin-bottom:14px;">Internal investigation form — HR use only</div><a href="https://ridesourcecalendar-hub.github.io/ridesource-onboarding/RideSource_Supervisor_Investigation_Form__1_.docx" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:var(--navy);color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;">⬇️ Download</a></div>
         </div>
       </div>
 
@@ -947,7 +981,7 @@ const PORTAL_URL='https://ridesourcecalendar-hub.github.io/ridesource-onboarding
 const ADMIN_PASSWORD='RideSource2026!';
 if(typeof supabase==='undefined'){console.error('Supabase failed to load');alert('Portal failed to load. Please refresh the page.');}
 const {createClient}=supabase;
-const db=createClient(SUPABASE_URL,SUPABASE_KEY);
+const db=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false,storageKey:null}});
 if(typeof emailjs!=='undefined'){emailjs.init({publicKey:EMAILJS_PUBLIC_KEY});}
 
 // STATE
@@ -1116,13 +1150,18 @@ function toggleCheck(el){
 
 // POLICIES DATA
 const POLICIES=[
-  {id:'at_will',name:'At-Will Employment Policy',desc:'Confirms your employment relationship with RideSource',content:`<h2>At-Will Employment</h2><p>Employment at RideSource Inc. is at-will. Either you or RideSource may end the employment relationship at any time, with or without cause, provided there is no violation of applicable federal or state law.</p><p>No manager, supervisor, or representative of RideSource has authority to enter into any employment agreement other than at-will. This handbook does not create and is not intended to create a promise or representation of continued employment.</p>`},
-  {id:'hipaa',name:'HIPAA & Confidentiality Policy',desc:'Protects client health information — critical for NEMT operations',content:`<h2>HIPAA & Confidentiality</h2><p>All passenger information is strictly confidential. This includes names, addresses, phone numbers, destinations, family information, and any personal circumstances including health information and immigration status.</p><h3>Your Obligations</h3><ul><li>Protect all Protected Health Information (PHI) at all times</li><li>Never discuss client information in public settings</li><li>Secure all paperwork and electronic devices</li><li>Never discuss one client's information with another client</li><li>Report suspected privacy breaches to your supervisor immediately</li></ul><div class="callout"><strong>⚠️ Important</strong>Confidentiality violations may result in immediate termination. This obligation continues after your employment ends.</div>`},
-  {id:'conduct',name:'Employee Code of Conduct',desc:'Professional standards, HIPAA compliance, safety, and ethics',content:`<h2>Employee Code of Conduct</h2><h3>Professional Expectations</h3><p>Employees must maintain a respectful, calm, and professional demeanor; use appropriate language; maintain client dignity at all times; protect confidentiality; and maintain appropriate professional boundaries.</p><h3>Prohibited Conduct</h3><ul><li>Complain about RideSource, coworkers, supervisors, or policies to clients</li><li>Discuss politics, religion, or controversial topics with passengers</li><li>Share personal contact information with clients</li><li>Connect with clients on social media or form personal relationships with clients</li></ul><h3>Disciplinary Action</h3><p>RideSource utilizes progressive discipline: Verbal Warning → Written Warning → Final Warning/Suspension → Termination. Immediate termination may occur for HIPAA violations, falsification of records, impaired driving, or serious safety violations.</p>`},
-  {id:'safety',name:'Safety & Vehicle Policy',desc:'Driving safety, vehicle inspection, and emergency procedures',content:`<h2>Safety & Vehicle Policy</h2><p>RideSource prioritizes the safety of every client and every employee. Safety is not optional — it is the foundation of everything we do.</p><h3>Driving Safety</h3><ul><li>Avoid all forms of distracted driving</li><li>Never use a handheld cell phone while driving — hands-free only</li><li>Never drive over the speed limit</li><li>Ensure all passengers are properly secured before moving the vehicle</li><li>Never transport a child without an appropriate car seat</li></ul><h3>Vehicle Inspection</h3><ul><li>Complete a pre-trip and post-trip inspection every shift</li><li>Report all mechanical issues or damage immediately</li><li>Do not operate a vehicle you believe is unsafe</li><li>Vehicles must be left with at least one-half tank of fuel</li></ul>`},
-  {id:'attendance',name:'Attendance & Punctuality Policy',desc:'Call-out procedures, time off requests, and no-call/no-show policy',content:`<h2>Attendance & Punctuality</h2><p>Reliable attendance is essential to RideSource's ability to provide dependable service.</p><h3>Call-Out Procedure</h3><p>Notify your supervisor no later than <strong>one hour before</strong> your scheduled start time.</p><h3>No-Call / No-Show Policy</h3><ul><li>First offense — Verbal warning</li><li>Second offense — Written warning</li><li>Third offense — Final warning; continued issues may result in termination</li></ul><h3>Time Off Requests</h3><p>All planned time off must be submitted through the <strong>RideSource Staff Portal</strong>.</p><div class="callout"><strong>Job Abandonment</strong>Employees who fail to report or contact their supervisor for three consecutive workdays are considered to have voluntarily abandoned their position.</div>`},
-  {id:'drug_free',name:'Drug-Free Workplace Policy',desc:'Substance use, testing requirements, and employee assistance',content:`<h2>Drug-Free Workplace</h2><p>The use, possession, sale, or distribution of alcohol or controlled substances on duty, on company property, or in company vehicles is strictly prohibited.</p><h3>Required Testing</h3><ul><li><strong>Pre-employment</strong> — May be required before beginning work</li><li><strong>Reasonable suspicion</strong> — Based on supervisor observations of apparent impairment</li><li><strong>Post-accident</strong> — Required when an employee causes or contributes to an accident</li></ul><p>Employees who refuse to cooperate with required testing will be terminated.</p>`},
-  {id:'non_compete',name:'Non-Compete & Separation Policy',desc:'Post-employment obligations and return of company property',content:`<h2>Non-Compete & Separation Policy</h2><h3>Non-Compete Agreement</h3><p>For a period of <strong>24 months</strong> following the end of employment, former employees may not engage in the same or similar activities as those performed for RideSource in any business operating within <strong>50 miles</strong> of a RideSource office.</p><h3>Resignation</h3><p>Employees are asked to provide at least <strong>two weeks' written notice</strong>.</p><h3>Return of Property</h3><p>Upon separation, employees must return all company property on or before their last day.</p><div class="callout"><strong>Post-Employment Confidentiality</strong>Your confidentiality obligations remain in full effect after your employment ends.</div>`}
+  {id:'background_check',name:'Fingerprinting & Background Check Consent',desc:'Consent for pre-employment background and driving record checks',content:`<h2>Fingerprinting & Background Check Consent</h2><p>To ensure a safe and productive work environment, RideSource conducts pre-employment background and driving record checks on all applicants who accept an offer of employment. All offers of employment are conditioned on receipt of a background check report acceptable to RideSource.</p><p>Reports are kept confidential and reviewed only by individuals involved in the hiring process. If information obtained would lead RideSource to deny employment, a copy of the report will be provided to the applicant, who will have the opportunity to dispute its accuracy.</p><h3>Employment Requirements</h3><ul><li>Must be at least 25 years of age and have held a valid driver's license for at least five years</li><li>Drivers shall have no more than one chargeable accident or moving violation in the last ten years, as defined by Modivcare</li><li>Drivers shall not have had their driver's license suspended or revoked for traffic violations in the previous fifteen years</li><li>Must not have been convicted of any felony-level or greater crime as defined in Maine State Law, or any conviction that would directly conflict with job expectations at RideSource</li></ul><div class="callout"><strong>By signing this policy</strong>, I consent to RideSource conducting a background check and motor vehicle record review as a condition of my employment.</div>`},
+  {id:'hipaa',name:'Client Confidentiality Agreement',desc:'Protects passenger health information — critical for NEMT operations',content:`<h2>Client Confidentiality Agreement</h2><p>All passenger information is strictly confidential. This includes names, addresses, phone numbers, destinations, family information, and any personal circumstances including health information and immigration status. All communications — written or otherwise — that include any rider, provider, address, trip, or company information are considered protected under HIPAA.</p><p>The law requires that all information that may individually identify a patient be used with utmost care and only in connection with the treatment of that patient. You must not share passenger information with any third party without the passenger's consent and RideSource's approval. This obligation continues after your employment ends.</p><h3>Your Obligations</h3><ul><li>Protect all Protected Health Information (PHI) at all times</li><li>Never discuss client information in public settings or with other clients</li><li>Secure all paperwork and electronic devices containing client information</li><li>Report any suspected privacy breaches to your supervisor immediately</li><li>Do not share passenger information with any third party without consent</li></ul><div class="callout"><strong>&#x26A0;&#xFE0F; Zero Tolerance</strong>Violation of passenger confidentiality is grounds for immediate termination and may result in legal action. This obligation continues after your employment ends.</div>`},
+  {id:'harassment',name:'Sexual Harassment Policy',desc:'Zero-tolerance harassment policy and reporting procedures',content:`<h2>Sexual Harassment Policy</h2><p>RideSource has a zero-tolerance policy for harassment of any kind, including sexual harassment. Sexual harassment is any unwelcome conduct of a sexual nature that creates an offensive, hostile, or intimidating work environment, including physical contact, verbal comments, sexual advances, or display of explicit material.</p><p>Employees who experience or witness harassment should report it immediately to their supervisor or management. All reports will be investigated promptly and confidentially. Retaliation against anyone who reports harassment in good faith is strictly prohibited.</p><h3>Equal Opportunity & Non-Discrimination</h3><p>RideSource Inc. is an equal opportunity employer committed to providing employment opportunities to all qualified individuals without regard to race, color, religion, sex, national origin, age, disability, veteran status, or any other characteristic protected by applicable law. RideSource will not tolerate any form of unlawful discrimination or harassment in the workplace.</p><div class="callout"><strong>How to Report</strong>Report harassment to your supervisor or directly to management. All reports are confidential. No employee will face retaliation for reporting in good faith.</div>`},
+  {id:'drug_free',name:'Drug-Free Workplace Policy',desc:'Substance use, testing requirements, and consequences',content:`<h2>Drug-Free Workplace Policy</h2><p>The use, possession, sale, or distribution of alcohol or controlled substances on duty, on company property, or in company vehicles is strictly prohibited. No driver or attendant shall use prescription medications or drugs that impair the ability to perform duties while on duty.</p><h3>Work Rules</h3><ul><li>Using, possessing, buying, selling, manufacturing, or dispensing an illegal drug or drug paraphernalia is prohibited while on duty, on company premises, or in company vehicles</li><li>Being under the influence of alcohol or an illegal drug while on duty is prohibited</li><li>Employees using prescribed medications must consult their doctor about fitness for duty and disclose any work restrictions to their supervisor</li></ul><h3>Required Testing</h3><ul><li><strong>Pre-employment</strong> — Required before beginning work; refusal results in disqualification</li><li><strong>Reasonable suspicion</strong> — Based on supervisor observations of apparent impairment</li><li><strong>Post-accident</strong> — Required when an employee causes or contributes to an accident resulting in injury or significant property damage</li><li><strong>Follow-up</strong> — Last-chance agreements may include follow-up testing for up to two years</li></ul><p>Employees who refuse to cooperate with required testing will be terminated.</p>`},
+  {id:'vehicle_use',name:'Company Vehicle Use Policy',desc:'Authorized use of company vehicles and zero-tolerance for personal use',content:`<h2>Company Vehicle Use Policy</h2><p>Company vehicles are provided for company business and approved transportation services only. Personal use of company vehicles is strictly prohibited without prior written authorization from management.</p><p>Drivers approved to take a vehicle home between shifts must understand that the vehicle is not to be used for any personal purpose, including errands. Under no circumstances may drivers transport individuals other than those assigned by the office. RideSource monitors vehicle usage and location.</p><h3>Vehicle Requirements</h3><ul><li>Vehicles must be left with at least one-half tank of fuel at the end of every shift; gas cards must remain in the vehicle when not in use</li><li>Vehicle keys must be returned to the office at the end of each workday</li><li>All passengers must be properly secured before the vehicle is placed in motion</li><li>Never transport a child without an appropriate car seat — contact the office if unsure</li><li>Vehicles shall always be smoke-free</li></ul><div class="callout"><strong>&#x26A0;&#xFE0F; Zero Tolerance</strong>Unauthorized personal use of a company vehicle is grounds for immediate termination.</div>`},
+  {id:'appearance',name:'Personal Appearance & Professional Standards',desc:'Dress code, grooming, and professional conduct on the job',content:`<h2>Personal Appearance & Professional Standards</h2><p>All employees must project a professional image while on duty. RideSource employees are expected to be neat, clean, and well-groomed at all times. Clothing must be consistent with the standards of a professional transportation environment.</p><h3>Dress Code</h3><ul><li>All employees should be covered from shoulders to knees at all times</li><li>No see-through or sleeveless clothing is permitted</li><li>No clothing bearing profanities, vulgar content, or inappropriate imagery</li><li>Uniforms, where provided or required, must be worn as directed</li><li>Natural and artificial scents may be considered objectionable by passengers and are subject to this policy</li></ul><h3>Professional Conduct</h3><ul><li>Wear a visible, easily readable name tag at all times while on duty</li><li>Treat all passengers, colleagues, and the public with dignity and respect</li><li>Do not accept gifts, gratuities, or personal benefits from passengers or vendors</li><li>Maintain professional relationships only — do not call riders by nicknames, lend or accept money, or follow clients on social media</li></ul>`},
+  {id:'attendance',name:'Attendance & Punctuality Policy',desc:'Call-out procedures, time off requests, and no-call/no-show consequences',content:`<h2>Attendance & Punctuality Policy</h2><p>Reliable attendance and punctuality are essential to RideSource's ability to provide dependable service. Passengers depend on us to be on time — and that starts with every employee.</p><h3>Call-Out Procedure</h3><p>If you are unable to report to work or will be late, you must notify your supervisor as early as possible and <strong>no later than one hour before</strong> your scheduled start time. Early notification reduces canceled rides and allows us to arrange coverage for our clients.</p><h3>No-Call / No-Show Consequences</h3><ul><li>First offense — Verbal warning; written record placed in personnel file</li><li>Second offense — Written warning, placed in personnel file</li><li>Third offense — Final warning; continued attendance issues will result in termination</li></ul><h3>Time Off Requests</h3><p>Employees must notify the office a minimum of <strong>two weeks in advance</strong> for any anticipated time off. All planned time off requests must be submitted through the <strong>RideSource Staff Portal</strong>.</p><div class="callout"><strong>Job Abandonment</strong>Employees who fail to report or contact their supervisor for three consecutive workdays are considered to have voluntarily abandoned their position and will be ineligible for rehire.</div>`},
+  {id:'passenger_service',name:'Passenger Interaction & Service Standards',desc:'Identity verification, trip assignments, and professional passenger conduct',content:`<h2>Passenger Interaction & Service Standards</h2><h3>Identity Verification</h3><p>Before beginning any transport, drivers must verify that the passenger matches the individual listed on the trip manifest, confirming the member's name and scheduled drop-off location.</p><ul><li>Do not transport any individual not listed on the manifest</li><li>Do not alter the drop-off location without contacting dispatch and receiving authorization</li><li>Escorts are only permitted if listed on the manifest; changes require prior approval</li><li>Give special attention when transporting minors or individuals with intellectual disabilities</li><li>If you inadvertently transport the wrong passenger, contact dispatch and the office immediately</li></ul><h3>Trip Assignments</h3><p>Drivers are employed to complete trips as assigned. Refusing trips or clients is not acceptable. Drivers may not pick and choose trips or clients.</p><ul><li>Complete all assigned trips and serve all eligible clients professionally and respectfully</li><li>Address questions or concerns about assignments with management directly — do not refuse a trip</li><li>Failure to comply may result in corrective action up to and including termination</li></ul><h3>Professional Conduct with Passengers</h3><ul><li>Maintain professional relationships only — no nicknames, personal exchanges, or social media connections with clients</li><li>Do not discuss politics, religion, or controversial topics with passengers</li><li>Do not contact any member except as necessary to assist them with transport</li><li>Do not accept money, gifts, or gratuities from passengers</li></ul><div class="callout"><strong>Policy Clarification</strong>Any refusal of assigned trips or clients will result in disciplinary action.</div>`},
+  {id:'cell_phone',name:'Cell Phone & Distracted Driving Policy',desc:'Maine State Law compliance — hands-free only while driving',content:`<h2>Cell Phone & Distracted Driving Policy</h2><p>Maine State Law prohibits drivers from holding any electronic device while operating a vehicle. This law applies to all RideSource drivers at all times while the vehicle is in motion. RideSource provides a company Bluetooth device and phone mount to every driver — these must be used for all calls while driving.</p><h3>Rules</h3><ul><li>Never hold a phone to text, call, or use any app while driving</li><li>All calls must be made using the company-issued hands-free Bluetooth device</li><li>The phone mount must be used to safely secure the device at all times while driving</li><li>Drivers should not use headphones while the vehicle is in motion</li><li>Do not use navigation apps manually while driving — set your destination before moving</li></ul><div class="callout"><strong>&#x26A0;&#xFE0F; Zero Tolerance</strong>Violation of this policy and Maine State Law may result in immediate disciplinary action up to and including termination.</div>`},
+  {id:'accident_reporting',name:'Accident & Incident Reporting Policy',desc:'Mandatory reporting of all accidents, injuries, and passenger incidents',content:`<h2>Accident & Incident Reporting Policy</h2><p>All workplace accidents, injuries, near-misses, passenger incidents, and vehicle accidents must be reported to your supervisor <strong>immediately</strong> — no matter how minor they appear. Timely reporting allows RideSource to investigate, take corrective action, and fulfill legal obligations. Failure to report an incident is a policy violation.</p><h3>What to Document</h3><ul><li>The date, time, and location of the incident</li><li>All individuals involved</li><li>The nature of the incident</li><li>Any witnesses present</li></ul><h3>Four Basic Emergency Handling Steps</h3><ul><li><strong>1.</strong> Keep calm</li><li><strong>2.</strong> Contact your dispatcher</li><li><strong>3.</strong> Protect your passengers, yourself, and your vehicle</li><li><strong>4.</strong> Complete all required reports thoroughly</li></ul><p>Accident and incident report forms are kept in each RideSource vehicle and at the main office in Norway.</p><div class="callout"><strong>Evacuation</strong>If you smell smoke, see smoke, or smell gasoline or diesel fumes, evacuate the vehicle immediately. Do not assume it is NOT an emergency. Call 911, then contact your dispatcher.</div>`},
+  {id:'social_media',name:'Social Media & Public Communications Policy',desc:'Guidelines for social media use and public-facing communications',content:`<h2>Social Media & Public Communications Policy</h2><p>Employees may not post financial, confidential, sensitive, or proprietary information about RideSource, clients, or employees on any social platform. Do not post passenger information, photos taken in company vehicles, or any content that could embarrass or harm RideSource or its passengers.</p><h3>Rules</h3><ul><li>Never post passenger names, photos, locations, or any trip-related information online</li><li>Do not post photos or videos taken inside company vehicles</li><li>Do not discuss job-related matters, complaints, or internal operations on social media</li><li>Do not post content that could be considered harassing, discriminatory, or defamatory</li><li>RideSource may monitor internet content — company-supplied technology is subject to review</li></ul><h3>Public Communications</h3><ul><li>Only authorized personnel may speak on behalf of RideSource to media or the public</li><li>If contacted by a reporter or media outlet, refer them to management immediately</li><li>Do not engage in public disputes involving RideSource, clients, or colleagues online</li></ul><div class="callout"><strong>Remember</strong>Policy violations may result in disciplinary action up to and including termination. When in doubt about whether something is appropriate to post — don't post it.</div>`},
+  {id:'vehicle_inspection',name:'Vehicle Inspection & Cleanliness Policy',desc:'Pre-trip and post-trip inspection requirements and vehicle standards',content:`<h2>Vehicle Inspection & Cleanliness Policy</h2><p>Drivers are required to complete a <strong>pre-trip and post-trip vehicle inspection</strong> every shift using the Daily Vehicle Maintenance Report. Vehicles must be maintained in a clean, safe, and professional condition at all times.</p><h3>Your Responsibilities</h3><ul><li>Complete a full pre-trip inspection before every shift — check brakes, lights, tires, fluids, and safety equipment</li><li>Complete a post-trip inspection at the end of every shift and report any new issues</li><li>Report all mechanical issues, damage, or safety concerns immediately — do not operate a vehicle you believe is unsafe</li><li>Monitor oil change intervals and arrange service through the Norway office</li><li>Keep vehicles free of personal belongings, food waste, and debris at all times</li><li>Vehicles must be left with at least one-half tank of fuel</li><li>Familiarize yourself with the location of all safety equipment: First Aid Kit, Spill Kit, Seatbelt Cutter, and Fire Extinguisher</li></ul><div class="callout"><strong>Report Issues Immediately</strong>Never operate a vehicle you believe to be unsafe. Report all damage or mechanical concerns to your supervisor before your next shift.</div>`}
 ];
 
 // TRAINING & HANDBOOK CONTENT
@@ -1245,7 +1284,7 @@ async function submitHandbookSig(){
   const sig=document.getElementById('hb-sig-input').value.trim();
   const btn=document.getElementById('hb-submit-btn');
   btn.disabled=true;btn.textContent='Saving...';
-  try{await db.from('handbook_signatures').insert([{employee_name:user.name,employee_email:user.email,county:user.county,handbook_version:'3.0',signature:sig,print_requested:handbookSigChoice==='print',signed_at:new Date().toISOString()}]);}catch(e){console.log(e);}
+  try{await db.from('handbook_signatures').insert([{employee_name:user.name,employee_email:user.email,county:user.county,handbook_version:'3.0',signature:sig,print_requested:handbookSigChoice==='print',signed_at:new Date().toISOString()}]);}catch(e){if(!e||e.name!=='DataCloneError')console.log(e);}
   handbookComplete=true;saveState();
   document.getElementById('handbook-sig').innerHTML=`<div class="success-banner"><div class="big-check">✅</div><h2>Handbook Acknowledged!</h2><p>${handbookSigChoice==='print'?'A printed copy has been requested.':'Your digital acknowledgment has been recorded.'}</p><button class="btn-primary" style="margin-top:16px;background:rgba(255,255,255,0.2);border:2px solid rgba(255,255,255,0.5);" onclick="showSection('policies')">Continue to Policy Sign-Offs →</button></div>`;
   updateDashboard();
@@ -1304,13 +1343,22 @@ async function signPolicy(){
   const ts=now.toLocaleString('en-US',{dateStyle:'medium',timeStyle:'short'});
   const row={employee_name:user.name,employee_email:user.email,county:user.county,policy_id:p.id,policy_name:p.name,signature:sig,signed_at:now.toISOString()};
   let saved=false,lastError=null;
+  // Helper: DataCloneError is a Supabase internal broadcast side-effect, not a save failure
+  const isNonFatal=e=>e&&(e.name==='DataCloneError'||String(e.message).includes('postMessage')||String(e.message).includes('cloned'));
   try{
     await db.from('policy_signatures').delete().eq('employee_email',user.email).eq('policy_id',p.id);
     const {error}=await db.from('policy_signatures').insert([row]);
     if(!error)saved=true;else lastError=error;
-  }catch(e){lastError=e;}
+  }catch(e){
+    if(isNonFatal(e)){saved=true;}else{lastError=e;}
+  }
   if(!saved){
-    try{const {error}=await db.from('policy_signatures').upsert([row],{onConflict:'employee_email,policy_id'});if(!error)saved=true;else lastError=error;}catch(e){lastError=e;}
+    try{
+      const {error}=await db.from('policy_signatures').upsert([row],{onConflict:'employee_email,policy_id'});
+      if(!error)saved=true;else lastError=error;
+    }catch(e){
+      if(isNonFatal(e)){saved=true;}else{lastError=e;}
+    }
   }
   logDbStatus('signPolicy('+p.id+')',saved,lastError);
   if(!saved){btn.disabled=false;btn.textContent='✍ Sign & Acknowledge';alert('Signature could not be saved.\n\nReason: '+(lastError?.message||'Unknown error'));return;}
@@ -1618,6 +1666,12 @@ function filterEmployeeFolders(){
   const filtered=allProfilesCache.filter(p=>(p.employee_name||'').toLowerCase().includes(q)||(p.county||'').toLowerCase().includes(q));
   renderEmployeeFolderGrid(filtered);
 }
+function statusBadgeHtml(status){
+  const s=status||'Active';
+  const map={'Active':'badge-status-active','Per Diem':'badge-status-perdiem','Seasonal':'badge-status-seasonal','Inactive':'badge-status-inactive','Separated':'badge-status-separated'};
+  const cls=map[s]||'badge-status-active';
+  return `<span class="badge ${cls}" style="font-size:10px;">${s}</span>`;
+}
 function renderEmployeeFolderGrid(profiles){
   const el=document.getElementById('emp-folder-grid');
   if(!el)return;
@@ -1639,6 +1693,7 @@ function renderEmployeeFolderGrid(profiles){
         <div style="flex:1;">
           <div class="folder-card-name">${p.employee_name}</div>
           <div class="folder-card-meta">${p.county||'No county'} ${p.position?'· '+p.position:''} ${hireDate!=='No hire date set'?'· Hired '+hireDate:''}</div>
+          <div style="margin-top:4px;">${statusBadgeHtml(p.employment_status)}</div>
         </div>
         <div style="font-size:12px;color:#bbb;">${createdDate}</div>
       </div>
@@ -1655,12 +1710,16 @@ async function openProfileDetail(id){
   document.getElementById('emp-profile-name').textContent=p.employee_name||'—';
   document.getElementById('emp-profile-meta').textContent=(p.position||'Position not set')+' · '+(p.county||'No county')+(p.employee_email?' · '+p.employee_email:'');
   const badges=[];
-  if(p.hire_date)badges.push('Hired '+new Date(p.hire_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}));
-  if(p.created_by)badges.push('Profile: '+p.created_by);
-  document.getElementById('emp-profile-badges').innerHTML=badges.map(b=>`<span class="profile-badge">${b}</span>`).join('');
+  badges.push(statusBadgeHtml(p.employment_status));
+  if(p.hire_date)badges.push('<span class="profile-badge">Hired '+new Date(p.hire_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+'</span>');
+  if(p.created_by)badges.push('<span class="profile-badge">Profile: '+p.created_by+'</span>');
+  document.getElementById('emp-profile-badges').innerHTML=badges.join('');
   // Info tab
   const setVal=(id,val)=>{const el=document.getElementById(id);if(el){el.textContent=val||'—';el.className='info-value'+(val?'':' empty');}};
   setVal('pinfo-position',p.position);
+  // Status gets special badge treatment
+  const statusEl=document.getElementById('pinfo-status');
+  if(statusEl)statusEl.innerHTML=statusBadgeHtml(p.employment_status);
   setVal('pinfo-hire-date',p.hire_date?new Date(p.hire_date+'T00:00:00').toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}):null);
   setVal('pinfo-county',p.county);
   setVal('pinfo-email',p.employee_email);
@@ -1761,6 +1820,7 @@ function openCreateProfileModal(){
   document.getElementById('cpm-ec-phone').value='';
   document.getElementById('cpm-ec-relation').value='';
   document.getElementById('cpm-notes').value='';
+  document.getElementById('cpm-status').value='Active';
   document.getElementById('cpm-id').value='';
   document.getElementById('create-profile-modal-title').textContent='Create Employee Profile';
   document.getElementById('create-profile-modal').classList.add('open');
@@ -1780,8 +1840,41 @@ function openEditProfileModal(){
   document.getElementById('cpm-ec-phone').value=p.emergency_contact_phone||'';
   document.getElementById('cpm-ec-relation').value=p.emergency_contact_relation||'';
   document.getElementById('cpm-notes').value=p.notes||'';
+  document.getElementById('cpm-status').value=p.employment_status||'Active';
   document.getElementById('create-profile-modal-title').textContent='Edit Employee Profile';
   document.getElementById('create-profile-modal').classList.add('open');
+}
+function confirmDeleteProfile(){
+  const p=allProfilesCache.find(x=>x.id===currentProfileId);
+  if(!p)return;
+  document.getElementById('delete-profile-modal-name').textContent=p.employee_name;
+  document.getElementById('delete-profile-modal').classList.add('open');
+}
+async function archiveProfile(){
+  const p=allProfilesCache.find(x=>x.id===currentProfileId);
+  if(!p)return;
+  const btn=document.getElementById('dpm-archive-btn');
+  btn.disabled=true;btn.textContent='Archiving...';
+  try{
+    await db.from('employee_profiles').update({employment_status:'Separated',updated_at:new Date().toISOString()}).eq('id',p.id);
+    closeModal('delete-profile-modal');
+    closeProfileDetail();
+    await loadEmployeeFolders();
+  }catch(e){alert('Error archiving profile: '+e.message);}
+  btn.disabled=false;btn.textContent='Archive (Set to Separated)';
+}
+async function deleteProfile(){
+  const p=allProfilesCache.find(x=>x.id===currentProfileId);
+  if(!p)return;
+  const btn=document.getElementById('dpm-delete-btn');
+  btn.disabled=true;btn.textContent='Deleting...';
+  try{
+    await db.from('employee_profiles').delete().eq('id',p.id);
+    closeModal('delete-profile-modal');
+    closeProfileDetail();
+    await loadEmployeeFolders();
+  }catch(e){alert('Error deleting profile: '+e.message);}
+  btn.disabled=false;btn.textContent='Permanently Delete';
 }
 async function saveProfile(){
   const id=document.getElementById('cpm-id').value;
@@ -1793,6 +1886,7 @@ async function saveProfile(){
     county:document.getElementById('cpm-county').value,
     position:document.getElementById('cpm-position').value.trim(),
     hire_date:document.getElementById('cpm-hire-date').value||null,
+    employment_status:document.getElementById('cpm-status').value||'Active',
     phone:document.getElementById('cpm-phone').value.trim(),
     address:document.getElementById('cpm-address').value.trim(),
     emergency_contact_name:document.getElementById('cpm-ec-name').value.trim(),
@@ -1832,6 +1926,7 @@ function openPacketModal(){
   if(!p){alert('No profile selected.');return;}
   document.getElementById('pkg-emp-name').textContent=p.employee_name;
   document.getElementById('pkg-manager').value='0';
+  document.getElementById('pkg-start-date').value=p.hire_date||'';
   document.getElementById('packet-modal').classList.add('open');
 }
 function generateOnboardingPacket(){
@@ -1840,7 +1935,8 @@ function generateOnboardingPacket(){
   const mgrIdx=parseInt(document.getElementById('pkg-manager').value)||0;
   const mgr=PACKET_MANAGERS[mgrIdx];
   const today=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
-  const hireDate=p.hire_date?new Date(p.hire_date+'T00:00:00').toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}):'[Start Date]';
+  const pkgStartDate=document.getElementById('pkg-start-date').value;
+  const hireDate=pkgStartDate?new Date(pkgStartDate+'T00:00:00').toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}):(p.hire_date?new Date(p.hire_date+'T00:00:00').toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}):'[Start Date]');
   const position=p.position||'Driver';
   const PORTAL_URL_LINK='https://ridesourcecalendar-hub.github.io/ridesource-onboarding/index.html';
   const GITHUB_BASE='https://ridesourcecalendar-hub.github.io/ridesource-onboarding/';
@@ -2016,13 +2112,13 @@ function generateOnboardingPacket(){
     <div class="form-download">
       <div class="form-download-name">Emergency Contact Form</div>
       <div class="form-download-desc">Who should we contact in case of an emergency at work?</div>
-      <a href="${GITHUB_BASE}RideSource_Employee_Complaint_Form.docx" target="_blank">⬇️ Download Emergency Contact Form</a>
+      <a href="${GITHUB_BASE}RideSource_Onboarding_Checklist__3_.docx" target="_blank">⬇️ Download Emergency Contact Form</a>
     </div>
 
     <div class="form-download">
       <div class="form-download-name">Driver Information Form</div>
       <div class="form-download-desc">Basic driver information and contact details for our records.</div>
-      <a href="${GITHUB_BASE}Interview_Questions.docx" target="_blank">⬇️ Download Driver Info Form</a>
+      <a href="${GITHUB_BASE}Interview_Questions__1_.docx" target="_blank">⬇️ Download Driver Info Form</a>
     </div>
   </div>
 
@@ -2509,7 +2605,7 @@ async function loadOnboarding(){
   sigs.forEach(s=>{if(!byEmp[s.employee_email])byEmp[s.employee_email]={name:s.employee_name,email:s.employee_email,county:s.county,policies:[],handbookSigned:false,printRequested:false};byEmp[s.employee_email].policies.push(s.policy_name);});
   hbSigs.forEach(h=>{if(byEmp[h.employee_email]){byEmp[h.employee_email].handbookSigned=true;byEmp[h.employee_email].printRequested=h.print_requested;}});
   el.innerHTML='<div style="overflow-x:auto;"><table class="data-table"><thead><tr><th>Employee</th><th>County</th><th>Policies Signed</th><th>Handbook</th><th>Print Requested</th></tr></thead><tbody>'+
-    Object.values(byEmp).map(e=>`<tr><td><strong>${e.name}</strong><br><span style="font-size:11px;color:#888;">${e.email}</span></td><td>${e.county}</td><td><span class="badge ${e.policies.length>=7?'badge-approved':'badge-warning'}">${e.policies.length}/7</span></td><td>${e.handbookSigned?'<span class="badge badge-approved">✓ Signed</span>':'<span class="badge badge-warning">Pending</span>'}</td><td>${e.printRequested?'<span class="badge badge-flag">📦 Yes</span>':'No'}</td></tr>`).join('')+
+    Object.values(byEmp).map(e=>`<tr><td><strong>${e.name}</strong><br><span style="font-size:11px;color:#888;">${e.email}</span></td><td>${e.county}</td><td><span class="badge ${e.policies.length>=POLICIES.length?'badge-approved':'badge-warning'}">${e.policies.length}/${POLICIES.length}</span></td><td>${e.handbookSigned?'<span class="badge badge-approved">✓ Signed</span>':'<span class="badge badge-warning">Pending</span>'}</td><td>${e.printRequested?'<span class="badge badge-flag">📦 Yes</span>':'No'}</td></tr>`).join('')+
     '</tbody></table></div>';
   const printReqs=Object.values(byEmp).filter(e=>e.printRequested);
   if(printList)printList.innerHTML=printReqs.length===0?'No printed copy requests.':`<div>${printReqs.map(e=>`<div style="padding:6px 0;border-bottom:1px solid #e0e0e0;font-size:12px;"><strong>${e.name}</strong> (${e.email}) — ${e.county}</div>`).join('')}</div>`;
@@ -3735,7 +3831,19 @@ async function buildDocx(templateId){
       <div class="form-field"><label>Hire Date</label><input type="date" id="cpm-hire-date"></div>
       <div class="form-field"><label>Phone</label><input type="text" id="cpm-phone" placeholder="207-555-0000"></div>
     </div>
-    <div class="form-field"><label>Address</label><input type="text" id="cpm-address" placeholder="Street, City, State, ZIP"></div>
+    <div class="form-row">
+      <div class="form-field">
+        <label>Employment Status</label>
+        <select id="cpm-status" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+          <option value="Active">Active</option>
+          <option value="Per Diem">Per Diem</option>
+          <option value="Seasonal">Seasonal</option>
+          <option value="Inactive">Inactive</option>
+          <option value="Separated">Separated</option>
+        </select>
+      </div>
+      <div class="form-field"><label>Address</label><input type="text" id="cpm-address" placeholder="Street, City, State, ZIP"></div>
+    </div>
     <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin:16px 0 10px;">Emergency Contact</div>
     <div class="form-row">
       <div class="form-field"><label>Name</label><input type="text" id="cpm-ec-name" placeholder="Contact name"></div>
@@ -3759,6 +3867,11 @@ async function buildDocx(templateId){
     <div style="background:var(--light);border-radius:8px;padding:14px 16px;margin-bottom:20px;">
       <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Generating packet for</div>
       <div style="font-size:16px;font-weight:800;color:var(--navy);" id="pkg-emp-name">—</div>
+    </div>
+    <div class="form-field">
+      <label>Start Date (shown on packet)</label>
+      <input type="date" id="pkg-start-date" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+      <div style="font-size:11px;color:#aaa;margin-top:4px;">Pre-filled from profile hire date. Change here if needed — this only affects the packet, not the saved profile.</div>
     </div>
     <div class="form-field">
       <label>Signing Manager</label>
@@ -3818,6 +3931,29 @@ async function buildDocx(templateId){
     <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">
       <button class="btn btn-secondary" onclick="closeModal('vehicle-report-modal')">Cancel</button>
       <button class="btn btn-primary" id="vrm-save-btn" onclick="saveVehicleReport()">💾 Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="delete-profile-modal">
+  <div class="modal" style="max-width:440px;">
+    <button class="modal-close" onclick="closeModal('delete-profile-modal')">✕</button>
+    <h3 style="color:var(--navy);margin-bottom:4px;">🗄️ Archive or Delete Profile</h3>
+    <p style="font-size:13px;color:#888;margin-bottom:16px;">Choose what to do with <strong id="delete-profile-modal-name"></strong>'s profile.</p>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div style="background:#f0faf4;border:1px solid #a8d5b5;border-radius:10px;padding:16px 18px;">
+        <div style="font-weight:700;color:#155724;margin-bottom:4px;">🗄️ Archive (Recommended)</div>
+        <div style="font-size:12px;color:#555;margin-bottom:12px;">Sets the employee's status to <strong>Separated</strong>. The profile and all HR history are kept on file for records. This can be undone by editing the profile.</div>
+        <button class="btn btn-sm" id="dpm-archive-btn" onclick="archiveProfile()" style="background:#27AE60;color:#fff;">Archive (Set to Separated)</button>
+      </div>
+      <div style="background:#fdecea;border:1px solid #f5c6c2;border-radius:10px;padding:16px 18px;">
+        <div style="font-weight:700;color:#721c24;margin-bottom:4px;">🗑️ Permanently Delete</div>
+        <div style="font-size:12px;color:#555;margin-bottom:12px;">Removes the profile record entirely. <strong>This cannot be undone.</strong> Associated call-out logs, time off requests, and warning history are not deleted.</div>
+        <button class="btn btn-sm btn-red" id="dpm-delete-btn" onclick="deleteProfile()">Permanently Delete</button>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-top:16px;">
+      <button class="btn btn-secondary btn-sm" onclick="closeModal('delete-profile-modal')">Cancel</button>
     </div>
   </div>
 </div>
