@@ -172,6 +172,8 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 .data-table td{padding:10px 14px;font-size:13px;border-bottom:1px solid #f0f0f0;}
 .data-table tr:hover td{background:var(--gray);}
 .badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;}
+.badge-status-onboarding{background:#ede9fe;color:#5b21b6;}
+.badge-status-training{background:#dbeafe;color:#1e40af;}
 .badge-status-active{background:#d4edda;color:#155724;}
 .badge-status-perdiem{background:#e8f4fd;color:#1565c0;}
 .badge-status-seasonal{background:#fff3cd;color:#856404;}
@@ -273,11 +275,10 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
       </div>
       <div id="landing-admin" style="display:none;">
         <div class="landing-title">Admin &amp; Manager Access</div>
-        <div class="landing-desc">Supervisors and HR staff only. Enter your name and admin password to continue.</div>
-        <input class="landing-field" id="admin-name" type="text" placeholder="Your Full Name">
-        <input class="landing-field" id="admin-pass" type="password" placeholder="Admin Password" onkeydown="if(event.key==='Enter')adminLogin()">
+        <div class="landing-desc">Supervisors and HR staff only. Enter your password to continue.</div>
+        <input class="landing-field" id="admin-pass" type="password" placeholder="Your Password" onkeydown="if(event.key==='Enter')adminLogin()">
         <button class="landing-btn" onclick="adminLogin()">Enter Admin Portal →</button>
-        <div class="error-msg" id="admin-error">Incorrect password or missing name. Please try again.</div>
+        <div class="error-msg" id="admin-error">Incorrect password. Please try again.</div>
       </div>
     </div>
   </div>
@@ -514,7 +515,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
       <div class="header-logo-sub">Reliable · Safe · Transportation</div>
     </div>
     <div class="header-right">
-      <div class="header-badge">ADMIN</div>
+      <div class="header-badge" id="admin-role-badge">ADMIN</div>
       <span style="color:rgba(255,255,255,.7);font-size:13px;" id="admin-display"></span>
       <button class="btn-logout" onclick="adminLogout()">Sign Out</button>
     </div>
@@ -679,8 +680,14 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
           <button id="req-tab-PTO" class="req-tab req-tab-pto" onclick="setReqTab('PTO')">💰 PTO<span class="req-count" id="req-count-PTO" style="background:#ddd;color:#555;">0</span></button>
           <button id="req-tab-ALL" class="req-tab" style="margin-left:auto;" onclick="setReqTab('ALL')">All</button>
         </div>
-        <div style="margin-bottom:14px;">
-          <input type="text" id="req-search" placeholder="🔍  Search by employee name..." oninput="renderRequestsTable()" style="padding:9px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;width:280px;">
+        <div style="margin-bottom:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+          <input type="text" id="req-search" placeholder="🔍  Search by employee name..." oninput="renderRequestsTable()" style="padding:9px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;flex:1;min-width:180px;">
+          <select id="req-supervisor-filter" onchange="renderRequestsTable()" style="padding:9px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:#fff;">
+            <option value="">All Supervisors</option>
+            <option value="Tiffany Gallagher">Tiffany Gallagher</option>
+            <option value="Nicole Geel">Nicole Geel</option>
+            <option value="Robin Lausier">Robin Lausier</option>
+          </select>
         </div>
         <div id="requests-table">Loading...</div>
       </div>
@@ -693,7 +700,24 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
         <!-- LIST VIEW -->
         <div id="emp-folder-list-view">
           <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap;">
-            <input type="text" id="emp-folder-search" placeholder="🔍  Search by name or county..." oninput="filterEmployeeFolders()" style="padding:9px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;flex:1;min-width:200px;">
+            <input type="text" id="emp-folder-search" placeholder="🔍  Search by name or county..." oninput="filterEmployeeFolders()" style="padding:9px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;flex:1;min-width:180px;">
+            <select id="emp-folder-supervisor-filter" onchange="filterEmployeeFolders()" style="padding:9px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:#fff;">
+              <option value="">All Supervisors</option>
+              <option value="Tiffany Gallagher">Tiffany Gallagher</option>
+              <option value="Nicole Geel">Nicole Geel</option>
+              <option value="Robin Lausier">Robin Lausier</option>
+              <option value="__unassigned__">Unassigned</option>
+            </select>
+            <select id="emp-folder-status-filter" onchange="filterEmployeeFolders()" style="padding:9px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:#fff;">
+              <option value="">All Statuses</option>
+              <option value="Onboarding">Onboarding</option>
+              <option value="In Training">In Training</option>
+              <option value="Active">Active</option>
+              <option value="Per Diem">Per Diem</option>
+              <option value="Seasonal">Seasonal</option>
+              <option value="Inactive">Inactive</option>
+              <option value="Separated">Separated</option>
+            </select>
             <button class="btn btn-primary btn-sm" onclick="openCreateProfileModal()">＋ Create Profile</button>
           </div>
           <div id="emp-folder-grid"><p style="color:#888;font-size:13px;">Loading profiles...</p></div>
@@ -721,6 +745,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
           <!-- Profile Tabs -->
           <div style="display:flex;gap:2px;border-bottom:2px solid var(--border);margin-bottom:20px;flex-wrap:wrap;">
             <button class="profile-tab active" id="ptab-info" onclick="switchProfileTab('info')">👤 Info</button>
+            <button class="profile-tab" id="ptab-policies" onclick="switchProfileTab('policies')">✍️ Policy Signatures</button>
             <button class="profile-tab" id="ptab-warnings" onclick="switchProfileTab('warnings')">⚠️ Warning History</button>
             <button class="profile-tab" id="ptab-callouts" onclick="switchProfileTab('callouts')">📞 Call-Out History</button>
             <button class="profile-tab" id="ptab-timeoff" onclick="switchProfileTab('timeoff')">📅 Time Off</button>
@@ -733,6 +758,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
                 <div style="font-size:12px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Employment</div>
                 <div class="info-grid" style="grid-template-columns:1fr;">
                   <div class="info-field"><div class="info-label">Status</div><div class="info-value" id="pinfo-status">—</div></div>
+                  <div class="info-field"><div class="info-label">Supervisor</div><div class="info-value" id="pinfo-supervisor">—</div></div>
                   <div class="info-field"><div class="info-label">Position</div><div class="info-value" id="pinfo-position">—</div></div>
                   <div class="info-field"><div class="info-label">Hire Date</div><div class="info-value" id="pinfo-hire-date">—</div></div>
                   <div class="info-field"><div class="info-label">County</div><div class="info-value" id="pinfo-county">—</div></div>
@@ -759,6 +785,11 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
               <div style="font-size:12px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Notes</div>
               <div class="info-field"><div class="info-value" id="pinfo-notes" style="font-weight:400;line-height:1.6;">—</div></div>
             </div>
+          </div>
+
+          <!-- Policy Signatures Tab -->
+          <div class="profile-tab-panel" id="ppanel-policies">
+            <div id="pdata-policies"><p style="color:#888;font-size:13px;">Loading...</p></div>
           </div>
 
           <!-- Warnings Tab -->
@@ -800,7 +831,21 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
           <button class="btn btn-primary" onclick="logCallOut()">Log Call-Out</button>
           <span id="co-msg" style="font-size:13px;color:var(--success);margin-left:12px;display:none;">✓ Logged!</span>
         </div>
-        <div class="card"><div class="card-title">Recent Call-Outs</div><div id="callout-table">Loading...</div></div>
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
+            <div class="card-title" style="margin-bottom:0;">Recent Call-Outs</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <input type="text" id="co-search" placeholder="🔍 Search employee..." oninput="renderCallOutTable()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:12px;outline:none;">
+              <select id="co-supervisor-filter" onchange="renderCallOutTable()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:12px;outline:none;background:#fff;">
+                <option value="">All Supervisors</option>
+                <option value="Tiffany Gallagher">Tiffany Gallagher</option>
+                <option value="Nicole Geel">Nicole Geel</option>
+                <option value="Robin Lausier">Robin Lausier</option>
+              </select>
+            </div>
+          </div>
+          <div id="callout-table">Loading...</div>
+        </div>
       </div>
 
       <!-- TEAM CALENDAR -->
@@ -976,9 +1021,23 @@ const SUPABASE_URL='https://iasphxpahlmjwkapyxrs.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlhc3BoeHBhaGxtandrYXB5eHJzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEzNDIyNDYsImV4cCI6MjA4NjkxODI0Nn0.ntQxEiEJqZOvXjfX58I-PPQ2ZOoAT_RgLyf3aWMeXds';
 const EMAILJS_SERVICE_ID='ridesource_calendar';
 const EMAILJS_PUBLIC_KEY='AoArkSo12DpQtsvZZ';
-const SUPERVISOR_EMAIL='tiffanyb@ridesourcemaine.com';
+const SUPERVISOR_EMAIL='tiffanyb@ridesourcemaine.com'; // default fallback
+function getSupervisorEmail(employeeEmail){
+  // Look up the assigned supervisor from profile cache
+  const profile=allProfilesCache.find(p=>p.employee_email===employeeEmail);
+  if(profile&&profile.assigned_supervisor){
+    const staff=PORTAL_STAFF.find(s=>s.name===profile.assigned_supervisor);
+    if(staff&&staff.email)return staff.email;
+  }
+  return SUPERVISOR_EMAIL; // fallback to Tiffany
+}
 const PORTAL_URL='https://raw.githubusercontent.com/ridesourcecalendar-hub/ridesource-onboarding/main/index.html';
-const ADMIN_PASSWORD='RideSource2026!';
+const PORTAL_STAFF=[
+  {name:'Tiffany Gallagher',title:'Regional Operations Manager',email:'tiffanyb@ridesourcemaine.com',phone:'207-812-5357',password:'RideSource2026!',role:'admin'},
+  {name:'Nicole Geel',title:'Operations Manager',email:'nicolegeel@ridesourcemaine.com',phone:'207-743-7433',password:'Nicole2026!',role:'supervisor'},
+  {name:'Robin Lausier',title:'Human Resources Manager',email:'robinl@ridesourcemaine.com',phone:'',password:'Robin2026!',role:'hr'},
+];
+const ADMIN_PASSWORD='RideSource2026!'; // kept for legacy session restore compatibility
 if(typeof supabase==='undefined'){console.error('Supabase failed to load');alert('Portal failed to load. Please refresh the page.');}
 const {createClient}=supabase;
 const db=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false,storageKey:null}});
@@ -990,7 +1049,7 @@ let trainingSectionRead={},handbookSectionRead={};
 let trainingComplete=false,handbookComplete=false,handbookSigChoice=null;
 let currentPolicyIndex=null,modalScrolled=false,currentReqType=null;
 let selectedIssueTypes=[],selectedFile=null;
-let adminName='',mgrSection=0,hbRefSection=0;
+let adminName='',adminStaff=null,mgrSection=0,hbRefSection=0;
 let calYear=new Date().getFullYear(),calMonth=new Date().getMonth(),warningData=null;
 let allRequestsCache=[],allTimesheetsCache=[],allVehicleRecordsCache=[];
 
@@ -1007,10 +1066,20 @@ window.addEventListener('load',function(){
     if(sess.type==='employee'&&sess.name&&sess.email&&sess.county){
       startPortal({name:sess.name,email:sess.email,county:sess.county});
     } else if(sess.type==='admin'&&sess.name){
-      document.getElementById('admin-name').value=sess.name;
-      document.getElementById('admin-pass').value=ADMIN_PASSWORD;
-      adminLogin();
-      document.getElementById('admin-pass').value='';
+      const staff=PORTAL_STAFF.find(s=>s.name===sess.name);
+      if(staff){
+        adminName=staff.name;adminStaff=staff;
+        document.getElementById('admin-display').textContent=staff.name;
+        document.getElementById('dash-admin-name').textContent=staff.name.split(' ')[0];
+        const badge=document.getElementById('admin-role-badge');
+        if(badge)badge.textContent=staff.role==='admin'?'Admin':staff.role==='hr'?'HR':staff.title.split(' ')[0];
+        document.getElementById('screen-landing').classList.remove('active');
+        document.getElementById('screen-admin').classList.add('active');
+        buildMgrGuide();buildHbRef();
+        loadEmployeeFolders();
+        loadDashboard();loadRequests();loadCallOuts();loadFlags();loadOnboarding();renderCalendar();
+        loadTimesheets();loadVehicleRecords();
+      }
     }
   }catch(e){sessionStorage.removeItem('rs_session');}
 });
@@ -1071,17 +1140,22 @@ function logout(){
 
 // ADMIN AUTH
 function adminLogin(){
-  const name=document.getElementById('admin-name').value.trim();
   const pass=document.getElementById('admin-pass').value;
-  if(pass!==ADMIN_PASSWORD||!name){document.getElementById('admin-error').style.display='block';return;}
+  const staff=PORTAL_STAFF.find(s=>s.password===pass);
+  if(!staff){document.getElementById('admin-error').style.display='block';return;}
   document.getElementById('admin-error').style.display='none';
-  adminName=name;
-  document.getElementById('admin-display').textContent=name;
-  document.getElementById('dash-admin-name').textContent=name.split(' ')[0];
-  sessionStorage.setItem('rs_session',JSON.stringify({type:'admin',name,ts:Date.now()}));
+  adminName=staff.name;
+  adminStaff=staff;
+  document.getElementById('admin-display').textContent=staff.name;
+  document.getElementById('dash-admin-name').textContent=staff.name.split(' ')[0];
+  // Update header badge to show role
+  const badge=document.getElementById('admin-role-badge');
+  if(badge)badge.textContent=staff.role==='admin'?'Admin':staff.role==='hr'?'HR':staff.title.split(' ')[0];
+  sessionStorage.setItem('rs_session',JSON.stringify({type:'admin',name:staff.name,role:staff.role,ts:Date.now()}));
   document.getElementById('screen-landing').classList.remove('active');
   document.getElementById('screen-admin').classList.add('active');
   buildMgrGuide();buildHbRef();
+  loadEmployeeFolders(); // pre-load profile cache so supervisor filters work immediately
   loadDashboard();loadRequests();loadCallOuts();loadFlags();loadOnboarding();renderCalendar();
   loadTimesheets();loadVehicleRecords();
 }
@@ -1090,7 +1164,7 @@ function adminLogout(){
   document.getElementById('screen-admin').classList.remove('active');
   document.getElementById('screen-landing').classList.add('active');
   document.getElementById('admin-pass').value='';
-  document.getElementById('admin-name').value='';
+  adminStaff=null;
   switchLanding('admin');
 }
 
@@ -1110,6 +1184,8 @@ function showAdmin(id){
   document.getElementById('section-adm-'+id).style.display='block';
   document.getElementById('nav-adm-'+id).classList.add('active');
   if(id==='employee-folders')loadEmployeeFolders();
+  // Keep profile cache fresh when navigating to sections that use it for filtering
+  if(id==='requests'||id==='callouts')if(allProfilesCache.length===0)loadEmployeeFolders();
 }
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 
@@ -1428,7 +1504,7 @@ async function submitTimeOff(){
   const status=currentReqType==='Use PTO Hours'?'PTO_PENDING':'PENDING';
   try{
     await db.from('time_off_requests').insert([{employee_name:user.name,employee_email:user.email,county:user.county,request_type:currentReqType,start_date:date1,end_date:date2,time_detail:timeDetail,reason,status,submitted_at:new Date().toISOString()}]);
-    if(typeof emailjs!=='undefined'){await emailjs.send(EMAILJS_SERVICE_ID,'template_26w7bfc',{employee_name:user.name,employee_email:user.email,county:user.county,request_type:currentReqType,start_date:date1,end_date:date2,time_detail:timeDetail,reason,portal_url:PORTAL_URL,to_email:SUPERVISOR_EMAIL});}
+    if(typeof emailjs!=='undefined'){await emailjs.send(EMAILJS_SERVICE_ID,'template_26w7bfc',{employee_name:user.name,employee_email:user.email,county:user.county,request_type:currentReqType,start_date:date1,end_date:date2,time_detail:timeDetail,reason,portal_url:PORTAL_URL,to_email:getSupervisorEmail(user.email)});}
   }catch(e){console.log(e);}
   document.getElementById('req-form').style.display='none';
   document.getElementById('req-success').style.display='block';
@@ -1645,7 +1721,7 @@ async function notifyCompletion(){
     }
   }catch(e){console.log('Profile auto-create:',e);}
   if(typeof emailjs==='undefined')return;
-  try{await emailjs.send(EMAILJS_SERVICE_ID,'timeoff_submission',{employee_name:user.name,employee_email:user.email,county:user.county,request_type:'ONBOARDING COMPLETE',start_date:new Date().toLocaleDateString(),end_date:'',time_detail:'All policies signed.',reason:user.name+' has completed all onboarding acknowledgments.',portal_url:PORTAL_URL,to_email:SUPERVISOR_EMAIL});}catch(e){console.log(e);}
+  try{await emailjs.send(EMAILJS_SERVICE_ID,'timeoff_submission',{employee_name:user.name,employee_email:user.email,county:user.county,request_type:'ONBOARDING COMPLETE',start_date:new Date().toLocaleDateString(),end_date:'',time_detail:'All policies signed.',reason:user.name+' has completed all onboarding acknowledgments.',portal_url:PORTAL_URL,to_email:getSupervisorEmail(user.email)});}catch(e){console.log(e);}
 }
 
 // ── EMPLOYEE PROFILES ──
@@ -1663,12 +1739,27 @@ async function loadEmployeeFolders(){
 }
 function filterEmployeeFolders(){
   const q=(document.getElementById('emp-folder-search')?.value||'').toLowerCase();
-  const filtered=allProfilesCache.filter(p=>(p.employee_name||'').toLowerCase().includes(q)||(p.county||'').toLowerCase().includes(q));
+  const supFilter=document.getElementById('emp-folder-supervisor-filter')?.value||'';
+  const statusFilter=document.getElementById('emp-folder-status-filter')?.value||'';
+  const filtered=allProfilesCache.filter(p=>{
+    const matchQ=!q||(p.employee_name||'').toLowerCase().includes(q)||(p.county||'').toLowerCase().includes(q);
+    const matchSup=!supFilter||(supFilter==='__unassigned__'?!p.assigned_supervisor:p.assigned_supervisor===supFilter);
+    const matchStatus=!statusFilter||(p.employment_status||'Active')===statusFilter;
+    return matchQ&&matchSup&&matchStatus;
+  });
   renderEmployeeFolderGrid(filtered);
 }
 function statusBadgeHtml(status){
   const s=status||'Active';
-  const map={'Active':'badge-status-active','Per Diem':'badge-status-perdiem','Seasonal':'badge-status-seasonal','Inactive':'badge-status-inactive','Separated':'badge-status-separated'};
+  const map={
+    'Onboarding':'badge-status-onboarding',
+    'In Training':'badge-status-training',
+    'Active':'badge-status-active',
+    'Per Diem':'badge-status-perdiem',
+    'Seasonal':'badge-status-seasonal',
+    'Inactive':'badge-status-inactive',
+    'Separated':'badge-status-separated'
+  };
   const cls=map[s]||'badge-status-active';
   return `<span class="badge ${cls}" style="font-size:10px;">${s}</span>`;
 }
@@ -1678,25 +1769,38 @@ function renderEmployeeFolderGrid(profiles){
   if(!profiles||profiles.length===0){
     el.innerHTML=`<div style="text-align:center;padding:40px;color:#888;">
       <div style="font-size:40px;margin-bottom:12px;">🗂️</div>
-      <div style="font-weight:700;margin-bottom:6px;">No profiles yet</div>
-      <div style="font-size:13px;">Profiles are created automatically when employees complete onboarding, or you can create one manually.</div>
+      <div style="font-weight:700;margin-bottom:6px;">No profiles found</div>
+      <div style="font-size:13px;">Try adjusting your filters, or create a new profile.</div>
     </div>`;
     return;
   }
-  el.innerHTML=profiles.map(p=>{
-    const initials=(p.employee_name||'?').split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
-    const hireDate=p.hire_date?new Date(p.hire_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'No hire date set';
-    const createdDate=p.created_at?new Date(p.created_at).toLocaleDateString('en-US',{month:'short',year:'numeric'}):'';
-    return `<div class="folder-card" onclick="openProfileDetail(${p.id})">
-      <div style="display:flex;align-items:center;gap:14px;">
-        <div style="width:44px;height:44px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff;flex-shrink:0;">${initials}</div>
-        <div style="flex:1;">
-          <div class="folder-card-name">${p.employee_name}</div>
-          <div class="folder-card-meta">${p.county||'No county'} ${p.position?'· '+p.position:''} ${hireDate!=='No hire date set'?'· Hired '+hireDate:''}</div>
-          <div style="margin-top:4px;">${statusBadgeHtml(p.employment_status)}</div>
+  // Group by county
+  const byCounty={};
+  profiles.forEach(p=>{
+    const county=p.county||'No County Assigned';
+    if(!byCounty[county])byCounty[county]=[];
+    byCounty[county].push(p);
+  });
+  const sortedCounties=Object.keys(byCounty).sort((a,b)=>a==='No County Assigned'?1:b==='No County Assigned'?-1:a.localeCompare(b));
+  el.innerHTML=sortedCounties.map(county=>{
+    const cards=byCounty[county].map(p=>{
+      const initials=(p.employee_name||'?').split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+      const hireDate=p.hire_date?new Date(p.hire_date+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'';
+      const supLabel=p.assigned_supervisor?`<span style="font-size:11px;color:#888;">👤 ${p.assigned_supervisor}</span>`:'';
+      return `<div class="folder-card" onclick="openProfileDetail(${p.id})">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div style="width:44px;height:44px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff;flex-shrink:0;">${initials}</div>
+          <div style="flex:1;min-width:0;">
+            <div class="folder-card-name">${p.employee_name}</div>
+            <div class="folder-card-meta">${p.position||'No position'}${hireDate?' · Hired '+hireDate:''}</div>
+            <div style="margin-top:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">${statusBadgeHtml(p.employment_status)}${supLabel}</div>
+          </div>
         </div>
-        <div style="font-size:12px;color:#bbb;">${createdDate}</div>
-      </div>
+      </div>`;
+    }).join('');
+    return `<div style="margin-bottom:24px;">
+      <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid var(--border);">📍 ${county} <span style="font-weight:400;color:#bbb;">(${byCounty[county].length})</span></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;">${cards}</div>
     </div>`;
   }).join('');
 }
@@ -1720,6 +1824,7 @@ async function openProfileDetail(id){
   // Status gets special badge treatment
   const statusEl=document.getElementById('pinfo-status');
   if(statusEl)statusEl.innerHTML=statusBadgeHtml(p.employment_status);
+  setVal('pinfo-supervisor',p.assigned_supervisor);
   setVal('pinfo-hire-date',p.hire_date?new Date(p.hire_date+'T00:00:00').toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}):null);
   setVal('pinfo-county',p.county);
   setVal('pinfo-email',p.employee_email);
@@ -1737,6 +1842,7 @@ async function openProfileDetail(id){
   loadProfileWarnings(p.employee_name,p.county);
   loadProfileCallOuts(p.employee_name,p.county);
   loadProfileTimeOff(p.employee_email);
+  loadProfilePolicies(p.employee_email,p.employee_name);
 }
 function closeProfileDetail(){
   currentProfileId=null;
@@ -1744,7 +1850,7 @@ function closeProfileDetail(){
   document.getElementById('emp-folder-list-view').style.display='block';
 }
 function switchProfileTab(tab){
-  ['info','warnings','callouts','timeoff'].forEach(t=>{
+  ['info','policies','warnings','callouts','timeoff'].forEach(t=>{
     document.getElementById('ptab-'+t)?.classList.toggle('active',t===tab);
     document.getElementById('ppanel-'+t)?.classList.toggle('active',t===tab);
   });
@@ -1808,7 +1914,53 @@ async function loadProfileTimeOff(email){
     }).join('');
   }catch(e){el.innerHTML='<p style="color:#888;font-size:13px;">Unable to load time off history.</p>';}
 }
-function openCreateProfileModal(){
+async function loadProfilePolicies(email,name){
+  const el=document.getElementById('pdata-policies');
+  if(!el)return;
+  if(!email){el.innerHTML='<p style="color:#888;font-size:13px;padding:20px 0;">No email on file — cannot look up policy signatures.</p>';return;}
+  try{
+    const {data}=await db.from('policy_signatures').select('*').eq('employee_email',email).order('signed_at',{ascending:true});
+    const handbookData=await db.from('handbook_signatures').select('*').eq('employee_email',email).limit(1);
+    const hbSig=handbookData?.data?.[0];
+    const signedIds=new Set((data||[]).map(r=>r.policy_id));
+    const signedCount=signedIds.size;
+    const total=POLICIES.length;
+    const pct=total>0?Math.round((signedCount/total)*100):0;
+    const barColor=pct===100?'var(--success)':pct>50?'var(--warn)':'var(--red)';
+    let html=`<div style="margin-bottom:20px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <div style="font-size:13px;font-weight:700;color:var(--navy);">Policy Acknowledgment Progress</div>
+        <div style="font-size:13px;font-weight:700;color:${barColor};">${signedCount}/${total} signed</div>
+      </div>
+      <div style="height:8px;background:#eee;border-radius:4px;overflow:hidden;">
+        <div style="height:100%;width:${pct}%;background:${barColor};border-radius:4px;transition:width .5s;"></div>
+      </div>
+    </div>`;
+    // Handbook sig
+    html+=`<div style="margin-bottom:16px;"><div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Employee Handbook</div>`;
+    if(hbSig){
+      const dt=new Date(hbSig.signed_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+      html+=`<div class="profile-list-item"><div><span class="badge badge-approved">✓ Acknowledged</span> <span style="font-size:12px;color:#666;margin-left:6px;">Signed as "${hbSig.signature}"${hbSig.print_requested?' · Print copy requested':''}</span></div><div style="font-size:11px;color:#aaa;">${dt}</div></div>`;
+    }else{
+      html+=`<div class="profile-list-item"><span class="badge badge-warning">Pending</span></div>`;
+    }
+    html+='</div>';
+    // Individual policies
+    html+=`<div><div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Policy Acknowledgments</div>`;
+    html+=POLICIES.map((p,i)=>{
+      const sig=(data||[]).find(r=>r.policy_id===p.id);
+      if(sig){
+        const dt=new Date(sig.signed_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+        const tm=new Date(sig.signed_at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+        return `<div class="profile-list-item"><div><span style="font-size:11px;color:#999;margin-right:6px;">Policy ${i+1}</span><strong>${p.name}</strong><span style="font-size:12px;color:#666;margin-left:8px;">· "${sig.signature}"</span></div><div style="font-size:11px;color:#aaa;white-space:nowrap;">${dt} ${tm}</div></div>`;
+      }else{
+        return `<div class="profile-list-item" style="opacity:.6;"><div><span style="font-size:11px;color:#999;margin-right:6px;">Policy ${i+1}</span><strong>${p.name}</strong></div><span class="badge badge-warning" style="font-size:10px;">Not signed</span></div>`;
+      }
+    }).join('');
+    html+='</div>';
+    el.innerHTML=html;
+  }catch(e){el.innerHTML='<p style="color:#888;font-size:13px;">Unable to load policy signatures.</p>';}
+}
   document.getElementById('cpm-name').value='';
   document.getElementById('cpm-email').value='';
   document.getElementById('cpm-county').value='';
@@ -1820,7 +1972,8 @@ function openCreateProfileModal(){
   document.getElementById('cpm-ec-phone').value='';
   document.getElementById('cpm-ec-relation').value='';
   document.getElementById('cpm-notes').value='';
-  document.getElementById('cpm-status').value='Active';
+  document.getElementById('cpm-status').value='Onboarding';
+  document.getElementById('cpm-supervisor').value=adminStaff?adminStaff.name:'';
   document.getElementById('cpm-id').value='';
   document.getElementById('create-profile-modal-title').textContent='Create Employee Profile';
   document.getElementById('create-profile-modal').classList.add('open');
@@ -1841,6 +1994,7 @@ function openEditProfileModal(){
   document.getElementById('cpm-ec-relation').value=p.emergency_contact_relation||'';
   document.getElementById('cpm-notes').value=p.notes||'';
   document.getElementById('cpm-status').value=p.employment_status||'Active';
+  document.getElementById('cpm-supervisor').value=p.assigned_supervisor||'';
   document.getElementById('create-profile-modal-title').textContent='Edit Employee Profile';
   document.getElementById('create-profile-modal').classList.add('open');
 }
@@ -1887,6 +2041,7 @@ async function saveProfile(){
     position:document.getElementById('cpm-position').value.trim(),
     hire_date:document.getElementById('cpm-hire-date').value||null,
     employment_status:document.getElementById('cpm-status').value||'Active',
+    assigned_supervisor:document.getElementById('cpm-supervisor').value||null,
     phone:document.getElementById('cpm-phone').value.trim(),
     address:document.getElementById('cpm-address').value.trim(),
     emergency_contact_name:document.getElementById('cpm-ec-name').value.trim(),
@@ -1919,13 +2074,16 @@ async function saveProfile(){
 // ── ONBOARDING PACKET GENERATOR ──
 const PACKET_MANAGERS=[
   {name:'Tiffany Gallagher',title:'Regional Operations Manager',email:'tiffanyb@ridesourcemaine.com',phone:'207-812-5357'},
-  {name:'Nicole',title:'HR Coordinator',email:'hr@ridesourcemaine.com',phone:'207-743-7433'},
+  {name:'Nicole Geel',title:'Operations Manager',email:'nicolegeel@ridesourcemaine.com',phone:'207-743-7433'},
+  {name:'Robin Lausier',title:'Human Resources Manager',email:'robinl@ridesourcemaine.com',phone:''},
 ];
 function openPacketModal(){
   const p=allProfilesCache.find(x=>x.id===currentProfileId);
   if(!p){alert('No profile selected.');return;}
   document.getElementById('pkg-emp-name').textContent=p.employee_name;
-  document.getElementById('pkg-manager').value='0';
+  // Default to current logged-in staff member
+  const staffIdx=adminStaff?PACKET_MANAGERS.findIndex(m=>m.name===adminStaff.name):0;
+  document.getElementById('pkg-manager').value=String(Math.max(0,staffIdx));
   document.getElementById('pkg-start-date').value=p.hire_date||'';
   document.getElementById('packet-modal').classList.add('open');
 }
@@ -2209,7 +2367,7 @@ const MGR_SECTIONS=[
   {title:'Sec 4: Timesheets',content:`<h1>Section 4: Timesheet Review</h1><p>Employees submit weekly timesheets every Friday through the Staff Portal. Review these in the Admin Portal under Timesheets.</p><h2>Review Process</h2><ol><li>Navigate to Admin Portal → Timesheets → Pending</li><li>Compare submitted hours against TWE clock-in records</li><li>Click Approve for accurate timesheets</li><li>Flag discrepancies and follow up with the driver directly</li><li>At end of pay period: click Export CSV to download all timesheets for payroll</li><li>Archive locally and delete from portal to manage Supabase storage</li></ol><div class="callout"><strong>Maine Law Requirement</strong>Retain payroll records for a minimum of 3 years. Always export and save locally before deleting from the portal.</div>`},
   {title:'Sec 5: Vehicle',content:`<h1>Section 5: Vehicle Records</h1><p>Drivers submit vehicle reports through the Staff Portal. All submissions appear in Admin Portal → Vehicle Records.</p><h2>What Drivers Can Submit</h2><ul><li>Damage reports with photos</li><li>Mechanical issues</li><li>Oil change receipts</li><li>Repair receipts</li><li>Windshield or glass damage</li><li>Tire issues and more</li></ul><p>Review reports promptly. Mileage information submitted in timesheets also feeds into vehicle maintenance awareness. Use the Export CSV button to save records before archiving.</p>`},
   {title:'Sec 6: Call-Outs',content:`<h1>Section 6: Call-Out Log &amp; Attendance</h1><p>When an employee calls out, log it in Admin Portal → Call-Out Log. This data automatically powers the Attendance Warning Generator.</p><h2>Attendance Thresholds</h2><table><tr><td><strong>1–3 call-outs</strong></td><td>Verbal coaching with written follow-up</td></tr><tr><td><strong>4–6 call-outs</strong></td><td>Formal meeting; PIP and final written warning</td></tr><tr><td><strong>More than 6</strong></td><td>Review for termination; consider protected leave exceptions</td></tr></table>`},
-  {title:'Sec 7: Quick Ref',content:`<h1>Section 7: Quick Reference</h1><table><tr><td><strong>Staff Portal URL</strong></td><td>https://raw.githubusercontent.com/ridesourcecalendar-hub/ridesource-onboarding/main/index.html</td></tr><tr><td><strong>Admin Password</strong></td><td>RideSource2026!</td></tr><tr><td><strong>Supabase Project</strong></td><td>iasphxpahlmjwkapyxrs</td></tr><tr><td><strong>HR Contact</strong></td><td>tiffanyb@ridesourcemaine.com | 207-812-5357</td></tr></table>`}
+  {title:'Sec 7: Quick Ref',content:`<h1>Section 7: Quick Reference</h1><table><tr><td><strong>Staff Portal URL</strong></td><td>https://ridesourcecalendar-hub.github.io/ridesource-onboarding/index.html</td></tr><tr><td><strong>Supabase Project</strong></td><td>iasphxpahlmjwkapyxrs</td></tr></table><h2>Portal Login Passwords</h2><table><tr><th>Name</th><th>Title</th><th>Password</th><th>Email</th></tr><tr><td><strong>Tiffany Gallagher</strong></td><td>Regional Operations Manager</td><td>RideSource2026!</td><td>tiffanyb@ridesourcemaine.com</td></tr><tr><td><strong>Nicole Geel</strong></td><td>Operations Manager</td><td>Nicole2026!</td><td>nicolegeel@ridesourcemaine.com</td></tr><tr><td><strong>Robin Lausier</strong></td><td>Human Resources Manager</td><td>Robin2026!</td><td>robinl@ridesourcemaine.com</td></tr></table>`}
 ];
 const HB_REF_SECTIONS=HANDBOOK_SECTIONS;
 function buildMgrGuide(){document.getElementById('mgr-tabs').innerHTML=MGR_SECTIONS.map((s,i)=>`<div class="doc-tab ${i===0?'active':''}" onclick="goMgrSection(${i})">${s.title}</div>`).join('');renderMgrSection(0);}
@@ -2469,12 +2627,17 @@ function setReqTab(tab){
 function renderRequestsTable(){
   const el=document.getElementById('requests-table');
   const searchTerm=(document.getElementById('req-search')?.value||'').toLowerCase().trim();
+  const supFilter=(document.getElementById('req-supervisor-filter')?.value||'');
   let filtered=allRequestsCache;
   if(currentReqTab==='PENDING')filtered=allRequestsCache.filter(r=>r.status==='PENDING');
   else if(currentReqTab==='APPROVED')filtered=allRequestsCache.filter(r=>r.status==='APPROVED');
   else if(currentReqTab==='DENIED')filtered=allRequestsCache.filter(r=>r.status==='DENIED');
   else if(currentReqTab==='PTO')filtered=allRequestsCache.filter(r=>r.status==='PTO_PENDING'||r.request_type==='Use PTO Hours');
   if(searchTerm)filtered=filtered.filter(r=>(r.employee_name||'').toLowerCase().includes(searchTerm));
+  if(supFilter){
+    const empEmails=new Set(allProfilesCache.filter(p=>p.assigned_supervisor===supFilter).map(p=>p.employee_email).filter(Boolean));
+    filtered=filtered.filter(r=>empEmails.has(r.employee_email));
+  }
   if(!filtered||filtered.length===0){
     const labels={PENDING:'No pending requests.',APPROVED:'No approved requests yet.',DENIED:'No denied requests yet.',PTO:'No PTO requests yet.',ALL:'No requests found.'};
     el.innerHTML='<p style="color:#888;font-size:13px;padding:12px 0;">'+(labels[currentReqTab]||'No requests found.')+'</p>';return;
@@ -2551,10 +2714,24 @@ async function deleteAdminRequest(){
 }
 
 // CALL-OUT LOG
+let allCallOutsCache=[];
 async function loadCallOuts(){
-  const {data}=await db.from('call_out_log').select('*').order('callout_date',{ascending:false}).limit(50);
+  const {data}=await db.from('call_out_log').select('*').order('callout_date',{ascending:false}).limit(200);
+  allCallOutsCache=data||[];
+  renderCallOutTable();
+}
+function renderCallOutTable(){
   const el=document.getElementById('callout-table');
-  if(!data||data.length===0){el.innerHTML='<p style="color:#888;font-size:13px;">No call-outs logged yet.</p>';return;}
+  if(!el)return;
+  const searchTerm=(document.getElementById('co-search')?.value||'').toLowerCase().trim();
+  const supFilter=(document.getElementById('co-supervisor-filter')?.value||'');
+  let data=allCallOutsCache;
+  if(searchTerm)data=data.filter(c=>(c.employee_name||'').toLowerCase().includes(searchTerm));
+  if(supFilter){
+    const empNames=new Set(allProfilesCache.filter(p=>p.assigned_supervisor===supFilter).map(p=>(p.employee_name||'').toLowerCase()));
+    data=data.filter(c=>empNames.has((c.employee_name||'').toLowerCase()));
+  }
+  if(!data||data.length===0){el.innerHTML='<p style="color:#888;font-size:13px;">No call-outs found.</p>';return;}
   el.innerHTML='<div style="overflow-x:auto;"><table class="data-table"><thead><tr><th>Employee</th><th>County</th><th>Date</th><th>Reason</th><th>Call Type</th><th>Notes</th><th>Logged By</th><th></th></tr></thead><tbody>'+
     data.map(c=>{
       const callTypeBadge=c.call_type==='Call After List'?`<span class="badge badge-flag">${c.call_type}</span>`:c.call_type==='Call Mid Shift'?`<span class="badge badge-warning">${c.call_type}</span>`:c.call_type?`<span class="badge badge-pending">${c.call_type}</span>`:'—';
@@ -3835,6 +4012,8 @@ async function buildDocx(templateId){
       <div class="form-field">
         <label>Employment Status</label>
         <select id="cpm-status" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+          <option value="Onboarding">Onboarding</option>
+          <option value="In Training">In Training</option>
           <option value="Active">Active</option>
           <option value="Per Diem">Per Diem</option>
           <option value="Seasonal">Seasonal</option>
@@ -3842,8 +4021,17 @@ async function buildDocx(templateId){
           <option value="Separated">Separated</option>
         </select>
       </div>
-      <div class="form-field"><label>Address</label><input type="text" id="cpm-address" placeholder="Street, City, State, ZIP"></div>
+      <div class="form-field">
+        <label>Assigned Supervisor</label>
+        <select id="cpm-supervisor" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+          <option value="">— Unassigned —</option>
+          <option value="Tiffany Gallagher">Tiffany Gallagher</option>
+          <option value="Nicole Geel">Nicole Geel</option>
+          <option value="Robin Lausier">Robin Lausier</option>
+        </select>
+      </div>
     </div>
+    <div class="form-field"><label>Address</label><input type="text" id="cpm-address" placeholder="Street, City, State, ZIP"></div>
     <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin:16px 0 10px;">Emergency Contact</div>
     <div class="form-row">
       <div class="form-field"><label>Name</label><input type="text" id="cpm-ec-name" placeholder="Contact name"></div>
@@ -3877,7 +4065,8 @@ async function buildDocx(templateId){
       <label>Signing Manager</label>
       <select id="pkg-manager" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
         <option value="0">Tiffany Gallagher — Regional Operations Manager</option>
-        <option value="1">Nicole — HR Coordinator</option>
+        <option value="1">Nicole Geel — Operations Manager</option>
+        <option value="2">Robin Lausier — Human Resources Manager</option>
       </select>
     </div>
     <div style="background:#fff3cd;border-left:4px solid var(--warn);border-radius:0 8px 8px 0;padding:10px 14px;font-size:12px;margin-top:8px;">
