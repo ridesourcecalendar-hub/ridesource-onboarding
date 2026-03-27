@@ -1961,6 +1961,7 @@ async function loadProfilePolicies(email,name){
     el.innerHTML=html;
   }catch(e){el.innerHTML='<p style="color:#888;font-size:13px;">Unable to load policy signatures.</p>';}
 }
+function openCreateProfileModal(){
   document.getElementById('cpm-name').value='';
   document.getElementById('cpm-email').value='';
   document.getElementById('cpm-county').value='';
