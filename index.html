@@ -2189,14 +2189,17 @@ function renderAdminMemoList(){
         <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
           <span style="font-size:12px;color:${readBadgeColor};font-weight:700;">✓ ${readCount} read</span>
           <button id="memo-collapse-btn-${m.id}" onclick="toggleMemoCard(${m.id})" style="background:#f0f0f0;color:#555;border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;">▼ expand</button>
-          ${m.is_active?`<button class="btn btn-sm" style="background:#f0f0f0;color:#555;" onclick="archiveMemo(${m.id})">Archive</button>`:''}
+          ${m.is_active?`<button class="btn btn-sm" style="background:#e8f4fd;color:#1565c0;" onclick="editMemo(${m.id})">✏️ Edit</button><button class="btn btn-sm" style="background:#f0f0f0;color:#555;" onclick="archiveMemo(${m.id})">Archive</button>`:''}
+          <button class="btn btn-sm btn-red" style="font-size:11px;padding:4px 10px;" onclick="deleteMemo(${m.id})">🗑️</button>
         </div>
       </div>
       <div id="memo-body-${m.id}" style="display:none;margin-top:12px;">
         <div style="font-size:13px;color:#555;white-space:pre-wrap;background:var(--gray);padding:12px;border-radius:8px;margin-bottom:10px;">${m.body}</div>
-        <div style="font-size:12px;color:#888;">
+        <div style="font-size:12px;color:#888;margin-bottom:8px;">
           ${readCount>0?`<strong>Read by:</strong> ${(m.read_by||[]).join(', ')}`:'<em>No acknowledgments yet.</em>'}
         </div>
+        ${(m.comments||[]).length>0?`<div style="font-size:12px;font-weight:700;color:#555;margin-bottom:6px;">💬 Employee Comments</div>`+
+          (m.comments||[]).map(c=>`<div style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:8px 12px;margin-bottom:6px;font-size:12px;"><strong>${c.name}</strong> <span style="color:#aaa;font-size:11px;">${new Date(c.at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</span><div style="margin-top:4px;color:#444;">${c.text}</div></div>`).join(''):''}
       </div>
     </div>`;
   }).join('');
@@ -2227,6 +2230,31 @@ async function archiveMemo(id){
   await db.from('memos').update({is_active:false}).eq('id',id);
   loadMemos();
 }
+async function deleteMemo(id){
+  if(!confirm('Permanently delete this memo? This cannot be undone.'))return;
+  await db.from('memos').delete().eq('id',id);
+  loadMemos();
+}
+function editMemo(id){
+  const m=allMemosCache.find(x=>x.id===id);
+  if(!m)return;
+  document.getElementById('memo-edit-id').value=id;
+  document.getElementById('memo-edit-subject').value=m.subject||'';
+  document.getElementById('memo-edit-body').value=m.body||'';
+  document.getElementById('memo-edit-modal').classList.add('open');
+}
+async function saveMemoEdit(){
+  const id=document.getElementById('memo-edit-id').value;
+  const subject=document.getElementById('memo-edit-subject').value.trim();
+  const body=document.getElementById('memo-edit-body').value.trim();
+  if(!subject||!body){alert('Subject and message are required.');return;}
+  try{
+    const {error}=await db.from('memos').update({subject,body}).eq('id',id);
+    if(error)throw error;
+    closeModal('memo-edit-modal');
+    loadMemos();
+  }catch(e){alert('Error updating memo: '+e.message);}
+}
 async function loadEmployeeMemos(){
   if(!user)return;
   try{
@@ -2252,10 +2280,14 @@ async function loadEmployeeMemos(){
     list.innerHTML=unread.map(m=>{
       const urgentBadge=m.priority==='urgent'?'<span style="background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:6px;">🔴 URGENT</span>':'';
       const dt=new Date(m.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-      return `<div style="border:1px solid #e0d0f5;border-radius:10px;padding:16px;margin-bottom:10px;background:#faf5ff;">
+      return `<div style="border:1px solid #e0d0f5;border-radius:10px;padding:16px;margin-bottom:10px;background:#faf5ff;" id="emp-memo-card-${m.id}">
         <div style="font-size:14px;font-weight:700;color:#5b21b6;margin-bottom:4px;">${m.subject}${urgentBadge}</div>
         <div style="font-size:11px;color:#888;margin-bottom:10px;">From ${m.created_by} · ${dt}</div>
         <div style="font-size:13px;color:#444;margin-bottom:14px;white-space:pre-wrap;">${m.body}</div>
+        <div style="margin-bottom:12px;">
+          <label style="font-size:11px;font-weight:700;color:#5b21b6;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px;">💬 Comment (optional)</label>
+          <textarea id="emp-memo-comment-${m.id}" placeholder="Add a question or comment for your supervisor..." style="width:100%;padding:8px 12px;border:1px solid #d0b8f5;border-radius:8px;font-size:13px;font-family:Arial,sans-serif;outline:none;resize:vertical;min-height:60px;"></textarea>
+        </div>
         <button onclick="acknowledgeMemo(${m.id},this)" style="background:#5b21b6;color:#fff;border:none;padding:8px 18px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">✓ I have read and understood this memo</button>
       </div>`;
     }).join('');
@@ -2264,15 +2296,20 @@ async function loadEmployeeMemos(){
 async function acknowledgeMemo(id,btn){
   btn.disabled=true;btn.textContent='Acknowledging...';
   try{
-    const memo=await db.from('memos').select('read_by').eq('id',id).single();
+    const memo=await db.from('memos').select('read_by,comments').eq('id',id).single();
     const existing=memo.data?.read_by||[];
-    if(!existing.includes(user.name)){
-      await db.from('memos').update({read_by:[...existing,user.name]}).eq('id',id);
+    const existingComments=memo.data?.comments||[];
+    const commentText=document.getElementById('emp-memo-comment-'+id)?.value.trim();
+    const updates={};
+    if(!existing.includes(user.name))updates.read_by=[...existing,user.name];
+    if(commentText){
+      updates.comments=[...existingComments,{name:user.name,text:commentText,at:new Date().toISOString()}];
     }
+    if(Object.keys(updates).length)await db.from('memos').update(updates).eq('id',id);
     // Remove this memo card
-    btn.closest('div[style*="faf5ff"]').remove();
+    document.getElementById('emp-memo-card-'+id)?.remove();
     // Re-check if any unread remain
-    const remaining=document.querySelectorAll('#emp-memos-list div[style*="faf5ff"]');
+    const remaining=document.querySelectorAll('#emp-memos-list [id^="emp-memo-card-"]');
     if(!remaining.length){
       const wrap=document.getElementById('emp-memos-wrap');
       if(wrap)wrap.style.display='none';
@@ -2403,6 +2440,7 @@ async function loadIncidents(){
 function renderIncidentTable(){
   const el=document.getElementById('incident-table');
   if(!el)return;
+  const isDemo=adminStaff?.role==='demo';
   const search=(document.getElementById('ir-admin-search')?.value||'').toLowerCase();
   const statusF=document.getElementById('ir-status-filter')?.value||'';
   const supF=document.getElementById('ir-supervisor-filter')?.value||'';
@@ -2412,12 +2450,13 @@ function renderIncidentTable(){
   if(supF)data=data.filter(r=>r.assigned_supervisor===supF);
   if(!data.length){el.innerHTML='<p style="color:#888;font-size:13px;padding:12px 0;">No incident reports found.</p>';return;}
   el.innerHTML='<div style="overflow-x:auto;"><table class="data-table"><thead><tr><th>Employee</th><th>County</th><th>Date</th><th>Location</th><th>Nature</th><th>Supervisor</th><th>Submitted</th><th>Status</th><th>Actions</th></tr></thead><tbody>'+
-    data.map(r=>{
+    data.map((r,idx)=>{
       const submitted=r.submitted_at?new Date(r.submitted_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'—';
       const hrs=Math.round((Date.now()-new Date(r.submitted_at).getTime())/3600000);
       const statusBadge=r.status==='Open'?`<span class="badge badge-flag">${r.status}${hrs>=24?' ⚠️':''}</span>`:r.status==='Under Review'?`<span class="badge badge-warning">${r.status}</span>`:`<span class="badge badge-approved">${r.status}</span>`;
       const nature=(r.nature_of_incident||[]).slice(0,2).join(', ')+(r.nature_of_incident?.length>2?' +more':'');
-      return `<tr><td><strong>${r.employee_name}</strong></td><td>${r.county||'—'}</td><td>${r.incident_date}</td><td style="max-width:140px;font-size:12px;">${r.location||'—'}</td><td style="font-size:11px;max-width:160px;">${nature||'—'}</td><td style="font-size:12px;">${r.assigned_supervisor||'—'}</td><td style="font-size:12px;color:#888;">${submitted}</td><td>${statusBadge}</td><td style="white-space:nowrap;"><button class="btn btn-sm" style="background:var(--light);color:var(--navy);" onclick="openIncidentModal(${r.id})">📋 Review</button></td></tr>`;
+      const reviewBtn=isDemo?'':`<button class="btn btn-sm" style="background:var(--light);color:var(--navy);" onclick="openIncidentModal(${r.id})">📋 Review</button>`;
+      return `<tr><td><strong>${demoMask(r.employee_name,idx)}</strong></td><td>${r.county||'—'}</td><td>${r.incident_date}</td><td style="max-width:140px;font-size:12px;">${isDemo?'—':r.location||'—'}</td><td style="font-size:11px;max-width:160px;">${nature||'—'}</td><td style="font-size:12px;">${isDemo?'Admin':r.assigned_supervisor||'—'}</td><td style="font-size:12px;color:#888;">${submitted}</td><td>${statusBadge}</td><td style="white-space:nowrap;">${reviewBtn}</td></tr>`;
     }).join('')+
     '</tbody></table></div>';
 }
@@ -2571,6 +2610,13 @@ function filterEmployeeFolders(){
     return matchQ&&matchSup&&matchStatus;
   });
   renderEmployeeFolderGrid(filtered);
+}
+function demoMask(value,idx,type='name'){
+  if(adminStaff?.role!=='demo')return value;
+  if(type==='name')return'Employee '+(idx+1);
+  if(type==='email')return'employee'+(idx+1)+'@demo.com';
+  if(type==='county')return value; // keep county — not personally identifiable
+  return'—';
 }
 function statusBadgeHtml(status){
   const s=status||'Active';
@@ -3670,11 +3716,12 @@ async function loadOnboarding(){
   const byEmp={};
   sigs.forEach(s=>{if(!byEmp[s.employee_email])byEmp[s.employee_email]={name:s.employee_name,email:s.employee_email,county:s.county,policies:[],handbookSigned:false,printRequested:false};byEmp[s.employee_email].policies.push(s.policy_name);});
   hbSigs.forEach(h=>{if(byEmp[h.employee_email]){byEmp[h.employee_email].handbookSigned=true;byEmp[h.employee_email].printRequested=h.print_requested;}});
+  const isDemo=adminStaff?.role==='demo';
   el.innerHTML='<div style="overflow-x:auto;"><table class="data-table"><thead><tr><th>Employee</th><th>County</th><th>Policies Signed</th><th>Handbook</th><th>Print Requested</th></tr></thead><tbody>'+
-    Object.values(byEmp).map(e=>`<tr><td><strong>${e.name}</strong><br><span style="font-size:11px;color:#888;">${e.email}</span></td><td>${e.county}</td><td><span class="badge ${e.policies.length>=POLICIES.length?'badge-approved':'badge-warning'}">${e.policies.length}/${POLICIES.length}</span></td><td>${e.handbookSigned?'<span class="badge badge-approved">✓ Signed</span>':'<span class="badge badge-warning">Pending</span>'}</td><td>${e.printRequested?'<span class="badge badge-flag">📦 Yes</span>':'No'}</td></tr>`).join('')+
+    Object.values(byEmp).map((e,idx)=>`<tr><td><strong>${demoMask(e.name,idx)}</strong><br><span style="font-size:11px;color:#888;">${isDemo?'—':e.email}</span></td><td>${e.county}</td><td><span class="badge ${e.policies.length>=POLICIES.length?'badge-approved':'badge-warning'}">${e.policies.length}/${POLICIES.length}</span></td><td>${e.handbookSigned?'<span class="badge badge-approved">✓ Signed</span>':'<span class="badge badge-warning">Pending</span>'}</td><td>${e.printRequested?'<span class="badge badge-flag">📦 Yes</span>':'No'}</td></tr>`).join('')+
     '</tbody></table></div>';
   const printReqs=Object.values(byEmp).filter(e=>e.printRequested);
-  if(printList)printList.innerHTML=printReqs.length===0?'No printed copy requests.':`<div>${printReqs.map(e=>`<div style="padding:6px 0;border-bottom:1px solid #e0e0e0;font-size:12px;"><strong>${e.name}</strong> (${e.email}) — ${e.county}</div>`).join('')}</div>`;
+  if(printList)printList.innerHTML=printReqs.length===0?'No printed copy requests.':`<div>${printReqs.map((e,idx)=>`<div style="padding:6px 0;border-bottom:1px solid #e0e0e0;font-size:12px;"><strong>${demoMask(e.name,idx)}</strong>${isDemo?'':' ('+e.email+')'} — ${e.county}</div>`).join('')}</div>`;
 }
 
 // TIMESHEETS ADMIN
@@ -3695,13 +3742,15 @@ function filterTimesheets(status){
 }
 function renderTimesheetsTable(){
   const el=document.getElementById('timesheets-table');
+  const isDemo=adminStaff?.role==='demo';
   const filtered=tsFilterStatus==='ALL'?allTimesheetsCache:allTimesheetsCache.filter(t=>t.status===tsFilterStatus);
   if(!filtered||filtered.length===0){el.innerHTML='<p style="color:#888;font-size:13px;padding:12px 0;">No timesheets found.</p>';return;}
   el.innerHTML='<div style="overflow-x:auto;"><table class="data-table"><thead><tr><th><input type="checkbox" id="ts-check-all" onchange="toggleAllTimesheetChecks(this)" style="accent-color:var(--navy);"></th><th>Employee</th><th>County</th><th>Week Ending</th><th>Mileage Note</th><th>Notes / Missed Punches</th><th>Submitted</th><th>Status</th><th>Actions</th></tr></thead><tbody>'+
-    filtered.map(t=>{
+    filtered.map((t,idx)=>{
       const submitted=new Date(t.submitted_at).toLocaleDateString('en-US',{month:'short',day:'numeric'});
-      const approveBtn=t.status==='PENDING'?`<button class="btn btn-green btn-sm" onclick="approveTimesheet(${t.id})" style="margin-bottom:3px;">✓ Approve</button><br>`:'';
-      return `<tr><td><input type="checkbox" class="ts-row-check" data-id="${t.id}" style="accent-color:var(--navy);"></td><td><strong>${t.employee_name}</strong></td><td>${t.county}</td><td>${t.week_ending}</td><td style="font-size:12px;">${t.mileage_note||'—'}</td><td style="font-size:12px;max-width:180px;">${(t.notes||'—').substring(0,60)}${(t.notes||'').length>60?'...':''}</td><td style="font-size:12px;color:#888;">${submitted}</td><td><span class="badge badge-${t.status==='APPROVED'?'approved':'pending'}">${t.status}</span></td><td style="white-space:nowrap;">${approveBtn}<button class="btn btn-sm" style="background:#e8f4fd;color:#1565c0;" onclick="openTimesheetModal(${t.id})">📋 View</button></td></tr>`;
+      const approveBtn=t.status==='PENDING'&&!isDemo?`<button class="btn btn-green btn-sm" onclick="approveTimesheet(${t.id})" style="margin-bottom:3px;">✓ Approve</button><br>`:'';
+      const viewBtn=isDemo?'':`<button class="btn btn-sm" style="background:#e8f4fd;color:#1565c0;" onclick="openTimesheetModal(${t.id})">📋 View</button>`;
+      return `<tr><td><input type="checkbox" class="ts-row-check" data-id="${t.id}" style="accent-color:var(--navy);"></td><td><strong>${demoMask(t.employee_name,idx)}</strong></td><td>${t.county}</td><td>${t.week_ending}</td><td style="font-size:12px;">${isDemo?'—':t.mileage_note||'—'}</td><td style="font-size:12px;max-width:180px;">${isDemo?'—':(t.notes||'—').substring(0,60)+((t.notes||'').length>60?'...':'')}</td><td style="font-size:12px;color:#888;">${submitted}</td><td><span class="badge badge-${t.status==='APPROVED'?'approved':'pending'}">${t.status}</span></td><td style="white-space:nowrap;">${approveBtn}${viewBtn}</td></tr>`;
     }).join('')+
     '</tbody></table></div><div style="display:flex;align-items:center;gap:10px;margin-top:12px;"><button class="btn btn-sm" style="background:#fdecea;color:var(--red);border:1px solid #f5c6c2;" onclick="deleteSelectedTimesheets()">🗑️ Delete Selected</button><span style="font-size:12px;color:#888;">Check rows to select, then delete after exporting.</span></div>';
 }
@@ -3878,6 +3927,7 @@ function filterVehicleRecords(){
 }
 function renderVehicleRecordsTable(){
   const el=document.getElementById('vehicle-records-table');
+  const isDemo=adminStaff?.role==='demo';
   const vehicleFilter=document.getElementById('vr-filter-vehicle')?.value.toLowerCase()||'';
   const typeFilter=document.getElementById('vr-filter-type')?.value||'';
   const sourceFilter=document.getElementById('vr-filter-source')?.value||'';
@@ -3888,25 +3938,21 @@ function renderVehicleRecordsTable(){
   if(sourceFilter==='driver')filtered=filtered.filter(r=>!r.is_admin_report);
   if(!filtered||filtered.length===0){el.innerHTML='<p style="color:#888;font-size:13px;padding:12px 0;">No vehicle records found.</p>';return;}
   el.innerHTML='<div style="overflow-x:auto;"><table class="data-table"><thead><tr><th>Source</th><th>Reported By</th><th>Vehicle ID</th><th>Date</th><th>Vehicle Status</th><th>Issue Type(s)</th><th>Description</th><th>Record Status</th><th>Actions</th></tr></thead><tbody>'+
-    filtered.map(r=>{
+    filtered.map((r,idx)=>{
       const isAdmin=r.is_admin_report;
-      const sourceBadge=isAdmin
-        ?`<span class="badge" style="background:#e8f4fd;color:#1565c0;">🛠️ Admin</span>`
-        :`<span class="badge badge-pending">👤 Driver</span>`;
-      let extra={};
-      try{if(r.admin_extra)extra=JSON.parse(r.admin_extra);}catch(e){}
-      const vehicleStatusBadge=extra.vehicle_status
-        ?`<span class="badge ${extra.vehicle_status==='In Use'?'badge-approved':extra.vehicle_status==='Out of Service'||extra.vehicle_status==='Awaiting Repair'?'badge-flag':'badge-warning'}">${extra.vehicle_status}</span>`
-        :'—';
+      const sourceBadge=isAdmin?`<span class="badge" style="background:#e8f4fd;color:#1565c0;">🛠️ Admin</span>`:`<span class="badge badge-pending">👤 Driver</span>`;
+      let extra={};try{if(r.admin_extra)extra=JSON.parse(r.admin_extra);}catch(e){}
+      const vehicleStatusBadge=extra.vehicle_status?`<span class="badge ${extra.vehicle_status==='In Use'?'badge-approved':extra.vehicle_status==='Out of Service'||extra.vehicle_status==='Awaiting Repair'?'badge-flag':'badge-warning'}">${extra.vehicle_status}</span>`:'—';
       const hasAdminNotes=extra.mechanic_notes||extra.appt_datetime||extra.last_used_by;
+      const displayName=demoMask(r.employee_name,idx);
       return `<tr style="${isAdmin?'background:#f8fbff;':''}">
         <td>${sourceBadge}</td>
-        <td><strong>${r.employee_name}</strong>${!isAdmin?`<br><span style="font-size:11px;color:#aaa;">${r.county}</span>`:''}</td>
+        <td><strong>${displayName}</strong>${!isAdmin?`<br><span style="font-size:11px;color:#aaa;">${r.county}</span>`:''}</td>
         <td><strong>${r.vehicle_id}</strong></td>
         <td style="font-size:12px;">${r.report_date}</td>
         <td>${vehicleStatusBadge}</td>
         <td style="font-size:12px;">${r.issue_types}</td>
-        <td style="font-size:12px;max-width:160px;">${(r.description||'').substring(0,60)}${(r.description||'').length>60?'...':''}${hasAdminNotes?'<br><span style="font-size:10px;color:#1565c0;">📝 Admin notes added</span>':''}</td>
+        <td style="font-size:12px;max-width:160px;">${isDemo?'—':(r.description||'').substring(0,60)+((r.description||'').length>60?'...':'')}${hasAdminNotes&&!isDemo?'<br><span style="font-size:10px;color:#1565c0;">📝 Admin notes added</span>':''}</td>
         <td><span class="badge badge-${r.status==='RESOLVED'?'approved':r.status==='IN_PROGRESS'?'warning':'flag'}">${r.status}</span></td>
         <td style="white-space:nowrap;">
           <button class="btn btn-primary btn-sm" onclick="openVehicleReportModal(${r.id})" style="margin-bottom:4px;">📋 Open</button><br>
@@ -5067,6 +5113,21 @@ async function buildDocx(templateId){
     <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;">
       <button class="btn btn-secondary" onclick="closeModal('incident-review-modal')">Cancel</button>
       <button class="btn btn-primary" onclick="saveIncidentReview()">💾 Save Review</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="memo-edit-modal">
+  <div class="modal" style="max-width:560px;">
+    <button class="modal-close" onclick="closeModal('memo-edit-modal')">✕</button>
+    <h3 style="color:#5b21b6;margin-bottom:4px;">✏️ Edit Memo</h3>
+    <p style="font-size:13px;color:#888;margin-bottom:20px;">Update the subject or message. Employees who have already acknowledged will not be re-notified.</p>
+    <input type="hidden" id="memo-edit-id">
+    <div class="form-field"><label>Subject *</label><input type="text" id="memo-edit-subject" placeholder="Memo subject..."></div>
+    <div class="form-field"><label>Message *</label><textarea id="memo-edit-body" style="min-height:120px;" placeholder="Memo message..."></textarea></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;">
+      <button class="btn btn-secondary" onclick="closeModal('memo-edit-modal')">Cancel</button>
+      <button class="btn btn-primary" style="background:#5b21b6;" onclick="saveMemoEdit()">💾 Save Changes</button>
     </div>
   </div>
 </div>
