@@ -1160,29 +1160,120 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
         <div style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:4px;">🚨 Incident Log</div>
         <p style="color:#888;font-size:13px;margin-bottom:16px;">All submitted incident reports. Open incidents require supervisor review and closure within 24 hours of submission.</p>
 
-        <!-- Admin Submit Form -->
+        <!-- Admin Full Incident Form -->
         <div class="card" style="margin-bottom:20px;">
           <div class="card-title" style="font-size:15px;cursor:pointer;" onclick="toggleAdminIncidentForm()">➕ Log New Incident (Supervisor) <span id="admin-ir-toggle-icon" style="font-size:12px;color:#888;">▼ expand</span></div>
           <div id="admin-ir-form" style="display:none;margin-top:16px;">
-            <div class="form-row">
-              <div class="form-field"><label>Employee Name *</label><input type="text" id="adm-ir-employee" placeholder="Full name..."></div>
-              <div class="form-field"><label>County</label>
-                <select id="adm-ir-county" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
-                  <option value="">Select county</option>
-                  <option>Androscoggin</option><option>Aroostook</option><option>Cumberland</option><option>Franklin</option><option>Hancock</option><option>Kennebec</option><option>Knox</option><option>Lincoln</option><option>Oxford</option><option>Penobscot</option><option>Piscataquis</option><option>Sagadahoc</option><option>Somerset</option><option>Waldo</option><option>Washington</option><option>York</option>
-                </select>
+
+            <!-- Employee selector -->
+            <div style="background:var(--light);border-radius:8px;padding:14px 16px;margin-bottom:20px;">
+              <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">Filing on behalf of</div>
+              <div class="form-row">
+                <div class="form-field">
+                  <label>Select Employee *</label>
+                  <select id="adm-ir-employee-select" onchange="prefillAdminIncidentEmployee()" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                    <option value="">— Select from profiles —</option>
+                  </select>
+                </div>
+                <div class="form-field"><label>Or enter name manually</label><input type="text" id="adm-ir-employee" placeholder="Full name if not in profiles..."></div>
+              </div>
+              <div class="form-row">
+                <div class="form-field"><label>County</label>
+                  <select id="adm-ir-county" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                    <option value="">Select county</option>
+                    <option>Androscoggin</option><option>Aroostook</option><option>Cumberland</option><option>Franklin</option><option>Hancock</option><option>Kennebec</option><option>Knox</option><option>Lincoln</option><option>Oxford</option><option>Penobscot</option><option>Piscataquis</option><option>Sagadahoc</option><option>Somerset</option><option>Waldo</option><option>Washington</option><option>York</option>
+                  </select>
+                </div>
+                <div class="form-field"><label>Assigned Supervisor</label><input type="text" id="adm-ir-supervisor" placeholder="Auto-filled from profile" readonly style="background:#f8f9fa;"></div>
               </div>
             </div>
+
+            <div style="font-size:13px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid var(--red);">Section I — Incident Information</div>
             <div class="form-row">
               <div class="form-field"><label>Incident Date *</label><input type="date" id="adm-ir-date"></div>
               <div class="form-field"><label>Incident Time</label><input type="time" id="adm-ir-time"></div>
             </div>
-            <div class="form-field"><label>Location *</label><input type="text" id="adm-ir-location" placeholder="Where did the incident occur?"></div>
-            <div class="form-field"><label>Nature of Incident</label><input type="text" id="adm-ir-nature" placeholder="Brief description of incident type"></div>
-            <div class="form-field"><label>Description *</label><textarea id="adm-ir-description" placeholder="Full description of the incident..." style="min-height:80px;"></textarea></div>
-            <div class="form-field"><label>Supervisor Notes</label><textarea id="adm-ir-notes" placeholder="Initial supervisor notes, actions taken..." style="min-height:60px;"></textarea></div>
-            <button class="btn btn-primary" onclick="submitAdminIncident()">Log Incident</button>
-            <span id="adm-ir-msg" style="font-size:13px;color:var(--success);margin-left:12px;display:none;">✓ Logged!</span>
+            <div class="form-row">
+              <div class="form-field"><label>Location of Incident *</label><input type="text" id="adm-ir-location" placeholder="Street, City or facility name"></div>
+              <div class="form-field"><label>Vehicle ID / Asset Tag</label><input type="text" id="adm-ir-vehicle" placeholder="e.g. 876-CQD"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-field"><label>Time Employee Began Shift</label><input type="time" id="adm-ir-shift-start"></div>
+              <div class="form-field"><label># of Trips Completed Before Incident</label><input type="number" id="adm-ir-trips-prior" min="0" placeholder="0"></div>
+            </div>
+            <div class="form-field"><label>Weather &amp; Road Conditions</label><input type="text" id="adm-ir-weather" placeholder="e.g. Clear and dry, icy roads, heavy rain"></div>
+            <div class="form-field"><label>Other Employee(s) Involved</label><input type="text" id="adm-ir-other-employees" placeholder="Names of any other RideSource staff involved"></div>
+            <div class="form-field"><label>Witness Name(s) &amp; Contact Info</label><input type="text" id="adm-ir-witnesses" placeholder="Name, phone or email of any witnesses"></div>
+
+            <div style="font-size:13px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.5px;margin:20px 0 14px;padding-bottom:8px;border-bottom:2px solid var(--red);">Section II — Trip &amp; Member Information</div>
+            <label style="display:flex;align-items:center;gap:10px;font-size:14px;font-weight:700;cursor:pointer;padding:12px 16px;border:2px solid var(--border);border-radius:8px;margin-bottom:14px;background:#fff;" id="adm-ir-members-toggle-label">
+              <input type="checkbox" id="adm-ir-members-involved" onchange="toggleAdminMemberSection()" style="accent-color:var(--red);width:18px;height:18px;">
+              Member(s) were involved in this incident — fill out this section
+            </label>
+            <div id="adm-ir-member-section" style="display:none;">
+              <div class="form-row">
+                <div class="form-field"><label>Member Name</label><input type="text" id="adm-ir-member-name" placeholder="Passenger name"></div>
+                <div class="form-field"><label>Trip ID</label><input type="text" id="adm-ir-trip-num" placeholder="Trip ID number"></div>
+              </div>
+              <div id="adm-ir-trip-checkboxes" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-bottom:14px;"></div>
+              <div class="form-field"><label>Assistive Device Description (if applicable)</label><input type="text" id="adm-ir-device-desc" placeholder="e.g. manual wheelchair, power scooter"></div>
+            </div>
+
+            <div style="font-size:13px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.5px;margin:20px 0 14px;padding-bottom:8px;border-bottom:2px solid var(--red);">Section III — Nature of Incident (check all that apply)</div>
+            <div id="adm-ir-nature-checkboxes" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:14px;"></div>
+            <div class="form-field"><label>Other — please describe</label><input type="text" id="adm-ir-nature-other" placeholder="Describe if not listed above"></div>
+
+            <div style="font-size:13px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.5px;margin:20px 0 14px;padding-bottom:8px;border-bottom:2px solid var(--red);">Section IV — Injury &amp; Incident Description</div>
+            <div class="form-field"><label>Sequence of Events *</label><textarea id="adm-ir-sequence" placeholder="Describe exactly what happened leading up to, during, and after the incident..." style="min-height:100px;"></textarea></div>
+            <div class="form-field"><label>Injuries — describe extent and body part(s) affected</label><textarea id="adm-ir-injuries" placeholder="Describe any injuries to member, driver, escort, or service animal. Write 'None' if no injuries." style="min-height:70px;"></textarea></div>
+            <div class="form-field"><label>If Member Conduct/Misconduct — explain</label><textarea id="adm-ir-conduct-desc" placeholder="Describe member behavior if applicable..." style="min-height:60px;"></textarea></div>
+            <div class="form-field"><label>Unsafe Conditions or Practices That May Have Contributed</label><textarea id="adm-ir-unsafe-conditions" placeholder="Describe any unsafe conditions, methods, or practices..." style="min-height:60px;"></textarea></div>
+            <div class="form-row">
+              <div class="form-field"><label>Medical Attention Sought?</label>
+                <select id="adm-ir-medical-sought" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"><option value="">Select...</option><option>No</option><option>Yes</option></select>
+              </div>
+              <div class="form-field"><label>If Yes — facility/physician name &amp; location</label><input type="text" id="adm-ir-medical-facility" placeholder="e.g. EMMC Emergency, Bangor ME"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-field"><label>Member Asked About Medical Treatment?</label>
+                <select id="adm-ir-member-medical" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"><option value="">Select...</option><option>No</option><option>Yes</option></select>
+              </div>
+              <div class="form-field"><label>If Yes — how &amp; where was member transported?</label><input type="text" id="adm-ir-member-transport" placeholder="e.g. Ambulance to EMMC"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-field"><label>Law Enforcement Called?</label>
+                <select id="adm-ir-law-enforcement" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"><option value="">Select...</option><option>No</option><option>Yes</option></select>
+              </div>
+              <div class="form-field"><label>Agency &amp; Police Report #</label><input type="text" id="adm-ir-police-report" placeholder="e.g. Hancock County SO, Report #2026-1234"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-field"><label>Lost Time From Work Anticipated?</label>
+                <select id="adm-ir-lost-time" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"><option value="">Select...</option><option>No</option><option>Yes</option></select>
+              </div>
+              <div class="form-field"><label>Post-Incident Action Taken</label>
+                <select id="adm-ir-post-action" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                  <option value="">Select...</option>
+                  <option>No Injury — Continued to Appointment</option>
+                  <option>No Injury — Continued/Returned Home</option>
+                  <option>Injury — Continued to Appointment</option>
+                  <option>Injury — Continued to ER</option>
+                  <option>Injury — Continued/Returned Home</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="font-size:13px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.5px;margin:20px 0 14px;padding-bottom:8px;border-bottom:2px solid var(--red);">Section V — Driver Statement</div>
+            <div class="form-field"><label>Driver Statement</label><textarea id="adm-ir-driver-statement" placeholder="Provide the driver's statement..." style="min-height:100px;"></textarea></div>
+            <div class="form-field"><label>What Could Have Been Done to Prevent This?</label><textarea id="adm-ir-prevention" placeholder="Describe any preventive measures..." style="min-height:60px;"></textarea></div>
+
+            <div style="font-size:13px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.5px;margin:20px 0 14px;padding-bottom:8px;border-bottom:2px solid var(--red);">Section VI — Supervisor Investigation Notes</div>
+            <div class="form-field"><label>Supervisor Summary &amp; Direct Cause</label><textarea id="adm-ir-notes" placeholder="Describe what happened, direct cause of incident..." style="min-height:80px;"></textarea></div>
+            <div class="form-field"><label>Immediate Corrective Action Taken</label><textarea id="adm-ir-corrective" placeholder="What was done immediately to address the situation..." style="min-height:60px;"></textarea></div>
+
+            <div style="display:flex;gap:10px;align-items:center;margin-top:8px;">
+              <button class="btn btn-primary" style="background:var(--red);" onclick="submitAdminIncident()">🚨 Log Incident</button>
+              <span id="adm-ir-msg" style="font-size:13px;color:var(--success);display:none;">✓ Logged!</span>
+            </div>
           </div>
         </div>
 
@@ -1360,9 +1451,9 @@ window.addEventListener('load',function(){
     } else if(sess.type==='admin'&&sess.name){
       const staff=PORTAL_STAFF.find(s=>s.name===sess.name);
       if(staff){
-        adminName=staff.name;adminStaff=staff;
-        document.getElementById('admin-display').textContent=staff.name;
-        document.getElementById('dash-admin-name').textContent=staff.name.split(' ')[0];
+        adminName=staff.role==='demo'?'Admin':staff.name;adminStaff=staff;
+        document.getElementById('admin-display').textContent=staff.role==='demo'?'Admin':staff.name;
+        document.getElementById('dash-admin-name').textContent=staff.role==='demo'?'Admin':staff.name.split(' ')[0];
         const badge=document.getElementById('admin-role-badge');
         if(badge)badge.textContent=staff.role==='admin'?'Admin':staff.role==='hr'?'HR':staff.role==='demo'?'DEMO':staff.title.split(' ')[0];
         document.getElementById('screen-landing').classList.remove('active');
@@ -1436,10 +1527,11 @@ function adminLogin(){
   const staff=PORTAL_STAFF.find(s=>s.password===pass);
   if(!staff){document.getElementById('admin-error').style.display='block';return;}
   document.getElementById('admin-error').style.display='none';
-  adminName=staff.name;
+  adminName=staff.role==='demo'?'Admin':staff.name;
   adminStaff=staff;
-  document.getElementById('admin-display').textContent=staff.name;
-  document.getElementById('dash-admin-name').textContent=staff.name.split(' ')[0];
+  const displayName=staff.role==='demo'?'Admin':staff.name;
+  document.getElementById('admin-display').textContent=displayName;
+  document.getElementById('dash-admin-name').textContent=staff.role==='demo'?'Admin':staff.name.split(' ')[0];
   // Update header badge to show role
   const badge=document.getElementById('admin-role-badge');
   if(badge)badge.textContent=staff.role==='admin'?'Admin':staff.role==='hr'?'HR':staff.role==='demo'?'DEMO':staff.title.split(' ')[0];
@@ -2332,25 +2424,97 @@ function renderIncidentTable(){
 function toggleAdminIncidentForm(){
   const f=document.getElementById('admin-ir-form');
   const icon=document.getElementById('admin-ir-toggle-icon');
-  if(f.style.display==='none'){f.style.display='block';icon.textContent='▲ collapse';}
-  else{f.style.display='none';icon.textContent='▼ expand';}
+  if(f.style.display==='none'){
+    f.style.display='block';icon.textContent='▲ collapse';
+    // Populate employee dropdown
+    const sel=document.getElementById('adm-ir-employee-select');
+    if(sel){
+      sel.innerHTML='<option value="">— Select from profiles —</option>'+
+        allProfilesCache.filter(p=>p.employment_status!=='Separated').sort((a,b)=>(a.employee_name||'').localeCompare(b.employee_name||'')).map(p=>`<option value="${p.id}">${p.employee_name}${p.county?' ('+p.county+')':''}</option>`).join('');
+    }
+    // Build checkboxes
+    const tripEl=document.getElementById('adm-ir-trip-checkboxes');
+    const natureEl=document.getElementById('adm-ir-nature-checkboxes');
+    if(tripEl&&!tripEl.children.length)tripEl.innerHTML=IR_TRIP_CHECKS.map(l=>`<label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;cursor:pointer;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:#fff;"><input type="checkbox" class="adm-ir-trip-cb" value="${l}" style="accent-color:var(--navy);width:16px;height:16px;"> ${l}</label>`).join('');
+    if(natureEl&&!natureEl.children.length)natureEl.innerHTML=IR_NATURE_CHECKS.map(l=>`<label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;padding:7px 10px;border:1px solid var(--border);border-radius:6px;background:#fff;"><input type="checkbox" class="adm-ir-nature-cb" value="${l}" style="accent-color:var(--red);width:14px;height:14px;"> ${l}</label>`).join('');
+  }else{f.style.display='none';icon.textContent='▼ expand';}
+}
+function prefillAdminIncidentEmployee(){
+  const sel=document.getElementById('adm-ir-employee-select');
+  const id=parseInt(sel?.value);
+  if(!id)return;
+  const p=allProfilesCache.find(x=>x.id===id);
+  if(!p)return;
+  document.getElementById('adm-ir-employee').value=p.employee_name||'';
+  if(p.county)document.getElementById('adm-ir-county').value=p.county;
+  document.getElementById('adm-ir-supervisor').value=p.assigned_supervisor||adminName;
+}
+function toggleAdminMemberSection(){
+  const cb=document.getElementById('adm-ir-members-involved');
+  const section=document.getElementById('adm-ir-member-section');
+  const label=document.getElementById('adm-ir-members-toggle-label');
+  if(cb&&section){
+    section.style.display=cb.checked?'block':'none';
+    if(label)label.style.borderColor=cb.checked?'var(--red)':'var(--border)';
+  }
 }
 async function submitAdminIncident(){
   const name=document.getElementById('adm-ir-employee').value.trim();
   const date=document.getElementById('adm-ir-date').value;
   const location=document.getElementById('adm-ir-location').value.trim();
-  const desc=document.getElementById('adm-ir-description').value.trim();
-  if(!name||!date||!location||!desc){alert('Please fill in Employee Name, Date, Location, and Description.');return;}
-  await db.from('incident_reports').insert([{
-    employee_name:name,county:document.getElementById('adm-ir-county').value,
-    incident_date:date,incident_time:document.getElementById('adm-ir-time').value||null,
-    location,nature_of_incident:[document.getElementById('adm-ir-nature').value].filter(Boolean),
-    driver_statement:desc,supervisor_notes:document.getElementById('adm-ir-notes').value.trim()||null,
-    assigned_supervisor:adminName,status:'Open',submitted_at:new Date().toISOString(),updated_at:new Date().toISOString()
-  }]);
-  ['adm-ir-employee','adm-ir-date','adm-ir-time','adm-ir-location','adm-ir-nature','adm-ir-description','adm-ir-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  const msg=document.getElementById('adm-ir-msg');msg.style.display='inline';setTimeout(()=>msg.style.display='none',3000);
-  loadIncidents();
+  const sequence=document.getElementById('adm-ir-sequence').value.trim();
+  if(!name||!date||!location){alert('Please fill in Employee Name, Date, and Location.');return;}
+  const btn=event.currentTarget;
+  btn.disabled=true;btn.textContent='Saving...';
+  const nature=Array.from(document.querySelectorAll('.adm-ir-nature-cb:checked')).map(c=>c.value);
+  const tripChecks=Array.from(document.querySelectorAll('.adm-ir-trip-cb:checked')).map(c=>c.value);
+  const supervisorVal=document.getElementById('adm-ir-supervisor').value.trim()||adminName;
+  try{
+    const {error}=await db.from('incident_reports').insert([{
+      submitted_at:new Date().toISOString(),
+      employee_name:name,
+      employee_email:allProfilesCache.find(p=>p.employee_name===name)?.employee_email||null,
+      county:document.getElementById('adm-ir-county').value||null,
+      assigned_supervisor:supervisorVal,
+      incident_date:date,
+      incident_time:document.getElementById('adm-ir-time').value||null,
+      location,
+      vehicle_id:document.getElementById('adm-ir-vehicle').value.trim()||null,
+      nature_of_incident:nature,
+      nature_other:document.getElementById('adm-ir-nature-other').value.trim()||null,
+      member_name:document.getElementById('adm-ir-member-name').value.trim()||null,
+      modivcare_trip_number:document.getElementById('adm-ir-trip-num').value.trim()||null,
+      multi_loaded:tripChecks.includes('Multi-loaded Trip'),
+      attendant_present:tripChecks.includes('Attendant/Escort Present'),
+      service_animal:tripChecks.includes('Service Animal Present'),
+      assistive_device:tripChecks.includes('Assistive Mobility Device'),
+      assistive_device_desc:document.getElementById('adm-ir-device-desc').value.trim()||null,
+      on_time_pickup:tripChecks.includes('On-time Pickup'),
+      weather_conditions:document.getElementById('adm-ir-weather').value.trim()||null,
+      injury_description:document.getElementById('adm-ir-injuries').value.trim()||null,
+      member_conduct_desc:document.getElementById('adm-ir-conduct-desc').value.trim()||null,
+      medical_treatment_offered:document.getElementById('adm-ir-member-medical').value==='Yes',
+      medical_transport_details:document.getElementById('adm-ir-member-transport').value.trim()||null,
+      witness_name:document.getElementById('adm-ir-witnesses').value.trim()||null,
+      law_enforcement_called:document.getElementById('adm-ir-law-enforcement').value==='Yes',
+      police_report_number:document.getElementById('adm-ir-police-report').value.trim()||null,
+      driver_statement:sequence||document.getElementById('adm-ir-driver-statement').value.trim()||null,
+      post_incident_action:document.getElementById('adm-ir-post-action').value||null,
+      supervisor_notes:(document.getElementById('adm-ir-notes').value.trim()||'')+(document.getElementById('adm-ir-corrective').value.trim()?'\n\nCorrective Action: '+document.getElementById('adm-ir-corrective').value.trim():''),
+      status:'Open',
+      updated_at:new Date().toISOString()
+    }]);
+    if(error)throw error;
+    // Reset form
+    ['adm-ir-employee','adm-ir-date','adm-ir-time','adm-ir-location','adm-ir-vehicle','adm-ir-shift-start','adm-ir-trips-prior','adm-ir-other-employees','adm-ir-witnesses','adm-ir-member-name','adm-ir-trip-num','adm-ir-device-desc','adm-ir-weather','adm-ir-injuries','adm-ir-conduct-desc','adm-ir-unsafe-conditions','adm-ir-medical-facility','adm-ir-member-transport','adm-ir-police-report','adm-ir-driver-statement','adm-ir-prevention','adm-ir-nature-other','adm-ir-notes','adm-ir-corrective','adm-ir-supervisor'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    document.querySelectorAll('.adm-ir-nature-cb,.adm-ir-trip-cb').forEach(cb=>cb.checked=false);
+    ['adm-ir-county','adm-ir-medical-sought','adm-ir-member-medical','adm-ir-law-enforcement','adm-ir-lost-time','adm-ir-post-action'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    const memCb=document.getElementById('adm-ir-members-involved');
+    if(memCb){memCb.checked=false;toggleAdminMemberSection();}
+    const msg=document.getElementById('adm-ir-msg');msg.style.display='inline';setTimeout(()=>msg.style.display='none',3000);
+    loadIncidents();
+  }catch(e){alert('Error logging incident:\n\n'+(e.message||e.details||JSON.stringify(e)));}
+  btn.disabled=false;btn.innerHTML='🚨 Log Incident';
 }
 function openIncidentModal(id){
   const r=allIncidentsCache.find(x=>x.id===id);
