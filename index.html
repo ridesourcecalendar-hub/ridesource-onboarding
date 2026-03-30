@@ -304,11 +304,13 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
         <div class="sidebar-label">Documents</div>
         <div class="nav-item" onclick="showSection('training')" id="nav-training"><span class="nav-icon">📋</span>Driver Training Guide</div>
         <div class="nav-item" onclick="showSection('handbook')" id="nav-handbook"><span class="nav-icon">📖</span>Employee Handbook</div>
+        <div class="nav-item" onclick="showSection('downloads')" id="nav-downloads"><span class="nav-icon">📥</span>Downloads</div>
         <div class="sidebar-label">Actions</div>
         <div class="nav-item" onclick="showSection('policies')" id="nav-policies"><span class="nav-icon">✍️</span>Policy Sign-Offs<span class="nav-badge" id="badge-policies">0/12</span></div>
         <div class="nav-item" onclick="showSection('timeoff')" id="nav-timeoff"><span class="nav-icon">📅</span>Request Time Off</div>
         <div class="nav-item" onclick="showSection('timesheet')" id="nav-timesheet"><span class="nav-icon">🕐</span>Submit Timesheet</div>
         <div class="nav-item" onclick="showSection('vehicle')" id="nav-vehicle"><span class="nav-icon">🚐</span>Vehicle Report</div>
+        <div class="nav-item" onclick="showSection('incident')" id="nav-incident"><span class="nav-icon">🚨</span>Incident Report</div>
       </div>
     </div>
     <div class="main-content">
@@ -325,6 +327,12 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
           <div class="stat-card"><div class="stat-icon" style="background:#fef3e8;">⏳</div><div><div class="stat-val" id="stat-remaining">14</div><div class="stat-label">Items Remaining</div></div></div>
         </div>
         <div class="card"><div class="card-title">📝 Your Onboarding Checklist</div><ul class="checklist" id="dash-checklist"></ul></div>
+        <div id="emp-memos-wrap" style="display:none;margin-top:16px;">
+          <div class="card" style="border-color:#5b21b6;border-width:2px;">
+            <div class="card-title" style="color:#5b21b6;">📢 Memos Requiring Your Acknowledgment</div>
+            <div id="emp-memos-list"></div>
+          </div>
+        </div>
       </div>
 
       <!-- TRAINING -->
@@ -375,6 +383,32 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
           <div class="sig-field"><label>Electronic Signature (type your full legal name)</label><input type="text" id="hb-sig-input" placeholder="Type your full name to sign..." oninput="checkHbSig()"></div>
           <div class="sig-legal">By typing your name above, you are providing an electronic signature legally binding under the E-SIGN Act and Maine law.</div>
           <button class="btn-primary" onclick="submitHandbookSig()" id="hb-submit-btn" disabled>Submit Acknowledgment</button>
+        </div>
+      </div>
+
+      <!-- DOWNLOADS -->
+      <div id="section-downloads" class="portal-section">
+        <div class="card-title" style="font-size:22px;color:var(--navy);margin-bottom:4px;">📥 Downloads</div>
+        <p style="color:#888;font-size:14px;margin-bottom:24px;">Download your official RideSource documents for reference.</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;">
+          <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px;">
+            <div style="font-size:28px;margin-bottom:8px;">📖</div>
+            <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:3px;">Employee Handbook</div>
+            <div style="font-size:11px;color:#888;margin-bottom:14px;">Version 6 · February 2026 · Your reference for all company policies</div>
+            <button onclick="downloadDoc('RideSource_Employee_Handbook_v6.docx')" style="display:inline-flex;align-items:center;gap:6px;background:var(--navy);color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:none;">⬇️ Download</button>
+          </div>
+          <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px;">
+            <div style="font-size:28px;margin-bottom:8px;">🚐</div>
+            <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:3px;">Driver Training Guide</div>
+            <div style="font-size:11px;color:#888;margin-bottom:14px;">Version 2.1 · February 2026 · Your complete training reference</div>
+            <button onclick="downloadDoc('RideSource_Driver_Training_Guide_v2_1.docx')" style="display:inline-flex;align-items:center;gap:6px;background:var(--navy);color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:none;">⬇️ Download</button>
+          </div>
+          <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px;border-color:var(--red);border-width:2px;">
+            <div style="font-size:28px;margin-bottom:8px;">🚨</div>
+            <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:3px;">Modivcare Incident Report</div>
+            <div style="font-size:11px;color:#888;margin-bottom:14px;">Required for MDVC trips only · Must be submitted to supervisor within 24 hours</div>
+            <button onclick="downloadDoc('ModivCare_-_Incident_Accident_Injury_Report_revised_Aug_2022.pdf')" style="display:inline-flex;align-items:center;gap:6px;background:var(--red);color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:none;">⬇️ Download MDVC Form</button>
+          </div>
         </div>
       </div>
 
@@ -502,6 +536,117 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
         <div class="card" style="margin-top:8px;"><div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:12px;">📋 My Recent Reports</div><div id="my-vehicle-reports-list"><p style="color:#888;font-size:13px;">Loading...</p></div></div>
       </div>
 
+      <!-- INCIDENT REPORT -->
+      <div id="section-incident" class="portal-section">
+        <div class="card-title" style="font-size:22px;color:var(--navy);margin-bottom:4px;">🚨 Incident / Accident Report</div>
+        <p style="color:#888;font-size:14px;margin-bottom:8px;">This report must be submitted within <strong>24 hours</strong> of any transportation event whether or not an injury occurs.</p>
+        <div style="background:#fdecea;border-left:4px solid var(--red);border-radius:0 8px 8px 0;padding:12px 16px;margin-bottom:20px;font-size:13px;">
+          <strong style="color:var(--red);">⚠️ If this was a Modivcare (MDVC) trip:</strong> You must also complete and submit the <strong>Modivcare Member Incident / Accident / Injury Report</strong> to your supervisor within 24 hours. The MDVC form is only required for MDVC-brokered trips.
+        </div>
+        <div class="card">
+          <div style="font-size:13px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid var(--red);">Section I — Employee &amp; Incident Information</div>
+          <div class="form-row">
+            <div class="form-field"><label>Incident Date *</label><input type="date" id="ir-date"></div>
+            <div class="form-field"><label>Incident Time *</label><input type="time" id="ir-time"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-field"><label>Location of Incident *</label><input type="text" id="ir-location" placeholder="Street, City or facility name"></div>
+            <div class="form-field"><label>Vehicle ID / Asset Tag</label><input type="text" id="ir-vehicle" placeholder="e.g. 876-CQD"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-field"><label>Time You Began Shift</label><input type="time" id="ir-shift-start"></div>
+            <div class="form-field"><label># of Trips Completed Before Incident</label><input type="number" id="ir-trips-prior" min="0" placeholder="0"></div>
+          </div>
+          <div class="form-field"><label>Weather &amp; Road Conditions</label><input type="text" id="ir-weather" placeholder="e.g. Clear and dry, icy roads, heavy rain"></div>
+          <div class="form-field"><label>Other Employee(s) Involved</label><input type="text" id="ir-other-employees" placeholder="Names of any other RideSource staff involved"></div>
+          <div class="form-field"><label>Witness Name(s) &amp; Contact Info</label><input type="text" id="ir-witnesses" placeholder="Name, phone or email of any witnesses"></div>
+
+          <div style="font-size:13px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.5px;margin:20px 0 14px;padding-bottom:8px;border-bottom:2px solid var(--red);">Section II — Trip &amp; Member Information</div>
+          <label style="display:flex;align-items:center;gap:10px;font-size:14px;font-weight:700;cursor:pointer;padding:12px 16px;border:2px solid var(--border);border-radius:8px;margin-bottom:14px;background:#fff;" id="ir-members-toggle-label">
+            <input type="checkbox" id="ir-members-involved" onchange="toggleMemberSection()" style="accent-color:var(--red);width:18px;height:18px;">
+            Member(s) were involved in this incident — fill out this section
+          </label>
+          <div id="ir-member-section" style="display:none;">
+            <div class="form-row">
+              <div class="form-field"><label>Member Name</label><input type="text" id="ir-member-name" placeholder="Passenger name"></div>
+              <div class="form-field"><label>Trip ID</label><input type="text" id="ir-trip-num" placeholder="Trip ID number"></div>
+            </div>
+            <div id="ir-trip-checkboxes" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-bottom:14px;"></div>
+            <div class="form-field"><label>Assistive Device Description (if applicable)</label><input type="text" id="ir-device-desc" placeholder="e.g. manual wheelchair, power scooter"></div>
+          </div>
+
+          <div style="font-size:13px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.5px;margin:20px 0 14px;padding-bottom:8px;border-bottom:2px solid var(--red);">Section III — Nature of Incident (check all that apply)</div>
+          <div id="ir-nature-checkboxes" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:14px;"></div>
+          <div class="form-field"><label>Other — please describe</label><input type="text" id="ir-nature-other" placeholder="Describe if not listed above"></div>
+
+          <div style="font-size:13px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.5px;margin:20px 0 14px;padding-bottom:8px;border-bottom:2px solid var(--red);">Section IV — Injury &amp; Incident Description</div>
+          <div class="form-field"><label>Sequence of Events *</label><textarea id="ir-sequence" placeholder="Describe exactly what happened leading up to, during, and after the incident..." style="min-height:100px;"></textarea></div>
+          <div class="form-field"><label>Injuries — describe extent and body part(s) affected</label><textarea id="ir-injuries" placeholder="Describe any injuries to member, driver, escort, or service animal. Write 'None' if no injuries." style="min-height:70px;"></textarea></div>
+          <div class="form-field"><label>If Member Conduct/Misconduct — explain</label><textarea id="ir-conduct-desc" placeholder="Describe member behavior if applicable..." style="min-height:60px;"></textarea></div>
+          <div class="form-field"><label>Unsafe Conditions or Practices That May Have Contributed</label><textarea id="ir-unsafe-conditions" placeholder="Describe any unsafe conditions, methods, or practices..." style="min-height:60px;"></textarea></div>
+          <div class="form-field"><label>Supporting Files — photos, police report, etc. (optional)</label>
+            <div style="border:2px dashed var(--border);border-radius:8px;padding:14px;text-align:center;cursor:pointer;background:#fafbff;" onclick="document.getElementById('ir-file-input').click()">
+              <div style="font-size:24px;margin-bottom:4px;">📎</div>
+              <div style="font-size:13px;font-weight:600;color:#555;">Click to attach a file</div>
+              <div style="font-size:11px;color:#888;margin-top:2px;">JPG, PNG, or PDF — max 5MB</div>
+              <div id="ir-file-name" style="display:none;margin-top:6px;font-size:12px;color:var(--success);font-weight:600;"></div>
+            </div>
+            <input type="file" id="ir-file-input" accept="image/*,.pdf" style="display:none;" onchange="document.getElementById('ir-file-name').style.display='block';document.getElementById('ir-file-name').textContent='📎 '+this.files[0]?.name;">
+          </div>
+              <select id="ir-medical-sought" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"><option value="">Select...</option><option>No</option><option>Yes</option></select>
+            </div>
+            <div class="form-field"><label>If Yes — facility/physician name &amp; location</label><input type="text" id="ir-medical-facility" placeholder="e.g. EMMC Emergency, Bangor ME"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-field"><label>Member Asked About Medical Treatment?</label>
+              <select id="ir-member-medical" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"><option value="">Select...</option><option>No</option><option>Yes</option></select>
+            </div>
+            <div class="form-field"><label>If Yes — how &amp; where was member transported?</label><input type="text" id="ir-member-transport" placeholder="e.g. Ambulance to EMMC"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-field"><label>Law Enforcement Called?</label>
+              <select id="ir-law-enforcement" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"><option value="">Select...</option><option>No</option><option>Yes</option></select>
+            </div>
+            <div class="form-field"><label>Agency &amp; Police Report #</label><input type="text" id="ir-police-report" placeholder="e.g. Hancock County SO, Report #2026-1234"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-field"><label>Lost Time From Work Anticipated?</label>
+              <select id="ir-lost-time" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"><option value="">Select...</option><option>No</option><option>Yes</option></select>
+            </div>
+            <div class="form-field"><label>Post-Incident Action Taken</label>
+              <select id="ir-post-action" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                <option value="">Select...</option>
+                <option>No Injury — Continued to Appointment</option>
+                <option>No Injury — Continued/Returned Home</option>
+                <option>Injury — Continued to Appointment</option>
+                <option>Injury — Continued to ER</option>
+                <option>Injury — Continued/Returned Home</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="font-size:13px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.5px;margin:20px 0 14px;padding-bottom:8px;border-bottom:2px solid var(--red);">Section V — Driver Statement</div>
+          <div class="form-field"><label>Driver Statement *</label><textarea id="ir-driver-statement" placeholder="Provide your full statement as required by the transportation provider agreement..." style="min-height:100px;"></textarea></div>
+          <div class="form-field"><label>What Could Have Been Done to Prevent This?</label><textarea id="ir-prevention" placeholder="Describe any preventive measures..." style="min-height:60px;"></textarea></div>
+          <div style="background:var(--light);border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:#666;">
+            By submitting this form, I certify that the information provided is accurate and complete to the best of my knowledge. My name as entered at login serves as my electronic signature.
+          </div>
+          <div style="background:#fff3cd;border-left:4px solid var(--warn);border-radius:0 8px 8px 0;padding:12px 16px;margin-bottom:20px;">
+            <div style="font-weight:700;color:#856404;margin-bottom:6px;">📋 Also Required: Modivcare Incident Report</div>
+            <div style="font-size:12px;color:#666;margin-bottom:10px;">Download, complete, and give to your supervisor within 24 hours.</div>
+            <button onclick="downloadDoc('ModivCare_-_Incident_Accident_Injury_Report_revised_Aug_2022.pdf')" style="background:#856404;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;">⬇️ Download MDVC Form</button>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <button class="btn-primary" onclick="submitIncidentReport()" id="ir-submit-btn" style="background:var(--red);">🚨 Submit Incident Report</button>
+            <span id="ir-msg" style="font-size:13px;color:var(--success);display:none;">✓ Submitted to your supervisor!</span>
+          </div>
+        </div>
+        <div class="card" style="margin-top:8px;">
+          <div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:12px;">📋 My Submitted Incident Reports</div>
+          <div id="my-incidents-list"><p style="color:#888;font-size:13px;">Loading...</p></div>
+        </div>
+      </div>
+
     </div><!-- end main-content -->
   </div><!-- end portal-layout -->
 </div><!-- end screen-portal -->
@@ -532,6 +677,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
         <div class="nav-item" onclick="showAdmin('templates')" id="nav-adm-templates"><span class="nav-icon">📄</span>HR Templates</div>
         <div class="nav-item" onclick="showAdmin('warnings')" id="nav-adm-warnings"><span class="nav-icon">⚠️</span>Attendance Warnings<span class="nav-badge" id="badge-flags">0</span></div>
         <div class="nav-item" onclick="showAdmin('onboarding-tracker')" id="nav-adm-onboarding-tracker"><span class="nav-icon">✅</span>Onboarding Tracker</div>
+        <div class="nav-item" onclick="showAdmin('memos')" id="nav-adm-memos"><span class="nav-icon">📢</span>Memos<span class="nav-badge" id="badge-memos" style="background:#5b21b6;">0</span></div>
         <div class="sidebar-label">Employee Folders</div>
         <div class="nav-item" onclick="showAdmin('employee-folders')" id="nav-adm-employee-folders"><span class="nav-icon">🗂️</span>Employee Profiles</div>
         <div class="sidebar-label">Time Off</div>
@@ -541,6 +687,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
         <div class="sidebar-label">Operations</div>
         <div class="nav-item" onclick="showAdmin('timesheets')" id="nav-adm-timesheets"><span class="nav-icon">🕐</span>Timesheets<span class="nav-badge" id="badge-timesheets">0</span></div>
         <div class="nav-item" onclick="showAdmin('vehicle-records')" id="nav-adm-vehicle-records"><span class="nav-icon">🚐</span>Vehicle Records</div>
+        <div class="nav-item" onclick="showAdmin('incidents')" id="nav-adm-incidents"><span class="nav-icon">🚨</span>Incident Log<span class="nav-badge" id="badge-incidents" style="background:var(--red);">0</span></div>
         <div class="sidebar-label">Resources</div>
         <div class="nav-item" onclick="showAdmin('documents')" id="nav-adm-documents"><span class="nav-icon">📥</span>Document Library</div>
       </div>
@@ -555,6 +702,12 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
           <div class="card"><div class="card-title">⏳ Pending Time Off Requests</div><div id="dash-pending-list" style="font-size:13px;color:#888;">Loading...</div></div>
           <div class="card"><div class="card-title">🚩 Attendance Flags</div><div id="dash-flags-list" style="font-size:13px;color:#888;">Loading...</div></div>
+        </div>
+        <div id="dash-open-incidents-wrap" style="display:none;margin-top:16px;">
+          <div class="card" style="border-color:var(--red);border-width:2px;">
+            <div class="card-title" style="color:var(--red);">🚨 Open Incident Reports — Action Required</div>
+            <div id="dash-open-incidents" style="font-size:13px;color:#888;"></div>
+          </div>
         </div>
       </div>
 
@@ -673,6 +826,37 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
       <div id="section-adm-requests" class="admin-section">
         <div style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:4px;">📅 Time Off Requests</div>
         <p style="color:#888;font-size:13px;margin-bottom:14px;">Review and approve or deny employee time off requests.</p>
+
+        <!-- Submit on behalf of employee -->
+        <div class="card" style="margin-bottom:16px;">
+          <div class="card-title" style="font-size:15px;cursor:pointer;" onclick="toggleAdminTimeOffForm()">➕ Submit Request on Behalf of Employee <span id="admin-tor-toggle" style="font-size:12px;color:#888;">▼ expand</span></div>
+          <div id="admin-tor-form" style="display:none;margin-top:16px;">
+            <div class="form-row">
+              <div class="form-field"><label>Employee Name *</label>
+                <select id="adm-tor-employee" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                  <option value="">Select employee...</option>
+                </select>
+              </div>
+              <div class="form-field"><label>Request Type *</label>
+                <select id="adm-tor-type" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                  <option value="">Select type...</option>
+                  <option>Day Off</option><option>Half Day AM</option><option>Half Day PM</option>
+                  <option>Multi-Day</option><option>Use PTO Hours</option><option>Personal</option>
+                  <option>Medical / Appointment</option><option>Family Emergency</option><option>Other</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-field"><label>Start Date *</label><input type="date" id="adm-tor-start"></div>
+              <div class="form-field"><label>End Date</label><input type="date" id="adm-tor-end"></div>
+            </div>
+            <div class="form-field"><label>Reason / Notes</label><input type="text" id="adm-tor-reason" placeholder="Brief reason for the request..."></div>
+            <div style="display:flex;gap:10px;align-items:center;">
+              <button class="btn btn-primary" onclick="submitAdminTimeOff()">Submit Request</button>
+              <span id="adm-tor-msg" style="font-size:13px;color:var(--success);display:none;">✓ Request submitted!</span>
+            </div>
+          </div>
+        </div>
         <div style="display:flex;gap:2px;border-bottom:2px solid var(--border);margin-bottom:14px;flex-wrap:wrap;">
           <button id="req-tab-PENDING" class="req-tab req-tab-active" onclick="setReqTab('PENDING')">🕐 Pending<span class="req-count" id="req-count-PENDING" style="background:var(--red);color:#fff;">0</span></button>
           <button id="req-tab-APPROVED" class="req-tab req-tab-approved" onclick="setReqTab('APPROVED')">✅ Approved<span class="req-count" id="req-count-APPROVED" style="background:#ddd;color:#555;">0</span></button>
@@ -969,6 +1153,92 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
         <div id="vehicle-records-table">Loading...</div>
       </div>
 
+      <!-- INCIDENT LOG (ADMIN) -->
+      <div id="section-adm-incidents" class="admin-section">
+        <div style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:4px;">🚨 Incident Log</div>
+        <p style="color:#888;font-size:13px;margin-bottom:16px;">All submitted incident reports. Open incidents require supervisor review and closure within 24 hours of submission.</p>
+
+        <!-- Admin Submit Form -->
+        <div class="card" style="margin-bottom:20px;">
+          <div class="card-title" style="font-size:15px;cursor:pointer;" onclick="toggleAdminIncidentForm()">➕ Log New Incident (Supervisor) <span id="admin-ir-toggle-icon" style="font-size:12px;color:#888;">▼ expand</span></div>
+          <div id="admin-ir-form" style="display:none;margin-top:16px;">
+            <div class="form-row">
+              <div class="form-field"><label>Employee Name *</label><input type="text" id="adm-ir-employee" placeholder="Full name..."></div>
+              <div class="form-field"><label>County</label>
+                <select id="adm-ir-county" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                  <option value="">Select county</option>
+                  <option>Androscoggin</option><option>Aroostook</option><option>Cumberland</option><option>Franklin</option><option>Hancock</option><option>Kennebec</option><option>Knox</option><option>Lincoln</option><option>Oxford</option><option>Penobscot</option><option>Piscataquis</option><option>Sagadahoc</option><option>Somerset</option><option>Waldo</option><option>Washington</option><option>York</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-field"><label>Incident Date *</label><input type="date" id="adm-ir-date"></div>
+              <div class="form-field"><label>Incident Time</label><input type="time" id="adm-ir-time"></div>
+            </div>
+            <div class="form-field"><label>Location *</label><input type="text" id="adm-ir-location" placeholder="Where did the incident occur?"></div>
+            <div class="form-field"><label>Nature of Incident</label><input type="text" id="adm-ir-nature" placeholder="Brief description of incident type"></div>
+            <div class="form-field"><label>Description *</label><textarea id="adm-ir-description" placeholder="Full description of the incident..." style="min-height:80px;"></textarea></div>
+            <div class="form-field"><label>Supervisor Notes</label><textarea id="adm-ir-notes" placeholder="Initial supervisor notes, actions taken..." style="min-height:60px;"></textarea></div>
+            <button class="btn btn-primary" onclick="submitAdminIncident()">Log Incident</button>
+            <span id="adm-ir-msg" style="font-size:13px;color:var(--success);margin-left:12px;display:none;">✓ Logged!</span>
+          </div>
+        </div>
+
+        <!-- Filters -->
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center;">
+          <input type="text" id="ir-admin-search" placeholder="🔍 Search employee..." oninput="renderIncidentTable()" style="padding:9px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;flex:1;min-width:180px;">
+          <select id="ir-status-filter" onchange="renderIncidentTable()" style="padding:9px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:#fff;">
+            <option value="">All Statuses</option>
+            <option value="Open">Open</option>
+            <option value="Under Review">Under Review</option>
+            <option value="Closed">Closed</option>
+          </select>
+          <select id="ir-supervisor-filter" onchange="renderIncidentTable()" style="padding:9px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:#fff;">
+            <option value="">All Supervisors</option>
+            <option value="Tiffany Gallagher">Tiffany Gallagher</option>
+            <option value="Nicole Geel">Nicole Geel</option>
+            <option value="Robin Lausier">Robin Lausier</option>
+          </select>
+        </div>
+        <div id="incident-table">Loading...</div>
+      </div>
+
+      <!-- MEMOS (ADMIN) -->
+      <div id="section-adm-memos" class="admin-section">
+        <div style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:4px;">📢 Memos</div>
+        <p style="color:#888;font-size:13px;margin-bottom:20px;">Create memos for employees to read and acknowledge. Track who has and hasn't read each memo.</p>
+
+        <!-- Create Memo -->
+        <div class="card" style="margin-bottom:20px;">
+          <div class="card-title">✏️ Create New Memo</div>
+          <div class="form-field"><label>Subject *</label><input type="text" id="memo-subject" placeholder="e.g. Updated Vehicle Inspection Procedures"></div>
+          <div class="form-field"><label>Message *</label><textarea id="memo-body" placeholder="Write your memo here. Employees will need to read and acknowledge this." style="min-height:120px;"></textarea></div>
+          <div class="form-row">
+            <div class="form-field"><label>Audience</label>
+              <select id="memo-audience" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                <option value="all">All Active Employees</option>
+                <option value="Tiffany Gallagher">Tiffany Gallagher's Team</option>
+                <option value="Nicole Geel">Nicole Geel's Team</option>
+                <option value="Robin Lausier">Robin Lausier's Team</option>
+              </select>
+            </div>
+            <div class="form-field"><label>Priority</label>
+              <select id="memo-priority" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                <option value="normal">Normal</option>
+                <option value="urgent">🔴 Urgent</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <button class="btn btn-primary" onclick="createMemo()">📢 Send Memo</button>
+            <span id="memo-send-msg" style="font-size:13px;color:var(--success);display:none;">✓ Memo sent!</span>
+          </div>
+        </div>
+
+        <!-- Memo List -->
+        <div id="memo-admin-list"><p style="color:#888;font-size:13px;">Loading...</p></div>
+      </div>
+
       <!-- DOCUMENT LIBRARY -->
       <div id="section-adm-documents" class="admin-section">
         <div style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:4px;">📥 Document Library</div>
@@ -1009,6 +1279,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
           <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px;"><div style="font-size:28px;margin-bottom:8px;">⭐</div><div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:3px;">Employee Accolades Form</div><div style="font-size:11px;color:#888;margin-bottom:14px;">Record a compliment or commendation</div><button onclick="downloadDoc('RideSource_Employee_Accolades_Form.docx')" style="display:inline-flex;align-items:center;gap:6px;background:var(--navy);color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:none;">⬇️ Download</button></div>
           <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px;"><div style="font-size:28px;margin-bottom:8px;">📢</div><div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:3px;">Employee Complaint Form</div><div style="font-size:11px;color:#888;margin-bottom:14px;">Formal workplace concern submission</div><button onclick="downloadDoc('RideSource_Employee_Complaint_Form.docx')" style="display:inline-flex;align-items:center;gap:6px;background:var(--navy);color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:none;">⬇️ Download</button></div>
           <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px;"><div style="font-size:28px;margin-bottom:8px;">🔍</div><div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:3px;">Supervisor Investigation Form</div><div style="font-size:11px;color:#888;margin-bottom:14px;">Internal investigation form — HR use only</div><button onclick="downloadDoc('RideSource_Supervisor_Investigation_Form.docx')" style="display:inline-flex;align-items:center;gap:6px;background:var(--navy);color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:none;">⬇️ Download</button></div>
+          <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px;border-color:#C0392B;"><div style="font-size:28px;margin-bottom:8px;">🚨</div><div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:3px;">Modivcare Incident / Accident Report</div><div style="font-size:11px;color:#888;margin-bottom:14px;">Required by MDVC — must be submitted within 24 hours</div><button onclick="downloadDoc('ModivCare_-_Incident_Accident_Injury_Report_revised_Aug_2022.pdf')" style="display:inline-flex;align-items:center;gap:6px;background:var(--red);color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:none;">⬇️ Download MDVC Form</button></div>
         </div>
       </div>
 
@@ -1036,6 +1307,7 @@ const PORTAL_STAFF=[
   {name:'Tiffany Gallagher',title:'Regional Operations Manager',email:'tiffanyb@ridesourcemaine.com',phone:'207-812-5357',password:'RideSource2026!',role:'admin'},
   {name:'Nicole Geel',title:'Operations Manager',email:'nicolegeel@ridesourcemaine.com',phone:'207-743-7433',password:'Nicole2026!',role:'supervisor'},
   {name:'Robin Lausier',title:'Human Resources Manager',email:'robinl@ridesourcemaine.com',phone:'',password:'Robin2026!',role:'hr'},
+  {name:'Demo Admin',title:'Demo Account',email:'demo@ridesourcemaine.com',phone:'',password:'Demo2026!',role:'demo'},
 ];
 const ADMIN_PASSWORD='RideSource2026!'; // kept for legacy session restore compatibility
 if(typeof supabase==='undefined'){console.error('Supabase failed to load');alert('Portal failed to load. Please refresh the page.');}
@@ -1072,13 +1344,13 @@ window.addEventListener('load',function(){
         document.getElementById('admin-display').textContent=staff.name;
         document.getElementById('dash-admin-name').textContent=staff.name.split(' ')[0];
         const badge=document.getElementById('admin-role-badge');
-        if(badge)badge.textContent=staff.role==='admin'?'Admin':staff.role==='hr'?'HR':staff.title.split(' ')[0];
+        if(badge)badge.textContent=staff.role==='admin'?'Admin':staff.role==='hr'?'HR':staff.role==='demo'?'DEMO':staff.title.split(' ')[0];
         document.getElementById('screen-landing').classList.remove('active');
         document.getElementById('screen-admin').classList.add('active');
         buildMgrGuide();buildHbRef();
         loadEmployeeFolders();
         loadDashboard();loadRequests();loadCallOuts();loadFlags();loadOnboarding();renderCalendar();
-        loadTimesheets();loadVehicleRecords();
+        loadTimesheets();loadVehicleRecords();loadIncidents();loadMemos();
       }
     }
   }catch(e){sessionStorage.removeItem('rs_session');}
@@ -1114,7 +1386,7 @@ function startPortal(opts){
   document.getElementById('screen-landing').classList.remove('active');
   document.getElementById('screen-portal').classList.add('active');
   loadSavedState();buildTraining();buildHandbook();buildPolicies();updateDashboard();loadSignedPolicies();
-  buildTimesheetRows();
+  buildTimesheetRows();buildIncidentForm();loadEmployeeMemos();
   document.getElementById('vr-date').value=new Date().toISOString().split('T')[0];
   // Hide completion banner until Supabase confirms
   document.getElementById('all-signed-banner').style.display='none';
@@ -1150,14 +1422,14 @@ function adminLogin(){
   document.getElementById('dash-admin-name').textContent=staff.name.split(' ')[0];
   // Update header badge to show role
   const badge=document.getElementById('admin-role-badge');
-  if(badge)badge.textContent=staff.role==='admin'?'Admin':staff.role==='hr'?'HR':staff.title.split(' ')[0];
+  if(badge)badge.textContent=staff.role==='admin'?'Admin':staff.role==='hr'?'HR':staff.role==='demo'?'DEMO':staff.title.split(' ')[0];
   sessionStorage.setItem('rs_session',JSON.stringify({type:'admin',name:staff.name,role:staff.role,ts:Date.now()}));
   document.getElementById('screen-landing').classList.remove('active');
   document.getElementById('screen-admin').classList.add('active');
   buildMgrGuide();buildHbRef();
   loadEmployeeFolders(); // pre-load profile cache so supervisor filters work immediately
   loadDashboard();loadRequests();loadCallOuts();loadFlags();loadOnboarding();renderCalendar();
-  loadTimesheets();loadVehicleRecords();
+  loadTimesheets();loadVehicleRecords();loadIncidents();loadMemos();
 }
 function adminLogout(){
   sessionStorage.removeItem('rs_session');
@@ -1177,13 +1449,21 @@ function showSection(id){
   if(id==='timeoff')loadMyRequests();
   if(id==='timesheet')loadMyTimesheets();
   if(id==='vehicle')loadMyVehicleReports();
+  if(id==='incident'){buildIncidentForm();loadMyIncidents();}
 }
 function showAdmin(id){
   document.querySelectorAll('.admin-section').forEach(el=>el.style.display='none');
   document.querySelectorAll('#screen-admin .nav-item').forEach(el=>el.classList.remove('active'));
   document.getElementById('section-adm-'+id).style.display='block';
   document.getElementById('nav-adm-'+id).classList.add('active');
-  if(id==='employee-folders')loadEmployeeFolders();
+  if(id==='employee-folders'){
+    // Always return to list view, never re-open a detail view
+    document.getElementById('emp-folder-detail-view').style.display='none';
+    document.getElementById('emp-folder-list-view').style.display='block';
+    loadEmployeeFolders();
+  }
+  if(id==='incidents')loadIncidents();
+  if(id==='memos')loadMemos();
   // Keep profile cache fresh when navigating to sections that use it for filtering
   if(id==='requests'||id==='callouts')if(allProfilesCache.length===0)loadEmployeeFolders();
 }
@@ -1724,6 +2004,315 @@ async function notifyCompletion(){
   try{await emailjs.send(EMAILJS_SERVICE_ID,'timeoff_submission',{employee_name:user.name,employee_email:user.email,county:user.county,request_type:'ONBOARDING COMPLETE',start_date:new Date().toLocaleDateString(),end_date:'',time_detail:'All policies signed.',reason:user.name+' has completed all onboarding acknowledgments.',portal_url:PORTAL_URL,to_email:getSupervisorEmail(user.email)});}catch(e){console.log(e);}
 }
 
+// ── MEMOS ──
+let allMemosCache=[];
+async function loadMemos(){
+  try{
+    const {data}=await db.from('memos').select('*').order('created_at',{ascending:false});
+    allMemosCache=data||[];
+    const unread=allMemosCache.filter(m=>m.is_active).length;
+    const badge=document.getElementById('badge-memos');
+    if(badge)badge.textContent=unread||'0';
+    renderAdminMemoList();
+  }catch(e){console.log('Memos:',e);}
+}
+function renderAdminMemoList(){
+  const el=document.getElementById('memo-admin-list');
+  if(!el)return;
+  if(!allMemosCache.length){el.innerHTML='<p style="color:#888;font-size:13px;">No memos sent yet.</p>';return;}
+  el.innerHTML=allMemosCache.map(m=>{
+    const dt=new Date(m.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    const readCount=(m.read_by||[]).length;
+    const urgentBadge=m.priority==='urgent'?'<span style="background:#fdecea;color:var(--red);font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:6px;">🔴 URGENT</span>':'';
+    return `<div class="card" style="margin-bottom:12px;${!m.is_active?'opacity:.6;':''}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+        <div><div style="font-size:15px;font-weight:700;color:var(--navy);">${m.subject}${urgentBadge}</div>
+        <div style="font-size:11px;color:#888;margin-top:2px;">Sent by ${m.created_by} · ${dt} · Audience: ${m.audience==='all'?'All Employees':m.audience+"'s Team"}</div></div>
+        <div style="display:flex;gap:6px;flex-shrink:0;">
+          ${m.is_active?`<button class="btn btn-sm" style="background:#f0f0f0;color:#555;" onclick="archiveMemo(${m.id})">Archive</button>`:'<span style="font-size:11px;color:#aaa;">Archived</span>'}
+        </div>
+      </div>
+      <div style="font-size:13px;color:#555;margin-bottom:10px;white-space:pre-wrap;">${m.body}</div>
+      <div style="font-size:12px;color:#888;">✅ Read by <strong>${readCount}</strong> employee(s)
+        ${readCount>0?`<span style="margin-left:8px;color:#aaa;">${(m.read_by||[]).join(', ')}</span>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+async function createMemo(){
+  const subject=document.getElementById('memo-subject').value.trim();
+  const body=document.getElementById('memo-body').value.trim();
+  const audience=document.getElementById('memo-audience').value;
+  const priority=document.getElementById('memo-priority').value;
+  if(!subject||!body){alert('Subject and message are required.');return;}
+  try{
+    const {error}=await db.from('memos').insert([{
+      subject,body,audience,priority,
+      created_by:adminName,created_at:new Date().toISOString(),
+      is_active:true,read_by:[]
+    }]);
+    if(error)throw error;
+    document.getElementById('memo-subject').value='';
+    document.getElementById('memo-body').value='';
+    document.getElementById('memo-audience').value='all';
+    document.getElementById('memo-priority').value='normal';
+    const msg=document.getElementById('memo-send-msg');msg.style.display='inline';setTimeout(()=>msg.style.display='none',3000);
+    loadMemos();
+  }catch(e){alert('Error creating memo:\n\n'+(e.message||e.details||JSON.stringify(e)));}
+}
+async function archiveMemo(id){
+  if(!confirm('Archive this memo? Employees will no longer see it.'))return;
+  await db.from('memos').update({is_active:false}).eq('id',id);
+  loadMemos();
+}
+async function loadEmployeeMemos(){
+  if(!user)return;
+  try{
+    const {data}=await db.from('memos').select('*').eq('is_active',true).order('created_at',{ascending:false});
+    if(!data||!data.length){
+      const wrap=document.getElementById('emp-memos-wrap');
+      if(wrap)wrap.style.display='none';
+      return;
+    }
+    // Filter by audience
+    const relevant=data.filter(m=>{
+      if(m.audience==='all')return true;
+      const profile=allProfilesCache.find(p=>p.employee_email===user.email);
+      return profile&&profile.assigned_supervisor===m.audience;
+    });
+    // Filter to unread
+    const unread=relevant.filter(m=>!(m.read_by||[]).includes(user.name));
+    const wrap=document.getElementById('emp-memos-wrap');
+    const list=document.getElementById('emp-memos-list');
+    if(!wrap||!list)return;
+    if(!unread.length){wrap.style.display='none';return;}
+    wrap.style.display='block';
+    list.innerHTML=unread.map(m=>{
+      const urgentBadge=m.priority==='urgent'?'<span style="background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:6px;">🔴 URGENT</span>':'';
+      const dt=new Date(m.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+      return `<div style="border:1px solid #e0d0f5;border-radius:10px;padding:16px;margin-bottom:10px;background:#faf5ff;">
+        <div style="font-size:14px;font-weight:700;color:#5b21b6;margin-bottom:4px;">${m.subject}${urgentBadge}</div>
+        <div style="font-size:11px;color:#888;margin-bottom:10px;">From ${m.created_by} · ${dt}</div>
+        <div style="font-size:13px;color:#444;margin-bottom:14px;white-space:pre-wrap;">${m.body}</div>
+        <button onclick="acknowledgeMemo(${m.id},this)" style="background:#5b21b6;color:#fff;border:none;padding:8px 18px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">✓ I have read and understood this memo</button>
+      </div>`;
+    }).join('');
+  }catch(e){console.log('Employee memos:',e);}
+}
+async function acknowledgeMemo(id,btn){
+  btn.disabled=true;btn.textContent='Acknowledging...';
+  try{
+    const memo=await db.from('memos').select('read_by').eq('id',id).single();
+    const existing=memo.data?.read_by||[];
+    if(!existing.includes(user.name)){
+      await db.from('memos').update({read_by:[...existing,user.name]}).eq('id',id);
+    }
+    // Remove this memo card
+    btn.closest('div[style*="faf5ff"]').remove();
+    // Re-check if any unread remain
+    const remaining=document.querySelectorAll('#emp-memos-list div[style*="faf5ff"]');
+    if(!remaining.length){
+      const wrap=document.getElementById('emp-memos-wrap');
+      if(wrap)wrap.style.display='none';
+    }
+  }catch(e){btn.disabled=false;btn.textContent='✓ I have read and understood this memo';alert('Error: '+e.message);}
+}
+
+// ── INCIDENT REPORTS ──
+let allIncidentsCache=[];
+const IR_TRIP_CHECKS=['On-time Pickup','On-time Drop-off','Multi-loaded Trip','Attendant/Escort Present','Service Animal Present','Assistive Mobility Device'];
+const IR_NATURE_CHECKS=['Loading Member','Unloading Member','Wheelchair Securement','Scooter Securement','Other Mobility Device Securement','Slip/Trip/Fall in Vehicle','Slip/Trip/Fall Outside Vehicle','Exiting Facility or Residence','Driver Injury','Attendant Injury','Member Conduct/Misconduct','Service Animal Injury','Struck by Other Vehicle','Driver Struck Other Vehicle','Driver Backing','Harsh Braking','Damage to Property','Injury to Member of Public','Blood/OPIM Exposure'];
+
+function toggleMemberSection(){
+  const cb=document.getElementById('ir-members-involved');
+  const section=document.getElementById('ir-member-section');
+  const label=document.getElementById('ir-members-toggle-label');
+  if(cb&&section){
+    section.style.display=cb.checked?'block':'none';
+    if(label)label.style.borderColor=cb.checked?'var(--red)':'var(--border)';
+  }
+}
+function buildIncidentForm(){
+  const tripEl=document.getElementById('ir-trip-checkboxes');
+  const natureEl=document.getElementById('ir-nature-checkboxes');
+  if(tripEl)tripEl.innerHTML=IR_TRIP_CHECKS.map(l=>`<label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;cursor:pointer;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:#fff;"><input type="checkbox" class="ir-trip-cb" value="${l}" style="accent-color:var(--navy);width:16px;height:16px;"> ${l}</label>`).join('');
+  if(natureEl)natureEl.innerHTML=IR_NATURE_CHECKS.map(l=>`<label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;padding:7px 10px;border:1px solid var(--border);border-radius:6px;background:#fff;"><input type="checkbox" class="ir-nature-cb" value="${l}" style="accent-color:var(--red);width:14px;height:14px;"> ${l}</label>`).join('');
+}
+async function submitIncidentReport(){
+  const date=document.getElementById('ir-date').value;
+  const location=document.getElementById('ir-location').value.trim();
+  const sequence=document.getElementById('ir-sequence').value.trim();
+  const statement=document.getElementById('ir-driver-statement').value.trim();
+  if(!date||!location||!sequence||!statement){alert('Please fill in all required fields: Date, Location, Sequence of Events, and Driver Statement.');return;}
+  const btn=document.getElementById('ir-submit-btn');
+  btn.disabled=true;btn.textContent='Submitting...';
+  const nature=Array.from(document.querySelectorAll('.ir-nature-cb:checked')).map(c=>c.value);
+  const tripChecks=Array.from(document.querySelectorAll('.ir-trip-cb:checked')).map(c=>c.value);
+  const profile=allProfilesCache.find(p=>p.employee_email===user.email);
+  const report={
+    submitted_at:new Date().toISOString(),
+    employee_name:user.name,employee_email:user.email,county:user.county,
+    assigned_supervisor:profile?.assigned_supervisor||null,
+    incident_date:date,
+    incident_time:document.getElementById('ir-time').value||null,
+    location,
+    vehicle_id:document.getElementById('ir-vehicle').value.trim()||null,
+    nature_of_incident:nature,
+    nature_other:document.getElementById('ir-nature-other').value.trim()||null,
+    member_name:document.getElementById('ir-member-name').value.trim()||null,
+    modivcare_trip_number:document.getElementById('ir-trip-num').value.trim()||null,
+    multi_loaded:tripChecks.includes('Multi-loaded Trip'),
+    attendant_present:tripChecks.includes('Attendant/Escort Present'),
+    service_animal:tripChecks.includes('Service Animal Present'),
+    assistive_device:tripChecks.includes('Assistive Mobility Device'),
+    assistive_device_desc:document.getElementById('ir-device-desc').value.trim()||null,
+    on_time_pickup:tripChecks.includes('On-time Pickup'),
+    weather_conditions:document.getElementById('ir-weather').value.trim()||null,
+    injury_description:document.getElementById('ir-injuries').value.trim()||null,
+    member_conduct_desc:document.getElementById('ir-conduct-desc').value.trim()||null,
+    medical_treatment_offered:document.getElementById('ir-member-medical').value==='Yes',
+    medical_transport_details:document.getElementById('ir-member-transport').value.trim()||null,
+    witness_name:document.getElementById('ir-witnesses').value.trim()||null,
+    law_enforcement_called:document.getElementById('ir-law-enforcement').value==='Yes',
+    police_report_number:document.getElementById('ir-police-report').value.trim()||null,
+    driver_statement:statement,
+    post_incident_action:document.getElementById('ir-post-action').value||null,
+    status:'Open',
+    updated_at:new Date().toISOString()
+  };
+  try{
+    await db.from('incident_reports').insert([report]);
+    const msg=document.getElementById('ir-msg');msg.style.display='inline';
+    setTimeout(()=>msg.style.display='none',4000);
+    // Reset form
+    ['ir-date','ir-time','ir-location','ir-vehicle','ir-shift-start','ir-trips-prior','ir-other-employees','ir-witnesses','ir-member-name','ir-trip-num','ir-device-desc','ir-weather','ir-injuries','ir-conduct-desc','ir-unsafe-conditions','ir-medical-facility','ir-member-transport','ir-police-report','ir-driver-statement','ir-prevention'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    document.querySelectorAll('.ir-nature-cb,.ir-trip-cb').forEach(cb=>cb.checked=false);
+    const memCb=document.getElementById('ir-members-involved');
+    if(memCb){memCb.checked=false;toggleMemberSection();}
+    ['ir-medical-sought','ir-member-medical','ir-law-enforcement','ir-lost-time','ir-post-action'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    loadMyIncidents();
+  }catch(e){alert('Error submitting report: '+e.message);}
+  btn.disabled=false;btn.innerHTML='🚨 Submit Incident Report';
+}
+async function loadMyIncidents(){
+  const el=document.getElementById('my-incidents-list');
+  if(!el||!user)return;
+  try{
+    const {data}=await db.from('incident_reports').select('id,incident_date,location,nature_of_incident,status,submitted_at').eq('employee_email',user.email).order('submitted_at',{ascending:false});
+    if(!data||data.length===0){el.innerHTML='<p style="color:#888;font-size:13px;">No incident reports submitted yet.</p>';return;}
+    el.innerHTML=data.map(r=>{
+      const dt=new Date(r.submitted_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+      const statusColor=r.status==='Open'?'var(--red)':r.status==='Under Review'?'var(--warn)':'var(--success)';
+      const nature=(r.nature_of_incident||[]).slice(0,2).join(', ')+(r.nature_of_incident?.length>2?'...':'');
+      return `<div style="padding:10px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-size:13px;">
+        <div><strong>${r.incident_date}</strong> — ${r.location}<br><span style="font-size:11px;color:#888;">${nature||'No type selected'}</span></div>
+        <div style="display:flex;align-items:center;gap:10px;"><span style="font-size:11px;color:${statusColor};font-weight:700;">${r.status}</span><span style="font-size:11px;color:#aaa;">${dt}</span></div>
+      </div>`;
+    }).join('');
+  }catch(e){if(el)el.innerHTML='<p style="color:#888;font-size:13px;">Unable to load incident reports.</p>';}
+}
+async function loadIncidents(){
+  const {data}=await db.from('incident_reports').select('*').order('submitted_at',{ascending:false});
+  allIncidentsCache=data||[];
+  const openCount=allIncidentsCache.filter(r=>r.status==='Open').length;
+  const badge=document.getElementById('badge-incidents');
+  if(badge)badge.textContent=openCount||'0';
+  // Dashboard flag
+  const wrap=document.getElementById('dash-open-incidents-wrap');
+  const dashEl=document.getElementById('dash-open-incidents');
+  if(wrap&&dashEl){
+    if(openCount>0){
+      wrap.style.display='block';
+      dashEl.innerHTML=allIncidentsCache.filter(r=>r.status==='Open').slice(0,5).map(r=>{
+        const hrs=Math.round((Date.now()-new Date(r.submitted_at).getTime())/3600000);
+        const urgent=hrs>=24;
+        return `<div style="padding:8px 0;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center;font-size:13px;">
+          <div><strong>${r.employee_name}</strong> — ${r.incident_date} — ${r.location}</div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            ${urgent?'<span style="background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;">⚠️ OVERDUE</span>':'<span style="font-size:11px;color:#888;">${hrs}h ago</span>'}
+            <button class="btn btn-sm" style="background:var(--red);color:#fff;" onclick="showAdmin('incidents')">Review →</button>
+          </div>
+        </div>`;
+      }).join('');
+    }else{wrap.style.display='none';}
+  }
+  renderIncidentTable();
+}
+function renderIncidentTable(){
+  const el=document.getElementById('incident-table');
+  if(!el)return;
+  const search=(document.getElementById('ir-admin-search')?.value||'').toLowerCase();
+  const statusF=document.getElementById('ir-status-filter')?.value||'';
+  const supF=document.getElementById('ir-supervisor-filter')?.value||'';
+  let data=allIncidentsCache;
+  if(search)data=data.filter(r=>(r.employee_name||'').toLowerCase().includes(search));
+  if(statusF)data=data.filter(r=>r.status===statusF);
+  if(supF)data=data.filter(r=>r.assigned_supervisor===supF);
+  if(!data.length){el.innerHTML='<p style="color:#888;font-size:13px;padding:12px 0;">No incident reports found.</p>';return;}
+  el.innerHTML='<div style="overflow-x:auto;"><table class="data-table"><thead><tr><th>Employee</th><th>County</th><th>Date</th><th>Location</th><th>Nature</th><th>Supervisor</th><th>Submitted</th><th>Status</th><th>Actions</th></tr></thead><tbody>'+
+    data.map(r=>{
+      const submitted=r.submitted_at?new Date(r.submitted_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'—';
+      const hrs=Math.round((Date.now()-new Date(r.submitted_at).getTime())/3600000);
+      const statusBadge=r.status==='Open'?`<span class="badge badge-flag">${r.status}${hrs>=24?' ⚠️':''}</span>`:r.status==='Under Review'?`<span class="badge badge-warning">${r.status}</span>`:`<span class="badge badge-approved">${r.status}</span>`;
+      const nature=(r.nature_of_incident||[]).slice(0,2).join(', ')+(r.nature_of_incident?.length>2?' +more':'');
+      return `<tr><td><strong>${r.employee_name}</strong></td><td>${r.county||'—'}</td><td>${r.incident_date}</td><td style="max-width:140px;font-size:12px;">${r.location||'—'}</td><td style="font-size:11px;max-width:160px;">${nature||'—'}</td><td style="font-size:12px;">${r.assigned_supervisor||'—'}</td><td style="font-size:12px;color:#888;">${submitted}</td><td>${statusBadge}</td><td style="white-space:nowrap;"><button class="btn btn-sm" style="background:var(--light);color:var(--navy);" onclick="openIncidentModal(${r.id})">📋 Review</button></td></tr>`;
+    }).join('')+
+    '</tbody></table></div>';
+}
+function toggleAdminIncidentForm(){
+  const f=document.getElementById('admin-ir-form');
+  const icon=document.getElementById('admin-ir-toggle-icon');
+  if(f.style.display==='none'){f.style.display='block';icon.textContent='▲ collapse';}
+  else{f.style.display='none';icon.textContent='▼ expand';}
+}
+async function submitAdminIncident(){
+  const name=document.getElementById('adm-ir-employee').value.trim();
+  const date=document.getElementById('adm-ir-date').value;
+  const location=document.getElementById('adm-ir-location').value.trim();
+  const desc=document.getElementById('adm-ir-description').value.trim();
+  if(!name||!date||!location||!desc){alert('Please fill in Employee Name, Date, Location, and Description.');return;}
+  await db.from('incident_reports').insert([{
+    employee_name:name,county:document.getElementById('adm-ir-county').value,
+    incident_date:date,incident_time:document.getElementById('adm-ir-time').value||null,
+    location,nature_of_incident:[document.getElementById('adm-ir-nature').value].filter(Boolean),
+    driver_statement:desc,supervisor_notes:document.getElementById('adm-ir-notes').value.trim()||null,
+    assigned_supervisor:adminName,status:'Open',submitted_at:new Date().toISOString(),updated_at:new Date().toISOString()
+  }]);
+  ['adm-ir-employee','adm-ir-date','adm-ir-time','adm-ir-location','adm-ir-nature','adm-ir-description','adm-ir-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const msg=document.getElementById('adm-ir-msg');msg.style.display='inline';setTimeout(()=>msg.style.display='none',3000);
+  loadIncidents();
+}
+function openIncidentModal(id){
+  const r=allIncidentsCache.find(x=>x.id===id);
+  if(!r)return;
+  document.getElementById('irm-id').value=id;
+  document.getElementById('irm-status').value=r.status||'Open';
+  document.getElementById('irm-supervisor-notes').value=r.supervisor_notes||'';
+  const nature=(r.nature_of_incident||[]).join(', ')||'—';
+  document.getElementById('irm-body').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+      <div><div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Employee</div><div style="font-size:14px;font-weight:700;">${r.employee_name}</div><div style="font-size:12px;color:#888;">${r.county||''} ${r.assigned_supervisor?'· Supervisor: '+r.assigned_supervisor:''}</div></div>
+      <div><div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Incident</div><div style="font-size:14px;font-weight:700;">${r.incident_date}${r.incident_time?' at '+r.incident_time:''}</div><div style="font-size:12px;color:#888;">${r.location||'—'}</div></div>
+    </div>
+    <div style="margin-bottom:12px;"><div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Nature of Incident</div><div style="font-size:13px;">${nature}</div>${r.nature_other?`<div style="font-size:12px;color:#888;">Other: ${r.nature_other}</div>`:''}</div>
+    ${r.member_name?`<div style="margin-bottom:12px;"><div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Member</div><div style="font-size:13px;">${r.member_name}${r.modivcare_trip_number?' · Trip #'+r.modivcare_trip_number:''}</div></div>`:''}
+    <div style="margin-bottom:12px;"><div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Sequence of Events</div><div style="font-size:13px;white-space:pre-wrap;background:var(--gray);padding:10px;border-radius:6px;">${r.driver_statement||'—'}</div></div>
+    ${r.injury_description?`<div style="margin-bottom:12px;"><div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Injuries</div><div style="font-size:13px;">${r.injury_description}</div></div>`:''}
+    ${r.law_enforcement_called?`<div style="margin-bottom:12px;"><div style="font-size:11px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">⚠️ Law Enforcement Called</div><div style="font-size:13px;">${r.police_report_number||'No report number provided'}</div></div>`:''}
+    ${r.post_incident_action?`<div style="margin-bottom:12px;"><div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Post-Incident Action</div><div style="font-size:13px;">${r.post_incident_action}</div></div>`:''}
+    <div style="background:#fff3cd;border-left:3px solid var(--warn);padding:10px 14px;border-radius:0 6px 6px 0;font-size:12px;margin-bottom:4px;">📋 Reminder: Ensure the Modivcare Incident Report has been completed and submitted to MDVC within 24 hours of the incident date.</div>
+  `;
+  document.getElementById('incident-review-modal').classList.add('open');
+}
+async function saveIncidentReview(){
+  const id=document.getElementById('irm-id').value;
+  const status=document.getElementById('irm-status').value;
+  const notes=document.getElementById('irm-supervisor-notes').value.trim();
+  await db.from('incident_reports').update({status,supervisor_notes:notes,reviewed_by:adminName,reviewed_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq('id',id);
+  closeModal('incident-review-modal');
+  loadIncidents();
+}
+
 // ── EMPLOYEE PROFILES ──
 let allProfilesCache=[];
 let currentProfileId=null;
@@ -1766,6 +2355,7 @@ function statusBadgeHtml(status){
 function renderEmployeeFolderGrid(profiles){
   const el=document.getElementById('emp-folder-grid');
   if(!el)return;
+  const isDemo=adminStaff?.role==='demo';
   if(!profiles||profiles.length===0){
     el.innerHTML=`<div style="text-align:center;padding:40px;color:#888;">
       <div style="font-size:40px;margin-bottom:12px;">🗂️</div>
@@ -1783,16 +2373,19 @@ function renderEmployeeFolderGrid(profiles){
   });
   const sortedCounties=Object.keys(byCounty).sort((a,b)=>a==='No County Assigned'?1:b==='No County Assigned'?-1:a.localeCompare(b));
   el.innerHTML=sortedCounties.map(county=>{
-    const cards=byCounty[county].map(p=>{
-      const initials=(p.employee_name||'?').split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+    const cards=byCounty[county].map((p,idx)=>{
+      const displayName=isDemo?`Employee ${idx+1}`:(p.employee_name||'Unknown');
+      const displayCounty=isDemo?county:(p.county||'No county');
+      const displayPosition=isDemo?'Driver':(p.position||'No position');
+      const initials=isDemo?'E'+(idx+1):((p.employee_name||'?').split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase());
       const hireDate=p.hire_date?new Date(p.hire_date+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'';
-      const supLabel=p.assigned_supervisor?`<span style="font-size:11px;color:#888;">👤 ${p.assigned_supervisor}</span>`:'';
+      const supLabel=(!isDemo&&p.assigned_supervisor)?`<span style="font-size:11px;color:#888;">👤 ${p.assigned_supervisor}</span>`:'';
       return `<div class="folder-card" onclick="openProfileDetail(${p.id})">
         <div style="display:flex;align-items:center;gap:14px;">
           <div style="width:44px;height:44px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff;flex-shrink:0;">${initials}</div>
           <div style="flex:1;min-width:0;">
-            <div class="folder-card-name">${p.employee_name}</div>
-            <div class="folder-card-meta">${p.position||'No position'}${hireDate?' · Hired '+hireDate:''}</div>
+            <div class="folder-card-name">${displayName}</div>
+            <div class="folder-card-meta">${displayPosition}${hireDate&&!isDemo?' · Hired '+hireDate:''}</div>
             <div style="margin-top:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">${statusBadgeHtml(p.employment_status)}${supLabel}</div>
           </div>
         </div>
@@ -1808,11 +2401,13 @@ async function openProfileDetail(id){
   const p=allProfilesCache.find(x=>x.id===id);
   if(!p)return;
   currentProfileId=id;
-  // Render header
-  const initials=(p.employee_name||'?').split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+  const isDemo=adminStaff?.role==='demo';
+  const idx=allProfilesCache.indexOf(p);
+  const displayName=isDemo?`Employee ${idx+1}`:p.employee_name||'—';
+  const initials=isDemo?'E'+(idx+1):((p.employee_name||'?').split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase());
   document.getElementById('emp-profile-avatar').textContent=initials;
-  document.getElementById('emp-profile-name').textContent=p.employee_name||'—';
-  document.getElementById('emp-profile-meta').textContent=(p.position||'Position not set')+' · '+(p.county||'No county')+(p.employee_email?' · '+p.employee_email:'');
+  document.getElementById('emp-profile-name').textContent=displayName;
+  document.getElementById('emp-profile-meta').textContent=(p.position||'Position not set')+' · '+(p.county||'No county')+((!isDemo&&p.employee_email)?' · '+p.employee_email:'');
   const badges=[];
   badges.push(statusBadgeHtml(p.employment_status));
   if(p.hire_date)badges.push('<span class="profile-badge">Hired '+new Date(p.hire_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+'</span>');
@@ -2055,20 +2650,21 @@ async function saveProfile(){
   btn.disabled=true;btn.textContent='Saving...';
   try{
     if(id){
-      await db.from('employee_profiles').update(profile).eq('id',id);
+      const {error}=await db.from('employee_profiles').update(profile).eq('id',id);
+      if(error)throw error;
     }else{
       profile.created_by=adminName;
       profile.created_at=new Date().toISOString();
-      await db.from('employee_profiles').insert([profile]);
+      const {error}=await db.from('employee_profiles').insert([profile]);
+      if(error)throw error;
     }
     closeModal('create-profile-modal');
     await loadEmployeeFolders();
     if(id){
-      // refresh detail view
       const updated=allProfilesCache.find(x=>x.id===parseInt(id));
       if(updated)openProfileDetail(parseInt(id));
     }
-  }catch(e){alert('Error saving profile: '+e.message);}
+  }catch(e){alert('Error saving profile:\n\n'+(e.message||e.details||JSON.stringify(e)));}
   btn.disabled=false;btn.textContent='Save Profile';
 }
 
@@ -2225,11 +2821,11 @@ function generateOnboardingPacket(){
   <div class="step"><div class="step-num">2</div><div>Read the <strong>Employee Handbook</strong> — read all sections, then sign at the end.</div></div>
 
   <h2>Step 4 — Sign Your Policy Acknowledgments</h2>
-  <p>You will be asked to read and electronically sign <strong>7 company policies</strong>. For each one:</p>
+  <p>You will be asked to read and electronically sign <strong>12 company policies</strong>. For each one:</p>
   <div class="step"><div class="step-num">1</div><div>Click <strong>"Read &amp; Sign"</strong> next to the policy name.</div></div>
   <div class="step"><div class="step-num">2</div><div>Read the full policy by scrolling to the bottom.</div></div>
   <div class="step"><div class="step-num">3</div><div>Check the acknowledgment box, type your full legal name, and click <strong>"Sign &amp; Acknowledge"</strong>.</div></div>
-  <div class="step"><div class="step-num">4</div><div>Repeat for all 7 policies. When complete, your dashboard will show 100% and a completion certificate will be available.</div></div>
+  <div class="step"><div class="step-num">4</div><div>Repeat for all 12 policies. When complete, your dashboard will show 100% and a completion certificate will be available.</div></div>
 
   <div class="callout">
     <strong>Important</strong>
@@ -2316,7 +2912,7 @@ function generateOnboardingPacket(){
   <h2>Bring With You</h2>
   <ul class="checklist">
     <li><div class="check-box"></div><div><strong>Government-issued photo ID</strong> (driver's license, passport, or state ID)</div></li>
-    <li><div class="check-box"></div><div><strong>Social Security card</strong> or documentation for I-9 verification</div></li>
+    <li><div class="check-box"></div><div><strong>Government-issued photo ID</strong> (driver's license or passport) for I-9 verification</div></li>
     <li><div class="check-box"></div><div><strong>Voided check</strong> for direct deposit setup (or savings account info)</div></li>
     <li><div class="check-box"></div><div><strong>Completed HR forms</strong> — W-4, W-4ME, Direct Deposit, Emergency Contact, Driver Info (or complete in office)</div></li>
     <li><div class="check-box"></div><div><strong>Proof of valid Maine driver's license</strong></div></li>
@@ -2371,13 +2967,26 @@ const MGR_SECTIONS=[
   {title:'Sec 7: Quick Ref',content:`<h1>Section 7: Quick Reference</h1><table><tr><td><strong>Staff Portal URL</strong></td><td>https://ridesourcecalendar-hub.github.io/ridesource-onboarding/index.html</td></tr><tr><td><strong>Supabase Project</strong></td><td>iasphxpahlmjwkapyxrs</td></tr></table><h2>Portal Login Passwords</h2><table><tr><th>Name</th><th>Title</th><th>Password</th><th>Email</th></tr><tr><td><strong>Tiffany Gallagher</strong></td><td>Regional Operations Manager</td><td>RideSource2026!</td><td>tiffanyb@ridesourcemaine.com</td></tr><tr><td><strong>Nicole Geel</strong></td><td>Operations Manager</td><td>Nicole2026!</td><td>nicolegeel@ridesourcemaine.com</td></tr><tr><td><strong>Robin Lausier</strong></td><td>Human Resources Manager</td><td>Robin2026!</td><td>robinl@ridesourcemaine.com</td></tr></table>`}
 ];
 const HB_REF_SECTIONS=HANDBOOK_SECTIONS;
-function buildMgrGuide(){document.getElementById('mgr-tabs').innerHTML=MGR_SECTIONS.map((s,i)=>`<div class="doc-tab ${i===0?'active':''}" onclick="goMgrSection(${i})">${s.title}</div>`).join('');renderMgrSection(0);}
+function buildMgrGuide(){
+  // Section 7 Quick Ref is visible to Tiffany (admin) only
+  const sections=MGR_SECTIONS.filter((s,i)=>i<6||adminStaff?.role==='admin');
+  document.getElementById('mgr-tabs').innerHTML=sections.map((s,i)=>`<div class="doc-tab ${i===0?'active':''}" onclick="goMgrSection(${i})">${s.title}</div>`).join('');
+  renderMgrSection(0);
+}
 function buildHbRef(){document.getElementById('hb-ref-tabs').innerHTML=HB_REF_SECTIONS.map((s,i)=>`<div class="doc-tab ${i===0?'active':''}" onclick="goHbRefSection(${i})">${s.title}</div>`).join('');renderHbRefSection(0);}
-function renderMgrSection(i){mgrSection=i;document.getElementById('mgr-body').innerHTML=MGR_SECTIONS[i].content;document.querySelectorAll('#mgr-tabs .doc-tab').forEach((t,j)=>t.classList.toggle('active',i===j));}
-function renderHbRefSection(i){hbRefSection=i;document.getElementById('hb-ref-body').innerHTML=HB_REF_SECTIONS[i].content;document.querySelectorAll('#hb-ref-tabs .doc-tab').forEach((t,j)=>t.classList.toggle('active',i===j));}
+function renderMgrSection(i){
+  const sections=MGR_SECTIONS.filter((s,idx)=>idx<6||adminStaff?.role==='admin');
+  mgrSection=i;
+  document.getElementById('mgr-body').innerHTML=sections[i]?.content||'';
+  document.querySelectorAll('#mgr-tabs .doc-tab').forEach((t,j)=>t.classList.toggle('active',i===j));
+}
 function goMgrSection(i){renderMgrSection(i);}
+function changeMgrSection(dir){
+  const sections=MGR_SECTIONS.filter((s,idx)=>idx<6||adminStaff?.role==='admin');
+  const n=mgrSection+dir;if(n>=0&&n<sections.length)renderMgrSection(n);
+}
+function renderHbRefSection(i){hbRefSection=i;document.getElementById('hb-ref-body').innerHTML=HB_REF_SECTIONS[i].content;document.querySelectorAll('#hb-ref-tabs .doc-tab').forEach((t,j)=>t.classList.toggle('active',i===j));}
 function goHbRefSection(i){renderHbRefSection(i);}
-function changeMgrSection(dir){const n=mgrSection+dir;if(n>=0&&n<MGR_SECTIONS.length)renderMgrSection(n);}
 function changeHbRefSection(dir){const n=hbRefSection+dir;if(n>=0&&n<HB_REF_SECTIONS.length)renderHbRefSection(n);}
 
 // ADMIN DASHBOARD
@@ -2610,6 +3219,44 @@ function printWarning(){
 
 // TIME OFF REQUESTS ADMIN
 let currentReqTab='PENDING';
+function toggleAdminTimeOffForm(){
+  const f=document.getElementById('admin-tor-form');
+  const icon=document.getElementById('admin-tor-toggle');
+  if(f.style.display==='none'){
+    f.style.display='block';icon.textContent='▲ collapse';
+    // Populate employee dropdown from profile cache
+    const sel=document.getElementById('adm-tor-employee');
+    const current=sel.value;
+    sel.innerHTML='<option value="">Select employee...</option>'+
+      allProfilesCache.filter(p=>p.employment_status!=='Separated').sort((a,b)=>(a.employee_name||'').localeCompare(b.employee_name||'')).map(p=>`<option value="${p.employee_name}|${p.employee_email}|${p.county}">${p.employee_name}${p.county?' ('+p.county+')':''}</option>`).join('');
+    sel.value=current;
+  }else{f.style.display='none';icon.textContent='▼ expand';}
+}
+async function submitAdminTimeOff(){
+  const empVal=document.getElementById('adm-tor-employee').value;
+  const type=document.getElementById('adm-tor-type').value;
+  const start=document.getElementById('adm-tor-start').value;
+  if(!empVal||!type||!start){alert('Please select an employee, request type, and start date.');return;}
+  const [empName,empEmail,empCounty]=empVal.split('|');
+  const end=document.getElementById('adm-tor-end').value||start;
+  const reason=document.getElementById('adm-tor-reason').value.trim();
+  try{
+    const {error}=await db.from('time_off_requests').insert([{
+      employee_name:empName,employee_email:empEmail,county:empCounty,
+      request_type:type,start_date:start,end_date:end,reason,
+      status:'PENDING',submitted_at:new Date().toISOString(),
+      time_detail:'Submitted by supervisor: '+adminName
+    }]);
+    if(error)throw error;
+    document.getElementById('adm-tor-employee').value='';
+    document.getElementById('adm-tor-type').value='';
+    document.getElementById('adm-tor-start').value='';
+    document.getElementById('adm-tor-end').value='';
+    document.getElementById('adm-tor-reason').value='';
+    const msg=document.getElementById('adm-tor-msg');msg.style.display='inline';setTimeout(()=>msg.style.display='none',3000);
+    loadRequests();loadDashboard();
+  }catch(e){alert('Error submitting request:\n\n'+(e.message||e.details||JSON.stringify(e)));}
+}
 function setReqTab(tab){
   currentReqTab=tab;
   ['PENDING','APPROVED','DENIED','PTO','ALL'].forEach(t=>{
@@ -2748,10 +3395,13 @@ async function logCallOut(){
   const callType=document.getElementById('co-call-type').value;
   const notes=document.getElementById('co-notes').value;
   if(!name||!county||!date){alert('Please fill in employee name, county, and date.');return;}
-  await db.from('call_out_log').insert([{employee_name:name,county,callout_date:date,reason,call_type:callType,notes,logged_by:adminName,logged_at:new Date().toISOString()}]);
-  document.getElementById('co-name').value='';document.getElementById('co-date').value='';document.getElementById('co-notes').value='';
-  const msg=document.getElementById('co-msg');msg.style.display='inline';setTimeout(()=>msg.style.display='none',3000);
-  loadCallOuts();loadFlags();loadDashboard();
+  try{
+    const {error}=await db.from('call_out_log').insert([{employee_name:name,county,callout_date:date,reason,call_type:callType,notes,logged_by:adminName,logged_at:new Date().toISOString()}]);
+    if(error)throw error;
+    document.getElementById('co-name').value='';document.getElementById('co-date').value='';document.getElementById('co-notes').value='';
+    const msg=document.getElementById('co-msg');msg.style.display='inline';setTimeout(()=>msg.style.display='none',3000);
+    loadCallOuts();loadFlags();loadDashboard();
+  }catch(e){alert('Error logging call-out:\n\n'+(e.message||e.details||JSON.stringify(e)));}
 }
 async function deleteCallOut(id){
   if(!confirm('Delete this call-out entry?'))return;
@@ -4149,6 +4799,36 @@ async function buildDocx(templateId){
     </div>
     <div style="display:flex;justify-content:flex-end;margin-top:16px;">
       <button class="btn btn-secondary btn-sm" onclick="closeModal('delete-profile-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="incident-review-modal">
+  <div class="modal" style="max-width:700px;">
+    <button class="modal-close" onclick="closeModal('incident-review-modal')">✕</button>
+    <h3 style="color:var(--red);margin-bottom:4px;">🚨 Incident Report Review</h3>
+    <p style="font-size:13px;color:#888;margin-bottom:16px;">Review the submitted report, add supervisor notes, and update the status.</p>
+    <input type="hidden" id="irm-id">
+    <div id="irm-body"></div>
+    <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:8px;">
+      <div class="form-row">
+        <div class="form-field">
+          <label>Status</label>
+          <select id="irm-status" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+            <option value="Open">Open</option>
+            <option value="Under Review">Under Review</option>
+            <option value="Closed">Closed</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-field">
+        <label>Supervisor Investigation Notes</label>
+        <textarea id="irm-supervisor-notes" placeholder="Direct cause, unsafe conditions, corrective actions taken..." style="min-height:80px;"></textarea>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;">
+      <button class="btn btn-secondary" onclick="closeModal('incident-review-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveIncidentReview()">💾 Save Review</button>
     </div>
   </div>
 </div>
