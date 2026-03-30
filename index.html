@@ -1212,29 +1212,47 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 
         <!-- Create Memo -->
         <div class="card" style="margin-bottom:20px;">
-          <div class="card-title">✏️ Create New Memo</div>
-          <div class="form-field"><label>Subject *</label><input type="text" id="memo-subject" placeholder="e.g. Updated Vehicle Inspection Procedures"></div>
-          <div class="form-field"><label>Message *</label><textarea id="memo-body" placeholder="Write your memo here. Employees will need to read and acknowledge this." style="min-height:120px;"></textarea></div>
-          <div class="form-row">
-            <div class="form-field"><label>Audience</label>
-              <select id="memo-audience" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
-                <option value="all">All Active Employees</option>
-                <option value="Tiffany Gallagher">Tiffany Gallagher's Team</option>
-                <option value="Nicole Geel">Nicole Geel's Team</option>
-                <option value="Robin Lausier">Robin Lausier's Team</option>
-              </select>
+          <div class="card-title" style="cursor:pointer;" onclick="toggleMemoForm()">✏️ Create New Memo <span id="memo-form-toggle" style="font-size:12px;color:#888;">▼ expand</span></div>
+          <div id="memo-create-form" style="display:none;margin-top:16px;">
+            <div class="form-field"><label>Subject *</label><input type="text" id="memo-subject" placeholder="e.g. Updated Vehicle Inspection Procedures"></div>
+            <div class="form-field"><label>Message *</label><textarea id="memo-body" placeholder="Write your memo here. Employees will need to read and acknowledge this." style="min-height:120px;"></textarea></div>
+            <div class="form-row">
+              <div class="form-field"><label>Audience</label>
+                <select id="memo-audience" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                  <option value="all">All Active Employees</option>
+                  <option value="Tiffany Gallagher">Tiffany Gallagher's Team</option>
+                  <option value="Nicole Geel">Nicole Geel's Team</option>
+                  <option value="Robin Lausier">Robin Lausier's Team</option>
+                </select>
+              </div>
+              <div class="form-field"><label>Priority</label>
+                <select id="memo-priority" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                  <option value="normal">Normal</option>
+                  <option value="urgent">🔴 Urgent</option>
+                </select>
+              </div>
             </div>
-            <div class="form-field"><label>Priority</label>
-              <select id="memo-priority" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
-                <option value="normal">Normal</option>
-                <option value="urgent">🔴 Urgent</option>
-              </select>
+            <div style="display:flex;gap:10px;align-items:center;">
+              <button class="btn btn-primary" onclick="createMemo()">📢 Send Memo</button>
+              <span id="memo-send-msg" style="font-size:13px;color:var(--success);display:none;">✓ Memo sent!</span>
             </div>
           </div>
-          <div style="display:flex;gap:10px;align-items:center;">
-            <button class="btn btn-primary" onclick="createMemo()">📢 Send Memo</button>
-            <span id="memo-send-msg" style="font-size:13px;color:var(--success);display:none;">✓ Memo sent!</span>
+        </div>
+
+        <!-- Filters & Tabs -->
+        <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap;">
+          <div style="display:flex;border-radius:8px;overflow:hidden;border:1px solid var(--border);">
+            <button id="memo-tab-active" onclick="setMemoTab('active')" style="padding:8px 18px;font-size:13px;font-weight:700;border:none;cursor:pointer;background:#5b21b6;color:#fff;">Active</button>
+            <button id="memo-tab-archived" onclick="setMemoTab('archived')" style="padding:8px 18px;font-size:13px;font-weight:700;border:none;cursor:pointer;background:#f0f0f0;color:#888;">Archived</button>
           </div>
+          <select id="memo-audience-filter" onchange="renderAdminMemoList()" style="padding:8px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:#fff;">
+            <option value="">All Audiences</option>
+            <option value="all">All Employees</option>
+            <option value="Tiffany Gallagher">Tiffany's Team</option>
+            <option value="Nicole Geel">Nicole's Team</option>
+            <option value="Robin Lausier">Robin's Team</option>
+          </select>
+          <input type="text" id="memo-search" placeholder="🔍 Search memos..." oninput="renderAdminMemoList()" style="padding:8px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;flex:1;min-width:160px;">
         </div>
 
         <!-- Memo List -->
@@ -2018,25 +2036,75 @@ async function loadMemos(){
     renderAdminMemoList();
   }catch(e){console.log('Memos:',e);}
 }
+let currentMemoTab='active';
+function setMemoTab(tab){
+  currentMemoTab=tab;
+  const active=document.getElementById('memo-tab-active');
+  const archived=document.getElementById('memo-tab-archived');
+  if(active&&archived){
+    active.style.background=tab==='active'?'#5b21b6':'#f0f0f0';
+    active.style.color=tab==='active'?'#fff':'#888';
+    archived.style.background=tab==='archived'?'#5b21b6':'#f0f0f0';
+    archived.style.color=tab==='archived'?'#fff':'#888';
+  }
+  renderAdminMemoList();
+}
+function toggleMemoForm(){
+  const f=document.getElementById('memo-create-form');
+  const icon=document.getElementById('memo-form-toggle');
+  if(f.style.display==='none'){f.style.display='block';icon.textContent='▲ collapse';}
+  else{f.style.display='none';icon.textContent='▼ expand';}
+}
+function toggleMemoCard(id){
+  const body=document.getElementById('memo-body-'+id);
+  const btn=document.getElementById('memo-collapse-btn-'+id);
+  if(!body)return;
+  const collapsed=body.style.display==='none';
+  body.style.display=collapsed?'block':'none';
+  if(btn)btn.textContent=collapsed?'▲ collapse':'▼ expand';
+}
 function renderAdminMemoList(){
   const el=document.getElementById('memo-admin-list');
   if(!el)return;
-  if(!allMemosCache.length){el.innerHTML='<p style="color:#888;font-size:13px;">No memos sent yet.</p>';return;}
-  el.innerHTML=allMemosCache.map(m=>{
+  const search=(document.getElementById('memo-search')?.value||'').toLowerCase();
+  const audienceF=document.getElementById('memo-audience-filter')?.value||'';
+  let filtered=allMemosCache.filter(m=>{
+    const matchTab=currentMemoTab==='active'?m.is_active:!m.is_active;
+    const matchSearch=!search||(m.subject||'').toLowerCase().includes(search)||(m.body||'').toLowerCase().includes(search);
+    const matchAudience=!audienceF||m.audience===audienceF;
+    return matchTab&&matchSearch&&matchAudience;
+  });
+  if(!filtered.length){
+    el.innerHTML=`<p style="color:#888;font-size:13px;">${currentMemoTab==='active'?'No active memos.':'No archived memos.'}</p>`;
+    return;
+  }
+  el.innerHTML=filtered.map(m=>{
     const dt=new Date(m.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
     const readCount=(m.read_by||[]).length;
     const urgentBadge=m.priority==='urgent'?'<span style="background:#fdecea;color:var(--red);font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:6px;">🔴 URGENT</span>':'';
-    return `<div class="card" style="margin-bottom:12px;${!m.is_active?'opacity:.6;':''}">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
-        <div><div style="font-size:15px;font-weight:700;color:var(--navy);">${m.subject}${urgentBadge}</div>
-        <div style="font-size:11px;color:#888;margin-top:2px;">Sent by ${m.created_by} · ${dt} · Audience: ${m.audience==='all'?'All Employees':m.audience+"'s Team"}</div></div>
-        <div style="display:flex;gap:6px;flex-shrink:0;">
-          ${m.is_active?`<button class="btn btn-sm" style="background:#f0f0f0;color:#555;" onclick="archiveMemo(${m.id})">Archive</button>`:'<span style="font-size:11px;color:#aaa;">Archived</span>'}
+    const audienceLabel=m.audience==='all'?'All Employees':m.audience+"'s Team";
+    const readBadgeColor=readCount>0?'var(--success)':'#aaa';
+    return `<div class="card" style="margin-bottom:10px;${!m.is_active?'border-color:#ddd;':''}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <div style="font-size:15px;font-weight:700;color:${m.is_active?'var(--navy)':'#aaa'};">${m.subject}</div>
+            ${urgentBadge}
+            <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:#ede9fe;color:#5b21b6;">${audienceLabel}</span>
+          </div>
+          <div style="font-size:11px;color:#aaa;margin-top:3px;">Sent by ${m.created_by} · ${dt}</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
+          <span style="font-size:12px;color:${readBadgeColor};font-weight:700;">✓ ${readCount} read</span>
+          <button id="memo-collapse-btn-${m.id}" onclick="toggleMemoCard(${m.id})" style="background:#f0f0f0;color:#555;border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;">▼ expand</button>
+          ${m.is_active?`<button class="btn btn-sm" style="background:#f0f0f0;color:#555;" onclick="archiveMemo(${m.id})">Archive</button>`:''}
         </div>
       </div>
-      <div style="font-size:13px;color:#555;margin-bottom:10px;white-space:pre-wrap;">${m.body}</div>
-      <div style="font-size:12px;color:#888;">✅ Read by <strong>${readCount}</strong> employee(s)
-        ${readCount>0?`<span style="margin-left:8px;color:#aaa;">${(m.read_by||[]).join(', ')}</span>`:''}
+      <div id="memo-body-${m.id}" style="display:none;margin-top:12px;">
+        <div style="font-size:13px;color:#555;white-space:pre-wrap;background:var(--gray);padding:12px;border-radius:8px;margin-bottom:10px;">${m.body}</div>
+        <div style="font-size:12px;color:#888;">
+          ${readCount>0?`<strong>Read by:</strong> ${(m.read_by||[]).join(', ')}`:'<em>No acknowledgments yet.</em>'}
+        </div>
       </div>
     </div>`;
   }).join('');
@@ -3276,6 +3344,7 @@ function setReqTab(tab){
 }
 function renderRequestsTable(){
   const el=document.getElementById('requests-table');
+  const isDemo=adminStaff?.role==='demo';
   const searchTerm=(document.getElementById('req-search')?.value||'').toLowerCase().trim();
   const supFilter=(document.getElementById('req-supervisor-filter')?.value||'');
   let filtered=allRequestsCache;
@@ -3293,7 +3362,8 @@ function renderRequestsTable(){
     el.innerHTML='<p style="color:#888;font-size:13px;padding:12px 0;">'+(labels[currentReqTab]||'No requests found.')+'</p>';return;
   }
   el.innerHTML='<div style="overflow-x:auto;"><table class="data-table"><thead><tr><th>Employee</th><th>County</th><th>Type</th><th>Date(s)</th><th>Detail</th><th>Reason</th><th>Submitted</th><th>Status</th><th>Actions</th></tr></thead><tbody>'+
-    filtered.map(r=>{
+    filtered.map((r,idx)=>{
+      const displayName=isDemo?`Employee ${idx+1}`:r.employee_name;
       const submitted=r.submitted_at?new Date(r.submitted_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'—';
       const badgeClass=r.status==='PTO_PENDING'?'pto_pending':r.status.toLowerCase();
       const badgeLabel=r.status==='PTO_PENDING'?'PTO PENDING':r.status;
@@ -3301,7 +3371,7 @@ function renderRequestsTable(){
       const actions=isPending
         ?`<button class="btn btn-green btn-sm" onclick="decideRequest(${r.id},'APPROVED')">✓ Approve</button> <button class="btn btn-sm btn-red" style="margin-left:4px;" onclick="decideRequest(${r.id},'DENIED')">✗ Deny</button> <button class="btn btn-sm" style="margin-left:4px;background:#f0f0f0;color:#555;" onclick="openEditRequest(${r.id},'${(r.request_type||'').replace(/'/g,"\\'")}','${r.start_date}','${r.end_date||''}','${(r.reason||'').replace(/'/g,"\\'")}')">✏️</button>`
         :`<button class="btn btn-sm" style="background:#f0f0f0;color:#555;" onclick="openEditRequest(${r.id},'${(r.request_type||'').replace(/'/g,"\\'")}','${r.start_date}','${r.end_date||''}','${(r.reason||'').replace(/'/g,"\\'")}')">✏️ Edit</button>`;
-      return `<tr><td><strong>${r.employee_name}</strong></td><td>${r.county}</td><td>${r.request_type}</td><td>${r.start_date}${r.end_date&&r.end_date!==r.start_date?' → '+r.end_date:''}</td><td style="font-size:12px;">${r.time_detail||'—'}</td><td>${r.reason||'—'}</td><td style="font-size:12px;color:#888;">${submitted}</td><td><span class="badge badge-${badgeClass}">${badgeLabel}</span></td><td style="white-space:nowrap;">${actions}</td></tr>`;
+      return `<tr><td><strong>${displayName}</strong></td><td>${r.county}</td><td>${r.request_type}</td><td>${r.start_date}${r.end_date&&r.end_date!==r.start_date?' → '+r.end_date:''}</td><td style="font-size:12px;">${r.time_detail||'—'}</td><td>${isDemo?'—':r.reason||'—'}</td><td style="font-size:12px;color:#888;">${submitted}</td><td><span class="badge badge-${badgeClass}">${badgeLabel}</span></td><td style="white-space:nowrap;">${isDemo?'':actions}</td></tr>`;
     }).join('')+
     '</tbody></table></div>';
 }
@@ -3373,6 +3443,7 @@ async function loadCallOuts(){
 function renderCallOutTable(){
   const el=document.getElementById('callout-table');
   if(!el)return;
+  const isDemo=adminStaff?.role==='demo';
   const searchTerm=(document.getElementById('co-search')?.value||'').toLowerCase().trim();
   const supFilter=(document.getElementById('co-supervisor-filter')?.value||'');
   let data=allCallOutsCache;
@@ -3383,9 +3454,10 @@ function renderCallOutTable(){
   }
   if(!data||data.length===0){el.innerHTML='<p style="color:#888;font-size:13px;">No call-outs found.</p>';return;}
   el.innerHTML='<div style="overflow-x:auto;"><table class="data-table"><thead><tr><th>Employee</th><th>County</th><th>Date</th><th>Reason</th><th>Call Type</th><th>Notes</th><th>Logged By</th><th></th></tr></thead><tbody>'+
-    data.map(c=>{
+    data.map((c,idx)=>{
+      const displayName=isDemo?`Employee ${idx+1}`:c.employee_name;
       const callTypeBadge=c.call_type==='Call After List'?`<span class="badge badge-flag">${c.call_type}</span>`:c.call_type==='Call Mid Shift'?`<span class="badge badge-warning">${c.call_type}</span>`:c.call_type?`<span class="badge badge-pending">${c.call_type}</span>`:'—';
-      return `<tr><td><strong>${c.employee_name}</strong></td><td>${c.county}</td><td>${c.callout_date}</td><td>${c.reason}</td><td>${callTypeBadge}</td><td>${c.notes||'—'}</td><td>${c.logged_by}</td><td><button onclick="deleteCallOut(${c.id})" style="background:none;border:1px solid #ddd;border-radius:4px;padding:2px 8px;font-size:11px;cursor:pointer;color:#c00;">✕</button></td></tr>`;
+      return `<tr><td><strong>${displayName}</strong></td><td>${c.county}</td><td>${c.callout_date}</td><td>${c.reason}</td><td>${callTypeBadge}</td><td>${c.notes||'—'}</td><td>${isDemo?'Admin':c.logged_by}</td><td>${isDemo?'':` <button onclick="deleteCallOut(${c.id})" style="background:none;border:1px solid #ddd;border-radius:4px;padding:2px 8px;font-size:11px;cursor:pointer;color:#c00;">✕</button>`}</td></tr>`;
     }).join('')+
     '</tbody></table></div>';
 }
