@@ -669,30 +669,55 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
         <div class="card-title" style="font-size:22px;color:#5b21b6;margin-bottom:4px;">📢 Memos &amp; Messages</div>
         <p style="color:#888;font-size:14px;margin-bottom:20px;">View memos from your supervisor and send messages to the office.</p>
 
-        <!-- Send a Message -->
-        <div class="card" style="border-color:#5b21b6;margin-bottom:20px;">
-          <div class="card-title" style="color:#5b21b6;cursor:pointer;" onclick="toggleEmpMessageForm()">✉️ Send a Message to Supervisor <span id="emp-msg-toggle" style="font-size:12px;color:#888;">▼ expand</span></div>
-          <div id="emp-msg-form" style="display:none;margin-top:14px;">
-            <div class="form-field"><label>Subject *</label><input type="text" id="emp-msg-subject" placeholder="e.g. Question about my schedule" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
-            <div class="form-field"><label>Message *</label><textarea id="emp-msg-body" placeholder="Write your message here..." style="width:100%;min-height:100px;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;font-family:Arial,sans-serif;outline:none;resize:vertical;"></textarea></div>
-            <div style="display:flex;gap:10px;align-items:center;">
-              <button class="btn-primary" style="background:#5b21b6;" onclick="sendEmployeeMessage()">📤 Send Message</button>
-              <span id="emp-msg-sent" style="font-size:13px;color:var(--success);display:none;">✓ Message sent!</span>
+        <!-- Card Tabs -->
+        <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+          <button id="memo-card-btn-unread" onclick="switchMemoCard('unread')" style="flex:1;min-width:140px;padding:16px 12px;border-radius:12px;border:2px solid #5b21b6;background:#5b21b6;color:#fff;font-size:14px;font-weight:700;cursor:pointer;text-align:center;transition:all .2s;">
+            <div style="font-size:22px;margin-bottom:4px;">🔔</div>
+            <div>Unread Memos</div>
+            <div id="memo-card-unread-count" style="font-size:12px;font-weight:400;margin-top:2px;opacity:.85;">0 unread</div>
+          </button>
+          <button id="memo-card-btn-read" onclick="switchMemoCard('read')" style="flex:1;min-width:140px;padding:16px 12px;border-radius:12px;border:2px solid var(--border);background:#fff;color:var(--navy);font-size:14px;font-weight:700;cursor:pointer;text-align:center;transition:all .2s;">
+            <div style="font-size:22px;margin-bottom:4px;">📬</div>
+            <div>Read Memos</div>
+            <div id="memo-card-read-count" style="font-size:12px;font-weight:400;margin-top:2px;color:#888;">0 read</div>
+          </button>
+          <button id="memo-card-btn-sent" onclick="switchMemoCard('sent')" style="flex:1;min-width:140px;padding:16px 12px;border-radius:12px;border:2px solid var(--border);background:#fff;color:var(--navy);font-size:14px;font-weight:700;cursor:pointer;text-align:center;transition:all .2s;">
+            <div style="font-size:22px;margin-bottom:4px;">📤</div>
+            <div>Messages Sent</div>
+            <div id="memo-card-sent-count" style="font-size:12px;font-weight:400;margin-top:2px;color:#888;">0 sent</div>
+          </button>
+        </div>
+
+        <!-- Unread Panel -->
+        <div id="memo-panel-unread" style="display:block;">
+          <div id="emp-memo-unread-list"><p style="color:#888;font-size:13px;">Loading...</p></div>
+        </div>
+
+        <!-- Read Panel -->
+        <div id="memo-panel-read" style="display:none;">
+          <div id="emp-memo-read-list"><p style="color:#888;font-size:13px;">Loading...</p></div>
+        </div>
+
+        <!-- Sent Panel -->
+        <div id="memo-panel-sent" style="display:none;">
+          <!-- Compose -->
+          <div class="card" style="border-color:#5b21b6;margin-bottom:16px;">
+            <div class="card-title" style="color:#5b21b6;cursor:pointer;" onclick="toggleEmpMessageForm()">✉️ Send a Message to Supervisor <span id="emp-msg-toggle" style="font-size:12px;color:#888;">▼ expand</span></div>
+            <div id="emp-msg-form" style="display:none;margin-top:14px;">
+              <div class="form-field"><label>Subject *</label><input type="text" id="emp-msg-subject" placeholder="e.g. Question about my schedule" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+              <div class="form-field"><label>Message *</label><textarea id="emp-msg-body" placeholder="Write your message here..." style="width:100%;min-height:100px;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;font-family:Arial,sans-serif;outline:none;resize:vertical;"></textarea></div>
+              <div style="display:flex;gap:10px;align-items:center;">
+                <button class="btn-primary" style="background:#5b21b6;" onclick="sendEmployeeMessage()">📤 Send Message</button>
+                <span id="emp-msg-sent" style="font-size:13px;color:var(--success);display:none;">✓ Message sent!</span>
+              </div>
             </div>
           </div>
-        </div>
-
-        <!-- Memos from Admin -->
-        <div class="card" style="margin-bottom:16px;">
-          <div class="card-title" style="color:var(--navy);">📥 Memos from Supervisor</div>
-          <div id="emp-memo-history-list"><p style="color:#888;font-size:13px;">Loading...</p></div>
-        </div>
-
-        <!-- My Sent Messages -->
-        <div class="card">
-          <div class="card-title" style="color:var(--navy);">📤 My Sent Messages</div>
+          <!-- Sent list -->
           <div id="emp-sent-messages-list"><p style="color:#888;font-size:13px;">Loading...</p></div>
         </div>
+
+        <!-- Hidden legacy list id for data bleed clear compat -->
+        <div id="emp-memo-history-list" style="display:none;"></div>
       </div>
     </div><!-- end main-content -->
   </div><!-- end portal-layout -->
@@ -1605,7 +1630,7 @@ function showSection(id){
   document.getElementById('section-'+id).style.display='block';
   document.getElementById('nav-'+id).classList.add('active');
   if(id==='timeoff')loadMyRequests();
-  if(id==='memos-emp'){loadEmpMemoHistory();loadEmpSentMessages();}
+  if(id==='memos-emp'){switchMemoCard('unread');loadEmpMemoHistory();loadEmpSentMessages();}
   if(id==='timesheet')loadMyTimesheets();
   if(id==='vehicle')loadMyVehicleReports();
   if(id==='incident'){buildIncidentForm();loadMyIncidents();}
@@ -2369,6 +2394,23 @@ async function acknowledgeMemo(id,btn){
 
 
 // ── EMPLOYEE MEMOS & MESSAGES ──
+let currentMemoCard='unread';
+function switchMemoCard(card){
+  currentMemoCard=card;
+  ['unread','read','sent'].forEach(c=>{
+    const btn=document.getElementById('memo-card-btn-'+c);
+    const panel=document.getElementById('memo-panel-'+c);
+    const active=c===card;
+    if(btn){
+      btn.style.background=active?'#5b21b6':'#fff';
+      btn.style.color=active?'#fff':'var(--navy)';
+      btn.style.borderColor=active?'#5b21b6':'var(--border)';
+      const countEl=btn.querySelector('div:last-child');
+      if(countEl)countEl.style.color=active?'rgba(255,255,255,0.85)':'#888';
+    }
+    if(panel)panel.style.display=active?'block':'none';
+  });
+}
 function toggleEmpMessageForm(){
   const f=document.getElementById('emp-msg-form');
   const icon=document.getElementById('emp-msg-toggle');
@@ -2397,21 +2439,28 @@ async function loadEmpMemoHistory(){
   if(!user)return;
   try{
     const {data}=await db.from('memos').select('*').eq('is_active',true).order('created_at',{ascending:false});
-    const list=document.getElementById('emp-memo-history-list');
-    if(!list)return;
-    if(!data||!data.length){list.innerHTML='<p style="color:#888;font-size:13px;">No memos yet.</p>';return;}
+    const unreadList=document.getElementById('emp-memo-unread-list');
+    const readList=document.getElementById('emp-memo-read-list');
+    if(!unreadList||!readList)return;
+    if(!data||!data.length){
+      unreadList.innerHTML='<p style="color:#888;font-size:13px;">No unread memos.</p>';
+      readList.innerHTML='<p style="color:#888;font-size:13px;">No read memos yet.</p>';
+      updateMemoCardCounts(0,0);return;
+    }
     const relevant=data.filter(m=>{
       if(m.audience==='all')return true;
       const profile=allProfilesCache.find(p=>p.employee_email===user.email);
       return profile&&profile.assigned_supervisor===m.audience;
     });
-    if(!relevant.length){list.innerHTML='<p style="color:#888;font-size:13px;">No memos yet.</p>';return;}
-    let unreadCount=0;
-    list.innerHTML=relevant.map(m=>{
-      const isRead=(m.read_by||[]).includes(user.name);
-      if(!isRead)unreadCount++;
+    if(!relevant.length){
+      unreadList.innerHTML='<p style="color:#888;font-size:13px;">No memos yet.</p>';
+      readList.innerHTML='<p style="color:#888;font-size:13px;">No memos yet.</p>';
+      updateMemoCardCounts(0,0);return;
+    }
+    const unread=relevant.filter(m=>!(m.read_by||[]).includes(user.name));
+    const read=relevant.filter(m=>(m.read_by||[]).includes(user.name));
+    function memoCard(m,isRead){
       const urgentBadge=m.priority==='urgent'?'<span style="background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:6px;">🔴 URGENT</span>':'';
-      const readBadge=isRead?'<span style="color:var(--success);font-size:11px;font-weight:700;">✓ Read</span>':'<span style="background:#5b21b6;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;">NEW</span>';
       const dt=new Date(m.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
       const myComment=(m.comments||[]).find(c=>c.name===user.name);
       return '<div style="border:1px solid '+(isRead?'var(--border)':'#a78bfa')+';border-radius:10px;padding:14px;margin-bottom:10px;background:'+(isRead?'#fafafa':'#faf5ff')+';" id="emp-memo-hist-'+m.id+'">' +
@@ -2420,17 +2469,26 @@ async function loadEmpMemoHistory(){
             '<div style="font-size:14px;font-weight:700;color:'+(isRead?'var(--navy)':'#5b21b6')+';">' + m.subject + urgentBadge + '</div>' +
             '<div style="font-size:11px;color:#888;margin-top:2px;">From ' + m.created_by + ' · ' + dt + '</div>' +
           '</div>' +
-          '<div>' + readBadge + '</div>' +
+          (isRead?'<span style="color:var(--success);font-size:11px;font-weight:700;">✓ Read</span>':'<span style="background:#5b21b6;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;">NEW</span>') +
         '</div>' +
         '<div style="font-size:13px;color:#444;margin-top:10px;white-space:pre-wrap;">' + m.body + '</div>' +
         (!isRead?'<div style="margin-top:12px;"><label style="font-size:11px;font-weight:700;color:#5b21b6;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px;">💬 Comment (optional)</label><textarea id="emp-hist-comment-'+m.id+'" placeholder="Add a comment or question..." style="width:100%;padding:8px 12px;border:1px solid #d0b8f5;border-radius:8px;font-size:13px;font-family:Arial,sans-serif;outline:none;resize:vertical;min-height:60px;"></textarea><button onclick="acknowledgeMemoFromHistory('+m.id+',this)" style="margin-top:8px;background:#5b21b6;color:#fff;border:none;padding:8px 18px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">✓ Acknowledge</button></div>':'') +
         (myComment?'<div style="margin-top:10px;background:#ede9fe;border-radius:8px;padding:8px 12px;font-size:12px;"><strong>Your comment:</strong> '+myComment.text+'</div>':'') +
       '</div>';
-    }).join('');
-    // Update badge
+    }
+    unreadList.innerHTML=unread.length?unread.map(m=>memoCard(m,false)).join(''):'<p style="color:#888;font-size:13px;">No unread memos — you\'re all caught up! ✅</p>';
+    readList.innerHTML=read.length?read.map(m=>memoCard(m,true)).join(''):'<p style="color:#888;font-size:13px;">No read memos yet.</p>';
+    updateMemoCardCounts(unread.length,read.length);
+    // Update nav badge
     const badge=document.getElementById('badge-emp-memos');
-    if(badge){badge.style.display=unreadCount>0?'inline':'none';}
+    if(badge){badge.style.display=unread.length>0?'inline':'none';}
   }catch(e){console.log('Memo history:',e);}
+}
+function updateMemoCardCounts(unread,read){
+  const u=document.getElementById('memo-card-unread-count');
+  const r=document.getElementById('memo-card-read-count');
+  if(u)u.textContent=unread+' unread';
+  if(r)r.textContent=read+' read';
 }
 async function acknowledgeMemoFromHistory(id,btn){
   btn.disabled=true;btn.textContent='Acknowledging...';
@@ -2453,6 +2511,7 @@ async function loadEmpSentMessages(){
     const {data}=await db.from('employee_messages').select('*').eq('employee_email',user.email).order('sent_at',{ascending:false});
     const list=document.getElementById('emp-sent-messages-list');
     if(!list)return;
+    const sentCount=document.getElementById('memo-card-sent-count');if(sentCount)sentCount.textContent=(data?data.length:0)+' sent';
     if(!data||!data.length){list.innerHTML='<p style="color:#888;font-size:13px;">No messages sent yet.</p>';return;}
     list.innerHTML=data.map(m=>{
       const dt=new Date(m.sent_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
