@@ -311,6 +311,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
         <div class="nav-item" onclick="showSection('timesheet')" id="nav-timesheet"><span class="nav-icon">🕐</span>Submit Timesheet</div>
         <div class="nav-item" onclick="showSection('vehicle')" id="nav-vehicle"><span class="nav-icon">🚐</span>Vehicle Report</div>
         <div class="nav-item" onclick="showSection('incident')" id="nav-incident"><span class="nav-icon">🚨</span>Incident Report</div>
+        <div class="nav-item" onclick="showSection('memos-emp')" id="nav-memos-emp"><span class="nav-icon">📢</span>Memos &amp; Messages<span class="nav-badge" id="badge-emp-memos" style="background:#5b21b6;display:none;">●</span></div>
       </div>
     </div>
     <div class="main-content">
@@ -447,7 +448,20 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
           </div>
           <div id="req-form" style="display:none;">
             <div id="req-fields"></div>
-            <div class="sig-field"><label>Reason (optional)</label><input type="text" id="req-reason" placeholder="Brief reason..." style="width:100%;padding:11px 14px;border:2px solid var(--border);border-radius:8px;font-size:14px;outline:none;"></div>
+            <div class="sig-field"><label>Start / Stop Location (optional)</label><input type="text" id="req-reason" placeholder="e.g. Ellsworth to Bangor..." style="width:100%;padding:11px 14px;border:2px solid var(--border);border-radius:8px;font-size:14px;outline:none;"></div>
+            <div class="sig-field" style="margin-top:10px;"><label>Reason for Time Off</label>
+              <select id="req-leave-type" style="width:100%;padding:11px 14px;border:2px solid var(--border);border-radius:8px;font-size:14px;outline:none;">
+                <option value="">Select a reason...</option>
+                <option>Vacation / Annual Leave</option>
+                <option>Personal Day</option>
+                <option>Sick Leave / Medical</option>
+                <option>Medical Appointment</option>
+                <option>Parental / Maternity / Paternity Leave</option>
+                <option>Bereavement Leave</option>
+                <option>Jury Duty</option>
+                <option>Other</option>
+              </select>
+            </div>
             <button class="btn-primary" onclick="submitTimeOff()" style="margin-top:8px;">Submit Request</button>
           </div>
           <div id="req-success" style="display:none;" class="success-banner">
@@ -649,6 +663,37 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
         </div>
       </div>
 
+
+      <!-- MEMOS & MESSAGES -->
+      <div id="section-memos-emp" class="portal-section">
+        <div class="card-title" style="font-size:22px;color:#5b21b6;margin-bottom:4px;">📢 Memos &amp; Messages</div>
+        <p style="color:#888;font-size:14px;margin-bottom:20px;">View memos from your supervisor and send messages to the office.</p>
+
+        <!-- Send a Message -->
+        <div class="card" style="border-color:#5b21b6;margin-bottom:20px;">
+          <div class="card-title" style="color:#5b21b6;cursor:pointer;" onclick="toggleEmpMessageForm()">✉️ Send a Message to Supervisor <span id="emp-msg-toggle" style="font-size:12px;color:#888;">▼ expand</span></div>
+          <div id="emp-msg-form" style="display:none;margin-top:14px;">
+            <div class="form-field"><label>Subject *</label><input type="text" id="emp-msg-subject" placeholder="e.g. Question about my schedule" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+            <div class="form-field"><label>Message *</label><textarea id="emp-msg-body" placeholder="Write your message here..." style="width:100%;min-height:100px;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;font-family:Arial,sans-serif;outline:none;resize:vertical;"></textarea></div>
+            <div style="display:flex;gap:10px;align-items:center;">
+              <button class="btn-primary" style="background:#5b21b6;" onclick="sendEmployeeMessage()">📤 Send Message</button>
+              <span id="emp-msg-sent" style="font-size:13px;color:var(--success);display:none;">✓ Message sent!</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Memos from Admin -->
+        <div class="card" style="margin-bottom:16px;">
+          <div class="card-title" style="color:var(--navy);">📥 Memos from Supervisor</div>
+          <div id="emp-memo-history-list"><p style="color:#888;font-size:13px;">Loading...</p></div>
+        </div>
+
+        <!-- My Sent Messages -->
+        <div class="card">
+          <div class="card-title" style="color:var(--navy);">📤 My Sent Messages</div>
+          <div id="emp-sent-messages-list"><p style="color:#888;font-size:13px;">Loading...</p></div>
+        </div>
+      </div>
     </div><!-- end main-content -->
   </div><!-- end portal-layout -->
 </div><!-- end screen-portal -->
@@ -835,9 +880,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
           <div id="admin-tor-form" style="display:none;margin-top:16px;">
             <div class="form-row">
               <div class="form-field"><label>Employee Name *</label>
-                <select id="adm-tor-employee" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
-                  <option value="">Select employee...</option>
-                </select>
+                <input type="text" id="adm-tor-employee" placeholder="Employee full name..." style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
               </div>
               <div class="form-field"><label>Request Type *</label>
                 <select id="adm-tor-type" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
@@ -1335,6 +1378,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
           <div style="display:flex;border-radius:8px;overflow:hidden;border:1px solid var(--border);">
             <button id="memo-tab-active" onclick="setMemoTab('active')" style="padding:8px 18px;font-size:13px;font-weight:700;border:none;cursor:pointer;background:#5b21b6;color:#fff;">Active</button>
             <button id="memo-tab-archived" onclick="setMemoTab('archived')" style="padding:8px 18px;font-size:13px;font-weight:700;border:none;cursor:pointer;background:#f0f0f0;color:#888;">Archived</button>
+            <button id="memo-tab-messages" onclick="setMemoTab('messages')" style="padding:8px 18px;font-size:13px;font-weight:700;border:none;cursor:pointer;background:#f0f0f0;color:#888;">✉️ Employee Messages<span id="badge-emp-messages" style="background:#5b21b6;color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:6px;display:none;">●</span></button>
           </div>
           <select id="memo-audience-filter" onchange="renderAdminMemoList()" style="padding:8px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:#fff;">
             <option value="">All Audiences</option>
@@ -1461,7 +1505,7 @@ window.addEventListener('load',function(){
         buildMgrGuide();buildHbRef();
         loadEmployeeFolders();
         loadDashboard();loadRequests();loadCallOuts();loadFlags();loadOnboarding();renderCalendar();
-        loadTimesheets();loadVehicleRecords();loadIncidents();loadMemos();
+        loadTimesheets();loadVehicleRecords();loadIncidents();loadMemos();loadEmployeeMessages();
       }
     }
   }catch(e){sessionStorage.removeItem('rs_session');}
@@ -1496,7 +1540,7 @@ function startPortal(opts){
   document.getElementById('display-name').textContent=name;
   document.getElementById('screen-landing').classList.remove('active');
   document.getElementById('screen-portal').classList.add('active');
-  loadSavedState();buildTraining();buildHandbook();buildPolicies();updateDashboard();loadSignedPolicies();
+  loadSavedState();buildTraining();buildHandbook();buildPolicies();updateDashboard();loadSignedPolicies();setTimeout(()=>{loadEmpMemoHistory();},1200);
   buildTimesheetRows();buildIncidentForm();loadEmployeeMemos();
   document.getElementById('vr-date').value=new Date().toISOString().split('T')[0];
   // Hide completion banner until Supabase confirms
@@ -1509,8 +1553,10 @@ function logout(){
   saveState();user=null;trainingSection=0;handbookSection=0;
   trainingSectionRead={};handbookSectionRead={};trainingComplete=false;handbookComplete=false;
   // Clear all personal data lists so next user doesn't see previous user's data
-  const clearIds=['my-requests-list','my-timesheets-list','my-vehicle-reports-list'];
+  const clearIds=['my-requests-list','my-timesheets-list','my-vehicle-reports-list','emp-memo-history-list','emp-sent-messages-list','emp-memos-list','my-incidents-list'];
   clearIds.forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='<p style="color:#888;font-size:13px;">Loading...</p>';});
+  const empMemosWrap=document.getElementById('emp-memos-wrap');if(empMemosWrap)empMemosWrap.style.display='none';
+  const badge=document.getElementById('badge-emp-memos');if(badge)badge.style.display='none';
   sessionStorage.removeItem('rs_session');
   document.getElementById('screen-portal').classList.remove('active');
   document.getElementById('screen-landing').classList.add('active');
@@ -1541,7 +1587,7 @@ function adminLogin(){
   buildMgrGuide();buildHbRef();
   loadEmployeeFolders(); // pre-load profile cache so supervisor filters work immediately
   loadDashboard();loadRequests();loadCallOuts();loadFlags();loadOnboarding();renderCalendar();
-  loadTimesheets();loadVehicleRecords();loadIncidents();loadMemos();
+  loadTimesheets();loadVehicleRecords();loadIncidents();loadMemos();loadEmployeeMessages();
 }
 function adminLogout(){
   sessionStorage.removeItem('rs_session');
@@ -1559,6 +1605,7 @@ function showSection(id){
   document.getElementById('section-'+id).style.display='block';
   document.getElementById('nav-'+id).classList.add('active');
   if(id==='timeoff')loadMyRequests();
+  if(id==='memos-emp'){loadEmpMemoHistory();loadEmpSentMessages();}
   if(id==='timesheet')loadMyTimesheets();
   if(id==='vehicle')loadMyVehicleReports();
   if(id==='incident'){buildIncidentForm();loadMyIncidents();}
@@ -1575,7 +1622,7 @@ function showAdmin(id){
     loadEmployeeFolders();
   }
   if(id==='incidents')loadIncidents();
-  if(id==='memos')loadMemos();
+  if(id==='memos'){loadMemos();loadEmployeeMessages();}
   // Keep profile cache fresh when navigating to sections that use it for filtering
   if(id==='requests'||id==='callouts')if(allProfilesCache.length===0)loadEmployeeFolders();
 }
@@ -1889,7 +1936,9 @@ async function submitTimeOff(){
   const time1=document.getElementById('req-time1')?.value||'';
   const time2=document.getElementById('req-time2')?.value||'';
   const ptoHours=document.getElementById('req-pto-hours')?.value||'';
-  const reason=document.getElementById('req-reason').value;
+  const location=document.getElementById('req-reason').value;
+  const leaveType=document.getElementById('req-leave-type')?.value||'';
+  const reason=(leaveType?leaveType+' | ':'')+(location?'Location: '+location:'');
   if(!date1){alert('Please select a date.');return;}
   if(currentReqType==='Use PTO Hours'&&!ptoHours){alert('Please enter the number of PTO hours.');return;}
   const timeDetail=ptoHours?`${ptoHours} PTO hours`:(time2?`${time1} – ${time2}`:time1);
@@ -1906,6 +1955,7 @@ function resetTimeOff(){
   document.getElementById('req-form').style.display='none';
   document.getElementById('req-success').style.display='none';
   document.getElementById('req-reason').value='';
+  const lt=document.getElementById('req-leave-type');if(lt)lt.value='';
   document.querySelectorAll('.req-type-btn').forEach(b=>{b.style.background='transparent';b.style.color='';});
 }
 async function loadMyRequests(){
@@ -2133,13 +2183,13 @@ function setMemoTab(tab){
   currentMemoTab=tab;
   const active=document.getElementById('memo-tab-active');
   const archived=document.getElementById('memo-tab-archived');
-  if(active&&archived){
-    active.style.background=tab==='active'?'#5b21b6':'#f0f0f0';
-    active.style.color=tab==='active'?'#fff':'#888';
-    archived.style.background=tab==='archived'?'#5b21b6':'#f0f0f0';
-    archived.style.color=tab==='archived'?'#fff':'#888';
-  }
-  renderAdminMemoList();
+  const messages=document.getElementById('memo-tab-messages');
+  const purple='#5b21b6',gray='#f0f0f0',white='#fff',dim='#888';
+  if(active){active.style.background=tab==='active'?purple:gray;active.style.color=tab==='active'?white:dim;}
+  if(archived){archived.style.background=tab==='archived'?purple:gray;archived.style.color=tab==='archived'?white:dim;}
+  if(messages){messages.style.background=tab==='messages'?purple:gray;messages.style.color=tab==='messages'?white:dim;}
+  if(tab==='messages')renderEmployeeMessagesList();
+  else renderAdminMemoList();
 }
 function toggleMemoForm(){
   const f=document.getElementById('memo-create-form');
@@ -2317,6 +2367,157 @@ async function acknowledgeMemo(id,btn){
   }catch(e){btn.disabled=false;btn.textContent='✓ I have read and understood this memo';alert('Error: '+e.message);}
 }
 
+
+// ── EMPLOYEE MEMOS & MESSAGES ──
+function toggleEmpMessageForm(){
+  const f=document.getElementById('emp-msg-form');
+  const icon=document.getElementById('emp-msg-toggle');
+  if(f.style.display==='none'){f.style.display='block';icon.textContent='▲ collapse';}
+  else{f.style.display='none';icon.textContent='▼ expand';}
+}
+async function sendEmployeeMessage(){
+  const subject=document.getElementById('emp-msg-subject').value.trim();
+  const body=document.getElementById('emp-msg-body').value.trim();
+  if(!subject||!body){alert('Please enter a subject and message.');return;}
+  try{
+    const {error}=await db.from('employee_messages').insert([{
+      employee_name:user.name,employee_email:user.email,county:user.county,
+      subject,body,sent_at:new Date().toISOString(),is_read:false
+    }]);
+    if(error)throw error;
+    document.getElementById('emp-msg-subject').value='';
+    document.getElementById('emp-msg-body').value='';
+    document.getElementById('emp-msg-form').style.display='none';
+    document.getElementById('emp-msg-toggle').textContent='▼ expand';
+    const msg=document.getElementById('emp-msg-sent');msg.style.display='inline';setTimeout(()=>msg.style.display='none',3000);
+    loadEmpSentMessages();
+  }catch(e){alert('Error sending message: '+e.message);}
+}
+async function loadEmpMemoHistory(){
+  if(!user)return;
+  try{
+    const {data}=await db.from('memos').select('*').eq('is_active',true).order('created_at',{ascending:false});
+    const list=document.getElementById('emp-memo-history-list');
+    if(!list)return;
+    if(!data||!data.length){list.innerHTML='<p style="color:#888;font-size:13px;">No memos yet.</p>';return;}
+    const relevant=data.filter(m=>{
+      if(m.audience==='all')return true;
+      const profile=allProfilesCache.find(p=>p.employee_email===user.email);
+      return profile&&profile.assigned_supervisor===m.audience;
+    });
+    if(!relevant.length){list.innerHTML='<p style="color:#888;font-size:13px;">No memos yet.</p>';return;}
+    let unreadCount=0;
+    list.innerHTML=relevant.map(m=>{
+      const isRead=(m.read_by||[]).includes(user.name);
+      if(!isRead)unreadCount++;
+      const urgentBadge=m.priority==='urgent'?'<span style="background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:6px;">🔴 URGENT</span>':'';
+      const readBadge=isRead?'<span style="color:var(--success);font-size:11px;font-weight:700;">✓ Read</span>':'<span style="background:#5b21b6;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;">NEW</span>';
+      const dt=new Date(m.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+      const myComment=(m.comments||[]).find(c=>c.name===user.name);
+      return '<div style="border:1px solid '+(isRead?'var(--border)':'#a78bfa')+';border-radius:10px;padding:14px;margin-bottom:10px;background:'+(isRead?'#fafafa':'#faf5ff')+';" id="emp-memo-hist-'+m.id+'">' +
+        '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">' +
+          '<div style="flex:1;">' +
+            '<div style="font-size:14px;font-weight:700;color:'+(isRead?'var(--navy)':'#5b21b6')+';">' + m.subject + urgentBadge + '</div>' +
+            '<div style="font-size:11px;color:#888;margin-top:2px;">From ' + m.created_by + ' · ' + dt + '</div>' +
+          '</div>' +
+          '<div>' + readBadge + '</div>' +
+        '</div>' +
+        '<div style="font-size:13px;color:#444;margin-top:10px;white-space:pre-wrap;">' + m.body + '</div>' +
+        (!isRead?'<div style="margin-top:12px;"><label style="font-size:11px;font-weight:700;color:#5b21b6;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px;">💬 Comment (optional)</label><textarea id="emp-hist-comment-'+m.id+'" placeholder="Add a comment or question..." style="width:100%;padding:8px 12px;border:1px solid #d0b8f5;border-radius:8px;font-size:13px;font-family:Arial,sans-serif;outline:none;resize:vertical;min-height:60px;"></textarea><button onclick="acknowledgeMemoFromHistory('+m.id+',this)" style="margin-top:8px;background:#5b21b6;color:#fff;border:none;padding:8px 18px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">✓ Acknowledge</button></div>':'') +
+        (myComment?'<div style="margin-top:10px;background:#ede9fe;border-radius:8px;padding:8px 12px;font-size:12px;"><strong>Your comment:</strong> '+myComment.text+'</div>':'') +
+      '</div>';
+    }).join('');
+    // Update badge
+    const badge=document.getElementById('badge-emp-memos');
+    if(badge){badge.style.display=unreadCount>0?'inline':'none';}
+  }catch(e){console.log('Memo history:',e);}
+}
+async function acknowledgeMemoFromHistory(id,btn){
+  btn.disabled=true;btn.textContent='Acknowledging...';
+  try{
+    const memo=await db.from('memos').select('read_by,comments').eq('id',id).single();
+    const existing=memo.data?.read_by||[];
+    const existingComments=memo.data?.comments||[];
+    const commentText=document.getElementById('emp-hist-comment-'+id)?.value.trim();
+    const updates={};
+    if(!existing.includes(user.name))updates.read_by=[...existing,user.name];
+    if(commentText)updates.comments=[...existingComments,{name:user.name,text:commentText,at:new Date().toISOString()}];
+    if(Object.keys(updates).length)await db.from('memos').update(updates).eq('id',id);
+    loadEmpMemoHistory();
+    loadEmployeeMemos(); // refresh dashboard widget too
+  }catch(e){btn.disabled=false;btn.textContent='✓ Acknowledge';alert('Error: '+e.message);}
+}
+async function loadEmpSentMessages(){
+  if(!user)return;
+  try{
+    const {data}=await db.from('employee_messages').select('*').eq('employee_email',user.email).order('sent_at',{ascending:false});
+    const list=document.getElementById('emp-sent-messages-list');
+    if(!list)return;
+    if(!data||!data.length){list.innerHTML='<p style="color:#888;font-size:13px;">No messages sent yet.</p>';return;}
+    list.innerHTML=data.map(m=>{
+      const dt=new Date(m.sent_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+      const readBadge=m.is_read?'<span style="color:var(--success);font-size:11px;font-weight:700;">✓ Seen</span>':'<span style="color:#888;font-size:11px;">Pending</span>';
+      return '<div style="border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;background:#fafafa;">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;">' +
+          '<div style="font-size:13px;font-weight:700;color:var(--navy);">' + m.subject + '</div>' +
+          readBadge +
+        '</div>' +
+        '<div style="font-size:11px;color:#888;margin-top:2px;">' + dt + '</div>' +
+        '<div style="font-size:13px;color:#555;margin-top:8px;white-space:pre-wrap;">' + m.body + '</div>' +
+        (m.admin_reply?'<div style="margin-top:10px;background:#e8f4fd;border-radius:8px;padding:8px 12px;font-size:12px;"><strong>Reply from supervisor:</strong> '+m.admin_reply+'</div>':'') +
+      '</div>';
+    }).join('');
+  }catch(e){console.log('Sent messages:',e);}
+}
+
+// Admin: load employee messages
+let allEmpMessagesCache=[];
+async function loadEmployeeMessages(){
+  try{
+    const {data}=await db.from('employee_messages').select('*').order('sent_at',{ascending:false});
+    allEmpMessagesCache=data||[];
+    const unread=allEmpMessagesCache.filter(m=>!m.is_read).length;
+    const badge=document.getElementById('badge-emp-messages');
+    if(badge){badge.style.display=unread>0?'inline':'none';badge.textContent=unread>0?unread:'';}
+    const memoBadge=document.getElementById('badge-memos');
+    if(memoBadge){
+      const memoUnread=allMemosCache.filter(m=>m.is_active).length;
+      memoBadge.textContent=(memoUnread+unread)||'0';
+    }
+    renderEmployeeMessagesList();
+  }catch(e){console.log('Employee messages:',e);}
+}
+function renderEmployeeMessagesList(){
+  const el=document.getElementById('memo-admin-list');
+  if(!el||currentMemoTab!=='messages')return;
+  if(!allEmpMessagesCache.length){el.innerHTML='<p style="color:#888;font-size:13px;">No employee messages yet.</p>';return;}
+  el.innerHTML=allEmpMessagesCache.map(m=>{
+    const dt=new Date(m.sent_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    const readBadge=m.is_read?'<span style="color:var(--success);font-size:11px;font-weight:700;">✓ Seen</span>':'<span style="background:#5b21b6;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;">NEW</span>';
+    return '<div class="card" style="margin-bottom:10px;' + (!m.is_read?'border-color:#a78bfa;':'')+'">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">' +
+        '<div style="flex:1;">' +
+          '<div style="font-size:15px;font-weight:700;color:var(--navy);">' + m.subject + '</div>' +
+          '<div style="font-size:11px;color:#888;margin-top:2px;">From <strong>' + m.employee_name + '</strong>' + (m.county?' ('+m.county+')':'') + ' · ' + dt + '</div>' +
+        '</div>' +
+        '<div style="display:flex;gap:6px;align-items:center;">' + readBadge + '</div>' +
+      '</div>' +
+      '<div style="font-size:13px;color:#555;margin-top:10px;white-space:pre-wrap;background:var(--gray);padding:12px;border-radius:8px;">' + m.body + '</div>' +
+      '<div style="margin-top:12px;display:flex;gap:8px;align-items:flex-end;">' +
+        '<div style="flex:1;"><label style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px;">Reply (optional)</label>' +
+        '<input type="text" id="adm-reply-'+m.id+'" placeholder="Type a reply..." value="'+(m.admin_reply||'')+'" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>' +
+        '<button onclick="markMessageRead('+m.id+')" style="background:#5b21b6;color:#fff;border:none;padding:9px 16px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">✓ Mark Read &amp; Reply</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+async function markMessageRead(id){
+  const reply=document.getElementById('adm-reply-'+id)?.value.trim()||null;
+  try{
+    await db.from('employee_messages').update({is_read:true,admin_reply:reply,read_at:new Date().toISOString()}).eq('id',id);
+    loadEmployeeMessages();
+  }catch(e){alert('Error: '+e.message);}
+}
 // ── INCIDENT REPORTS ──
 let allIncidentsCache=[];
 const IR_TRIP_CHECKS=['On-time Pickup','On-time Drop-off','Multi-loaded Trip','Attendant/Escort Present','Service Animal Present','Assistive Mobility Device'];
@@ -3504,20 +3705,14 @@ function toggleAdminTimeOffForm(){
   const icon=document.getElementById('admin-tor-toggle');
   if(f.style.display==='none'){
     f.style.display='block';icon.textContent='▲ collapse';
-    // Populate employee dropdown from profile cache
-    const sel=document.getElementById('adm-tor-employee');
-    const current=sel.value;
-    sel.innerHTML='<option value="">Select employee...</option>'+
-      allProfilesCache.filter(p=>p.employment_status!=='Separated').sort((a,b)=>(a.employee_name||'').localeCompare(b.employee_name||'')).map(p=>`<option value="${p.employee_name}|${p.employee_email}|${p.county}">${p.employee_name}${p.county?' ('+p.county+')':''}</option>`).join('');
-    sel.value=current;
   }else{f.style.display='none';icon.textContent='▼ expand';}
 }
 async function submitAdminTimeOff(){
-  const empVal=document.getElementById('adm-tor-employee').value;
+  const empName=document.getElementById('adm-tor-employee').value.trim();
   const type=document.getElementById('adm-tor-type').value;
   const start=document.getElementById('adm-tor-start').value;
-  if(!empVal||!type||!start){alert('Please select an employee, request type, and start date.');return;}
-  const [empName,empEmail,empCounty]=empVal.split('|');
+  if(!empName||!type||!start){alert('Please enter an employee name, request type, and start date.');return;}
+  const empEmail='';const empCounty='';
   const end=document.getElementById('adm-tor-end').value||start;
   const reason=document.getElementById('adm-tor-reason').value.trim();
   try{
