@@ -1006,9 +1006,10 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
           <div style="display:flex;gap:2px;border-bottom:2px solid var(--border);margin-bottom:20px;flex-wrap:wrap;">
             <button class="profile-tab active" id="ptab-info" onclick="switchProfileTab('info')">👤 Info</button>
             <button class="profile-tab" id="ptab-policies" onclick="switchProfileTab('policies')">✍️ Policy Signatures</button>
-            <button class="profile-tab" id="ptab-warnings" onclick="switchProfileTab('warnings')">⚠️ Warning History</button>
+            <button class="profile-tab" id="ptab-performance" onclick="switchProfileTab('performance')">📊 Performance</button>
             <button class="profile-tab" id="ptab-callouts" onclick="switchProfileTab('callouts')">📞 Call-Out History</button>
             <button class="profile-tab" id="ptab-timeoff" onclick="switchProfileTab('timeoff')">📅 Time Off</button>
+            <button class="profile-tab" id="ptab-memos" onclick="switchProfileTab('memos')">📢 Memos</button>
           </div>
 
           <!-- Info Tab -->
@@ -1052,9 +1053,32 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
             <div id="pdata-policies"><p style="color:#888;font-size:13px;">Loading...</p></div>
           </div>
 
-          <!-- Warnings Tab -->
-          <div class="profile-tab-panel" id="ppanel-warnings">
-            <div id="pdata-warnings"><p style="color:#888;font-size:13px;">Loading...</p></div>
+          <!-- Performance Tab -->
+          <div class="profile-tab-panel" id="ppanel-performance">
+            <!-- Performance sub-cards -->
+            <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+              <button id="perf-card-btn-warnings" onclick="switchPerfCard('warnings')" style="flex:1;min-width:120px;padding:12px 10px;border-radius:12px;border:2px solid var(--navy);background:var(--navy);color:#fff;font-size:13px;font-weight:700;cursor:pointer;text-align:center;transition:all .2s;">
+                <div style="font-size:18px;margin-bottom:3px;">⚠️</div><div>Warnings</div>
+              </button>
+              <button id="perf-card-btn-reviews" onclick="switchPerfCard('reviews')" style="flex:1;min-width:120px;padding:12px 10px;border-radius:12px;border:2px solid var(--border);background:#fff;color:var(--navy);font-size:13px;font-weight:700;cursor:pointer;text-align:center;transition:all .2s;">
+                <div style="font-size:18px;margin-bottom:3px;">📋</div><div>Reviews</div>
+              </button>
+              <button id="perf-card-btn-attendance" onclick="switchPerfCard('attendance')" style="flex:1;min-width:120px;padding:12px 10px;border-radius:12px;border:2px solid var(--border);background:#fff;color:var(--navy);font-size:13px;font-weight:700;cursor:pointer;text-align:center;transition:all .2s;">
+                <div style="font-size:18px;margin-bottom:3px;">📅</div><div>Attendance</div>
+              </button>
+              <button id="perf-card-btn-pip" onclick="switchPerfCard('pip')" style="flex:1;min-width:120px;padding:12px 10px;border-radius:12px;border:2px solid var(--border);background:#fff;color:var(--navy);font-size:13px;font-weight:700;cursor:pointer;text-align:center;transition:all .2s;">
+                <div style="font-size:18px;margin-bottom:3px;">📈</div><div>PIPs</div>
+              </button>
+            </div>
+            <div id="perf-panel-warnings"><div id="pdata-warnings"><p style="color:#888;font-size:13px;">Loading...</p></div></div>
+            <div id="perf-panel-reviews" style="display:none;"><div id="pdata-reviews"><p style="color:#888;font-size:13px;">Loading...</p></div></div>
+            <div id="perf-panel-attendance" style="display:none;"><div id="pdata-attendance"><p style="color:#888;font-size:13px;">Loading...</p></div></div>
+            <div id="perf-panel-pip" style="display:none;"><div id="pdata-pip"><p style="color:#888;font-size:13px;">Loading...</p></div></div>
+          </div>
+
+          <!-- Memos Tab -->
+          <div class="profile-tab-panel" id="ppanel-memos">
+            <div id="pdata-memos"><p style="color:#888;font-size:13px;">Loading...</p></div>
           </div>
 
           <!-- Call-Outs Tab -->
@@ -1423,6 +1447,24 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 
         <!-- Memo List -->
         <div id="memo-admin-list"><p style="color:#888;font-size:13px;">Loading...</p></div>
+
+        <!-- Employee Messages Read/Unread Cards (shown when tab=messages) -->
+        <div id="emp-msg-cards-wrap" style="display:none;">
+          <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+            <button id="adm-msg-card-btn-unread" onclick="switchAdmMsgCard('unread')" style="flex:1;min-width:140px;padding:14px 12px;border-radius:12px;border:2px solid #5b21b6;background:#5b21b6;color:#fff;font-size:14px;font-weight:700;cursor:pointer;text-align:center;transition:all .2s;">
+              <div style="font-size:20px;margin-bottom:4px;">🔔</div>
+              <div>Unread</div>
+              <div id="adm-msg-unread-count" style="font-size:12px;font-weight:400;margin-top:2px;opacity:.85;">0 unread</div>
+            </button>
+            <button id="adm-msg-card-btn-read" onclick="switchAdmMsgCard('read')" style="flex:1;min-width:140px;padding:14px 12px;border-radius:12px;border:2px solid var(--border);background:#fff;color:var(--navy);font-size:14px;font-weight:700;cursor:pointer;text-align:center;transition:all .2s;">
+              <div style="font-size:20px;margin-bottom:4px;">📬</div>
+              <div>Read</div>
+              <div id="adm-msg-read-count" style="font-size:12px;font-weight:400;margin-top:2px;color:#888;">0 read</div>
+            </button>
+          </div>
+          <div id="adm-msg-panel-unread"><p style="color:#888;font-size:13px;">Loading...</p></div>
+          <div id="adm-msg-panel-read" style="display:none;"><p style="color:#888;font-size:13px;">Loading...</p></div>
+        </div>
       </div>
 
       <!-- DOCUMENT LIBRARY -->
@@ -2220,8 +2262,14 @@ function setMemoTab(tab){
   if(active){active.style.background=tab==='active'?purple:gray;active.style.color=tab==='active'?white:dim;}
   if(archived){archived.style.background=tab==='archived'?purple:gray;archived.style.color=tab==='archived'?white:dim;}
   if(messages){messages.style.background=tab==='messages'?purple:gray;messages.style.color=tab==='messages'?white:dim;}
-  if(tab==='messages')renderEmployeeMessagesList();
-  else renderAdminMemoList();
+  if(tab==='messages'){renderEmployeeMessagesList();}
+  else{
+    const flatList=document.getElementById('memo-admin-list');
+    const cardWrap=document.getElementById('emp-msg-cards-wrap');
+    if(flatList)flatList.style.display='block';
+    if(cardWrap)cardWrap.style.display='none';
+    renderAdminMemoList();
+  }
 }
 function toggleMemoForm(){
   const f=document.getElementById('memo-create-form');
@@ -2567,28 +2615,38 @@ async function loadEmployeeMessages(){
   }catch(e){console.log('Employee messages:',e);}
 }
 function renderEmployeeMessagesList(){
-  const el=document.getElementById('memo-admin-list');
-  if(!el||currentMemoTab!=='messages')return;
-  if(!allEmpMessagesCache.length){el.innerHTML='<p style="color:#888;font-size:13px;">No employee messages yet.</p>';return;}
-  el.innerHTML=allEmpMessagesCache.map(m=>{
+  if(currentMemoTab!=='messages')return;
+  // Show card UI, hide flat list
+  const flatList=document.getElementById('memo-admin-list');
+  const cardWrap=document.getElementById('emp-msg-cards-wrap');
+  if(flatList)flatList.style.display='none';
+  if(cardWrap)cardWrap.style.display='block';
+  const unread=allEmpMessagesCache.filter(m=>!m.is_read);
+  const read=allEmpMessagesCache.filter(m=>m.is_read);
+  // Update counts
+  const uc=document.getElementById('adm-msg-unread-count');
+  const rc=document.getElementById('adm-msg-read-count');
+  if(uc)uc.textContent=unread.length+' unread';
+  if(rc)rc.textContent=read.length+' read';
+  function msgCard(m){
     const dt=new Date(m.sent_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-    const readBadge=m.is_read?'<span style="color:var(--success);font-size:11px;font-weight:700;">✓ Seen</span>':'<span style="background:#5b21b6;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;">NEW</span>';
-    return '<div class="card" style="margin-bottom:10px;' + (!m.is_read?'border-color:#a78bfa;':'')+'">' +
+    return '<div class="card" style="margin-bottom:10px;'+(!m.is_read?'border-color:#a78bfa;':'')+'">' +
       '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">' +
         '<div style="flex:1;">' +
-          '<div style="font-size:15px;font-weight:700;color:var(--navy);">' + m.subject + '</div>' +
-          '<div style="font-size:11px;color:#888;margin-top:2px;">From <strong>' + m.employee_name + '</strong>' + (m.county?' ('+m.county+')':'') + ' · ' + dt + '</div>' +
+          '<div style="font-size:15px;font-weight:700;color:var(--navy);">'+m.subject+'</div>' +
+          '<div style="font-size:11px;color:#888;margin-top:2px;">From <strong>'+m.employee_name+'</strong>'+(m.county?' ('+m.county+')':'')+ ' · '+dt+'</div>' +
         '</div>' +
-        '<div style="display:flex;gap:6px;align-items:center;">' + readBadge + '</div>' +
       '</div>' +
-      '<div style="font-size:13px;color:#555;margin-top:10px;white-space:pre-wrap;background:var(--gray);padding:12px;border-radius:8px;">' + m.body + '</div>' +
-      '<div style="margin-top:12px;display:flex;gap:8px;align-items:flex-end;">' +
-        '<div style="flex:1;"><label style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px;">Reply (optional)</label>' +
-        '<input type="text" id="adm-reply-'+m.id+'" placeholder="Type a reply..." value="'+(m.admin_reply||'')+'" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>' +
-        '<button onclick="markMessageRead('+m.id+')" style="background:#5b21b6;color:#fff;border:none;padding:9px 16px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">✓ Mark Read &amp; Reply</button>' +
-      '</div>' +
+      '<div style="font-size:13px;color:#555;margin-top:10px;white-space:pre-wrap;background:var(--gray);padding:12px;border-radius:8px;">'+m.body+'</div>' +
+      (m.admin_reply?'<div style="margin-top:8px;background:#e8f4fd;border-radius:8px;padding:8px 12px;font-size:12px;"><strong>Your reply:</strong> '+m.admin_reply+'</div>':'') +
+      (!m.is_read?'<div style="margin-top:12px;display:flex;gap:8px;align-items:flex-end;"><div style="flex:1;"><label style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px;">Reply (optional)</label><input type="text" id="adm-reply-'+m.id+'" placeholder="Type a reply..." value="'+(m.admin_reply||'')+'" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div><button onclick="markMessageRead('+m.id+')" style="background:#5b21b6;color:#fff;border:none;padding:9px 16px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">✓ Mark Read &amp; Reply</button></div>':'') +
     '</div>';
-  }).join('');
+  }
+  const up=document.getElementById('adm-msg-panel-unread');
+  const rp=document.getElementById('adm-msg-panel-read');
+  if(up)up.innerHTML=unread.length?unread.map(msgCard).join(''):'<p style="color:#888;font-size:13px;">No unread messages — all caught up! ✅</p>';
+  if(rp)rp.innerHTML=read.length?read.map(msgCard).join(''):'<p style="color:#888;font-size:13px;">No read messages yet.</p>';
+  switchAdmMsgCard(currentAdmMsgCard);
 }
 async function markMessageRead(id){
   const reply=document.getElementById('adm-reply-'+id)?.value.trim()||null;
@@ -2596,6 +2654,96 @@ async function markMessageRead(id){
     await db.from('employee_messages').update({is_read:true,admin_reply:reply,read_at:new Date().toISOString()}).eq('id',id);
     loadEmployeeMessages();
   }catch(e){alert('Error: '+e.message);}
+}
+
+// ── PROFILE: Performance sub-tab loaders ──
+async function loadProfileReviews(name,email){
+  const el=document.getElementById('pdata-reviews');
+  if(!el)return;
+  try{
+    const firstName=name.split(' ')[0];
+    const {data}=await db.from('time_off_requests').select('id').eq('employee_email',email).limit(1);
+    // Pull evaluations from submissions — check for 30/60/90 day evals
+    // For now render a summary of what's on file from profile cache
+    const p=allProfilesCache.find(x=>x.employee_email===email||x.employee_name===name);
+    if(!p){el.innerHTML='<p style="color:#888;font-size:13px;">No profile found.</p>';return;}
+    const evals=[
+      {label:'30-Day Review',field:p.eval_30_date,status:p.eval_30_status},
+      {label:'60-Day Review',field:p.eval_60_date,status:p.eval_60_status},
+      {label:'90-Day Review',field:p.eval_90_date,status:p.eval_90_status},
+    ];
+    const anyData=evals.some(e=>e.field||e.status);
+    if(!anyData){el.innerHTML='<p style="color:#888;font-size:13px;padding:20px 0;">No performance reviews on record. Reviews can be added in the employee profile.</p>';return;}
+    el.innerHTML=evals.map(e=>{
+      const statusColor=e.status==='Complete'?'var(--success)':e.status==='Overdue'?'var(--red)':'var(--warn)';
+      return '<div class="profile-list-item"><div><strong>'+e.label+'</strong>'+(e.field?'<span style="font-size:12px;color:#888;margin-left:8px;">'+e.field+'</span>':'')+'</div>'+(e.status?'<span style="color:'+statusColor+';font-size:12px;font-weight:700;">'+e.status+'</span>':'<span style="color:#aaa;font-size:12px;">Not recorded</span>')+'</div>';
+    }).join('');
+  }catch(e){el.innerHTML='<p style="color:#888;font-size:13px;">Unable to load reviews.</p>';}
+}
+async function loadProfileAttendance(name){
+  const el=document.getElementById('pdata-attendance');
+  if(!el)return;
+  try{
+    const {data}=await db.from('call_out_log').select('*').ilike('employee_name','%'+name.split(' ')[0]+'%').order('callout_date',{ascending:false});
+    if(!data||!data.length){el.innerHTML='<p style="color:#888;font-size:13px;padding:20px 0;">No attendance events on record.</p>';return;}
+    const total=data.length;
+    const callTypes=[...new Set(data.map(c=>c.call_type).filter(Boolean))];
+    let html='<div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">';
+    html+='<div style="background:#fef3e8;border-radius:10px;padding:12px 18px;text-align:center;flex:1;min-width:80px;"><div style="font-size:22px;font-weight:800;color:var(--warn);">'+total+'</div><div style="font-size:11px;color:#888;margin-top:2px;">Total Call-Outs</div></div>';
+    const sick=data.filter(c=>c.reason&&c.reason.toLowerCase().includes('sick')).length;
+    if(sick)html+='<div style="background:#fdecea;border-radius:10px;padding:12px 18px;text-align:center;flex:1;min-width:80px;"><div style="font-size:22px;font-weight:800;color:var(--red);">'+sick+'</div><div style="font-size:11px;color:#888;margin-top:2px;">Sick</div></div>';
+    html+='</div>';
+    html+=data.map(c=>'<div class="profile-list-item"><div><strong>'+c.callout_date+'</strong> — '+c.reason+(c.call_type&&c.call_type!=="N/A"?'<span style="background:#fef3e8;color:var(--warn);padding:1px 7px;border-radius:8px;font-size:11px;margin-left:4px;">'+c.call_type+'</span>':'')+(c.notes?'<div style="font-size:12px;color:#888;margin-top:2px;">'+c.notes+'</div>':'')+'</div><div style="font-size:11px;color:#aaa;">'+( c.logged_by||'Admin')+'</div></div>').join('');
+    el.innerHTML=html;
+  }catch(e){el.innerHTML='<p style="color:#888;font-size:13px;">Unable to load attendance.</p>';}
+}
+async function loadProfilePIP(name,email){
+  const el=document.getElementById('pdata-pip');
+  if(!el)return;
+  try{
+    const {data:warnStatus}=await db.from('warning_status').select('*').ilike('employee_name','%'+name.split(' ')[0]+'%').order('updated_at',{ascending:false});
+    const pips=( warnStatus||[]).filter(w=>w.stage==='pip'||w.stage==='final');
+    if(!pips.length){el.innerHTML='<p style="color:#888;font-size:13px;padding:20px 0;">No PIPs or final warnings on record.</p>';return;}
+    el.innerHTML=pips.map(w=>{
+      const s=WARN_STAGES.find(x=>x.id===w.stage)||{label:w.stage,color:'#f0f0f0',text:'#555'};
+      return '<div class="profile-list-item"><div><span style="background:'+s.color+';color:'+s.text+';padding:2px 10px;border-radius:10px;font-size:11px;font-weight:700;">'+s.label+'</span>'+(w.note?'<span style="margin-left:8px;font-size:12px;color:#666;">'+w.note+'</span>':'')+'</div><div style="font-size:11px;color:#aaa;white-space:nowrap;">'+new Date(w.updated_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+' · '+(w.updated_by||'Admin')+'</div></div>';
+    }).join('');
+  }catch(e){el.innerHTML='<p style="color:#888;font-size:13px;">Unable to load PIP history.</p>';}
+}
+async function loadProfileMemos(name,email){
+  const el=document.getElementById('pdata-memos');
+  if(!el)return;
+  try{
+    const {data}=await db.from('memos').select('id,subject,created_at,created_by,read_by,priority').eq('is_active',true).order('created_at',{ascending:false});
+    if(!data||!data.length){el.innerHTML='<p style="color:#888;font-size:13px;padding:20px 0;">No memos on record.</p>';return;}
+    // Show memos that were sent to all OR to this employee's supervisor
+    const p=allProfilesCache.find(x=>x.employee_email===email||x.employee_name===name);
+    const relevant=data.filter(m=>m.audience==='all'||(p&&p.assigned_supervisor===m.audience));
+    if(!relevant.length){el.innerHTML='<p style="color:#888;font-size:13px;padding:20px 0;">No memos directed to this employee.</p>';return;}
+    el.innerHTML='<div style="font-size:12px;color:#888;margin-bottom:12px;">Showing memos sent to this employee. Read status reflects their acknowledgment.</div>'+
+      relevant.map(m=>{
+        const isRead=(m.read_by||[]).includes(name);
+        const dt=new Date(m.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+        const urgentBadge=m.priority==='urgent'?'<span style="background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;margin-left:6px;">URGENT</span>':'';
+        const readBadge=isRead
+          ?'<span style="color:var(--success);font-size:12px;font-weight:700;">✓ Read & Acknowledged</span>'
+          :'<span style="background:#fef3e8;color:var(--warn);font-size:11px;font-weight:700;padding:2px 8px;border-radius:8px;">Not yet read</span>';
+        return '<div class="profile-list-item"><div><strong>'+m.subject+'</strong>'+urgentBadge+'<div style="font-size:11px;color:#888;margin-top:2px;">Sent by '+m.created_by+' · '+dt+'</div></div>'+readBadge+'</div>';
+      }).join('');
+  }catch(e){el.innerHTML='<p style="color:#888;font-size:13px;">Unable to load memo history.</p>';}
+}
+
+// ── ADMIN: Employee messages read/unread card switcher ──
+let currentAdmMsgCard='unread';
+function switchAdmMsgCard(card){
+  currentAdmMsgCard=card;
+  ['unread','read'].forEach(c=>{
+    const btn=document.getElementById('adm-msg-card-btn-'+c);
+    const panel=document.getElementById('adm-msg-panel-'+c);
+    const active=c===card;
+    if(btn){btn.style.background=active?'#5b21b6':'#fff';btn.style.color=active?'#fff':'var(--navy)';btn.style.borderColor=active?'#5b21b6':'var(--border)';}
+    if(panel)panel.style.display=active?'block':'none';
+  });
 }
 // ── INCIDENT REPORTS ──
 let allIncidentsCache=[];
@@ -2869,6 +3017,7 @@ async function saveIncidentReview(){
 // ── EMPLOYEE PROFILES ──
 let allProfilesCache=[];
 let currentProfileId=null;
+let currentProfileEmployee=null;
 
 async function loadEmployeeFolders(){
   const el=document.getElementById('emp-folder-grid');
@@ -2961,6 +3110,7 @@ async function openProfileDetail(id){
   const p=allProfilesCache.find(x=>x.id===id);
   if(!p)return;
   currentProfileId=id;
+  currentProfileEmployee=p;
   const isDemo=adminStaff?.role==='demo';
   const idx=allProfilesCache.indexOf(p);
   const displayName=isDemo?`Employee ${idx+1}`:p.employee_name||'—';
@@ -2998,17 +3148,43 @@ async function openProfileDetail(id){
   loadProfileCallOuts(p.employee_name,p.county);
   loadProfileTimeOff(p.employee_email);
   loadProfilePolicies(p.employee_email,p.employee_name);
+  loadProfileReviews(p.employee_name,p.employee_email);
+  loadProfileAttendance(p.employee_name);
+  loadProfilePIP(p.employee_name,p.employee_email);
+  loadProfileMemos(p.employee_name,p.employee_email);
 }
 function closeProfileDetail(){
   currentProfileId=null;
+  currentProfileEmployee=null;
   document.getElementById('emp-folder-detail-view').style.display='none';
   document.getElementById('emp-folder-list-view').style.display='block';
 }
 function switchProfileTab(tab){
-  ['info','policies','warnings','callouts','timeoff'].forEach(t=>{
+  ['info','policies','performance','callouts','timeoff','memos'].forEach(t=>{
     document.getElementById('ptab-'+t)?.classList.toggle('active',t===tab);
     document.getElementById('ppanel-'+t)?.classList.toggle('active',t===tab);
   });
+  const p=currentProfileEmployee;
+  if(!p)return;
+  if(tab==='performance'){switchPerfCard('warnings');loadProfileWarnings(p.employee_name,p.county);}
+  if(tab==='memos')loadProfileMemos(p.employee_name,p.employee_email);
+}
+let currentPerfCard='warnings';
+function switchPerfCard(card){
+  currentPerfCard=card;
+  ['warnings','reviews','attendance','pip'].forEach(c=>{
+    const btn=document.getElementById('perf-card-btn-'+c);
+    const panel=document.getElementById('perf-panel-'+c);
+    const active=c===card;
+    if(btn){btn.style.background=active?'var(--navy)':'#fff';btn.style.color=active?'#fff':'var(--navy)';btn.style.borderColor=active?'var(--navy)':'var(--border)';}
+    if(panel)panel.style.display=active?'block':'none';
+  });
+  const p=currentProfileEmployee;
+  if(!p)return;
+  if(card==='warnings')loadProfileWarnings(p.employee_name,p.county);
+  if(card==='reviews')loadProfileReviews(p.employee_name,p.employee_email);
+  if(card==='attendance')loadProfileAttendance(p.employee_name);
+  if(card==='pip')loadProfilePIP(p.employee_name,p.employee_email);
 }
 async function loadProfileWarnings(name,county){
   const el=document.getElementById('pdata-warnings');
