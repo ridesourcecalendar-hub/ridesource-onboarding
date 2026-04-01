@@ -762,6 +762,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
         <div class="nav-item" onclick="showAdmin('requests')" id="nav-adm-requests"><span class="nav-icon">📅</span>Time Off Requests<span class="nav-badge" id="badge-requests">0</span></div>
         <div class="nav-item" onclick="showAdmin('callouts')" id="nav-adm-callouts"><span class="nav-icon">📞</span>Call-Out Log</div>
         <div class="nav-item" onclick="showAdmin('calendar')" id="nav-adm-calendar"><span class="nav-icon">🗓️</span>Team Calendar</div>
+        <div class="nav-item" onclick="showAdmin('recognition')" id="nav-adm-recognition"><span class="nav-icon">🎉</span>Recognition Calendar</div>
         <div class="sidebar-label">Operations</div>
         <div class="nav-item" onclick="showAdmin('timesheets')" id="nav-adm-timesheets"><span class="nav-icon">🕐</span>Timesheets<span class="nav-badge" id="badge-timesheets">0</span></div>
         <div class="nav-item" onclick="showAdmin('vehicle-records')" id="nav-adm-vehicle-records"><span class="nav-icon">🚐</span>Vehicle Records</div>
@@ -1022,6 +1023,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
                   <div class="info-field"><div class="info-label">Supervisor</div><div class="info-value" id="pinfo-supervisor">—</div></div>
                   <div class="info-field"><div class="info-label">Position</div><div class="info-value" id="pinfo-position">—</div></div>
                   <div class="info-field"><div class="info-label">Hire Date</div><div class="info-value" id="pinfo-hire-date">—</div></div>
+                  <div class="info-field"><div class="info-label">Birthday</div><div class="info-value" id="pinfo-birthday">—</div></div>
                   <div class="info-field"><div class="info-label">County</div><div class="info-value" id="pinfo-county">—</div></div>
                 </div>
               </div>
@@ -1153,6 +1155,26 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
           </div>
           <div id="cal-grid"></div>
           <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;" id="cal-legend"></div>
+        </div>
+      </div>
+
+      <!-- RECOGNITION CALENDAR -->
+      <div id="section-adm-recognition" class="admin-section">
+        <div style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:4px;">🎉 Recognition Calendar</div>
+        <p style="color:#888;font-size:13px;margin-bottom:20px;">Work anniversaries and employee birthdays, pulled from employee profiles.</p>
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+            <button class="btn btn-secondary btn-sm" onclick="changeRecogMonth(-1)">← Previous</button>
+            <span style="font-size:16px;font-weight:700;color:var(--navy);" id="recog-month-label"></span>
+            <button class="btn btn-secondary btn-sm" onclick="changeRecogMonth(1)">Next →</button>
+          </div>
+          <!-- Upcoming this month strip -->
+          <div id="recog-upcoming" style="margin-bottom:16px;"></div>
+          <div id="recog-cal-grid"></div>
+          <div style="display:flex;gap:16px;margin-top:14px;flex-wrap:wrap;">
+            <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;"><span style="width:12px;height:12px;background:#F59E0B;border-radius:50%;display:inline-block;"></span>Work Anniversary</span>
+            <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;"><span style="width:12px;height:12px;background:#EC4899;border-radius:50%;display:inline-block;"></span>Birthday</span>
+          </div>
         </div>
       </div>
 
@@ -1697,6 +1719,7 @@ function showAdmin(id){
   }
   if(id==='incidents')loadIncidents();
   if(id==='memos'){loadMemos();loadEmployeeMessages();}
+  if(id==='recognition'){renderRecogCalendar();}
   // Keep profile cache fresh when navigating to sections that use it for filtering
   if(id==='requests'||id==='callouts')if(allProfilesCache.length===0)loadEmployeeFolders();
 }
@@ -2745,6 +2768,87 @@ function switchAdmMsgCard(card){
     if(panel)panel.style.display=active?'block':'none';
   });
 }
+
+// ── RECOGNITION CALENDAR ──
+let recogYear=new Date().getFullYear(),recogMonth=new Date().getMonth();
+function changeRecogMonth(dir){
+  recogMonth+=dir;
+  if(recogMonth<0){recogMonth=11;recogYear--;}
+  if(recogMonth>11){recogMonth=0;recogYear++;}
+  renderRecogCalendar();
+}
+function renderRecogCalendar(){
+  const label=document.getElementById('recog-month-label');
+  if(label)label.textContent=new Date(recogYear,recogMonth).toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  const profiles=allProfilesCache.filter(p=>p.employment_status!=='Separated');
+  const events={};
+  const upcoming=[];
+  const today=new Date();
+  profiles.forEach(p=>{
+    // Work anniversary
+    if(p.hire_date){
+      const hire=new Date(p.hire_date+'T00:00:00');
+      const annivDay=hire.getDate(),annivMo=hire.getMonth();
+      if(annivMo===recogMonth){
+        const years=recogYear-hire.getFullYear();
+        if(years>0){
+          const key=annivDay;
+          if(!events[key])events[key]=[];
+          events[key].push({type:'anniversary',name:p.employee_name,label:p.employee_name.split(' ')[0]+' — '+years+'yr anniversary',color:'#F59E0B'});
+          // Upcoming strip (within next 30 days)
+          const eventDate=new Date(recogYear,recogMonth,annivDay);
+          const daysUntil=Math.ceil((eventDate-today)/(1000*60*60*24));
+          if(daysUntil>=0&&daysUntil<=30)upcoming.push({type:'anniversary',name:p.employee_name,label:years+' year anniversary',date:eventDate,daysUntil,color:'#F59E0B',icon:'🏆'});
+        }
+      }
+    }
+    // Birthday
+    if(p.birthday){
+      const bday=new Date(p.birthday+'T00:00:00');
+      const bdayDay=bday.getDate(),bdayMo=bday.getMonth();
+      if(bdayMo===recogMonth){
+        const key=bdayDay;
+        if(!events[key])events[key]=[];
+        events[key].push({type:'birthday',name:p.employee_name,label:p.employee_name.split(' ')[0]+" 🎂",color:'#EC4899'});
+        const eventDate=new Date(recogYear,recogMonth,bdayDay);
+        const daysUntil=Math.ceil((eventDate-today)/(1000*60*60*24));
+        if(daysUntil>=0&&daysUntil<=30)upcoming.push({type:'birthday',name:p.employee_name,label:'birthday',date:eventDate,daysUntil,color:'#EC4899',icon:'🎂'});
+      }
+    }
+  });
+  // Render upcoming strip
+  const upcomingEl=document.getElementById('recog-upcoming');
+  if(upcomingEl){
+    if(upcoming.length){
+      upcoming.sort((a,b)=>a.daysUntil-b.daysUntil);
+      upcomingEl.innerHTML='<div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Coming up</div>'+
+        '<div style="display:flex;gap:8px;flex-wrap:wrap;">'+
+        upcoming.map(e=>'<div style="background:'+(e.type==='birthday'?'#fdf2f8':'#fffbeb')+';border:1px solid '+(e.type==='birthday'?'#f9a8d4':'#fcd34d')+';border-radius:10px;padding:8px 14px;font-size:12px;">'+
+          e.icon+' <strong>'+e.name.split(' ')[0]+'</strong> — '+e.label+
+          '<div style="color:#888;font-size:11px;margin-top:2px;">'+(e.daysUntil===0?'Today! 🎉':e.daysUntil===1?'Tomorrow':e.daysUntil+' days away')+'</div>'+
+        '</div>').join('')+'</div>';
+    } else {
+      upcomingEl.innerHTML='<p style="color:#888;font-size:13px;">No upcoming birthdays or anniversaries in the next 30 days.</p>';
+    }
+  }
+  // Render calendar grid
+  const firstDay=new Date(recogYear,recogMonth,1).getDay();
+  const daysInMonth=new Date(recogYear,recogMonth+1,0).getDate();
+  let html='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;">';
+  ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d=>html+='<div style="text-align:center;font-size:11px;font-weight:700;color:#888;padding:6px 0;">'+d+'</div>');
+  for(let i=0;i<firstDay;i++)html+='<div style="min-height:70px;"></div>';
+  for(let d=1;d<=daysInMonth;d++){
+    const isToday=today.getDate()===d&&today.getMonth()===recogMonth&&today.getFullYear()===recogYear;
+    const evs=events[d]||[];
+    html+='<div style="min-height:70px;border:1px solid #e8e8e8;border-radius:4px;padding:4px;background:'+(isToday?'#EAF0FB':'#fff')+';">' +
+      '<div style="font-size:12px;font-weight:'+(isToday?'800':'600')+';color:'+(isToday?'var(--navy)':'#333')+';margin-bottom:3px;">'+d+'</div>'+
+      evs.map(e=>'<div style="background:'+e.color+';color:#fff;font-size:10px;padding:2px 5px;border-radius:10px;margin-bottom:2px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">'+e.label+'</div>').join('')+
+    '</div>';
+  }
+  html+='</div>';
+  const grid=document.getElementById('recog-cal-grid');
+  if(grid)grid.innerHTML=html;
+}
 // ── INCIDENT REPORTS ──
 let allIncidentsCache=[];
 const IR_TRIP_CHECKS=['On-time Pickup','On-time Drop-off','Multi-loaded Trip','Attendant/Escort Present','Service Animal Present','Assistive Mobility Device'];
@@ -3131,6 +3235,7 @@ async function openProfileDetail(id){
   if(statusEl)statusEl.innerHTML=statusBadgeHtml(p.employment_status);
   setVal('pinfo-supervisor',p.assigned_supervisor);
   setVal('pinfo-hire-date',p.hire_date?new Date(p.hire_date+'T00:00:00').toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}):null);
+  setVal('pinfo-birthday',p.birthday?new Date(p.birthday+'T00:00:00').toLocaleDateString('en-US',{month:'long',day:'numeric'})+' 🎂':null);
   setVal('pinfo-county',p.county);
   setVal('pinfo-email',p.employee_email);
   setVal('pinfo-phone',p.phone);
@@ -3298,6 +3403,7 @@ function openCreateProfileModal(){
   document.getElementById('cpm-county').value='';
   document.getElementById('cpm-position').value='';
   document.getElementById('cpm-hire-date').value='';
+  document.getElementById('cpm-birthday').value='';
   document.getElementById('cpm-phone').value='';
   document.getElementById('cpm-address').value='';
   document.getElementById('cpm-ec-name').value='';
@@ -3319,6 +3425,7 @@ function openEditProfileModal(){
   document.getElementById('cpm-county').value=p.county||'';
   document.getElementById('cpm-position').value=p.position||'';
   document.getElementById('cpm-hire-date').value=p.hire_date||'';
+  document.getElementById('cpm-birthday').value=p.birthday||'';
   document.getElementById('cpm-phone').value=p.phone||'';
   document.getElementById('cpm-address').value=p.address||'';
   document.getElementById('cpm-ec-name').value=p.emergency_contact_name||'';
@@ -3372,6 +3479,7 @@ async function saveProfile(){
     county:document.getElementById('cpm-county').value,
     position:document.getElementById('cpm-position').value.trim(),
     hire_date:document.getElementById('cpm-hire-date').value||null,
+    birthday:document.getElementById('cpm-birthday').value||null,
     employment_status:document.getElementById('cpm-status').value||'Active',
     assigned_supervisor:document.getElementById('cpm-supervisor').value||null,
     phone:document.getElementById('cpm-phone').value.trim(),
@@ -5396,6 +5504,9 @@ async function buildDocx(templateId){
     </div>
     <div class="form-row">
       <div class="form-field"><label>Hire Date</label><input type="date" id="cpm-hire-date"></div>
+      <div class="form-field"><label>Birthday</label><input type="date" id="cpm-birthday"></div>
+    </div>
+    <div class="form-row">
       <div class="form-field"><label>Phone</label><input type="text" id="cpm-phone" placeholder="207-555-0000"></div>
     </div>
     <div class="form-row">
