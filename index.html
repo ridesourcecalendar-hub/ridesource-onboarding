@@ -940,6 +940,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
           <button id="req-tab-DENIED" class="req-tab req-tab-denied" onclick="setReqTab('DENIED')">✗ Denied<span class="req-count" id="req-count-DENIED" style="background:#ddd;color:#555;">0</span></button>
           <button id="req-tab-PTO" class="req-tab req-tab-pto" onclick="setReqTab('PTO')">💰 PTO<span class="req-count" id="req-count-PTO" style="background:#ddd;color:#555;">0</span></button>
           <button id="req-tab-ALL" class="req-tab" style="margin-left:auto;" onclick="setReqTab('ALL')">All</button>
+          <button class="btn btn-sm" style="background:#e8f4fd;color:#1565c0;margin-left:8px;" onclick="exportTimeOffRequests()">⬇️ Export CSV</button>
         </div>
         <div style="margin-bottom:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
           <input type="text" id="req-search" placeholder="🔍  Search by employee name..." oninput="renderRequestsTable()" style="padding:9px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;flex:1;min-width:180px;">
@@ -2981,16 +2982,48 @@ function renderIncidentTable(){
   if(statusF)data=data.filter(r=>r.status===statusF);
   if(supF)data=data.filter(r=>r.assigned_supervisor===supF);
   if(!data.length){el.innerHTML='<p style="color:#888;font-size:13px;padding:12px 0;">No incident reports found.</p>';return;}
-  el.innerHTML='<div style="overflow-x:auto;"><table class="data-table"><thead><tr><th>Employee</th><th>County</th><th>Date</th><th>Location</th><th>Nature</th><th>Supervisor</th><th>Submitted</th><th>Status</th><th>Actions</th></tr></thead><tbody>'+
-    data.map((r,idx)=>{
-      const submitted=r.submitted_at?new Date(r.submitted_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'—';
-      const hrs=Math.round((Date.now()-new Date(r.submitted_at).getTime())/3600000);
-      const statusBadge=r.status==='Open'?`<span class="badge badge-flag">${r.status}${hrs>=24?' ⚠️':''}</span>`:r.status==='Under Review'?`<span class="badge badge-warning">${r.status}</span>`:`<span class="badge badge-approved">${r.status}</span>`;
-      const nature=(r.nature_of_incident||[]).slice(0,2).join(', ')+(r.nature_of_incident?.length>2?' +more':'');
-      const reviewBtn=isDemo?'':`<button class="btn btn-sm" style="background:var(--light);color:var(--navy);" onclick="openIncidentModal(${r.id})">📋 Review</button>`;
-      return `<tr><td><strong>${demoMask(r.employee_name,idx)}</strong></td><td>${r.county||'—'}</td><td>${r.incident_date}</td><td style="max-width:140px;font-size:12px;">${isDemo?'—':r.location||'—'}</td><td style="font-size:11px;max-width:160px;">${nature||'—'}</td><td style="font-size:12px;">${isDemo?'Admin':r.assigned_supervisor||'—'}</td><td style="font-size:12px;color:#888;">${submitted}</td><td>${statusBadge}</td><td style="white-space:nowrap;">${reviewBtn}</td></tr>`;
-    }).join('')+
-    '</tbody></table></div>';
+  el.innerHTML=data.map((r,idx)=>{
+    const submitted=r.submitted_at?new Date(r.submitted_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'—';
+    const hrs=Math.round((Date.now()-new Date(r.submitted_at).getTime())/3600000);
+    const statusBadge=r.status==='Open'?'<span class="badge badge-flag">'+r.status+(hrs>=24?' ⚠️':'')+'</span>':r.status==='Under Review'?'<span class="badge badge-warning">'+r.status+'</span>':'<span class="badge badge-approved">'+r.status+'</span>';
+    const nature=(r.nature_of_incident||[]).slice(0,2).join(', ')+((r.nature_of_incident||[]).length>2?' +more':'');
+    return '<div class="card" style="margin-bottom:8px;padding:0;overflow:hidden;">'+
+      '<div style="display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;" onclick="toggleCollapse('ir-body-'+r.id+'')">'+
+        '<div style="flex:1;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">'+
+          '<strong style="font-size:14px;color:var(--navy);">'+demoMask(r.employee_name,idx)+'</strong>'+
+          '<span style="font-size:12px;color:#888;">'+( r.county||'—')+'</span>'+
+          '<span style="font-size:12px;color:#555;font-weight:600;">'+r.incident_date+'</span>'+
+          '<span style="font-size:11px;color:#888;">'+( nature||'—')+'</span>'+
+          statusBadge+
+        '</div>'+
+        '<span style="font-size:11px;color:#aaa;flex-shrink:0;">▼ expand</span>'+
+      '</div>'+
+      '<div id="ir-body-'+r.id+'" style="display:none;border-top:1px solid var(--border);padding:14px 16px;background:#fafafa;">'+
+        '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:14px;">'+
+          '<div><div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.5px;">Location</div><div style="font-size:13px;margin-top:2px;">'+(isDemo?'—':r.location||'—')+'</div></div>'+
+          '<div><div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.5px;">Supervisor</div><div style="font-size:13px;margin-top:2px;">'+(isDemo?'Admin':r.assigned_supervisor||'—')+'</div></div>'+
+          '<div><div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.5px;">Nature</div><div style="font-size:12px;margin-top:2px;">'+(nature||'—')+'</div></div>'+
+          '<div><div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.5px;">Submitted</div><div style="font-size:13px;margin-top:2px;">'+submitted+'</div></div>'+
+        '</div>'+
+        (isDemo?'':'<div style="display:flex;gap:8px;flex-wrap:wrap;">'+
+          '<button class="btn btn-sm" style="background:var(--light);color:var(--navy);" onclick="openIncidentModal('+r.id+')">📋 Review</button>'+
+          '<button class="btn btn-sm btn-red" onclick="deleteIncidentReport('+r.id+')">🗑️ Delete</button>'+
+        '</div>')+
+      '</div>'+
+    '</div>';
+  }).join('')+'<div style="margin-top:12px;"><button class="btn btn-sm" style="background:#e8f4fd;color:#1565c0;" onclick="exportIncidents()">⬇️ Export CSV</button></div>';
+}
+async function deleteIncidentReport(id){
+  if(!confirm('Delete this incident report? This cannot be undone.'))return;
+  try{await db.from('incident_reports').delete().eq('id',id);loadIncidents();}catch(e){alert('Error: '+e.message);}
+}
+function exportIncidents(){
+  const data=allIncidentsCache;
+  if(!data.length){alert('No incidents to export.');return;}
+  const headers=['Employee','County','Date','Location','Nature','Supervisor','Status','Submitted'];
+  const rows=data.map(r=>[r.employee_name,r.county||'',r.incident_date,r.location||'',(r.nature_of_incident||[]).join('; '),r.assigned_supervisor||'',r.status,r.submitted_at?new Date(r.submitted_at).toLocaleDateString('en-US'):''].map(v=>'"'+String(v||'').replace(/"/g,'""')+'"'));
+  const csv=[headers.join(','),...rows.map(r=>r.join(','))].join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='RideSource_Incidents_'+new Date().toISOString().split('T')[0]+'.csv';a.click();
 }
 function toggleAdminIncidentForm(){
   const f=document.getElementById('admin-ir-form');
@@ -3926,6 +3959,25 @@ function renderWarnArchiveList(stage){
       </div>
     </div>`).join('');
 }
+async function deleteWarningFlag(id){
+  if(!confirm('Delete this warning record? This cannot be undone.'))return;
+  try{await db.from('warning_status').delete().eq('id',id);loadFlags();loadDashboard();}catch(e){alert('Error: '+e.message);}
+}
+function openEditFlag(id){
+  const w=warningData?warningData.find(x=>x.id===id):null;
+  if(!w)return;
+  document.getElementById('edit-flag-id').value=id;
+  document.getElementById('edit-flag-note').value=w.note||'';
+  document.getElementById('edit-flag-modal').classList.add('open');
+}
+async function saveEditFlag(){
+  const id=document.getElementById('edit-flag-id').value;
+  const note=document.getElementById('edit-flag-note').value.trim();
+  try{
+    await db.from('warning_status').update({note}).eq('id',id);
+    closeModal('edit-flag-modal');loadFlags();loadDashboard();
+  }catch(e){alert('Error: '+e.message);}
+}
 async function loadFlags(){
   await loadWarnStatuses();
   const {data:callouts}=await db.from('call_out_log').select('*');
@@ -3959,9 +4011,10 @@ async function loadFlags(){
           ${ws?.updated_at?`<div style="font-size:11px;color:#aaa;margin-top:3px;">Last updated ${new Date(ws.updated_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})} by ${ws.updated_by||'Admin'}</div>`:''}
         </div>
       </div>
-      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;flex-wrap:wrap;">
         <button class="btn btn-red btn-sm" onclick='openWarningModal(${JSON.stringify(f).replace(/'/g,"&#39;")})'>Generate Warning</button>
         <button class="btn btn-sm" style="background:var(--light);color:var(--navy);border:1px solid var(--border);" onclick="openWarnStageModal('${f.name.replace(/'/g,"\'")}','${f.county}')">Update Stage</button>
+        ${ws?.id?`<button class="btn btn-sm" style="background:#e8f4fd;color:#1565c0;" onclick="openEditFlag(${ws.id})">✏️ Edit Note</button><button class="btn btn-sm btn-red" onclick="deleteWarningFlag(${ws.id})">🗑️</button>`:''}
       </div>
     </div>`;
   }).join('');
@@ -4129,19 +4182,44 @@ function renderRequestsTable(){
     const labels={PENDING:'No pending requests.',APPROVED:'No approved requests yet.',DENIED:'No denied requests yet.',PTO:'No PTO requests yet.',ALL:'No requests found.'};
     el.innerHTML='<p style="color:#888;font-size:13px;padding:12px 0;">'+(labels[currentReqTab]||'No requests found.')+'</p>';return;
   }
-  el.innerHTML='<div style="overflow-x:auto;"><table class="data-table"><thead><tr><th>Employee</th><th>County</th><th>Type</th><th>Date(s)</th><th>Detail</th><th>Reason</th><th>Submitted</th><th>Status</th><th>Actions</th></tr></thead><tbody>'+
-    filtered.map((r,idx)=>{
-      const displayName=isDemo?`Employee ${idx+1}`:r.employee_name;
-      const submitted=r.submitted_at?new Date(r.submitted_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'—';
-      const badgeClass=r.status==='PTO_PENDING'?'pto_pending':r.status.toLowerCase();
-      const badgeLabel=r.status==='PTO_PENDING'?'PTO PENDING':r.status;
-      const isPending=r.status==='PENDING'||r.status==='PTO_PENDING';
-      const actions=isPending
-        ?`<button class="btn btn-green btn-sm" onclick="decideRequest(${r.id},'APPROVED')">✓ Approve</button> <button class="btn btn-sm btn-red" style="margin-left:4px;" onclick="decideRequest(${r.id},'DENIED')">✗ Deny</button> <button class="btn btn-sm" style="margin-left:4px;background:#f0f0f0;color:#555;" onclick="openEditRequest(${r.id},'${(r.request_type||'').replace(/'/g,"\\'")}','${r.start_date}','${r.end_date||''}','${(r.reason||'').replace(/'/g,"\\'")}')">✏️</button>`
-        :`<button class="btn btn-sm" style="background:#f0f0f0;color:#555;" onclick="openEditRequest(${r.id},'${(r.request_type||'').replace(/'/g,"\\'")}','${r.start_date}','${r.end_date||''}','${(r.reason||'').replace(/'/g,"\\'")}')">✏️ Edit</button>`;
-      return `<tr><td><strong>${displayName}</strong></td><td>${r.county}</td><td>${r.request_type}</td><td>${r.start_date}${r.end_date&&r.end_date!==r.start_date?' → '+r.end_date:''}</td><td style="font-size:12px;">${r.time_detail||'—'}</td><td>${isDemo?'—':r.reason||'—'}</td><td style="font-size:12px;color:#888;">${submitted}</td><td><span class="badge badge-${badgeClass}">${badgeLabel}</span></td><td style="white-space:nowrap;">${isDemo?'':actions}</td></tr>`;
-    }).join('')+
-    '</tbody></table></div>';
+  el.innerHTML=filtered.map((r,idx)=>{
+    const displayName=isDemo?'Employee '+(idx+1):r.employee_name;
+    const submitted=r.submitted_at?new Date(r.submitted_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'—';
+    const badgeClass=r.status==='PTO_PENDING'?'pto_pending':r.status.toLowerCase();
+    const badgeLabel=r.status==='PTO_PENDING'?'PTO PENDING':r.status;
+    const isPending=r.status==='PENDING'||r.status==='PTO_PENDING';
+    return '<div class="card" style="margin-bottom:8px;padding:0;overflow:hidden;">'+
+      '<div style="display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;" onclick="toggleCollapse('tor-body-'+r.id+'')">'+
+        '<div style="flex:1;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">'+
+          '<strong style="font-size:14px;color:var(--navy);">'+displayName+'</strong>'+
+          '<span style="font-size:12px;color:#888;">'+r.county+'</span>'+
+          '<span style="font-size:12px;color:#555;font-weight:600;">'+r.request_type+'</span>'+
+          '<span style="font-size:12px;color:#555;">'+r.start_date+(r.end_date&&r.end_date!==r.start_date?' → '+r.end_date:'')+'</span>'+
+          '<span class="badge badge-'+badgeClass+'">'+badgeLabel+'</span>'+
+        '</div>'+
+        '<span style="font-size:11px;color:#aaa;flex-shrink:0;">▼ expand</span>'+
+      '</div>'+
+      '<div id="tor-body-'+r.id+'" style="display:none;border-top:1px solid var(--border);padding:14px 16px;background:#fafafa;">'+
+        '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:14px;">'+
+          '<div><div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.5px;">Time Detail</div><div style="font-size:13px;margin-top:2px;">'+(r.time_detail||'—')+'</div></div>'+
+          '<div><div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.5px;">Reason</div><div style="font-size:13px;margin-top:2px;">'+(isDemo?'—':r.reason||'—')+'</div></div>'+
+          '<div><div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.5px;">Submitted</div><div style="font-size:13px;margin-top:2px;">'+submitted+'</div></div>'+
+        '</div>'+
+        (isDemo?'':'<div style="display:flex;gap:8px;flex-wrap:wrap;">'+
+          (isPending?'<button class="btn btn-green btn-sm" onclick="decideRequest('+r.id+','APPROVED')">✓ Approve</button><button class="btn btn-sm btn-red" onclick="decideRequest('+r.id+','DENIED')">✗ Deny</button>':'')+
+          '<button class="btn btn-sm" style="background:#f0f0f0;color:#555;" onclick="openEditRequest('+r.id+')">✏️ Edit</button>'+
+        '</div>')+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+function exportTimeOffRequests(){
+  const data=allRequestsCache;
+  if(!data.length){alert('No requests to export.');return;}
+  const headers=['Employee','County','Type','Start Date','End Date','Detail','Reason','Status','Submitted'];
+  const rows=data.map(r=>[r.employee_name,r.county,r.request_type,r.start_date,r.end_date||'',r.time_detail||'',r.reason||'',r.status,r.submitted_at?new Date(r.submitted_at).toLocaleDateString('en-US'):''].map(v=>'"'+String(v||'').replace(/"/g,'""')+'"'));
+  const csv=[headers.join(','),...rows.map(r=>r.join(','))].join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='RideSource_TimeOff_'+new Date().toISOString().split('T')[0]+'.csv';a.click();
 }
 async function loadRequests(){
   const {data}=await db.from('time_off_requests').select('*').order('submitted_at',{ascending:false});
@@ -4177,12 +4255,14 @@ async function decideRequest(id,status){
   }catch(e){console.log('Email notification error:',e);}
   loadRequests();loadDashboard();
 }
-function openEditRequest(id,type,start,end,reason){
+function openEditRequest(id){
+  const r=allRequestsCache.find(x=>x.id===id);
+  if(!r)return;
   document.getElementById('edit-req-id').value=id;
-  document.getElementById('edit-req-type').value=type;
-  document.getElementById('edit-req-start').value=start;
-  document.getElementById('edit-req-end').value=end||start;
-  document.getElementById('edit-req-reason').value=reason;
+  document.getElementById('edit-req-type').value=r.request_type||'';
+  document.getElementById('edit-req-start').value=r.start_date||'';
+  document.getElementById('edit-req-end').value=r.end_date||r.start_date||'';
+  document.getElementById('edit-req-reason').value=r.reason||'';
   document.getElementById('edit-request-modal').classList.add('open');
 }
 async function saveEditedRequest(){
@@ -4221,13 +4301,79 @@ function renderCallOutTable(){
     data=data.filter(c=>empNames.has((c.employee_name||'').toLowerCase()));
   }
   if(!data||data.length===0){el.innerHTML='<p style="color:#888;font-size:13px;">No call-outs found.</p>';return;}
-  el.innerHTML='<div style="overflow-x:auto;"><table class="data-table"><thead><tr><th>Employee</th><th>County</th><th>Date</th><th>Reason</th><th>Call Type</th><th>Notes</th><th>Logged By</th><th></th></tr></thead><tbody>'+
-    data.map((c,idx)=>{
-      const displayName=isDemo?`Employee ${idx+1}`:c.employee_name;
-      const callTypeBadge=c.call_type==='Call After List'?`<span class="badge badge-flag">${c.call_type}</span>`:c.call_type==='Call Mid Shift'?`<span class="badge badge-warning">${c.call_type}</span>`:c.call_type?`<span class="badge badge-pending">${c.call_type}</span>`:'—';
-      return `<tr><td><strong>${displayName}</strong></td><td>${c.county}</td><td>${c.callout_date}</td><td>${c.reason}</td><td>${callTypeBadge}</td><td>${c.notes||'—'}</td><td>${isDemo?'Admin':c.logged_by}</td><td>${isDemo?'':` <button onclick="deleteCallOut(${c.id})" style="background:none;border:1px solid #ddd;border-radius:4px;padding:2px 8px;font-size:11px;cursor:pointer;color:#c00;">✕</button>`}</td></tr>`;
-    }).join('')+
-    '</tbody></table></div>';
+  el.innerHTML=data.map((c,idx)=>{
+    const displayName=isDemo?'Employee '+(idx+1):c.employee_name;
+    const callTypeBadge=c.call_type==='Call After List'?'<span class="badge badge-flag">'+c.call_type+'</span>':c.call_type==='Call Mid Shift'?'<span class="badge badge-warning">'+c.call_type+'</span>':c.call_type?'<span class="badge badge-pending">'+c.call_type+'</span>':'—';
+    return '<div class="card" style="margin-bottom:8px;padding:0;overflow:hidden;" id="co-card-'+c.id+'">'+
+      '<div style="display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;" onclick="toggleCollapse('co-body-'+c.id+'')">'+
+        '<div style="flex:1;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">'+
+          '<strong style="font-size:14px;color:var(--navy);">'+(isDemo?displayName:c.employee_name)+'</strong>'+
+          '<span style="font-size:12px;color:#888;">'+c.county+'</span>'+
+          '<span style="font-size:12px;color:#555;font-weight:600;">'+c.callout_date+'</span>'+
+          callTypeBadge+
+          '<span style="font-size:12px;color:#666;">'+c.reason+'</span>'+
+        '</div>'+
+        '<span style="font-size:11px;color:#aaa;flex-shrink:0;">▼ expand</span>'+
+      '</div>'+
+      '<div id="co-body-'+c.id+'" style="display:none;border-top:1px solid var(--border);padding:14px 16px;background:#fafafa;">'+
+        '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:14px;">'+
+          '<div><div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.5px;">Reason</div><div style="font-size:13px;margin-top:2px;">'+(c.reason||'—')+'</div></div>'+
+          '<div><div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.5px;">Call Type</div><div style="margin-top:2px;">'+callTypeBadge+'</div></div>'+
+          '<div><div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.5px;">Notes</div><div style="font-size:13px;margin-top:2px;">'+(c.notes||'—')+'</div></div>'+
+          '<div><div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.5px;">Logged By</div><div style="font-size:13px;margin-top:2px;">'+(isDemo?'Admin':c.logged_by||'—')+'</div></div>'+
+        '</div>'+
+        (isDemo?'':'<div style="display:flex;gap:8px;flex-wrap:wrap;">'+
+          '<button class="btn btn-sm" style="background:#e8f4fd;color:#1565c0;" onclick="openEditCallOut('+c.id+')">✏️ Edit</button>'+
+          '<button class="btn btn-sm btn-red" onclick="deleteCallOut('+c.id+')">🗑️ Delete</button>'+
+        '</div>')+
+      '</div>'+
+    '</div>';
+  }).join('')+
+  (isDemo?'':'<div style="display:flex;gap:8px;margin-top:12px;">'+
+    '<button class="btn btn-sm" style="background:#e8f4fd;color:#1565c0;" onclick="exportCallOuts()">⬇️ Export CSV</button>'+
+  '</div>');
+}
+function toggleCollapse(id){
+  const el=document.getElementById(id);
+  if(!el)return;
+  const isOpen=el.style.display!=='none';
+  el.style.display=isOpen?'none':'block';
+  const toggle=el.previousElementSibling?.querySelector('span:last-child');
+  if(toggle)toggle.textContent=isOpen?'▼ expand':'▲ collapse';
+}
+function openEditCallOut(id){
+  const c=allCallOutsCache.find(x=>x.id===id);
+  if(!c)return;
+  document.getElementById('edit-co-id').value=c.id;
+  document.getElementById('edit-co-name').value=c.employee_name||'';
+  document.getElementById('edit-co-date').value=c.callout_date||'';
+  document.getElementById('edit-co-reason').value=c.reason||'';
+  document.getElementById('edit-co-type').value=c.call_type||'';
+  document.getElementById('edit-co-notes').value=c.notes||'';
+  document.getElementById('edit-callout-modal').classList.add('open');
+}
+async function saveEditCallOut(){
+  const id=document.getElementById('edit-co-id').value;
+  const updates={
+    employee_name:document.getElementById('edit-co-name').value.trim(),
+    callout_date:document.getElementById('edit-co-date').value,
+    reason:document.getElementById('edit-co-reason').value,
+    call_type:document.getElementById('edit-co-type').value,
+    notes:document.getElementById('edit-co-notes').value.trim()
+  };
+  try{
+    await db.from('call_out_log').update(updates).eq('id',id);
+    closeModal('edit-callout-modal');
+    loadCallOuts();loadFlags();loadDashboard();
+  }catch(e){alert('Error saving: '+e.message);}
+}
+function exportCallOuts(){
+  const data=allCallOutsCache;
+  if(!data.length){alert('No call-outs to export.');return;}
+  const headers=['Employee','County','Date','Reason','Call Type','Notes','Logged By','Logged At'];
+  const rows=data.map(c=>[c.employee_name,c.county,c.callout_date,c.reason,c.call_type||'',c.notes||'',c.logged_by||'',c.logged_at?new Date(c.logged_at).toLocaleDateString('en-US'):''].map(v=>'"'+String(v||'').replace(/"/g,'""')+'"'));
+  const csv=[headers.join(','),...rows.map(r=>r.join(','))].join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='RideSource_CallOuts_'+new Date().toISOString().split('T')[0]+'.csv';a.click();
 }
 async function logCallOut(){
   const name=document.getElementById('co-name').value.trim();
@@ -4303,14 +4449,36 @@ function renderTimesheetsTable(){
   const isDemo=adminStaff?.role==='demo';
   const filtered=tsFilterStatus==='ALL'?allTimesheetsCache:allTimesheetsCache.filter(t=>t.status===tsFilterStatus);
   if(!filtered||filtered.length===0){el.innerHTML='<p style="color:#888;font-size:13px;padding:12px 0;">No timesheets found.</p>';return;}
-  el.innerHTML='<div style="overflow-x:auto;"><table class="data-table"><thead><tr><th><input type="checkbox" id="ts-check-all" onchange="toggleAllTimesheetChecks(this)" style="accent-color:var(--navy);"></th><th>Employee</th><th>County</th><th>Week Ending</th><th>Mileage Note</th><th>Notes / Missed Punches</th><th>Submitted</th><th>Status</th><th>Actions</th></tr></thead><tbody>'+
-    filtered.map((t,idx)=>{
-      const submitted=new Date(t.submitted_at).toLocaleDateString('en-US',{month:'short',day:'numeric'});
-      const approveBtn=t.status==='PENDING'&&!isDemo?`<button class="btn btn-green btn-sm" onclick="approveTimesheet(${t.id})" style="margin-bottom:3px;">✓ Approve</button><br>`:'';
-      const viewBtn=isDemo?'':`<button class="btn btn-sm" style="background:#e8f4fd;color:#1565c0;" onclick="openTimesheetModal(${t.id})">📋 View</button>`;
-      return `<tr><td><input type="checkbox" class="ts-row-check" data-id="${t.id}" style="accent-color:var(--navy);"></td><td><strong>${demoMask(t.employee_name,idx)}</strong></td><td>${t.county}</td><td>${t.week_ending}</td><td style="font-size:12px;">${isDemo?'—':t.mileage_note||'—'}</td><td style="font-size:12px;max-width:180px;">${isDemo?'—':(t.notes||'—').substring(0,60)+((t.notes||'').length>60?'...':'')}</td><td style="font-size:12px;color:#888;">${submitted}</td><td><span class="badge badge-${t.status==='APPROVED'?'approved':'pending'}">${t.status}</span></td><td style="white-space:nowrap;">${approveBtn}${viewBtn}</td></tr>`;
-    }).join('')+
-    '</tbody></table></div><div style="display:flex;align-items:center;gap:10px;margin-top:12px;"><button class="btn btn-sm" style="background:#fdecea;color:var(--red);border:1px solid #f5c6c2;" onclick="deleteSelectedTimesheets()">🗑️ Delete Selected</button><span style="font-size:12px;color:#888;">Check rows to select, then delete after exporting.</span></div>';
+  el.innerHTML=filtered.map((t,idx)=>{
+    const submitted=new Date(t.submitted_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    return '<div class="card" style="margin-bottom:8px;padding:0;overflow:hidden;">'+
+      '<div style="display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;" onclick="toggleCollapse('ts-body-'+t.id+'')">'+
+        '<div style="flex:1;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">'+
+          '<strong style="font-size:14px;color:var(--navy);">'+demoMask(t.employee_name,idx)+'</strong>'+
+          '<span style="font-size:12px;color:#888;">'+t.county+'</span>'+
+          '<span style="font-size:12px;color:#555;font-weight:600;">Week ending '+t.week_ending+'</span>'+
+          '<span class="badge badge-'+(t.status==='APPROVED'?'approved':'pending')+'">'+t.status+'</span>'+
+        '</div>'+
+        '<span style="font-size:11px;color:#aaa;flex-shrink:0;">▼ expand</span>'+
+      '</div>'+
+      '<div id="ts-body-'+t.id+'" style="display:none;border-top:1px solid var(--border);padding:14px 16px;background:#fafafa;">'+
+        '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:14px;">'+
+          '<div><div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.5px;">Mileage Note</div><div style="font-size:13px;margin-top:2px;">'+(isDemo?'—':t.mileage_note||'—')+'</div></div>'+
+          '<div><div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.5px;">Missed Punches / Notes</div><div style="font-size:13px;margin-top:2px;">'+(isDemo?'—':t.notes||'—')+'</div></div>'+
+          '<div><div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.5px;">Submitted</div><div style="font-size:13px;margin-top:2px;">'+submitted+'</div></div>'+
+        '</div>'+
+        (isDemo?'':'<div style="display:flex;gap:8px;flex-wrap:wrap;">'+
+          (t.status==='PENDING'?'<button class="btn btn-green btn-sm" onclick="approveTimesheet('+t.id+')">✓ Approve</button>':'')+
+          '<button class="btn btn-sm" style="background:#e8f4fd;color:#1565c0;" onclick="openTimesheetModal('+t.id+')">📋 View Full</button>'+
+          '<button class="btn btn-sm btn-red" onclick="deleteSingleTimesheet('+t.id+')">🗑️ Delete</button>'+
+        '</div>')+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+async function deleteSingleTimesheet(id){
+  if(!confirm('Delete this timesheet? Make sure you have exported it first.'))return;
+  try{await db.from('timesheets').delete().eq('id',id);loadTimesheets();}catch(e){alert('Error: '+e.message);}
 }
 function toggleAllTimesheetChecks(master){
   document.querySelectorAll('.ts-row-check').forEach(cb=>cb.checked=master.checked);
@@ -4514,11 +4682,24 @@ function renderVehicleRecordsTable(){
         <td><span class="badge badge-${r.status==='RESOLVED'?'approved':r.status==='IN_PROGRESS'?'warning':'flag'}">${r.status}</span></td>
         <td style="white-space:nowrap;">
           <button class="btn btn-primary btn-sm" onclick="openVehicleReportModal(${r.id})" style="margin-bottom:4px;">📋 Open</button><br>
-          <select onchange="updateVehicleStatus(${r.id},this.value)" style="padding:4px 8px;border:1px solid var(--border);border-radius:4px;font-size:11px;margin-top:2px;"><option ${r.status==='NEW'?'selected':''}>NEW</option><option ${r.status==='IN_PROGRESS'?'selected':''}>IN_PROGRESS</option><option ${r.status==='RESOLVED'?'selected':''}>RESOLVED</option></select>
+          <select onchange="updateVehicleStatus(${r.id},this.value)" style="padding:4px 8px;border:1px solid var(--border);border-radius:4px;font-size:11px;margin-top:2px;"><option ${r.status==='NEW'?'selected':''}>NEW</option><option ${r.status==='IN_PROGRESS'?'selected':''}>IN_PROGRESS</option><option ${r.status==='RESOLVED'?'selected':''}>RESOLVED</option></select><br>
+          <button class="btn btn-sm btn-red" onclick="deleteVehicleRecord(${r.id})" style="margin-top:4px;font-size:11px;">🗑️ Delete</button>
         </td>
       </tr>`;
     }).join('')+
-    '</tbody></table></div>';
+    '</tbody></table></div><div style="margin-top:12px;"><button class="btn btn-sm" style="background:#e8f4fd;color:#1565c0;" onclick="exportVehicleRecords()">⬇️ Export CSV</button></div>';
+}
+async function deleteVehicleRecord(id){
+  if(!confirm('Delete this vehicle record? This cannot be undone.'))return;
+  try{await db.from('vehicle_reports').delete().eq('id',id);loadVehicleRecords();}catch(e){alert('Error: '+e.message);}
+}
+function exportVehicleRecords(){
+  const data=allVehicleRecordsCache;
+  if(!data.length){alert('No vehicle records to export.');return;}
+  const headers=['Source','Reported By','County','Vehicle ID','Date','Issue Types','Description','Status','Submitted'];
+  const rows=data.map(r=>[r.is_admin_report?'Admin':'Driver',r.employee_name,r.county||'',r.vehicle_id,r.report_date,r.issue_types,r.description||'',r.status,r.submitted_at?new Date(r.submitted_at).toLocaleDateString('en-US'):''].map(v=>'"'+String(v||'').replace(/"/g,'""')+'"'));
+  const csv=[headers.join(','),...rows.map(r=>r.join(','))].join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='RideSource_VehicleRecords_'+new Date().toISOString().split('T')[0]+'.csv';a.click();
 }
 async function updateVehicleStatus(id,status){
   await db.from('vehicle_reports').update({status}).eq('id',id);
@@ -5487,7 +5668,44 @@ async function buildDocx(templateId){
     <button class="modal-close" onclick="closeModal('create-profile-modal')">✕</button>
     <h3 id="create-profile-modal-title" style="color:var(--navy);margin-bottom:4px;">Create Employee Profile</h3>
     <p style="font-size:13px;color:#888;margin-bottom:20px;">Fill in what you know now — all fields except name are optional and can be updated anytime.</p>
-    <input type="hidden" id="cpm-id">
+    <!-- Edit Flag/Warning Note Modal -->
+<div class="modal" id="edit-flag-modal">
+  <div class="modal-box" style="max-width:420px;">
+    <div class="modal-header"><div class="modal-title">✏️ Edit Warning Note</div><button onclick="closeModal('edit-flag-modal')" class="modal-close">✕</button></div>
+    <input type="hidden" id="edit-flag-id">
+    <div class="form-field"><label>Note / Context</label><textarea id="edit-flag-note" placeholder="Add or update the note for this warning stage..." style="min-height:100px;"></textarea></div>
+    <div style="display:flex;gap:10px;margin-top:16px;">
+      <button class="btn btn-primary" onclick="saveEditFlag()">Save</button>
+      <button class="btn btn-secondary" onclick="closeModal('edit-flag-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Call-Out Modal -->
+<div class="modal" id="edit-callout-modal">
+  <div class="modal-box" style="max-width:480px;">
+    <div class="modal-header"><div class="modal-title">✏️ Edit Call-Out Entry</div><button onclick="closeModal('edit-callout-modal')" class="modal-close">✕</button></div>
+    <input type="hidden" id="edit-co-id">
+    <div class="form-field"><label>Employee Name</label><input type="text" id="edit-co-name"></div>
+    <div class="form-field"><label>Date</label><input type="date" id="edit-co-date"></div>
+    <div class="form-field"><label>Reason</label><input type="text" id="edit-co-reason"></div>
+    <div class="form-field"><label>Call Type</label>
+      <select id="edit-co-type" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+        <option value="">— Select —</option>
+        <option>Sick</option><option>Family Emergency</option><option>Weather</option>
+        <option>Call After List</option><option>Call Mid Shift</option>
+        <option>No reason provided</option><option>Other</option>
+      </select>
+    </div>
+    <div class="form-field"><label>Notes</label><textarea id="edit-co-notes" style="min-height:70px;"></textarea></div>
+    <div style="display:flex;gap:10px;margin-top:16px;">
+      <button class="btn btn-primary" onclick="saveEditCallOut()">Save Changes</button>
+      <button class="btn btn-secondary" onclick="closeModal('edit-callout-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<input type="hidden" id="cpm-id">
     <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Basic Info</div>
     <div class="form-row">
       <div class="form-field"><label>Full Name *</label><input type="text" id="cpm-name" placeholder="e.g. Jane Smith"></div>
