@@ -285,6 +285,9 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 /* Mobile bottom nav for employee portal */
 @media(max-width:768px){
   #mobile-bottom-nav{
+    display:none;
+  }
+  body.portal-active #mobile-bottom-nav{
     display:flex!important;
     position:fixed;
     bottom:0;left:0;right:0;
@@ -1742,6 +1745,7 @@ window.addEventListener('load',function(){
     if(age>8*60*60*1000){sessionStorage.removeItem('rs_session');return;}
     if(sess.type==='employee'&&sess.name&&sess.email&&sess.county){
       startPortal({name:sess.name,email:sess.email,county:sess.county});
+      document.body.classList.add('portal-active');
     } else if(sess.type==='admin'&&sess.name){
       const staff=PORTAL_STAFF.find(s=>s.name===sess.name);
       if(staff){
@@ -1790,6 +1794,7 @@ function startPortal(opts){
   document.getElementById('display-name').textContent=name;
   document.getElementById('screen-landing').classList.remove('active');
   document.getElementById('screen-portal').classList.add('active');
+  document.body.classList.add('portal-active');
   showSection('dashboard');
   showMobileNav();
   loadSavedState();buildTraining();buildHandbook();buildPolicies();updateDashboard();loadSignedPolicies();setTimeout(()=>{loadEmpMemoHistory();},1200);
@@ -1812,6 +1817,7 @@ function logout(){
   sessionStorage.removeItem('rs_session');
   hideMobileNav();
   document.getElementById('screen-portal').classList.remove('active');
+  document.body.classList.remove('portal-active');
   document.getElementById('screen-landing').classList.add('active');
   // Reset landing to employee tab and clear fields
   switchLanding('employee');
