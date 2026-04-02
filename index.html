@@ -1538,6 +1538,43 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
   </div><!-- end portal-layout -->
 </div><!-- end screen-admin -->
 
+<!-- Edit Flag/Warning Note Modal -->
+<div class="modal" id="edit-flag-modal">
+  <div class="modal-box" style="max-width:420px;">
+    <div class="modal-header"><div class="modal-title">✏️ Edit Warning Note</div><button onclick="closeModal('edit-flag-modal')" class="modal-close">✕</button></div>
+    <input type="hidden" id="edit-flag-id">
+    <div class="form-field"><label>Note / Context</label><textarea id="edit-flag-note" placeholder="Add or update the note for this warning stage..." style="min-height:100px;"></textarea></div>
+    <div style="display:flex;gap:10px;margin-top:16px;">
+      <button class="btn btn-primary" onclick="saveEditFlag()">Save</button>
+      <button class="btn btn-secondary" onclick="closeModal('edit-flag-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Call-Out Modal -->
+<div class="modal" id="edit-callout-modal">
+  <div class="modal-box" style="max-width:480px;">
+    <div class="modal-header"><div class="modal-title">✏️ Edit Call-Out Entry</div><button onclick="closeModal('edit-callout-modal')" class="modal-close">✕</button></div>
+    <input type="hidden" id="edit-co-id">
+    <div class="form-field"><label>Employee Name</label><input type="text" id="edit-co-name"></div>
+    <div class="form-field"><label>Date</label><input type="date" id="edit-co-date"></div>
+    <div class="form-field"><label>Reason</label><input type="text" id="edit-co-reason"></div>
+    <div class="form-field"><label>Call Type</label>
+      <select id="edit-co-type" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+        <option value="">— Select —</option>
+        <option>Sick</option><option>Family Emergency</option><option>Weather</option>
+        <option>Call After List</option><option>Call Mid Shift</option>
+        <option>No reason provided</option><option>Other</option>
+      </select>
+    </div>
+    <div class="form-field"><label>Notes</label><textarea id="edit-co-notes" style="min-height:70px;"></textarea></div>
+    <div style="display:flex;gap:10px;margin-top:16px;">
+      <button class="btn btn-primary" onclick="saveEditCallOut()">Save Changes</button>
+      <button class="btn btn-secondary" onclick="closeModal('edit-callout-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const SUPABASE_URL='https://iasphxpahlmjwkapyxrs.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlhc3BoeHBhaGxtandrYXB5eHJzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEzNDIyNDYsImV4cCI6MjA4NjkxODI0Nn0.ntQxEiEJqZOvXjfX58I-PPQ2ZOoAT_RgLyf3aWMeXds';
@@ -2988,7 +3025,7 @@ function renderIncidentTable(){
     const statusBadge=r.status==='Open'?'<span class="badge badge-flag">'+r.status+(hrs>=24?' ⚠️':'')+'</span>':r.status==='Under Review'?'<span class="badge badge-warning">'+r.status+'</span>':'<span class="badge badge-approved">'+r.status+'</span>';
     const nature=(r.nature_of_incident||[]).slice(0,2).join(', ')+((r.nature_of_incident||[]).length>2?' +more':'');
     return '<div class="card" style="margin-bottom:8px;padding:0;overflow:hidden;">'+
-      '<div style="display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;" onclick="toggleCollapse('ir-body-'+r.id+'')">'+
+      '<div style="display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;" data-cid="ir-body-'+r.id+'" onclick="toggleCollapse(this.dataset.cid)">'+
         '<div style="flex:1;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">'+
           '<strong style="font-size:14px;color:var(--navy);">'+demoMask(r.employee_name,idx)+'</strong>'+
           '<span style="font-size:12px;color:#888;">'+( r.county||'—')+'</span>'+
@@ -4189,7 +4226,7 @@ function renderRequestsTable(){
     const badgeLabel=r.status==='PTO_PENDING'?'PTO PENDING':r.status;
     const isPending=r.status==='PENDING'||r.status==='PTO_PENDING';
     return '<div class="card" style="margin-bottom:8px;padding:0;overflow:hidden;">'+
-      '<div style="display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;" onclick="toggleCollapse('tor-body-'+r.id+'')">'+
+      '<div style="display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;" data-cid="tor-body-'+r.id+'" onclick="toggleCollapse(this.dataset.cid)">'+
         '<div style="flex:1;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">'+
           '<strong style="font-size:14px;color:var(--navy);">'+displayName+'</strong>'+
           '<span style="font-size:12px;color:#888;">'+r.county+'</span>'+
@@ -4206,7 +4243,7 @@ function renderRequestsTable(){
           '<div><div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.5px;">Submitted</div><div style="font-size:13px;margin-top:2px;">'+submitted+'</div></div>'+
         '</div>'+
         (isDemo?'':'<div style="display:flex;gap:8px;flex-wrap:wrap;">'+
-          (isPending?'<button class="btn btn-green btn-sm" onclick="decideRequest('+r.id+','APPROVED')">✓ Approve</button><button class="btn btn-sm btn-red" onclick="decideRequest('+r.id+','DENIED')">✗ Deny</button>':'')+
+          (isPending?'<button class="btn btn-green btn-sm" data-rid="'+r.id+'" data-status="APPROVED" onclick="decideRequest(this.dataset.rid,this.dataset.status)">✓ Approve</button><button class="btn btn-sm btn-red" data-rid="'+r.id+'" data-status="DENIED" onclick="decideRequest(this.dataset.rid,this.dataset.status)">✗ Deny</button>':'')+
           '<button class="btn btn-sm" style="background:#f0f0f0;color:#555;" onclick="openEditRequest('+r.id+')">✏️ Edit</button>'+
         '</div>')+
       '</div>'+
@@ -4305,7 +4342,7 @@ function renderCallOutTable(){
     const displayName=isDemo?'Employee '+(idx+1):c.employee_name;
     const callTypeBadge=c.call_type==='Call After List'?'<span class="badge badge-flag">'+c.call_type+'</span>':c.call_type==='Call Mid Shift'?'<span class="badge badge-warning">'+c.call_type+'</span>':c.call_type?'<span class="badge badge-pending">'+c.call_type+'</span>':'—';
     return '<div class="card" style="margin-bottom:8px;padding:0;overflow:hidden;" id="co-card-'+c.id+'">'+
-      '<div style="display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;" onclick="toggleCollapse('co-body-'+c.id+'')">'+
+      '<div style="display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;" data-cid="co-body-'+c.id+'" onclick="toggleCollapse(this.dataset.cid)">'+
         '<div style="flex:1;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">'+
           '<strong style="font-size:14px;color:var(--navy);">'+(isDemo?displayName:c.employee_name)+'</strong>'+
           '<span style="font-size:12px;color:#888;">'+c.county+'</span>'+
@@ -4452,7 +4489,7 @@ function renderTimesheetsTable(){
   el.innerHTML=filtered.map((t,idx)=>{
     const submitted=new Date(t.submitted_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
     return '<div class="card" style="margin-bottom:8px;padding:0;overflow:hidden;">'+
-      '<div style="display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;" onclick="toggleCollapse('ts-body-'+t.id+'')">'+
+      '<div style="display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;" data-cid="ts-body-'+t.id+'" onclick="toggleCollapse(this.dataset.cid)">'+
         '<div style="flex:1;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">'+
           '<strong style="font-size:14px;color:var(--navy);">'+demoMask(t.employee_name,idx)+'</strong>'+
           '<span style="font-size:12px;color:#888;">'+t.county+'</span>'+
@@ -4692,14 +4729,6 @@ function renderVehicleRecordsTable(){
 async function deleteVehicleRecord(id){
   if(!confirm('Delete this vehicle record? This cannot be undone.'))return;
   try{await db.from('vehicle_reports').delete().eq('id',id);loadVehicleRecords();}catch(e){alert('Error: '+e.message);}
-}
-function exportVehicleRecords(){
-  const data=allVehicleRecordsCache;
-  if(!data.length){alert('No vehicle records to export.');return;}
-  const headers=['Source','Reported By','County','Vehicle ID','Date','Issue Types','Description','Status','Submitted'];
-  const rows=data.map(r=>[r.is_admin_report?'Admin':'Driver',r.employee_name,r.county||'',r.vehicle_id,r.report_date,r.issue_types,r.description||'',r.status,r.submitted_at?new Date(r.submitted_at).toLocaleDateString('en-US'):''].map(v=>'"'+String(v||'').replace(/"/g,'""')+'"'));
-  const csv=[headers.join(','),...rows.map(r=>r.join(','))].join('\n');
-  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='RideSource_VehicleRecords_'+new Date().toISOString().split('T')[0]+'.csv';a.click();
 }
 async function updateVehicleStatus(id,status){
   await db.from('vehicle_reports').update({status}).eq('id',id);
@@ -5668,44 +5697,7 @@ async function buildDocx(templateId){
     <button class="modal-close" onclick="closeModal('create-profile-modal')">✕</button>
     <h3 id="create-profile-modal-title" style="color:var(--navy);margin-bottom:4px;">Create Employee Profile</h3>
     <p style="font-size:13px;color:#888;margin-bottom:20px;">Fill in what you know now — all fields except name are optional and can be updated anytime.</p>
-    <!-- Edit Flag/Warning Note Modal -->
-<div class="modal" id="edit-flag-modal">
-  <div class="modal-box" style="max-width:420px;">
-    <div class="modal-header"><div class="modal-title">✏️ Edit Warning Note</div><button onclick="closeModal('edit-flag-modal')" class="modal-close">✕</button></div>
-    <input type="hidden" id="edit-flag-id">
-    <div class="form-field"><label>Note / Context</label><textarea id="edit-flag-note" placeholder="Add or update the note for this warning stage..." style="min-height:100px;"></textarea></div>
-    <div style="display:flex;gap:10px;margin-top:16px;">
-      <button class="btn btn-primary" onclick="saveEditFlag()">Save</button>
-      <button class="btn btn-secondary" onclick="closeModal('edit-flag-modal')">Cancel</button>
-    </div>
-  </div>
-</div>
-
-<!-- Edit Call-Out Modal -->
-<div class="modal" id="edit-callout-modal">
-  <div class="modal-box" style="max-width:480px;">
-    <div class="modal-header"><div class="modal-title">✏️ Edit Call-Out Entry</div><button onclick="closeModal('edit-callout-modal')" class="modal-close">✕</button></div>
-    <input type="hidden" id="edit-co-id">
-    <div class="form-field"><label>Employee Name</label><input type="text" id="edit-co-name"></div>
-    <div class="form-field"><label>Date</label><input type="date" id="edit-co-date"></div>
-    <div class="form-field"><label>Reason</label><input type="text" id="edit-co-reason"></div>
-    <div class="form-field"><label>Call Type</label>
-      <select id="edit-co-type" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
-        <option value="">— Select —</option>
-        <option>Sick</option><option>Family Emergency</option><option>Weather</option>
-        <option>Call After List</option><option>Call Mid Shift</option>
-        <option>No reason provided</option><option>Other</option>
-      </select>
-    </div>
-    <div class="form-field"><label>Notes</label><textarea id="edit-co-notes" style="min-height:70px;"></textarea></div>
-    <div style="display:flex;gap:10px;margin-top:16px;">
-      <button class="btn btn-primary" onclick="saveEditCallOut()">Save Changes</button>
-      <button class="btn btn-secondary" onclick="closeModal('edit-callout-modal')">Cancel</button>
-    </div>
-  </div>
-</div>
-
-<input type="hidden" id="cpm-id">
+    <input type="hidden" id="cpm-id">
     <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Basic Info</div>
     <div class="form-row">
       <div class="form-field"><label>Full Name *</label><input type="text" id="cpm-name" placeholder="e.g. Jane Smith"></div>
