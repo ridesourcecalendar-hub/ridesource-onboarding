@@ -285,7 +285,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 /* Mobile bottom nav for employee portal */
 @media(max-width:768px){
   #mobile-bottom-nav{
-    display:flex;
+    display:flex!important;
     position:fixed;
     bottom:0;left:0;right:0;
     background:#fff;
@@ -295,7 +295,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
     box-shadow:0 -2px 12px rgba(0,0,0,0.08);
   }
   #mobile-menu-panel{
-    display:block;
+    display:none;
   }
 }
 @media(min-width:769px){
@@ -1618,7 +1618,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
   </div><!-- end portal-layout -->
 
 <!-- MOBILE BOTTOM NAV (employee portal only) -->
-<div id="mobile-bottom-nav" style="display:none;">
+<div id="mobile-bottom-nav">
   <button onclick="showSection('dashboard');closeMobileMenu()" style="flex:1;padding:8px 4px;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:#888;font-weight:600;">
     <span style="font-size:20px;">🏠</span>Home
   </button>
@@ -1656,8 +1656,8 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 </div><!-- end screen-admin -->
 
 <!-- Edit Flag/Warning Note Modal -->
-<div class="modal" id="edit-flag-modal">
-  <div class="modal-box" style="max-width:420px;">
+<div class="modal-overlay" id="edit-flag-modal">
+  <div class="modal" style="max-width:420px;">
     <div class="modal-header"><div class="modal-title">✏️ Edit Warning Note</div><button onclick="closeModal('edit-flag-modal')" class="modal-close">✕</button></div>
     <input type="hidden" id="edit-flag-id">
     <div class="form-field"><label>Note / Context</label><textarea id="edit-flag-note" placeholder="Add or update the note for this warning stage..." style="min-height:100px;"></textarea></div>
@@ -1669,8 +1669,8 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 </div>
 
 <!-- Edit Call-Out Modal -->
-<div class="modal" id="edit-callout-modal">
-  <div class="modal-box" style="max-width:480px;">
+<div class="modal-overlay" id="edit-callout-modal">
+  <div class="modal" style="max-width:480px;">
     <div class="modal-header"><div class="modal-title">✏️ Edit Call-Out Entry</div><button onclick="closeModal('edit-callout-modal')" class="modal-close">✕</button></div>
     <input type="hidden" id="edit-co-id">
     <div class="form-field"><label>Employee Name</label><input type="text" id="edit-co-name"></div>
@@ -3016,15 +3016,12 @@ function renderRecogCalendar(){
 
 // ── MOBILE NAV ──
 function showMobileNav(){
-  if(window.innerWidth<=768){
-    const nav=document.getElementById('mobile-bottom-nav');
-    if(nav)nav.style.display='flex';
-  }
+  // CSS handles visibility — just ensure menu panel is closed
+  const panel=document.getElementById('mobile-menu-panel');
+  if(panel)panel.style.display='none';
 }
 function hideMobileNav(){
-  const nav=document.getElementById('mobile-bottom-nav');
   const panel=document.getElementById('mobile-menu-panel');
-  if(nav)nav.style.display='none';
   if(panel)panel.style.display='none';
 }
 function toggleMobileMenu(){
