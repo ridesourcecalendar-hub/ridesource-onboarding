@@ -221,7 +221,87 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 .issue-type-btn.selected{border-color:var(--navy);background:var(--light);color:var(--navy);}
 .file-upload-area{border:2px dashed var(--border);border-radius:8px;padding:24px;text-align:center;cursor:pointer;transition:all .2s;background:var(--gray);}
 .file-upload-area:hover,.file-upload-area.has-file{border-color:var(--success);background:#f0faf4;}
-@media(max-width:768px){.sidebar{display:none;}.main-content{padding:16px;}.doc-body{padding:20px;}}
+@media(max-width:768px){
+  /* Layout */
+  .sidebar{display:none;}
+  .main-content{padding:12px 14px 90px;}
+  .portal-layout{min-height:calc(100vh - 56px);}
+
+  /* Header */
+  .header{padding:0 14px;height:52px;}
+  .header-logo-sub{display:none;}
+  .header-logo-text{font-size:18px;}
+  .header-user{display:none;}
+  .btn-logout{font-size:11px;padding:5px 10px;}
+
+  /* Landing */
+  .landing-card{padding:28px 20px;margin:12px;}
+  .landing-title{font-size:20px;}
+
+  /* Cards & content */
+  .card{padding:16px;margin-bottom:14px;}
+  .card-title{font-size:16px;}
+  .doc-body{padding:16px;}
+
+  /* Forms */
+  .form-row{grid-template-columns:1fr;}
+  .sig-field{margin-bottom:10px;}
+
+  /* Stat grid */
+  .welcome-grid{grid-template-columns:1fr 1fr;gap:10px;}
+  .stat-card{padding:14px;gap:10px;}
+
+  /* Buttons */
+  .btn-primary,.btn-secondary{padding:10px 16px;font-size:13px;}
+
+  /* Tables — make them scroll horizontally */
+  .data-table{font-size:12px;}
+  div[style*="overflow-x:auto"]{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+
+  /* Timesheet rows */
+  .timesheet-row{font-size:12px;}
+
+  /* Request type buttons — stack on mobile */
+  .req-type-btn{font-size:13px;padding:8px 12px;}
+
+  /* Profile tabs — scrollable */
+  .profile-tab{padding:8px 12px;font-size:12px;}
+
+  /* Doc reader nav */
+  .doc-nav{padding:10px 14px;}
+  .doc-footer{padding:12px 14px;flex-wrap:wrap;gap:8px;}
+
+  /* Policy list */
+  .policy-item{flex-direction:column;align-items:flex-start;gap:8px;}
+  .policy-btn{width:100%;text-align:center;}
+
+  /* Modal */
+  .modal-box,.modal{padding:20px 16px;margin:12px;width:calc(100% - 24px);max-width:100%!important;}
+
+  /* Progress bar */
+  .progress-bar-wrap{margin-bottom:16px;}
+}
+
+/* Mobile bottom nav for employee portal */
+@media(max-width:768px){
+  #mobile-bottom-nav{
+    display:flex;
+    position:fixed;
+    bottom:0;left:0;right:0;
+    background:#fff;
+    border-top:1px solid var(--border);
+    z-index:200;
+    padding:0;
+    box-shadow:0 -2px 12px rgba(0,0,0,0.08);
+  }
+  #mobile-menu-panel{
+    display:block;
+  }
+}
+@media(min-width:769px){
+  #mobile-bottom-nav{display:none!important;}
+  #mobile-menu-panel{display:none!important;}
+}
 .profile-header{background:linear-gradient(135deg,var(--navy) 0%,#2c3e6b 100%);border-radius:12px;padding:28px 32px;color:#fff;display:flex;align-items:center;gap:24px;margin-bottom:20px;}
 .profile-avatar{width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:900;color:#fff;flex-shrink:0;border:2px solid rgba(255,255,255,.3);}
 .profile-name{font-size:22px;font-weight:900;margin-bottom:2px;}
@@ -1536,6 +1616,43 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 
     </div><!-- end main-content -->
   </div><!-- end portal-layout -->
+
+<!-- MOBILE BOTTOM NAV (employee portal only) -->
+<div id="mobile-bottom-nav" style="display:none;">
+  <button onclick="showSection('dashboard');closeMobileMenu()" style="flex:1;padding:8px 4px;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:#888;font-weight:600;">
+    <span style="font-size:20px;">🏠</span>Home
+  </button>
+  <button onclick="showSection('timeoff');closeMobileMenu()" style="flex:1;padding:8px 4px;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:#888;font-weight:600;">
+    <span style="font-size:20px;">📅</span>Time Off
+  </button>
+  <button onclick="showSection('timesheet');closeMobileMenu()" style="flex:1;padding:8px 4px;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:#888;font-weight:600;">
+    <span style="font-size:20px;">🕐</span>Timesheet
+  </button>
+  <button onclick="showSection('memos-emp');closeMobileMenu()" style="flex:1;padding:8px 4px;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:#888;font-weight:600;position:relative;">
+    <span style="font-size:20px;">📢</span>Memos
+    <span id="mobile-memo-badge" style="display:none;position:absolute;top:4px;right:12px;background:var(--red);color:#fff;border-radius:50%;width:14px;height:14px;font-size:9px;font-weight:700;line-height:14px;text-align:center;">!</span>
+  </button>
+  <button onclick="toggleMobileMenu()" style="flex:1;padding:8px 4px;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:#888;font-weight:600;">
+    <span style="font-size:20px;">☰</span>More
+  </button>
+</div>
+
+<!-- MOBILE FULL MENU PANEL -->
+<div id="mobile-menu-panel" style="display:none;position:fixed;bottom:56px;left:0;right:0;background:#fff;border-top:1px solid var(--border);z-index:199;box-shadow:0 -4px 20px rgba(0,0,0,0.1);padding:12px;max-height:70vh;overflow-y:auto;">
+  <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;padding:0 4px;">Documents</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+    <button onclick="showSection('training');closeMobileMenu()" style="padding:12px 8px;background:var(--light);border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:600;color:var(--navy);cursor:pointer;text-align:left;">📋 Training Guide</button>
+    <button onclick="showSection('handbook');closeMobileMenu()" style="padding:12px 8px;background:var(--light);border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:600;color:var(--navy);cursor:pointer;text-align:left;">📖 Handbook</button>
+    <button onclick="showSection('downloads');closeMobileMenu()" style="padding:12px 8px;background:var(--light);border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:600;color:var(--navy);cursor:pointer;text-align:left;">📥 Downloads</button>
+    <button onclick="showSection('policies');closeMobileMenu()" style="padding:12px 8px;background:var(--light);border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:600;color:var(--navy);cursor:pointer;text-align:left;">✍️ Policy Sign-Offs</button>
+  </div>
+  <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;padding:0 4px;">Reports</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
+    <button onclick="showSection('vehicle');closeMobileMenu()" style="padding:12px 8px;background:var(--light);border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:600;color:var(--navy);cursor:pointer;text-align:left;">🚐 Vehicle Report</button>
+    <button onclick="showSection('incident');closeMobileMenu()" style="padding:12px 8px;background:var(--light);border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:600;color:var(--navy);cursor:pointer;text-align:left;">🚨 Incident Report</button>
+  </div>
+  <button onclick="logout()" style="width:100%;padding:12px;background:#fdecea;border:1px solid #f5c6c2;border-radius:8px;font-size:13px;font-weight:700;color:var(--red);cursor:pointer;">Sign Out</button>
+</div>
 </div><!-- end screen-admin -->
 
 <!-- Edit Flag/Warning Note Modal -->
@@ -1674,6 +1791,7 @@ function startPortal(opts){
   document.getElementById('screen-landing').classList.remove('active');
   document.getElementById('screen-portal').classList.add('active');
   showSection('dashboard');
+  showMobileNav();
   loadSavedState();buildTraining();buildHandbook();buildPolicies();updateDashboard();loadSignedPolicies();setTimeout(()=>{loadEmpMemoHistory();},1200);
   buildTimesheetRows();buildIncidentForm();loadEmployeeMemos();
   document.getElementById('vr-date').value=new Date().toISOString().split('T')[0];
@@ -1692,6 +1810,7 @@ function logout(){
   const empMemosWrap=document.getElementById('emp-memos-wrap');if(empMemosWrap)empMemosWrap.style.display='none';
   const badge=document.getElementById('badge-emp-memos');if(badge)badge.style.display='none';
   sessionStorage.removeItem('rs_session');
+  hideMobileNav();
   document.getElementById('screen-portal').classList.remove('active');
   document.getElementById('screen-landing').classList.add('active');
   // Reset landing to employee tab and clear fields
@@ -1738,6 +1857,12 @@ function showSection(id){
   document.querySelectorAll('#screen-portal .nav-item').forEach(el=>el.classList.remove('active'));
   document.getElementById('section-'+id).style.display='block';
   document.getElementById('nav-'+id).classList.add('active');
+  // Highlight active mobile nav tab
+  const mobileMap={dashboard:0,timeoff:1,timesheet:2,'memos-emp':3};
+  document.querySelectorAll('#mobile-bottom-nav button').forEach((btn,i)=>{
+    btn.style.color=i===mobileMap[id]?'var(--navy)':'#888';
+    btn.style.fontWeight=i===mobileMap[id]?'700':'600';
+  });
   if(id==='timeoff')loadMyRequests();
   if(id==='memos-emp'){switchMemoCard('unread');loadEmpMemoHistory();loadEmpSentMessages();}
   if(id==='timesheet')loadMyTimesheets();
@@ -2598,6 +2723,7 @@ async function loadEmpMemoHistory(){
     // Update nav badge (red ! when unread)
     const badge=document.getElementById('badge-emp-memos');
     if(badge){badge.style.display=unread.length>0?'inline':'none';}
+    syncMobileMemos();
     // Update dashboard alert card
     const wrap=document.getElementById('emp-memos-wrap');
     const alertTitle=document.getElementById('emp-memos-alert-title');
@@ -2886,6 +3012,37 @@ function renderRecogCalendar(){
   html+='</div>';
   const grid=document.getElementById('recog-cal-grid');
   if(grid)grid.innerHTML=html;
+}
+
+// ── MOBILE NAV ──
+function showMobileNav(){
+  if(window.innerWidth<=768){
+    const nav=document.getElementById('mobile-bottom-nav');
+    if(nav)nav.style.display='flex';
+  }
+}
+function hideMobileNav(){
+  const nav=document.getElementById('mobile-bottom-nav');
+  const panel=document.getElementById('mobile-menu-panel');
+  if(nav)nav.style.display='none';
+  if(panel)panel.style.display='none';
+}
+function toggleMobileMenu(){
+  const panel=document.getElementById('mobile-menu-panel');
+  if(!panel)return;
+  panel.style.display=panel.style.display==='block'?'none':'block';
+}
+function closeMobileMenu(){
+  const panel=document.getElementById('mobile-menu-panel');
+  if(panel)panel.style.display='none';
+}
+// Sync mobile memo badge with main badge
+function syncMobileMemos(){
+  const main=document.getElementById('badge-emp-memos');
+  const mobile=document.getElementById('mobile-memo-badge');
+  if(main&&mobile){
+    mobile.style.display=main.style.display==='none'?'none':'inline';
+  }
 }
 // ── INCIDENT REPORTS ──
 let allIncidentsCache=[];
