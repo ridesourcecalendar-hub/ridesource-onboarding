@@ -3265,7 +3265,7 @@ function renderFleetVehicleGrid(){
     const alerts=[];
     if(oilOverdue)alerts.push('<span style="background:#fef3e8;color:var(--warn);font-size:11px;font-weight:700;padding:2px 8px;border-radius:8px;">🛢️ Oil Overdue</span>');
     if(inspOverdue)alerts.push('<span style="background:#fdecea;color:var(--red);font-size:11px;font-weight:700;padding:2px 8px;border-radius:8px;">📋 Inspection Overdue</span>');
-    return '<div class="card" style="cursor:pointer;'+(oilOverdue||inspOverdue?'border-color:var(--warn);':'')+'padding:18px;" onclick="openFleetVehicle(''+v.vehicle_id+'')">'+
+    return '<div class="card" style="cursor:pointer;'+(oilOverdue||inspOverdue?'border-color:var(--warn);':'')+'padding:18px;" data-vid="'+v.vehicle_id+'" onclick="openFleetVehicle(this.dataset.vid)">'+
       '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">'+
         '<div>'+
           '<div style="font-size:16px;font-weight:800;color:var(--navy);">'+v.vehicle_id+'</div>'+
@@ -3301,7 +3301,7 @@ async function openFleetVehicle(vehicleId){
           (v.vin?'<span style="font-size:11px;color:#aaa;">VIN: '+v.vin+'</span>':'')+
         '</div>'+
       '</div>'+
-      '<button onclick="deleteFleetVehicle(''+v.vehicle_id+'')" style="background:none;border:1px solid #ddd;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;color:var(--red);">🗑️ Delete</button>'+
+      '<button data-vid="'+v.vehicle_id+'" onclick="deleteFleetVehicle(this.dataset.vid)" style="background:none;border:1px solid #ddd;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;color:var(--red);">🗑️ Delete</button>'+
     '</div>';
   // Populate linked report dropdown
   const sel=document.getElementById('fm-linked-report');
