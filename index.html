@@ -849,6 +849,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
         <div class="sidebar-label">Operations</div>
         <div class="nav-item" onclick="showAdmin('timesheets')" id="nav-adm-timesheets"><span class="nav-icon">🕐</span>Timesheets<span class="nav-badge" id="badge-timesheets">0</span></div>
         <div class="nav-item" onclick="showAdmin('vehicle-records')" id="nav-adm-vehicle-records"><span class="nav-icon">🚐</span>Vehicle Records</div>
+        <div class="nav-item" onclick="showAdmin('fleet')" id="nav-adm-fleet"><span class="nav-icon">🔧</span>Fleet Maintenance<span class="nav-badge" id="badge-fleet" style="background:var(--red);display:none;">!</span></div>
         <div class="nav-item" onclick="showAdmin('incidents')" id="nav-adm-incidents"><span class="nav-icon">🚨</span>Incident Log<span class="nav-badge" id="badge-incidents" style="background:var(--red);">0</span></div>
         <div class="sidebar-label">Resources</div>
         <div class="nav-item" onclick="showAdmin('documents')" id="nav-adm-documents"><span class="nav-icon">📥</span>Document Library</div>
@@ -1359,6 +1360,126 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
         <div id="vehicle-records-table">Loading...</div>
       </div>
 
+      <!-- FLEET MAINTENANCE -->
+      <div id="section-adm-fleet" class="admin-section">
+        <div style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:4px;">🔧 Fleet Maintenance</div>
+        <p style="color:#888;font-size:13px;margin-bottom:20px;">Track vehicle profiles, maintenance history, and service schedules. Overdue items are flagged automatically.</p>
+
+        <!-- View Toggle -->
+        <div style="display:flex;gap:2px;border-bottom:2px solid var(--border);margin-bottom:20px;">
+          <button class="profile-tab active" id="fleet-tab-vehicles" onclick="switchFleetTab('vehicles')">🚐 Vehicle Profiles</button>
+          <button class="profile-tab" id="fleet-tab-log" onclick="switchFleetTab('log')">📋 Master Log</button>
+        </div>
+
+        <!-- VEHICLE PROFILES PANEL -->
+        <div id="fleet-panel-vehicles">
+          <!-- Add Vehicle -->
+          <div class="card" style="margin-bottom:16px;">
+            <div class="card-title" style="cursor:pointer;" onclick="toggleFleetAddForm()">➕ Add Vehicle <span id="fleet-add-toggle" style="font-size:12px;color:#888;">▼ expand</span></div>
+            <div id="fleet-add-form" style="display:none;margin-top:16px;">
+              <div class="form-row">
+                <div class="form-field"><label>Vehicle ID / Asset Tag *</label><input type="text" id="fv-id" placeholder="e.g. RS-01, Unit 7"></div>
+                <div class="form-field"><label>Status</label>
+                  <select id="fv-status" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                    <option>Active</option><option>In Service</option><option>Out of Service</option><option>Awaiting Repair</option><option>Retired</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-field"><label>Make</label><input type="text" id="fv-make" placeholder="e.g. Ford"></div>
+                <div class="form-field"><label>Model</label><input type="text" id="fv-model" placeholder="e.g. Transit"></div>
+              </div>
+              <div class="form-row">
+                <div class="form-field"><label>Year</label><input type="number" id="fv-year" placeholder="e.g. 2022" min="1990" max="2030"></div>
+                <div class="form-field"><label>County Assigned</label>
+                  <select id="fv-county" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                    <option value="">— Select County —</option>
+                    <option>Androscoggin</option><option>Aroostook</option><option>Cumberland</option><option>Franklin</option><option>Hancock</option><option>Kennebec</option><option>Knox</option><option>Lincoln</option><option>Oxford</option><option>Penobscot</option><option>Piscataquis</option><option>Sagadahoc</option><option>Somerset</option><option>Waldo</option><option>Washington</option><option>York</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-field"><label>VIN</label><input type="text" id="fv-vin" placeholder="17-character VIN"></div>
+                <div class="form-field"><label>License Plate</label><input type="text" id="fv-plate" placeholder="e.g. ABC-1234"></div>
+              </div>
+              <div class="form-row">
+                <div class="form-field"><label>Oil Change Interval (miles)</label><input type="number" id="fv-oil-miles" placeholder="e.g. 5000"></div>
+                <div class="form-field"><label>Oil Change Interval (months)</label><input type="number" id="fv-oil-months" placeholder="e.g. 6"></div>
+              </div>
+              <div class="form-field"><label>Notes</label><textarea id="fv-notes" style="min-height:60px;" placeholder="Any additional notes about this vehicle..."></textarea></div>
+              <div style="display:flex;gap:10px;align-items:center;">
+                <button class="btn btn-primary" onclick="saveFleetVehicle()">Save Vehicle</button>
+                <span id="fv-msg" style="font-size:13px;color:var(--success);display:none;">✓ Vehicle saved!</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Vehicle Grid -->
+          <div id="fleet-vehicle-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;">
+            <p style="color:#888;font-size:13px;">Loading vehicles...</p>
+          </div>
+        </div>
+
+        <!-- MASTER LOG PANEL -->
+        <div id="fleet-panel-log" style="display:none;">
+          <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center;">
+            <select id="fleet-log-vehicle-filter" onchange="renderFleetMasterLog()" style="padding:8px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:#fff;">
+              <option value="">All Vehicles</option>
+            </select>
+            <select id="fleet-log-type-filter" onchange="renderFleetMasterLog()" style="padding:8px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:#fff;">
+              <option value="">All Types</option>
+              <option>Oil Change</option><option>Tire Changeover</option><option>Preventative</option><option>Repair</option><option>Inspection</option>
+            </select>
+            <button class="btn btn-sm" style="background:#e8f4fd;color:#1565c0;margin-left:auto;" onclick="exportFleetLog()">⬇️ Export CSV</button>
+          </div>
+          <div id="fleet-master-log-list"><p style="color:#888;font-size:13px;">Loading...</p></div>
+        </div>
+      </div>
+
+      <!-- FLEET VEHICLE DETAIL MODAL -->
+      <div class="modal-overlay" id="fleet-vehicle-modal">
+        <div class="modal" style="max-width:700px;">
+          <button class="modal-close" onclick="closeModal('fleet-vehicle-modal')">✕</button>
+          <div id="fleet-modal-header" style="margin-bottom:20px;"></div>
+          <!-- Maintenance Tabs -->
+          <div style="display:flex;gap:2px;border-bottom:2px solid var(--border);margin-bottom:20px;flex-wrap:wrap;">
+            <button class="profile-tab active" id="fmtab-oil" onclick="switchFleetMaintTab('oil')">🛢️ Oil Changes</button>
+            <button class="profile-tab" id="fmtab-tires" onclick="switchFleetMaintTab('tires')">🔄 Tires</button>
+            <button class="profile-tab" id="fmtab-preventative" onclick="switchFleetMaintTab('preventative')">🔧 Preventative</button>
+            <button class="profile-tab" id="fmtab-repair" onclick="switchFleetMaintTab('repair')">🚨 Repairs</button>
+            <button class="profile-tab" id="fmtab-inspection" onclick="switchFleetMaintTab('inspection')">📋 Inspections</button>
+          </div>
+          <!-- Log Entry Form -->
+          <div class="card" style="margin-bottom:16px;background:#f8f9fc;">
+            <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:12px;">➕ Log New Entry</div>
+            <div class="form-row">
+              <div class="form-field"><label>Service Date *</label><input type="date" id="fm-date"></div>
+              <div class="form-field"><label>Mileage at Service</label><input type="number" id="fm-mileage" placeholder="e.g. 45230"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-field"><label>Next Due Date</label><input type="date" id="fm-next-date"></div>
+              <div class="form-field"><label>Next Due Mileage</label><input type="number" id="fm-next-mileage" placeholder="e.g. 50230"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-field"><label>Shop / Location</label><input type="text" id="fm-shop" placeholder="e.g. Napa Auto, Ellsworth ME"></div>
+              <div class="form-field"><label>Cost</label><input type="number" id="fm-cost" placeholder="e.g. 89.95" step="0.01"></div>
+            </div>
+            <div class="form-field"><label>Notes</label><textarea id="fm-notes" style="min-height:60px;" placeholder="Any details about this service..."></textarea></div>
+            <div class="form-field"><label>Link to Vehicle Report (optional)</label>
+              <select id="fm-linked-report" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                <option value="">— None —</option>
+              </select>
+            </div>
+            <div style="display:flex;gap:10px;align-items:center;margin-top:8px;">
+              <button class="btn btn-primary" onclick="saveFleetMaintEntry()">Log Entry</button>
+              <span id="fm-msg" style="font-size:13px;color:var(--success);display:none;">✓ Logged!</span>
+            </div>
+          </div>
+          <!-- History List -->
+          <div id="fleet-maint-history"><p style="color:#888;font-size:13px;">Loading...</p></div>
+        </div>
+      </div>
+
       <!-- INCIDENT LOG (ADMIN) -->
       <div id="section-adm-incidents" class="admin-section">
         <div style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:4px;">🚨 Incident Log</div>
@@ -1759,7 +1880,7 @@ window.addEventListener('load',function(){
         buildMgrGuide();buildHbRef();
         loadEmployeeFolders();
         loadDashboard();loadRequests();loadCallOuts();loadFlags();loadOnboarding();renderCalendar();
-        loadTimesheets();loadVehicleRecords();loadIncidents();loadMemos();loadEmployeeMessages();
+        loadTimesheets();loadVehicleRecords();loadIncidents();loadMemos();loadEmployeeMessages();loadFleetVehicles();loadFleetMaintenance();
       }
     }
   }catch(e){sessionStorage.removeItem('rs_session');}
@@ -1846,7 +1967,7 @@ function adminLogin(){
   buildMgrGuide();buildHbRef();
   loadEmployeeFolders(); // pre-load profile cache so supervisor filters work immediately
   loadDashboard();loadRequests();loadCallOuts();loadFlags();loadOnboarding();renderCalendar();
-  loadTimesheets();loadVehicleRecords();loadIncidents();loadMemos();loadEmployeeMessages();
+  loadTimesheets();loadVehicleRecords();loadIncidents();loadMemos();loadEmployeeMessages();loadFleetVehicles();loadFleetMaintenance();
 }
 function adminLogout(){
   sessionStorage.removeItem('rs_session');
@@ -1889,6 +2010,7 @@ function showAdmin(id){
   if(id==='incidents')loadIncidents();
   if(id==='memos'){loadMemos();loadEmployeeMessages();}
   if(id==='recognition'){renderRecogCalendar();}
+  if(id==='fleet'){loadFleetVehicles();loadFleetMaintenance();}
   // Keep profile cache fresh when navigating to sections that use it for filtering
   if(id==='requests'||id==='callouts')if(allProfilesCache.length===0)loadEmployeeFolders();
 }
@@ -3047,6 +3169,322 @@ function syncMobileMemos(){
     mobile.style.display=main.style.display==='none'?'none':'inline';
   }
 }
+
+// ── FLEET MAINTENANCE ──
+let allFleetVehiclesCache=[];
+let allFleetMaintenanceCache=[];
+let currentFleetVehicleId=null;
+let currentFleetMaintTab='oil';
+
+const MAINT_TYPES={
+  oil:'Oil Change',
+  tires:'Tire Changeover',
+  preventative:'Preventative',
+  repair:'Repair',
+  inspection:'Inspection'
+};
+
+function switchFleetTab(tab){
+  ['vehicles','log'].forEach(t=>{
+    document.getElementById('fleet-tab-'+t)?.classList.toggle('active',t===tab);
+    document.getElementById('fleet-panel-'+t).style.display=t===tab?'block':'none';
+  });
+  if(tab==='log'){renderFleetMasterLog();populateFleetLogFilters();}
+}
+
+function toggleFleetAddForm(){
+  const f=document.getElementById('fleet-add-form');
+  const icon=document.getElementById('fleet-add-toggle');
+  if(f.style.display==='none'){f.style.display='block';icon.textContent='▲ collapse';}
+  else{f.style.display='none';icon.textContent='▼ expand';}
+}
+
+async function loadFleetVehicles(){
+  try{
+    const {data}=await db.from('fleet_vehicles').select('*').order('vehicle_id',{ascending:true});
+    allFleetVehiclesCache=data||[];
+    renderFleetVehicleGrid();
+    checkFleetOverdue();
+  }catch(e){console.log('Fleet vehicles:',e);}
+}
+
+async function loadFleetMaintenance(){
+  try{
+    const {data}=await db.from('fleet_maintenance').select('*').order('service_date',{ascending:false});
+    allFleetMaintenanceCache=data||[];
+  }catch(e){console.log('Fleet maintenance:',e);}
+}
+
+function checkFleetOverdue(){
+  const today=new Date();
+  let overdueCount=0;
+  allFleetVehiclesCache.forEach(v=>{
+    const maint=allFleetMaintenanceCache.filter(m=>m.vehicle_id===v.vehicle_id);
+    const lastOil=maint.filter(m=>m.maintenance_type==='Oil Change').sort((a,b)=>new Date(b.service_date)-new Date(a.service_date))[0];
+    if(lastOil?.next_due_date&&new Date(lastOil.next_due_date)<today)overdueCount++;
+    const lastInspection=maint.filter(m=>m.maintenance_type==='Inspection').sort((a,b)=>new Date(b.service_date)-new Date(a.service_date))[0];
+    if(lastInspection?.next_due_date&&new Date(lastInspection.next_due_date)<today)overdueCount++;
+  });
+  const badge=document.getElementById('badge-fleet');
+  if(badge){badge.style.display=overdueCount>0?'inline':'none';badge.textContent='!';}
+  // Also show on dashboard
+  updateFleetDashAlert(overdueCount);
+}
+
+function updateFleetDashAlert(count){
+  let el=document.getElementById('fleet-dash-alert');
+  if(count>0){
+    if(!el){
+      el=document.createElement('div');
+      el.id='fleet-dash-alert';
+      el.style.cssText='margin-top:14px;';
+      const wrap=document.getElementById('dash-flags-wrap');
+      if(wrap)wrap.parentNode.insertBefore(el,wrap.nextSibling);
+    }
+    el.innerHTML='<div class="card" style="border-color:var(--warn);border-width:2px;background:#fffbf0;cursor:pointer;" onclick="showAdmin(this.dataset.sec)" data-sec="fleet"><div style="display:flex;align-items:center;gap:12px;"><div style="background:var(--warn);color:#fff;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🔧</div><div><div style="font-size:14px;font-weight:700;color:var(--warn);">'+count+' overdue maintenance item'+(count>1?'s':'')+'</div><div style="font-size:12px;color:#888;margin-top:2px;">Click to view Fleet Maintenance →</div></div></div></div>';
+  } else if(el){
+    el.innerHTML='';
+  }
+}
+
+function renderFleetVehicleGrid(){
+  const el=document.getElementById('fleet-vehicle-grid');
+  if(!el)return;
+  if(!allFleetVehiclesCache.length){
+    el.innerHTML='<p style="color:#888;font-size:13px;">No vehicles on record yet. Add one above.</p>';
+    return;
+  }
+  const today=new Date();
+  el.innerHTML=allFleetVehiclesCache.map(v=>{
+    const maint=allFleetMaintenanceCache.filter(m=>m.vehicle_id===v.vehicle_id);
+    const lastOil=maint.filter(m=>m.maintenance_type==='Oil Change').sort((a,b)=>new Date(b.service_date)-new Date(a.service_date))[0];
+    const lastInspection=maint.filter(m=>m.maintenance_type==='Inspection').sort((a,b)=>new Date(b.service_date)-new Date(a.service_date))[0];
+    const oilOverdue=lastOil?.next_due_date&&new Date(lastOil.next_due_date)<today;
+    const inspOverdue=lastInspection?.next_due_date&&new Date(lastInspection.next_due_date)<today;
+    const statusColor=v.status==='Active'?'var(--success)':v.status==='Out of Service'||v.status==='Awaiting Repair'?'var(--red)':'var(--warn)';
+    const alerts=[];
+    if(oilOverdue)alerts.push('<span style="background:#fef3e8;color:var(--warn);font-size:11px;font-weight:700;padding:2px 8px;border-radius:8px;">🛢️ Oil Overdue</span>');
+    if(inspOverdue)alerts.push('<span style="background:#fdecea;color:var(--red);font-size:11px;font-weight:700;padding:2px 8px;border-radius:8px;">📋 Inspection Overdue</span>');
+    return '<div class="card" style="cursor:pointer;'+(oilOverdue||inspOverdue?'border-color:var(--warn);':'')+'padding:18px;" onclick="openFleetVehicle(''+v.vehicle_id+'')">'+
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">'+
+        '<div>'+
+          '<div style="font-size:16px;font-weight:800;color:var(--navy);">'+v.vehicle_id+'</div>'+
+          '<div style="font-size:12px;color:#888;margin-top:2px;">'+(v.year||'')+(v.year&&v.make?' ':'')+(v.make||'')+(v.make&&v.model?' ':'')+(v.model||'')+'</div>'+
+        '</div>'+
+        '<span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:10px;background:'+statusColor+'22;color:'+statusColor+';">'+v.status+'</span>'+
+      '</div>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px;color:#666;margin-bottom:10px;">'+
+        (v.county?'<div>📍 '+v.county+'</div>':'')+
+        (v.license_plate?'<div>🔤 '+v.license_plate+'</div>':'')+
+        (lastOil?'<div>🛢️ Oil: '+new Date(lastOil.service_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+'</div>':'<div style="color:#aaa;">🛢️ No oil record</div>')+
+        (lastInspection?'<div>📋 Insp: '+new Date(lastInspection.service_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+'</div>':'<div style="color:#aaa;">📋 No inspection</div>')+
+      '</div>'+
+      (alerts.length?'<div style="display:flex;gap:6px;flex-wrap:wrap;">'+alerts.join('')+'</div>':'')+
+    '</div>';
+  }).join('');
+}
+
+async function openFleetVehicle(vehicleId){
+  currentFleetVehicleId=vehicleId;
+  const v=allFleetVehiclesCache.find(x=>x.vehicle_id===vehicleId);
+  if(!v)return;
+  const statusColor=v.status==='Active'?'var(--success)':v.status==='Out of Service'||v.status==='Awaiting Repair'?'var(--red)':'var(--warn)';
+  document.getElementById('fleet-modal-header').innerHTML=
+    '<div style="display:flex;align-items:center;gap:16px;">'+
+      '<div style="width:56px;height:56px;background:var(--light);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:28px;">🚐</div>'+
+      '<div style="flex:1;">'+
+        '<div style="font-size:20px;font-weight:800;color:var(--navy);">'+v.vehicle_id+'</div>'+
+        '<div style="font-size:13px;color:#888;">'+(v.year?v.year+' ':'')+( v.make||'')+( v.model?' '+v.model:'')+(v.license_plate?' · '+v.license_plate:'')+'</div>'+
+        '<div style="margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;">'+
+          '<span style="font-size:11px;font-weight:700;padding:2px 10px;border-radius:10px;background:'+statusColor+'22;color:'+statusColor+';">'+v.status+'</span>'+
+          (v.county?'<span style="font-size:11px;padding:2px 10px;border-radius:10px;background:var(--light);color:var(--navy);">'+v.county+'</span>':'')+
+          (v.vin?'<span style="font-size:11px;color:#aaa;">VIN: '+v.vin+'</span>':'')+
+        '</div>'+
+      '</div>'+
+      '<button onclick="deleteFleetVehicle(''+v.vehicle_id+'')" style="background:none;border:1px solid #ddd;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;color:var(--red);">🗑️ Delete</button>'+
+    '</div>';
+  // Populate linked report dropdown
+  const sel=document.getElementById('fm-linked-report');
+  if(sel){
+    sel.innerHTML='<option value="">— None —</option>'+
+      allVehicleRecordsCache.filter(r=>r.vehicle_id===vehicleId).map(r=>'<option value="'+r.id+'">'+r.report_date+' — '+( r.issue_types||'').substring(0,40)+'</option>').join('');
+  }
+  switchFleetMaintTab('oil');
+  document.getElementById('fleet-vehicle-modal').classList.add('open');
+}
+
+function switchFleetMaintTab(tab){
+  currentFleetMaintTab=tab;
+  ['oil','tires','preventative','repair','inspection'].forEach(t=>{
+    document.getElementById('fmtab-'+t)?.classList.toggle('active',t===tab);
+  });
+  // Update form placeholder context
+  const typeMap={oil:'Oil Change',tires:'Tire Changeover',preventative:'Preventative',repair:'Repair',inspection:'Inspection'};
+  loadFleetMaintHistory();
+}
+
+async function loadFleetMaintHistory(){
+  const el=document.getElementById('fleet-maint-history');
+  if(!el||!currentFleetVehicleId)return;
+  const typeMap={oil:'Oil Change',tires:'Tire Changeover',preventative:'Preventative',repair:'Repair',inspection:'Inspection'};
+  const typeName=typeMap[currentFleetMaintTab];
+  const records=allFleetMaintenanceCache.filter(m=>m.vehicle_id===currentFleetVehicleId&&m.maintenance_type===typeName);
+  if(!records.length){
+    el.innerHTML='<p style="color:#888;font-size:13px;padding:16px 0;">No '+typeName.toLowerCase()+' records yet. Log one above.</p>';
+    return;
+  }
+  const today=new Date();
+  el.innerHTML='<div style="font-size:12px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">History</div>'+
+    records.map(m=>{
+      const isOverdue=m.next_due_date&&new Date(m.next_due_date)<today;
+      const dt=new Date(m.service_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+      const nextDt=m.next_due_date?new Date(m.next_due_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'—';
+      return '<div style="border:1px solid '+(isOverdue?'var(--warn)':'var(--border)')+';border-radius:10px;padding:14px;margin-bottom:8px;background:'+(isOverdue?'#fffbf0':'#fafafa')+';">'+
+        '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">'+
+          '<div style="flex:1;">'+
+            '<div style="font-size:14px;font-weight:700;color:var(--navy);">'+dt+(m.mileage?' · '+m.mileage.toLocaleString()+' mi':'')+'</div>'+
+            (m.shop_name?'<div style="font-size:12px;color:#888;margin-top:2px;">'+m.shop_name+'</div>':'')+
+            (m.notes?'<div style="font-size:13px;color:#555;margin-top:6px;">'+m.notes+'</div>':'')+
+          '</div>'+
+          '<div style="text-align:right;flex-shrink:0;">'+
+            (m.cost?'<div style="font-size:13px;font-weight:700;color:var(--navy);">$'+parseFloat(m.cost).toFixed(2)+'</div>':'')+
+            '<div style="font-size:11px;color:'+(isOverdue?'var(--red)':'#888');'margin-top:4px;">Next: '+nextDt+(m.next_due_mileage?' / '+m.next_due_mileage.toLocaleString()+' mi':'')+'</div>'+
+            (isOverdue?'<span style="background:var(--warn);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:8px;">OVERDUE</span>':'')+
+          '</div>'+
+        '</div>'+
+        '<div style="display:flex;gap:6px;margin-top:10px;">'+
+          '<button class="btn btn-sm btn-red" onclick="deleteFleetMaintEntry('+m.id+')">🗑️ Delete</button>'+
+          (m.linked_report_id?'<button class="btn btn-sm" style="background:#e8f4fd;color:#1565c0;" onclick="openVehicleReportModal('+m.linked_report_id+')">📋 View Report</button>':'')+
+        '</div>'+
+      '</div>';
+    }).join('');
+}
+
+async function saveFleetVehicle(){
+  const vehicleId=document.getElementById('fv-id').value.trim();
+  if(!vehicleId){alert('Vehicle ID is required.');return;}
+  try{
+    const {error}=await db.from('fleet_vehicles').insert([{
+      vehicle_id:vehicleId,
+      make:document.getElementById('fv-make').value.trim()||null,
+      model:document.getElementById('fv-model').value.trim()||null,
+      year:parseInt(document.getElementById('fv-year').value)||null,
+      vin:document.getElementById('fv-vin').value.trim()||null,
+      license_plate:document.getElementById('fv-plate').value.trim()||null,
+      county:document.getElementById('fv-county').value||null,
+      status:document.getElementById('fv-status').value,
+      oil_change_interval_miles:parseInt(document.getElementById('fv-oil-miles').value)||null,
+      oil_change_interval_months:parseInt(document.getElementById('fv-oil-months').value)||null,
+      notes:document.getElementById('fv-notes').value.trim()||null,
+      created_by:adminName,
+      created_at:new Date().toISOString()
+    }]);
+    if(error)throw error;
+    ['fv-id','fv-make','fv-model','fv-year','fv-vin','fv-plate','fv-oil-miles','fv-oil-months','fv-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    document.getElementById('fv-county').value='';
+    document.getElementById('fv-status').value='Active';
+    const msg=document.getElementById('fv-msg');msg.style.display='inline';setTimeout(()=>msg.style.display='none',3000);
+    await loadFleetVehicles();
+  }catch(e){alert('Error saving vehicle: '+e.message);}
+}
+
+async function saveFleetMaintEntry(){
+  const typeMap={oil:'Oil Change',tires:'Tire Changeover',preventative:'Preventative',repair:'Repair',inspection:'Inspection'};
+  const date=document.getElementById('fm-date').value;
+  if(!date){alert('Service date is required.');return;}
+  try{
+    const {error}=await db.from('fleet_maintenance').insert([{
+      vehicle_id:currentFleetVehicleId,
+      maintenance_type:typeMap[currentFleetMaintTab],
+      service_date:date,
+      mileage:parseInt(document.getElementById('fm-mileage').value)||null,
+      next_due_date:document.getElementById('fm-next-date').value||null,
+      next_due_mileage:parseInt(document.getElementById('fm-next-mileage').value)||null,
+      shop_name:document.getElementById('fm-shop').value.trim()||null,
+      cost:parseFloat(document.getElementById('fm-cost').value)||null,
+      notes:document.getElementById('fm-notes').value.trim()||null,
+      linked_report_id:parseInt(document.getElementById('fm-linked-report').value)||null,
+      logged_by:adminName,
+      logged_at:new Date().toISOString()
+    }]);
+    if(error)throw error;
+    ['fm-date','fm-mileage','fm-next-date','fm-next-mileage','fm-shop','fm-cost','fm-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    document.getElementById('fm-linked-report').value='';
+    const msg=document.getElementById('fm-msg');msg.style.display='inline';setTimeout(()=>msg.style.display='none',2000);
+    await loadFleetMaintenance();
+    loadFleetMaintHistory();
+    renderFleetVehicleGrid();
+    checkFleetOverdue();
+  }catch(e){alert('Error logging entry: '+e.message);}
+}
+
+async function deleteFleetMaintEntry(id){
+  if(!confirm('Delete this maintenance record?'))return;
+  try{
+    await db.from('fleet_maintenance').delete().eq('id',id);
+    await loadFleetMaintenance();
+    loadFleetMaintHistory();
+    renderFleetVehicleGrid();
+    checkFleetOverdue();
+  }catch(e){alert('Error: '+e.message);}
+}
+
+async function deleteFleetVehicle(vehicleId){
+  if(!confirm('Delete vehicle '+vehicleId+' and ALL its maintenance records? This cannot be undone.'))return;
+  try{
+    await db.from('fleet_maintenance').delete().eq('vehicle_id',vehicleId);
+    await db.from('fleet_vehicles').delete().eq('vehicle_id',vehicleId);
+    closeModal('fleet-vehicle-modal');
+    await loadFleetVehicles();
+  }catch(e){alert('Error: '+e.message);}
+}
+
+function populateFleetLogFilters(){
+  const sel=document.getElementById('fleet-log-vehicle-filter');
+  if(!sel)return;
+  const current=sel.value;
+  sel.innerHTML='<option value="">All Vehicles</option>'+
+    allFleetVehiclesCache.map(v=>'<option value="'+v.vehicle_id+'">'+v.vehicle_id+(v.make?' ('+v.make+(v.model?' '+v.model:'')+')':'')+'</option>').join('');
+  sel.value=current;
+}
+
+function renderFleetMasterLog(){
+  const el=document.getElementById('fleet-master-log-list');
+  if(!el)return;
+  const vFilter=document.getElementById('fleet-log-vehicle-filter')?.value||'';
+  const tFilter=document.getElementById('fleet-log-type-filter')?.value||'';
+  let records=allFleetMaintenanceCache;
+  if(vFilter)records=records.filter(m=>m.vehicle_id===vFilter);
+  if(tFilter)records=records.filter(m=>m.maintenance_type===tFilter);
+  if(!records.length){el.innerHTML='<p style="color:#888;font-size:13px;">No records found.</p>';return;}
+  const today=new Date();
+  const typeColors={'Oil Change':'#e8f4fd','Tire Changeover':'#e8f5e9','Preventative':'#f3e5f5','Repair':'#fdecea','Inspection':'#fff3e0'};
+  el.innerHTML=records.map(m=>{
+    const isOverdue=m.next_due_date&&new Date(m.next_due_date)<today;
+    const dt=new Date(m.service_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    const typeBg=typeColors[m.maintenance_type]||'#f0f0f0';
+    return '<div class="card" style="margin-bottom:8px;padding:14px;'+(isOverdue?'border-color:var(--warn);':'')+'">'+
+      '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">'+
+        '<strong style="font-size:14px;color:var(--navy);">'+m.vehicle_id+'</strong>'+
+        '<span style="background:'+typeBg+';font-size:11px;font-weight:700;padding:2px 8px;border-radius:8px;">'+m.maintenance_type+'</span>'+
+        '<span style="font-size:12px;color:#555;">'+dt+(m.mileage?' &middot; '+m.mileage.toLocaleString()+' mi':'')+'</span>'+
+        (m.shop_name?'<span style="font-size:12px;color:#888;">'+m.shop_name+'</span>':'')+
+        (m.cost?'<span style="font-size:12px;font-weight:700;color:var(--navy);">$'+parseFloat(m.cost).toFixed(2)+'</span>':'')+
+        (isOverdue?'<span style="background:var(--warn);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:8px;">OVERDUE</span>':'')+
+        '<button class="btn btn-sm btn-red" style="margin-left:auto;" data-mid="'+m.id+'" onclick="deleteFleetMaintEntry(this.dataset.mid)">🗑️</button>'+
+      '</div>'+
+      (m.notes?'<div style="font-size:12px;color:#666;margin-top:8px;">'+m.notes+'</div>':'')+
+    '</div>';
+  }).join('');
+}
+function exportFleetLog(){
+  if(!allFleetMaintenanceCache.length){alert('No records to export.');return;}
+  const headers=['Vehicle ID','Type','Date','Mileage','Next Due Date','Next Due Mileage','Shop','Cost','Notes','Logged By'];
+  const rows=allFleetMaintenanceCache.map(m=>[m.vehicle_id,m.maintenance_type,m.service_date,m.mileage||'',m.next_due_date||'',m.next_due_mileage||'',m.shop_name||'',m.cost||'',m.notes||'',m.logged_by||''].map(v=>'"'+String(v||'').replace(/"/g,'""')+'"'));
+  const csv=[headers.join(','),...rows.map(r=>r.join(','))].join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='RideSource_FleetMaintenance_'+new Date().toISOString().split('T')[0]+'.csv';a.click();
+}
+
 // ── INCIDENT REPORTS ──
 let allIncidentsCache=[];
 const IR_TRIP_CHECKS=['On-time Pickup','On-time Drop-off','Multi-loaded Trip','Attendant/Escort Present','Service Animal Present','Assistive Mobility Device'];
