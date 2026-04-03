@@ -1511,26 +1511,118 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
           </div>
           <!-- Generic Log Entry Form (hidden when tires tab active) -->
           <div id="fm-generic-form" class="card" style="margin-bottom:16px;background:#f8f9fc;">
-            <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:12px;">➕ Log New Entry</div>
-            <div class="form-row">
-              <div class="form-field"><label>Service Date *</label><input type="date" id="fm-date"></div>
-              <div class="form-field"><label>Mileage at Service</label><input type="number" id="fm-mileage" placeholder="e.g. 45230"></div>
+            <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:12px;" id="fm-form-title">➕ Log New Entry</div>
+
+            <!-- OIL CHANGE FORM -->
+            <div id="fm-form-oil">
+              <div class="form-row">
+                <div class="form-field"><label>Service Date *</label><input type="date" id="fm-date"></div>
+                <div class="form-field"><label>Mileage at Service</label><input type="number" id="fm-mileage" placeholder="e.g. 45230"></div>
+              </div>
+              <div class="form-row">
+                <div class="form-field"><label>Next Due Date</label><input type="date" id="fm-next-date"></div>
+                <div class="form-field"><label>Next Due Mileage</label><input type="number" id="fm-next-mileage" placeholder="e.g. 50230"></div>
+              </div>
+              <div class="form-row">
+                <div class="form-field"><label>Shop / Location</label><input type="text" id="fm-shop" placeholder="e.g. Napa Auto, Ellsworth ME"></div>
+                <div class="form-field"><label>Cost</label><input type="number" id="fm-cost" placeholder="e.g. 89.95" step="0.01"></div>
+              </div>
+              <div class="form-field"><label>Notes</label><textarea id="fm-notes" style="min-height:60px;" placeholder="Any details about this service..."></textarea></div>
             </div>
-            <div class="form-row">
-              <div class="form-field"><label>Next Due Date</label><input type="date" id="fm-next-date"></div>
-              <div class="form-field"><label>Next Due Mileage</label><input type="number" id="fm-next-mileage" placeholder="e.g. 50230"></div>
+
+            <!-- PREVENTATIVE FORM -->
+            <div id="fm-form-preventative" style="display:none;">
+              <div class="form-row">
+                <div class="form-field"><label>Service Type *</label>
+                  <select id="fm-prev-type" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                    <option value="">— Select Service —</option>
+                    <option>Air Filter</option>
+                    <option>Cabin Filter</option>
+                    <option>Brake Inspection</option>
+                    <option>Brake Replacement</option>
+                    <option>Fluid Check / Top-Off</option>
+                    <option>Belt / Hose Check</option>
+                    <option>Wiper Blades</option>
+                    <option>Battery Check / Replacement</option>
+                    <option>Transmission Service</option>
+                    <option>Coolant Flush</option>
+                    <option>Spark Plugs</option>
+                    <option>Other</option>
+                  </select>
+                </div>
+                <div class="form-field"><label>Service Date *</label><input type="date" id="fm-prev-date"></div>
+              </div>
+              <div class="form-row">
+                <div class="form-field"><label>Mileage at Service</label><input type="number" id="fm-prev-mileage" placeholder="e.g. 45230"></div>
+                <div class="form-field"><label>Next Due Date</label><input type="date" id="fm-prev-next-date"></div>
+              </div>
+              <div class="form-row">
+                <div class="form-field"><label>Shop / Location</label><input type="text" id="fm-prev-shop" placeholder="e.g. Napa Auto, Ellsworth ME"></div>
+                <div class="form-field"><label>Cost</label><input type="number" id="fm-prev-cost" placeholder="e.g. 89.95" step="0.01"></div>
+              </div>
+              <div class="form-field"><label>Notes</label><textarea id="fm-prev-notes" style="min-height:60px;" placeholder="Any additional details..."></textarea></div>
             </div>
-            <div class="form-row">
-              <div class="form-field"><label>Shop / Location</label><input type="text" id="fm-shop" placeholder="e.g. Napa Auto, Ellsworth ME"></div>
-              <div class="form-field"><label>Cost</label><input type="number" id="fm-cost" placeholder="e.g. 89.95" step="0.01"></div>
+
+            <!-- REPAIR FORM -->
+            <div id="fm-form-repair" style="display:none;">
+              <div class="form-row">
+                <div class="form-field"><label>Service Date *</label><input type="date" id="fm-rep-date"></div>
+                <div class="form-field"><label>Mileage at Repair</label><input type="number" id="fm-rep-mileage" placeholder="e.g. 45230"></div>
+              </div>
+              <div class="form-field"><label>Problem / Issue *</label><input type="text" id="fm-rep-problem" placeholder="e.g. Grinding noise from front left wheel"></div>
+              <div class="form-field"><label>Work Performed *</label><textarea id="fm-rep-work" style="min-height:60px;" placeholder="e.g. Replaced front left brake pads and rotor"></textarea></div>
+              <div class="form-field"><label>Parts Used (optional)</label><input type="text" id="fm-rep-parts" placeholder="e.g. Motorcraft brake pads, OEM rotor"></div>
+              <div class="form-row">
+                <div class="form-field"><label>Shop / Location</label><input type="text" id="fm-rep-shop" placeholder="e.g. Sullivan Tire, Ellsworth ME"></div>
+                <div class="form-field"><label>Cost</label><input type="number" id="fm-rep-cost" placeholder="e.g. 320.00" step="0.01"></div>
+              </div>
+              <div class="form-field"><label>Link to Vehicle Report (optional)</label>
+                <select id="fm-linked-report" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                  <option value="">— None —</option>
+                </select>
+              </div>
+              <div class="form-field"><label>Additional Notes</label><textarea id="fm-rep-notes" style="min-height:50px;" placeholder="Warranty info, follow-up needed, etc."></textarea></div>
             </div>
-            <div class="form-field"><label>Notes</label><textarea id="fm-notes" style="min-height:60px;" placeholder="Any details about this service..."></textarea></div>
-            <div class="form-field"><label>Link to Vehicle Report (optional)</label>
-              <select id="fm-linked-report" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
-                <option value="">— None —</option>
-              </select>
+
+            <!-- INSPECTION FORM -->
+            <div id="fm-form-inspection" style="display:none;">
+              <div class="form-row">
+                <div class="form-field"><label>Inspection Type *</label>
+                  <select id="fm-insp-type" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                    <option value="">— Select Type —</option>
+                    <option>Maine State Inspection</option>
+                    <option>Safety Check</option>
+                    <option>Pre-Trip Formal</option>
+                    <option>DOT Inspection</option>
+                    <option>Other</option>
+                  </select>
+                </div>
+                <div class="form-field"><label>Inspection Date *</label><input type="date" id="fm-insp-date"></div>
+              </div>
+              <div class="form-row">
+                <div class="form-field"><label>Result</label>
+                  <select id="fm-insp-result" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                    <option value="">— Select —</option>
+                    <option>Pass</option>
+                    <option>Pass with Advisory</option>
+                    <option>Fail</option>
+                    <option>Rejected</option>
+                  </select>
+                </div>
+                <div class="form-field"><label>Next Inspection Due</label><input type="date" id="fm-insp-next-date"></div>
+              </div>
+              <div class="form-row">
+                <div class="form-field"><label>Inspector / Station</label><input type="text" id="fm-insp-station" placeholder="e.g. Sullivan Tire, Ellsworth ME"></div>
+                <div class="form-field"><label>Sticker Number (optional)</label><input type="text" id="fm-insp-sticker" placeholder="e.g. ME-2025-12345"></div>
+              </div>
+              <div class="form-row">
+                <div class="form-field"><label>Mileage</label><input type="number" id="fm-insp-mileage" placeholder="e.g. 45230"></div>
+                <div class="form-field"><label>Cost</label><input type="number" id="fm-insp-cost" placeholder="e.g. 40.00" step="0.01"></div>
+              </div>
+              <div class="form-field"><label>Notes / Advisory Items</label><textarea id="fm-insp-notes" style="min-height:60px;" placeholder="Any advisory items, failures, or follow-up needed..."></textarea></div>
             </div>
-            <div style="display:flex;gap:10px;align-items:center;margin-top:8px;">
+
+            <div style="display:flex;gap:10px;align-items:center;margin-top:12px;">
               <button class="btn btn-primary" onclick="saveFleetMaintEntry()">Log Entry</button>
               <span id="fm-msg" style="font-size:13px;color:var(--success);display:none;">✓ Logged!</span>
             </div>
@@ -3426,6 +3518,15 @@ function switchFleetMaintTab(tab){
   if(genericForm)genericForm.style.display=isTires?'none':'block';
   if(historyEl)historyEl.style.display=isTires?'none':'block';
   if(tirePanel)tirePanel.style.display=isTires?'block':'none';
+  // Show/hide the correct sub-form
+  ['oil','preventative','repair','inspection'].forEach(t=>{
+    const f=document.getElementById('fm-form-'+t);
+    if(f)f.style.display=t===tab?'block':'none';
+  });
+  // Update form title
+  const titles={oil:'🛢️ Log Oil Change',preventative:'🔧 Log Preventative Service',repair:'🚨 Log Repair',inspection:'📋 Log Inspection'};
+  const titleEl=document.getElementById('fm-form-title');
+  if(titleEl&&titles[tab])titleEl.textContent=titles[tab];
   if(isTires){renderTireMounted();loadTireChangeoversHistory();}
   else{loadFleetMaintHistory();}
 }
@@ -3496,27 +3597,77 @@ async function saveFleetVehicle(){
 }
 
 async function saveFleetMaintEntry(){
-  const typeMap={oil:'Oil Change',tires:'Tire Changeover',preventative:'Preventative',repair:'Repair',inspection:'Inspection'};
-  const date=document.getElementById('fm-date').value;
-  if(!date){alert('Service date is required.');return;}
-  try{
-    const {error}=await db.from('fleet_maintenance').insert([{
-      vehicle_id:currentFleetVehicleId,
-      maintenance_type:typeMap[currentFleetMaintTab],
-      service_date:date,
-      mileage:parseInt(document.getElementById('fm-mileage').value)||null,
-      next_due_date:document.getElementById('fm-next-date').value||null,
-      next_due_mileage:parseInt(document.getElementById('fm-next-mileage').value)||null,
-      shop_name:document.getElementById('fm-shop').value.trim()||null,
-      cost:parseFloat(document.getElementById('fm-cost').value)||null,
-      notes:document.getElementById('fm-notes').value.trim()||null,
-      linked_report_id:parseInt(document.getElementById('fm-linked-report').value)||null,
-      logged_by:adminName,
-      logged_at:new Date().toISOString()
-    }]);
-    if(error)throw error;
-    ['fm-date','fm-mileage','fm-next-date','fm-next-mileage','fm-shop','fm-cost','fm-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const tab=currentFleetMaintTab;
+  let entry={vehicle_id:currentFleetVehicleId,logged_by:adminName,logged_at:new Date().toISOString()};
+  let clearIds=[];
+
+  if(tab==='oil'){
+    const date=document.getElementById('fm-date').value;
+    if(!date){alert('Service date is required.');return;}
+    entry.maintenance_type='Oil Change';
+    entry.service_date=date;
+    entry.mileage=parseInt(document.getElementById('fm-mileage').value)||null;
+    entry.next_due_date=document.getElementById('fm-next-date').value||null;
+    entry.next_due_mileage=parseInt(document.getElementById('fm-next-mileage').value)||null;
+    entry.shop_name=document.getElementById('fm-shop').value.trim()||null;
+    entry.cost=parseFloat(document.getElementById('fm-cost').value)||null;
+    entry.notes=document.getElementById('fm-notes').value.trim()||null;
+    clearIds=['fm-date','fm-mileage','fm-next-date','fm-next-mileage','fm-shop','fm-cost','fm-notes'];
+
+  } else if(tab==='preventative'){
+    const date=document.getElementById('fm-prev-date').value;
+    const type=document.getElementById('fm-prev-type').value;
+    if(!date||!type){alert('Service type and date are required.');return;}
+    entry.maintenance_type='Preventative';
+    entry.service_date=date;
+    entry.mileage=parseInt(document.getElementById('fm-prev-mileage').value)||null;
+    entry.next_due_date=document.getElementById('fm-prev-next-date').value||null;
+    entry.shop_name=document.getElementById('fm-prev-shop').value.trim()||null;
+    entry.cost=parseFloat(document.getElementById('fm-prev-cost').value)||null;
+    entry.notes=(type+(document.getElementById('fm-prev-notes').value.trim()?'\n'+document.getElementById('fm-prev-notes').value.trim():''));
+    clearIds=['fm-prev-date','fm-prev-mileage','fm-prev-next-date','fm-prev-shop','fm-prev-cost','fm-prev-notes'];
+    document.getElementById('fm-prev-type').value='';
+
+  } else if(tab==='repair'){
+    const date=document.getElementById('fm-rep-date').value;
+    const problem=document.getElementById('fm-rep-problem').value.trim();
+    const work=document.getElementById('fm-rep-work').value.trim();
+    if(!date||!problem||!work){alert('Date, problem, and work performed are required.');return;}
+    entry.maintenance_type='Repair';
+    entry.service_date=date;
+    entry.mileage=parseInt(document.getElementById('fm-rep-mileage').value)||null;
+    entry.shop_name=document.getElementById('fm-rep-shop').value.trim()||null;
+    entry.cost=parseFloat(document.getElementById('fm-rep-cost').value)||null;
+    entry.linked_report_id=parseInt(document.getElementById('fm-linked-report').value)||null;
+    const parts=document.getElementById('fm-rep-parts').value.trim();
+    const repNotes=document.getElementById('fm-rep-notes').value.trim();
+    entry.notes='Problem: '+problem+'\nWork: '+work+(parts?'\nParts: '+parts:'')+(repNotes?'\n'+repNotes:'');
+    clearIds=['fm-rep-date','fm-rep-mileage','fm-rep-problem','fm-rep-work','fm-rep-parts','fm-rep-shop','fm-rep-cost','fm-rep-notes'];
     document.getElementById('fm-linked-report').value='';
+
+  } else if(tab==='inspection'){
+    const date=document.getElementById('fm-insp-date').value;
+    const type=document.getElementById('fm-insp-type').value;
+    if(!date||!type){alert('Inspection type and date are required.');return;}
+    entry.maintenance_type='Inspection';
+    entry.service_date=date;
+    entry.mileage=parseInt(document.getElementById('fm-insp-mileage').value)||null;
+    entry.next_due_date=document.getElementById('fm-insp-next-date').value||null;
+    entry.shop_name=document.getElementById('fm-insp-station').value.trim()||null;
+    entry.cost=parseFloat(document.getElementById('fm-insp-cost').value)||null;
+    const result=document.getElementById('fm-insp-result').value;
+    const sticker=document.getElementById('fm-insp-sticker').value.trim();
+    const inspNotes=document.getElementById('fm-insp-notes').value.trim();
+    entry.notes=type+(result?' — '+result:'')+(sticker?' | Sticker: '+sticker:'')+(inspNotes?'\n'+inspNotes:'');
+    clearIds=['fm-insp-date','fm-insp-mileage','fm-insp-next-date','fm-insp-station','fm-insp-sticker','fm-insp-cost','fm-insp-notes'];
+    document.getElementById('fm-insp-type').value='';
+    document.getElementById('fm-insp-result').value='';
+  }
+
+  try{
+    const {error}=await db.from('fleet_maintenance').insert([entry]);
+    if(error)throw error;
+    clearIds.forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
     const msg=document.getElementById('fm-msg');msg.style.display='inline';setTimeout(()=>msg.style.display='none',2000);
     await loadFleetMaintenance();
     loadFleetMaintHistory();
