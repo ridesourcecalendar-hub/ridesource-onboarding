@@ -523,10 +523,13 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 
       <!-- TIME OFF -->
       <div id="section-timeoff" class="portal-section">
-        <div class="card-title" style="font-size:22px;color:var(--navy);margin-bottom:4px;">📅 Request Time Off</div>
-        <p style="color:#888;font-size:14px;margin-bottom:24px;">Submit a time off request below. Your supervisor will be notified and will approve or deny within a reasonable timeframe.</p>
-        <div class="card">
-          <div class="card-sub">Select a request type to get started.</div>
+        <div class="card-title" style="font-size:22px;color:var(--navy);margin-bottom:4px;">📅 Time Off</div>
+        <p style="color:#888;font-size:14px;margin-bottom:24px;">Submit a request or review your submission history below.</p>
+
+        <!-- CARD 1: Submit Request -->
+        <div class="card" style="margin-bottom:20px;">
+          <div style="font-size:16px;font-weight:800;color:var(--navy);margin-bottom:4px;">📨 Submit a Request</div>
+          <div class="card-sub" style="margin-bottom:16px;">Select a request type to get started.</div>
           <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:24px;">
             <button class="req-type-btn btn-secondary" onclick="selectReqType(this,'Full Day Off')">☀️ Full Day Off</button>
             <button class="req-type-btn btn-secondary" onclick="selectReqType(this,'Multiple Days')">📆 Multiple Days</button>
@@ -558,8 +561,15 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
             <p>Your supervisor has been notified. You will receive an update when a decision is made.</p>
             <button class="btn-primary" style="margin-top:12px;background:rgba(255,255,255,.2);border:2px solid rgba(255,255,255,.5);" onclick="resetTimeOff()">Submit Another Request</button>
           </div>
-          <div class="card" style="margin-top:16px;">
-            <div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:12px;">📋 My Submitted Requests</div>
+        </div>
+
+        <!-- CARD 2: Submission History -->
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;" onclick="toggleMyRequestsHistory()">
+            <div style="font-size:16px;font-weight:800;color:var(--navy);">📋 My Submission History</div>
+            <span id="my-requests-chevron" style="font-size:18px;color:#888;transition:transform .2s;">▼</span>
+          </div>
+          <div id="my-requests-history-panel" style="display:none;margin-top:16px;">
             <div id="my-requests-list"><p style="color:#888;font-size:13px;">Loading...</p></div>
           </div>
         </div>
@@ -2566,6 +2576,14 @@ async function deleteMyRequest(id){
     await db.from('time_off_requests').delete().eq('id',id).eq('employee_email',user.email).in('status',['PENDING','PTO_PENDING']);
     loadMyRequests();
   }catch(e){alert('Unable to cancel. Please contact your supervisor.');}
+}
+function toggleMyRequestsHistory(){
+  const panel=document.getElementById('my-requests-history-panel');
+  const chevron=document.getElementById('my-requests-chevron');
+  const isOpen=panel.style.display!=='none';
+  panel.style.display=isOpen?'none':'block';
+  chevron.style.transform=isOpen?'':' rotate(180deg)';
+  if(!isOpen)loadMyRequests();
 }
 
 // TIMESHEET
