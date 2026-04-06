@@ -2024,13 +2024,8 @@ function getSupervisorEmail(employeeEmail){
   return SUPERVISOR_EMAIL; // fallback to Tiffany
 }
 const PORTAL_URL='https://github.com/ridesourcecalendar-hub/ridesource-onboarding/raw/main/index.html';
-const PORTAL_STAFF=[
-  {name:'Tiffany Gallagher',title:'Regional Operations Manager',email:'tiffanyb@ridesourcemaine.com',phone:'207-812-5357',password:'Transportation.2025!',role:'admin'},
-  {name:'Nicole Geel',title:'Operations Manager',email:'nicolegeel@ridesourcemaine.com',phone:'207-743-7433',password:'OpsMgr.2026!',role:'supervisor'},
-  {name:'Robin Lausier',title:'Human Resources Manager',email:'robinl@ridesourcemaine.com',phone:'',password:'HRMgr.2026!',role:'hr'},
-  {name:'Demo Admin',title:'Demo Account',email:'demo@ridesourcemaine.com',phone:'',password:'Demo2026!',role:'demo'},
-];
-const ADMIN_PASSWORD='Transportation.2025!'; // kept for legacy session restore compatibility
+const PORTAL_STAFF=[]; // Staff loaded from Supabase — no credentials stored in code
+const ADMIN_PASSWORD=''; // Legacy — no longer used
 if(typeof supabase==='undefined'){console.error('Supabase failed to load');alert('Portal failed to load. Please refresh the page.');}
 const {createClient}=supabase;
 const db=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false,storageKey:null}});
@@ -2048,7 +2043,7 @@ let allRequestsCache=[],allTimesheetsCache=[],allVehicleRecordsCache=[];
 
 // SESSION RESTORE — re-login automatically on page refresh
 // Only restores sessions less than 8 hours old
-window.addEventListener('load',function(){
+window.addEventListener('load',async function(){
   try{
     const s=sessionStorage.getItem('rs_session');
     if(!s){sessionStorage.removeItem('rs_session');return;}
@@ -2060,7 +2055,9 @@ window.addEventListener('load',function(){
       startPortal({name:sess.name,email:sess.email,county:sess.county});
       document.body.classList.add('portal-active');
     } else if(sess.type==='admin'&&sess.name){
-      const staff=PORTAL_STAFF.find(s=>s.name===sess.name);
+      // Look up staff record from Supabase — no local credentials stored
+      const {data:staffData}=await db.from('admin_staff').select('name,title,email,role').eq('name',sess.name).single();
+      const staff=staffData;
       if(staff){
         adminName=staff.role==='demo'?'Admin':staff.name;adminStaff=staff;
         document.getElementById('admin-display').textContent=staff.role==='demo'?'Admin':staff.name;
@@ -2140,10 +2137,15 @@ function logout(){
 }
 
 // ADMIN AUTH
-function adminLogin(){
+async function adminLogin(){
   const pass=document.getElementById('admin-pass').value;
-  const staff=PORTAL_STAFF.find(s=>s.password===pass);
-  if(!staff){document.getElementById('admin-error').style.display='block';return;}
+  const errEl=document.getElementById('admin-error');
+  errEl.style.display='none';
+  if(!pass){errEl.style.display='block';return;}
+  // Check password against hashed values in Supabase
+  const {data,error}=await db.rpc('check_admin_password',{input_password:pass});
+  if(error||!data||data.length===0){errEl.style.display='block';return;}
+  const staff=data[0];
   document.getElementById('admin-error').style.display='none';
   adminName=staff.role==='demo'?'Admin':staff.name;
   adminStaff=staff;
