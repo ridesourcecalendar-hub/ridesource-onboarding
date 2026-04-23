@@ -2786,7 +2786,7 @@ async function submitOilChangeRequest(){
       vehicle_id:vehicleId,
       report_date:new Date().toISOString().split('T')[0],
       issue_types:JSON.stringify(['Oil Change Request']),
-      description:'OIL CHANGE REQUEST — Current Mileage: '+mileage+(notes?'
+      description:'OIL CHANGE REQUEST - Current Mileage: '+mileage+(notes?'
 Notes: '+notes:''),
       status:'PENDING',
       submitted_at:new Date().toISOString()
