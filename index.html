@@ -1434,20 +1434,25 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
       <!-- FLEET MAINTENANCE -->
       <div id="section-adm-fleet" class="admin-section">
         <div style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:4px;">🔧 Fleet Maintenance</div>
-        <p style="color:#888;font-size:13px;margin-bottom:20px;">Track vehicle profiles, maintenance history, and service schedules. Overdue items are flagged automatically.</p>
+        <p style="color:#888;font-size:13px;margin-bottom:16px;">Track vehicle profiles, maintenance history, and tire inventory. Overdue items are flagged automatically.</p>
 
-        <!-- View Toggle -->
-        <div style="display:flex;gap:2px;border-bottom:2px solid var(--border);margin-bottom:20px;">
-          <button class="profile-tab active" id="fleet-tab-vehicles" onclick="switchFleetTab('vehicles')">🚐 Vehicle Profiles</button>
-          <button class="profile-tab" id="fleet-tab-log" onclick="switchFleetTab('log')">📋 Master Log</button>
-          <button class="profile-tab" id="fleet-tab-tires" onclick="switchFleetTab('tires')">🔄 Tire Inventory</button>
-        </div>
+        <!-- PENDING OIL REQUESTS STRIP -->
+        <div id="fleet-oil-requests-strip" style="display:none;margin-bottom:16px;"></div>
 
-        <!-- VEHICLE PROFILES PANEL -->
-        <div id="fleet-panel-vehicles">
+        <!-- VEHICLES COLLAPSIBLE -->
+        <div class="card" style="margin-bottom:12px;padding:0;overflow:hidden;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;cursor:pointer;background:var(--navy);color:#fff;border-radius:12px 12px 0 0;" onclick="toggleFleetSection('vehicles')">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:18px;">🚐</span>
+              <span style="font-size:15px;font-weight:800;">Vehicle Profiles</span>
+              <span id="fleet-vehicles-count" style="font-size:12px;background:rgba(255,255,255,.2);padding:2px 8px;border-radius:10px;"></span>
+            </div>
+            <span id="fleet-vehicles-chevron" style="font-size:16px;transition:transform .2s;">▼</span>
+          </div>
+          <div id="fleet-panel-vehicles" style="padding:16px;">
           <!-- Add Vehicle -->
-          <div class="card" style="margin-bottom:16px;">
-            <div class="card-title" style="cursor:pointer;" onclick="toggleFleetAddForm()">➕ Add Vehicle <span id="fleet-add-toggle" style="font-size:12px;color:#888;">▼ expand</span></div>
+          <div class="card" style="margin-bottom:16px;background:#f8f9fc;">
+            <div class="card-title" style="cursor:pointer;font-size:14px;" onclick="toggleFleetAddForm()">➕ Add Vehicle <span id="fleet-add-toggle" style="font-size:12px;color:#888;">▼ expand</span></div>
             <div id="fleet-add-form" style="display:none;margin-top:16px;">
               <div class="form-row">
                 <div class="form-field"><label>Vehicle ID / Asset Tag *</label><input type="text" id="fv-id" placeholder="e.g. RS-01, Unit 7"></div>
@@ -1500,25 +1505,20 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
           <div id="fleet-vehicle-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;">
             <p style="color:#888;font-size:13px;">Loading vehicles...</p>
           </div>
-        </div>
+          </div><!-- end fleet-panel-vehicles -->
+        </div><!-- end vehicles card -->
 
-        <!-- MASTER LOG PANEL -->
-        <div id="fleet-panel-log" style="display:none;">
-          <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center;">
-            <select id="fleet-log-vehicle-filter" onchange="renderFleetMasterLog()" style="padding:8px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:#fff;">
-              <option value="">All Vehicles</option>
-            </select>
-            <select id="fleet-log-type-filter" onchange="renderFleetMasterLog()" style="padding:8px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:#fff;">
-              <option value="">All Types</option>
-              <option>Oil Change</option><option>Tire Changeover</option><option>Preventative</option><option>Repair</option><option>Inspection</option>
-            </select>
-            <button class="btn btn-sm" style="background:#e8f4fd;color:#1565c0;margin-left:auto;" onclick="exportFleetLog()">⬇️ Export CSV</button>
+        <!-- TIRES COLLAPSIBLE -->
+        <div class="card" style="margin-bottom:12px;padding:0;overflow:hidden;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;cursor:pointer;background:#2e7d4f;color:#fff;border-radius:12px 12px 0 0;" onclick="toggleFleetSection('tires')">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:18px;">🔄</span>
+              <span style="font-size:15px;font-weight:800;">Tire Inventory</span>
+              <span id="fleet-tires-count" style="font-size:12px;background:rgba(255,255,255,.2);padding:2px 8px;border-radius:10px;"></span>
+            </div>
+            <span id="fleet-tires-chevron" style="font-size:16px;transition:transform .2s;">▼</span>
           </div>
-          <div id="fleet-master-log-list"><p style="color:#888;font-size:13px;">Loading...</p></div>
-        </div>
-
-        <!-- TIRE INVENTORY PANEL -->
-        <div id="fleet-panel-tires" style="display:none;">
+          <div id="fleet-panel-tires" style="display:none;padding:16px;">
           <!-- Add Tire -->
           <div class="card" style="margin-bottom:16px;">
             <div class="card-title" style="cursor:pointer;" onclick="toggleTireAddForm()">➕ Add Tire to Inventory <span id="tire-add-toggle" style="font-size:12px;color:#888;">▼ expand</span></div>
@@ -1592,8 +1592,34 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
             <button class="btn btn-sm" style="background:#e8f4fd;color:#1565c0;margin-left:auto;" onclick="exportTireInventory()">⬇️ Export CSV</button>
           </div>
           <div id="tire-inventory-list"><p style="color:#888;font-size:13px;">Loading...</p></div>
-        </div>
-      </div>
+          </div><!-- end fleet-panel-tires -->
+        </div><!-- end tires card -->
+
+        <!-- MASTER LOG COLLAPSIBLE -->
+        <div class="card" style="margin-bottom:12px;padding:0;overflow:hidden;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;cursor:pointer;background:#1565c0;color:#fff;border-radius:12px 12px 0 0;" onclick="toggleFleetSection('log')">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:18px;">📋</span>
+              <span style="font-size:15px;font-weight:800;">Master Maintenance Log</span>
+            </div>
+            <span id="fleet-log-chevron" style="font-size:16px;transition:transform .2s;">▼</span>
+          </div>
+          <div id="fleet-panel-log" style="display:none;padding:16px;">
+            <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center;">
+              <select id="fleet-log-vehicle-filter" onchange="renderFleetMasterLog()" style="padding:8px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:#fff;">
+                <option value="">All Vehicles</option>
+              </select>
+              <select id="fleet-log-type-filter" onchange="renderFleetMasterLog()" style="padding:8px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:#fff;">
+                <option value="">All Types</option>
+                <option>Oil Change</option><option>Tire Changeover</option><option>Preventative</option><option>Repair</option><option>Inspection</option>
+              </select>
+              <button class="btn btn-sm" style="background:#e8f4fd;color:#1565c0;margin-left:auto;" onclick="exportFleetLog()">⬇️ Export CSV</button>
+            </div>
+            <div id="fleet-master-log-list"><p style="color:#888;font-size:13px;">Loading...</p></div>
+          </div><!-- end fleet-panel-log -->
+        </div><!-- end log card -->
+
+      </div><!-- end section-adm-fleet -->
 
       <!-- FLEET VEHICLE DETAIL MODAL -->
       <div class="modal-overlay" id="fleet-vehicle-modal">
@@ -3522,6 +3548,40 @@ const MAINT_TYPES={
   inspection:'Inspection'
 };
 
+function toggleFleetSection(section){
+  const panel=document.getElementById('fleet-panel-'+section);
+  const chevron=document.getElementById('fleet-'+section+'-chevron');
+  if(!panel)return;
+  const isOpen=panel.style.display!=='none';
+  panel.style.display=isOpen?'none':'block';
+  if(chevron)chevron.style.transform=isOpen?'':'rotate(180deg)';
+  if(!isOpen&&section==='log'){renderFleetMasterLog();populateFleetLogFilters();}
+  if(!isOpen&&section==='tires'){renderTireInventory();}
+}
+
+function renderOilRequestsStrip(){
+  const strip=document.getElementById('fleet-oil-requests-strip');
+  if(!strip)return;
+  const requests=allVehicleRecordsCache?allVehicleRecordsCache.filter(r=>
+    (r.issue_types||'').includes('Oil Change Request')&&r.status==='PENDING'
+  ):[];
+  if(!requests.length){strip.style.display='none';return;}
+  strip.style.display='block';
+  strip.innerHTML='<div style="background:#fff3cd;border:1px solid #ffc107;border-radius:10px;padding:12px 16px;">'+
+    '<div style="font-size:13px;font-weight:800;color:#856404;margin-bottom:10px;">🛢️ Pending Oil Change Requests ('+requests.length+')</div>'+
+    requests.map(r=>'<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px solid #ffeeba;font-size:13px;">'+
+      '<div>'+
+        '<strong>'+r.vehicle_id+'</strong>'+
+        '<span style="color:#888;margin-left:8px;">'+r.employee_name+'</span>'+
+        '<span style="color:#888;margin-left:8px;font-size:12px;">'+new Date(r.submitted_at).toLocaleDateString('en-US',{month:'short',day:'numeric'})+'</span>'+
+        (r.description?'<div style="font-size:12px;color:#666;margin-top:2px;">'+r.description.substring(0,80)+'</div>':'')+
+      '</div>'+
+      '<button style="background:var(--navy);color:#fff;border:none;border-radius:6px;padding:5px 12px;font-size:12px;cursor:pointer;white-space:nowrap;" '+
+      '<button data-vid="'+r.vehicle_id+'" onclick="openFleetVehicle(this.dataset.vid)" style="background:var(--navy);color:#fff;border:none;border-radius:6px;padding:5px 12px;font-size:12px;cursor:pointer;white-space:nowrap;">🔧 Open Vehicle</button>'+
+    '</div>').join('')+
+  '</div>';
+}
+
 function switchFleetTab(tab){
   ['vehicles','log','tires'].forEach(t=>{
     document.getElementById('fleet-tab-'+t)?.classList.toggle('active',t===tab);
@@ -3542,6 +3602,7 @@ async function loadFleetVehicles(){
   try{
     const {data}=await db.from('fleet_vehicles').select('*').order('vehicle_id',{ascending:true});
     allFleetVehiclesCache=data||[];
+    updateFleetCounts();
     renderFleetVehicleGrid();
     checkFleetOverdue();
   }catch(e){console.log('Fleet vehicles:',e);}
@@ -3601,6 +3662,16 @@ function updateFleetDashAlert(count,soonCount){
   }
 }
 
+function updateFleetCounts(){
+  const vCount=allFleetVehiclesCache.filter(v=>v.status!=='Retired').length;
+  const tMounted=allTiresCache.filter(t=>t.status==='Mounted').length;
+  const tStorage=allTiresCache.filter(t=>t.status==='In Storage').length;
+  const vc=document.getElementById('fleet-vehicles-count');
+  const tc=document.getElementById('fleet-tires-count');
+  if(vc)vc.textContent=vCount+' vehicle'+(vCount!==1?'s':'');
+  if(tc)tc.textContent=tMounted+' mounted · '+tStorage+' in storage';
+  renderOilRequestsStrip();
+}
 function renderFleetVehicleGrid(){
   const el=document.getElementById('fleet-vehicle-grid');
   if(!el)return;
@@ -3665,7 +3736,10 @@ async function openFleetVehicle(vehicleId){
           (v.vin?'<span style="font-size:11px;color:#aaa;">VIN: '+v.vin+'</span>':'')+
         '</div>'+
       '</div>'+
-      '<button data-vid="'+v.vehicle_id+'" onclick="deleteFleetVehicle(this.dataset.vid)" style="background:none;border:1px solid #ddd;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;color:var(--red);">🗑️ Delete</button>'+
+      (adminStaff?.role==='admin'?
+        '<button data-vid="'+v.vehicle_id+'" onclick="confirmDeleteFleetVehicle(this.dataset.vid)" style="background:none;border:1px solid var(--red);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;color:var(--red);">🗑️ Delete</button>':
+        '<button data-vid="'+v.vehicle_id+'" onclick="archiveFleetVehicle(this.dataset.vid)" style="background:none;border:1px solid #ddd;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;color:#888;">📦 Archive</button>'
+      )+
     '</div>';
   // Populate linked report dropdown
   const sel=document.getElementById('fm-linked-report');
@@ -3878,14 +3952,31 @@ async function deleteFleetMaintEntry(id){
   }catch(e){alert('Error: '+e.message);}
 }
 
-async function deleteFleetVehicle(vehicleId){
-  if(!confirm('Delete vehicle '+vehicleId+' and ALL its maintenance records? This cannot be undone.'))return;
+async function confirmDeleteFleetVehicle(vehicleId){
+  const confirm1=confirm('Delete vehicle '+vehicleId+' and ALL its maintenance history?\nThis CANNOT be undone.');
+  if(!confirm1)return;
+  const input=window.prompt('Type the Vehicle ID to confirm deletion:');
+  if(input!==vehicleId){alert('Vehicle ID did not match. Deletion cancelled.');return;}
   try{
     await db.from('fleet_maintenance').delete().eq('vehicle_id',vehicleId);
+    await db.from('fleet_tires').update({vehicle_id:null,status:'In Storage',position:null}).eq('vehicle_id',vehicleId);
     await db.from('fleet_vehicles').delete().eq('vehicle_id',vehicleId);
     closeModal('fleet-vehicle-modal');
     await loadFleetVehicles();
+    renderFleetVehicleGrid();
   }catch(e){alert('Error: '+e.message);}
+}
+async function archiveFleetVehicle(vehicleId){
+  if(!confirm('Archive vehicle '+vehicleId+'? It will be marked Retired and hidden from active view.'))return;
+  try{
+    await db.from('fleet_vehicles').update({status:'Retired'}).eq('vehicle_id',vehicleId);
+    closeModal('fleet-vehicle-modal');
+    await loadFleetVehicles();
+    renderFleetVehicleGrid();
+  }catch(e){alert('Error: '+e.message);}
+}
+async function deleteFleetVehicle(vehicleId){
+  return confirmDeleteFleetVehicle(vehicleId);
 }
 
 function populateFleetLogFilters(){
@@ -3943,6 +4034,7 @@ async function loadFleetTires(){
   try{
     const {data}=await db.from('fleet_tires').select('*').order('tire_id',{ascending:true});
     allTiresCache=data||[];
+    updateFleetCounts();
   }catch(e){console.log('Tires:',e);}
 }
 
