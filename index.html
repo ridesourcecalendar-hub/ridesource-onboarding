@@ -1018,55 +1018,95 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 
       <!-- TIME OFF REQUESTS -->
       <div id="section-adm-requests" class="admin-section">
-        <div style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:4px;">📅 Time Off Requests</div>
-        <p style="color:#888;font-size:13px;margin-bottom:14px;">Review and approve or deny employee time off requests.</p>
+        <div style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:2px;">📅 Time Off Requests</div>
+        <p style="color:#888;font-size:13px;margin-bottom:16px;">Review and action pending requests.</p>
 
-        <!-- Submit on behalf of employee -->
-        <div class="card" style="margin-bottom:16px;">
-          <div class="card-title" style="font-size:15px;cursor:pointer;" onclick="toggleAdminTimeOffForm()">➕ Submit Request on Behalf of Employee <span id="admin-tor-toggle" style="font-size:12px;color:#888;">▼ expand</span></div>
-          <div id="admin-tor-form" style="display:none;margin-top:16px;">
-            <div class="form-row">
-              <div class="form-field"><label>Employee Name *</label>
-                <input type="text" id="adm-tor-employee" placeholder="Employee full name..." style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
-              </div>
-              <div class="form-field"><label>Request Type *</label>
-                <select id="adm-tor-type" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
-                  <option value="">Select type...</option>
-                  <option>Day Off</option><option>Half Day AM</option><option>Half Day PM</option>
-                  <option>Multi-Day</option><option>Use PTO Hours</option><option>Personal</option>
-                  <option>Medical / Appointment</option><option>Family Emergency</option><option>Other</option>
-                </select>
+        <div style="display:grid;grid-template-columns:1fr 280px;gap:20px;align-items:start;">
+
+          <!-- LEFT: Main Table -->
+          <div>
+            <!-- Submit on behalf of employee -->
+            <div class="card" style="margin-bottom:16px;">
+              <div class="card-title" style="font-size:14px;cursor:pointer;" onclick="toggleAdminTimeOffForm()">➕ Submit Request on Behalf of Employee <span id="admin-tor-toggle" style="font-size:12px;color:#888;">▼ expand</span></div>
+              <div id="admin-tor-form" style="display:none;margin-top:16px;">
+                <div class="form-row">
+                  <div class="form-field"><label>Employee Name *</label>
+                    <input type="text" id="adm-tor-employee" placeholder="Employee full name..." style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                  </div>
+                  <div class="form-field"><label>Request Type *</label>
+                    <select id="adm-tor-type" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                      <option value="">Select type...</option>
+                      <option>Day Off</option><option>Half Day AM</option><option>Half Day PM</option>
+                      <option>Multi-Day</option><option>Use PTO Hours</option><option>Personal</option>
+                      <option>Medical / Appointment</option><option>Family Emergency</option><option>Other</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-field"><label>Start Date *</label><input type="date" id="adm-tor-start"></div>
+                  <div class="form-field"><label>End Date</label><input type="date" id="adm-tor-end"></div>
+                </div>
+                <div class="form-field"><label>Reason / Notes</label><input type="text" id="adm-tor-reason" placeholder="Brief reason for the request..."></div>
+                <div style="display:flex;gap:10px;align-items:center;">
+                  <button class="btn btn-primary" onclick="submitAdminTimeOff()">Submit Request</button>
+                  <span id="adm-tor-msg" style="font-size:13px;color:var(--success);display:none;">✓ Request submitted!</span>
+                </div>
               </div>
             </div>
-            <div class="form-row">
-              <div class="form-field"><label>Start Date *</label><input type="date" id="adm-tor-start"></div>
-              <div class="form-field"><label>End Date</label><input type="date" id="adm-tor-end"></div>
+
+            <!-- Filter bar -->
+            <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center;">
+              <input type="text" id="req-search" placeholder="🔍 Search by name..." oninput="renderRequestsTable()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;flex:1;min-width:160px;">
+              <select id="req-supervisor-filter" onchange="renderRequestsTable()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:#fff;">
+                <option value="">All Supervisors</option>
+                <option value="Tiffany Gallagher">Tiffany Gallagher</option>
+                <option value="Nicole Geel">Nicole Geel</option>
+                <option value="Robin Lausier">Robin Lausier</option>
+              </select>
+              <button class="btn btn-sm" style="background:#e8f4fd;color:#1565c0;" onclick="exportTimeOffRequests()">⬇️ Export</button>
             </div>
-            <div class="form-field"><label>Reason / Notes</label><input type="text" id="adm-tor-reason" placeholder="Brief reason for the request..."></div>
-            <div style="display:flex;gap:10px;align-items:center;">
-              <button class="btn btn-primary" onclick="submitAdminTimeOff()">Submit Request</button>
-              <span id="adm-tor-msg" style="font-size:13px;color:var(--success);display:none;">✓ Request submitted!</span>
+
+            <!-- Status tabs -->
+            <div style="display:flex;gap:4px;margin-bottom:0;border-bottom:2px solid var(--border);">
+              <button id="req-tab-PENDING" class="req-tab req-tab-active" onclick="setReqTab('PENDING')">Pending <span class="req-count" id="req-count-PENDING" style="background:var(--red);color:#fff;">0</span></button>
+              <button id="req-tab-APPROVED" class="req-tab req-tab-approved" onclick="setReqTab('APPROVED')">Approved <span class="req-count" id="req-count-APPROVED" style="background:#ddd;color:#555;">0</span></button>
+              <button id="req-tab-DENIED" class="req-tab req-tab-denied" onclick="setReqTab('DENIED')">Denied <span class="req-count" id="req-count-DENIED" style="background:#ddd;color:#555;">0</span></button>
+              <button id="req-tab-PTO" class="req-tab req-tab-pto" onclick="setReqTab('PTO')">PTO <span class="req-count" id="req-count-PTO" style="background:#ddd;color:#555;">0</span></button>
+              <button id="req-tab-ALL" class="req-tab" style="margin-left:auto;" onclick="setReqTab('ALL')">All</button>
+            </div>
+
+            <!-- Table -->
+            <div id="requests-table" style="margin-top:0;">Loading...</div>
+          </div>
+
+          <!-- RIGHT: Quick Summary -->
+          <div class="card" style="position:sticky;top:80px;">
+            <div style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:16px;">Quick Summary</div>
+            <div style="display:flex;flex-direction:column;gap:0;">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);">
+                <span style="font-size:13px;color:#555;">Pending Requests</span>
+                <span style="font-size:16px;font-weight:800;color:var(--red);" id="qs-pending">0</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);">
+                <span style="font-size:13px;color:#555;">Approved This Month</span>
+                <span style="font-size:16px;font-weight:800;color:var(--navy);" id="qs-approved">0</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);">
+                <span style="font-size:13px;color:#555;">Denied This Month</span>
+                <span style="font-size:16px;font-weight:800;color:var(--navy);" id="qs-denied">0</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);">
+                <span style="font-size:13px;color:#555;">Upcoming (Next 7 Days)</span>
+                <span style="font-size:16px;font-weight:800;color:var(--navy);" id="qs-upcoming">0</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;">
+                <span style="font-size:13px;color:#555;">PTO Pending</span>
+                <span style="font-size:16px;font-weight:800;color:#1565c0;" id="qs-pto">0</span>
+              </div>
             </div>
           </div>
+
         </div>
-        <div style="display:flex;gap:2px;border-bottom:2px solid var(--border);margin-bottom:14px;flex-wrap:wrap;">
-          <button id="req-tab-PENDING" class="req-tab req-tab-active" onclick="setReqTab('PENDING')">🕐 Pending<span class="req-count" id="req-count-PENDING" style="background:var(--red);color:#fff;">0</span></button>
-          <button id="req-tab-APPROVED" class="req-tab req-tab-approved" onclick="setReqTab('APPROVED')">✅ Approved<span class="req-count" id="req-count-APPROVED" style="background:#ddd;color:#555;">0</span></button>
-          <button id="req-tab-DENIED" class="req-tab req-tab-denied" onclick="setReqTab('DENIED')">✗ Denied<span class="req-count" id="req-count-DENIED" style="background:#ddd;color:#555;">0</span></button>
-          <button id="req-tab-PTO" class="req-tab req-tab-pto" onclick="setReqTab('PTO')">💰 PTO<span class="req-count" id="req-count-PTO" style="background:#ddd;color:#555;">0</span></button>
-          <button id="req-tab-ALL" class="req-tab" style="margin-left:auto;" onclick="setReqTab('ALL')">All</button>
-          <button class="btn btn-sm" style="background:#e8f4fd;color:#1565c0;margin-left:8px;" onclick="exportTimeOffRequests()">⬇️ Export CSV</button>
-        </div>
-        <div style="margin-bottom:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
-          <input type="text" id="req-search" placeholder="🔍  Search by employee name..." oninput="renderRequestsTable()" style="padding:9px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;flex:1;min-width:180px;">
-          <select id="req-supervisor-filter" onchange="renderRequestsTable()" style="padding:9px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:#fff;">
-            <option value="">All Supervisors</option>
-            <option value="Tiffany Gallagher">Tiffany Gallagher</option>
-            <option value="Nicole Geel">Nicole Geel</option>
-            <option value="Robin Lausier">Robin Lausier</option>
-          </select>
-        </div>
-        <div id="requests-table">Loading...</div>
       </div>
 
       <!-- EMPLOYEE FOLDERS -->
@@ -5468,13 +5508,25 @@ function setReqTab(tab){
   }
   renderRequestsTable();
 }
+function getInitials(name){
+  if(!name)return'?';
+  const parts=name.trim().split(' ');
+  return(parts[0][0]+(parts.length>1?parts[parts.length-1][0]:'')).toUpperCase();
+}
+function getAvatarColor(name){
+  const colors=['#1B2A4A','#2e7d4f','#1565c0','#6a1b9a','#c0392b','#e67e22','#16a085','#2c3e50'];
+  let hash=0;for(let i=0;i<(name||'').length;i++)hash=name.charCodeAt(i)+((hash<<5)-hash);
+  return colors[Math.abs(hash)%colors.length];
+}
 function renderRequestsTable(){
   const el=document.getElementById('requests-table');
   const isDemo=adminStaff?.role==='demo';
   const searchTerm=(document.getElementById('req-search')?.value||'').toLowerCase().trim();
   const supFilter=(document.getElementById('req-supervisor-filter')?.value||'');
+  // Auto-filter by supervisor role
+  const isSupervisor=adminStaff?.role==='supervisor';
   let filtered=allRequestsCache;
-  if(currentReqTab==='PENDING')filtered=allRequestsCache.filter(r=>r.status==='PENDING');
+  if(currentReqTab==='PENDING')filtered=allRequestsCache.filter(r=>r.status==='PENDING'||r.status==='PTO_PENDING');
   else if(currentReqTab==='APPROVED')filtered=allRequestsCache.filter(r=>r.status==='APPROVED');
   else if(currentReqTab==='DENIED')filtered=allRequestsCache.filter(r=>r.status==='DENIED');
   else if(currentReqTab==='PTO')filtered=allRequestsCache.filter(r=>r.status==='PTO_PENDING'||r.request_type==='Use PTO Hours');
@@ -5482,41 +5534,53 @@ function renderRequestsTable(){
   if(supFilter){
     const empEmails=new Set(allProfilesCache.filter(p=>p.assigned_supervisor===supFilter).map(p=>p.employee_email).filter(Boolean));
     filtered=filtered.filter(r=>empEmails.has(r.employee_email));
+  } else if(isSupervisor&&adminStaff?.name){
+    // Supervisors only see their assigned drivers by default
+    const empEmails=new Set(allProfilesCache.filter(p=>p.assigned_supervisor===adminStaff.name).map(p=>p.employee_email).filter(Boolean));
+    if(empEmails.size>0)filtered=filtered.filter(r=>empEmails.has(r.employee_email));
   }
+  // Update quick summary
+  const now=new Date();
+  const monthStart=new Date(now.getFullYear(),now.getMonth(),1);
+  const next7=new Date(now);next7.setDate(now.getDate()+7);
+  document.getElementById('qs-pending').textContent=allRequestsCache.filter(r=>r.status==='PENDING'||r.status==='PTO_PENDING').length;
+  document.getElementById('qs-approved').textContent=allRequestsCache.filter(r=>r.status==='APPROVED'&&new Date(r.decided_at||r.submitted_at)>=monthStart).length;
+  document.getElementById('qs-denied').textContent=allRequestsCache.filter(r=>r.status==='DENIED'&&new Date(r.decided_at||r.submitted_at)>=monthStart).length;
+  document.getElementById('qs-upcoming').textContent=allRequestsCache.filter(r=>r.status==='APPROVED'&&new Date(r.start_date)>=now&&new Date(r.start_date)<=next7).length;
+  document.getElementById('qs-pto').textContent=allRequestsCache.filter(r=>r.status==='PTO_PENDING').length;
   if(!filtered||filtered.length===0){
     const labels={PENDING:'No pending requests.',APPROVED:'No approved requests yet.',DENIED:'No denied requests yet.',PTO:'No PTO requests yet.',ALL:'No requests found.'};
-    el.innerHTML='<p style="color:#888;font-size:13px;padding:12px 0;">'+(labels[currentReqTab]||'No requests found.')+'</p>';return;
+    el.innerHTML='<div style="padding:20px 0;text-align:center;color:#888;font-size:13px;">'+(labels[currentReqTab]||'No requests found.')+'</div>';return;
   }
-  el.innerHTML=filtered.map((r,idx)=>{
+  // Table header
+  const header='<div style="display:grid;grid-template-columns:36px 1fr 110px 120px 120px 100px 80px;gap:8px;padding:8px 12px;background:var(--gray);border-radius:8px 8px 0 0;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-top:12px;">'+
+    '<div></div><div>Employee</div><div>Dates</div><div>Type</div><div>Detail</div><div>Status</div><div></div></div>';
+  const rows=filtered.map((r,idx)=>{
     const displayName=isDemo?'Employee '+(idx+1):r.employee_name;
-    const submitted=r.submitted_at?new Date(r.submitted_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'—';
+    const initials=isDemo?'E':getInitials(r.employee_name);
+    const avatarColor=getAvatarColor(r.employee_name);
     const badgeClass=r.status==='PTO_PENDING'?'pto_pending':r.status.toLowerCase();
-    const badgeLabel=r.status==='PTO_PENDING'?'PTO PENDING':r.status;
+    const badgeLabel=r.status==='PTO_PENDING'?'PTO':r.status;
     const isPending=r.status==='PENDING'||r.status==='PTO_PENDING';
-    return '<div class="card" style="margin-bottom:8px;padding:0;overflow:hidden;">'+
-      '<div style="display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;" data-cid="tor-body-'+r.id+'" onclick="toggleCollapse(this.dataset.cid)">'+
-        '<div style="flex:1;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">'+
-          '<strong style="font-size:14px;color:var(--navy);">'+displayName+'</strong>'+
-          '<span style="font-size:12px;color:#888;">'+r.county+'</span>'+
-          '<span style="font-size:12px;color:#555;font-weight:600;">'+r.request_type+'</span>'+
-          '<span style="font-size:12px;color:#555;">'+r.start_date+(r.end_date&&r.end_date!==r.start_date?' → '+r.end_date:'')+'</span>'+
-          '<span class="badge badge-'+badgeClass+'">'+badgeLabel+'</span>'+
-        '</div>'+
-        '<span style="font-size:11px;color:#aaa;flex-shrink:0;">▼ expand</span>'+
-      '</div>'+
-      '<div id="tor-body-'+r.id+'" style="display:none;border-top:1px solid var(--border);padding:14px 16px;background:#fafafa;">'+
-        '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:14px;">'+
-          '<div><div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.5px;">Time Detail</div><div style="font-size:13px;margin-top:2px;">'+(r.time_detail||'—')+'</div></div>'+
-          '<div><div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.5px;">Reason</div><div style="font-size:13px;margin-top:2px;">'+(isDemo?'—':r.reason||'—')+'</div></div>'+
-          '<div><div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.5px;">Submitted</div><div style="font-size:13px;margin-top:2px;">'+submitted+'</div></div>'+
-        '</div>'+
-        (isDemo?'':'<div style="display:flex;gap:8px;flex-wrap:wrap;">'+
-          (isPending?'<button class="btn btn-green btn-sm" data-rid="'+r.id+'" data-status="APPROVED" onclick="decideRequest(this.dataset.rid,this.dataset.status)">✓ Approve</button><button class="btn btn-sm btn-red" data-rid="'+r.id+'" data-status="DENIED" onclick="decideRequest(this.dataset.rid,this.dataset.status)">✗ Deny</button>':'')+
-          '<button class="btn btn-sm" style="background:#f0f0f0;color:#555;" onclick="openEditRequest('+r.id+')">✏️ Edit</button>'+
-        '</div>')+
-      '</div>'+
+    const dates=r.start_date+(r.end_date&&r.end_date!==r.start_date?' – '+r.end_date:'');
+    const reason=isDemo?'—':r.reason||'—';
+    return '<div style="display:grid;grid-template-columns:36px 1fr 110px 120px 120px 100px 80px;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border);align-items:center;font-size:13px;background:#fff;" onmouseenter="this.style.background='#f7f9fc'" onmouseleave="this.style.background='#fff'">'+
+      '<div style="width:32px;height:32px;border-radius:50%;background:'+avatarColor+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">'+initials+'</div>'+
+      '<div><div style="font-weight:700;color:var(--navy);">'+displayName+'</div><div style="font-size:11px;color:#888;margin-top:1px;">'+r.county+'</div></div>'+
+      '<div style="color:#555;">'+dates+'</div>'+
+      '<div style="color:#555;">'+r.request_type+'</div>'+
+      '<div style="color:#888;font-size:12px;">'+(r.time_detail||reason||'—')+'</div>'+
+      '<div><span class="badge badge-'+badgeClass+'" style="font-size:10px;">'+badgeLabel+'</span></div>'+
+      '<div style="display:flex;gap:4px;justify-content:flex-end;">'+
+        (isPending&&!isDemo?
+          '<button style="width:28px;height:28px;border-radius:6px;border:1px solid #27AE60;background:#fff;color:#27AE60;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;" data-rid="'+r.id+'" data-status="APPROVED" onclick="decideRequest(this.dataset.rid,this.dataset.status)" title="Approve">✓</button>'+
+          '<button style="width:28px;height:28px;border-radius:6px;border:1px solid var(--red);background:#fff;color:var(--red);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;" data-rid="'+r.id+'" data-status="DENIED" onclick="decideRequest(this.dataset.rid,this.dataset.status)" title="Deny">✗</button>'
+        :'')+
+        (!isDemo?'<button style="width:28px;height:28px;border-radius:6px;border:1px solid #ddd;background:#fff;color:#888;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;" onclick="openEditRequest('+r.id+')" title="Edit">✏️</button>':'')
+      +'</div>'+
     '</div>';
   }).join('');
+  el.innerHTML=header+'<div style="border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;overflow:hidden;">'+rows+'</div>';
 }
 function exportTimeOffRequests(){
   const data=allRequestsCache;
