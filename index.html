@@ -207,25 +207,13 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 .req-tab-denied.req-tab-active{color:var(--red);border-bottom-color:var(--red);}
 .req-tab-pto.req-tab-active{color:#1565c0;border-bottom-color:#1565c0;}
 .req-count{display:inline-block;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:5px;font-weight:700;}
-.ts-day-card{background:#f7f9fc;border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:10px;}
-.ts-day-card.ts-has-hours{border-color:#1B2A4A;background:#f0f4fb;}
-.ts-day-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
-.ts-day-name{font-size:14px;font-weight:800;color:var(--navy);}
-.ts-day-total{font-size:13px;font-weight:700;color:var(--navy);}
-.ts-shift-row{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end;margin-bottom:6px;}
-.ts-shift-label{font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;}
-.ts-shift-row input[type="time"]{width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;background:#fff;}
-.ts-shift-row input[type="time"]:focus{border-color:var(--navy);}
-.ts-add-shift-btn{font-size:11px;color:var(--navy);background:none;border:1px solid var(--border);border-radius:6px;padding:5px 10px;cursor:pointer;white-space:nowrap;}
-.ts-remove-shift-btn{font-size:11px;color:#888;background:none;border:1px solid #ddd;border-radius:6px;padding:5px 10px;cursor:pointer;}
-.ts-shift2-row{margin-top:6px;}
-.ts-missed-punch-row{margin-top:8px;padding-top:8px;border-top:1px dashed var(--border);}
-.ts-missed-punch-row label{font-size:12px;color:#666;display:flex;align-items:center;gap:6px;cursor:pointer;}
-.ts-missed-punch-details{margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-.ts-missed-punch-details select,.ts-missed-punch-details input{padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;outline:none;width:100%;}
-.ts-vehicle-row{margin-bottom:8px;}
-.ts-vehicle-row input{width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;background:#fff;}
-.ts-vehicle-row input:focus{border-color:var(--navy);}
+.timesheet-week{background:#fff;border:1px solid var(--border);border-radius:12px;margin-bottom:20px;overflow:hidden;}
+.timesheet-week-header{background:var(--navy);color:#fff;padding:12px 20px;font-size:14px;font-weight:700;}
+.timesheet-row{display:grid;grid-template-columns:90px 110px 1fr 1fr 1fr 1fr 80px;gap:8px;padding:10px 16px;border-bottom:1px solid #f0f0f0;align-items:center;}
+.timesheet-row:last-child{border-bottom:none;}
+.timesheet-row.ts-header{background:var(--gray);font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;}
+.timesheet-row input[type="time"],.timesheet-row input[type="text"]{width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:12px;outline:none;}
+.timesheet-row input:focus{border-color:var(--navy);}
 .timesheet-total{font-size:13px;font-weight:700;color:var(--navy);}
 .vehicle-report-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:16px;}
 .issue-type-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-bottom:16px;}
@@ -589,59 +577,62 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 
       <!-- TIMESHEET -->
       <div id="section-timesheet" class="portal-section">
-        <div class="card-title" style="font-size:22px;color:var(--navy);margin-bottom:4px;">🕐 Weekly Timesheet</div>
-        <p style="color:#888;font-size:14px;margin-bottom:8px;">Your timesheet saves automatically as you type. Submit by end of day Friday. You can edit anytime until your supervisor approves it.</p>
-        <div style="background:#fff3cd;border-left:4px solid var(--warn);border-radius:0 8px 8px 0;padding:12px 16px;margin-bottom:20px;font-size:13px;">⚠️ <strong>Remember:</strong> You must still clock in and out through <strong>TWE</strong> as usual. This timesheet replaces the paper form only and is used to document your hours and flag any missed punches.</div>
-
-        <!-- CURRENT WEEK CARD -->
-        <div class="card" style="margin-bottom:20px;">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
-            <div>
-              <div style="font-size:16px;font-weight:800;color:var(--navy);">📅 Current Week</div>
-              <div style="font-size:12px;color:#888;margin-top:2px;" id="ts-week-label">Week ending —</div>
-            </div>
-            <div style="display:flex;align-items:center;gap:10px;">
-              <span id="ts-autosave-indicator" style="font-size:11px;color:#888;"></span>
-              <span id="ts-status-badge" style="font-size:12px;font-weight:700;padding:4px 10px;border-radius:20px;background:#fff3cd;color:#856404;">DRAFT</span>
-            </div>
+        <div class="card-title" style="font-size:22px;color:var(--navy);margin-bottom:4px;">🕐 Submit Weekly Timesheet</div>
+        <p style="color:#888;font-size:14px;margin-bottom:8px;">Submit your hours every Friday. If you worked a split shift, enter both start/end times. Flag any missed TWE punches in the notes.</p>
+        <div style="background:#fff3cd;border-left:4px solid var(--warn);border-radius:0 8px 8px 0;padding:12px 16px;margin-bottom:20px;font-size:13px;">⚠️ <strong>Submit by end of day Friday.</strong> Late submissions may delay payroll processing.</div>
+        <div class="card" style="padding:16px 20px;margin-bottom:16px;">
+          <div class="form-row">
+            <div class="form-field"><label>Week Ending (Friday's Date)</label><input type="date" id="ts-week-ending"></div>
+            <div class="form-field"><label>Approximate Mileage Until Oil Change</label><input type="text" id="ts-mileage" placeholder="e.g. 2,500 miles remaining"></div>
           </div>
-
-          <!-- DAY ROWS -->
+        </div>
+        <div class="timesheet-week">
+          <div class="timesheet-week-header">📅 Weekly Hours</div>
+          <div class="timesheet-row ts-header"><div>Day</div><div>Vehicle ID</div><div>Shift 1 Start</div><div>Shift 1 End</div><div>Shift 2 Start</div><div>Shift 2 End</div><div>Total</div></div>
           <div id="timesheet-rows"></div>
-
-          <!-- WEEK TOTAL + NOTES -->
-          <div style="border-top:2px solid var(--border);margin-top:8px;padding-top:16px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-              <span style="font-size:14px;font-weight:700;color:var(--navy);">Weekly Total:</span>
-              <span id="ts-total-display" style="font-size:16px;font-weight:800;color:var(--navy);">0.00 hrs</span>
-            </div>
-            <div class="form-field" style="margin-bottom:16px;">
-              <label style="font-size:13px;font-weight:700;color:var(--navy);">Additional Notes (optional)</label>
-              <textarea id="ts-notes" placeholder="Any additional notes for your supervisor..." oninput="tsAutoSave()" style="width:100%;min-height:60px;padding:10px;border:2px solid var(--border);border-radius:8px;font-size:13px;font-family:Arial,sans-serif;outline:none;resize:vertical;margin-top:4px;"></textarea>
-            </div>
-            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
-              <div id="ts-submit-warning" style="font-size:12px;color:var(--warn);display:none;">⚠️ Please enter hours for at least one day before submitting.</div>
-              <button class="btn-primary" id="ts-submit-btn" onclick="submitTimesheet()" style="min-width:160px;">✅ Submit Timesheet</button>
-            </div>
+        </div>
+        <div class="card" style="padding:16px 20px;margin-bottom:16px;">
+          <div class="form-field"><label>Missed Punches / Notes</label>
+            <textarea id="ts-notes" placeholder="List any missed TWE punches here. Example: Monday — clocked in 7:02am, missed clock out at 3:45pm" style="width:100%;min-height:80px;padding:10px;border:2px solid var(--border);border-radius:8px;font-size:13px;font-family:Arial,sans-serif;outline:none;resize:vertical;"></textarea>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <button class="btn-primary" onclick="submitTimesheet()">Submit Timesheet</button>
+            <span id="ts-total-display" style="font-size:14px;font-weight:700;color:var(--navy);">Total: 0.00 hrs</span>
           </div>
         </div>
-
-        <!-- PAST TIMESHEETS CARD -->
-        <div class="card">
-          <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;" onclick="toggleMyTimesheetsHistory()">
-            <div style="font-size:16px;font-weight:800;color:var(--navy);">📋 My Past Timesheets</div>
-            <span id="my-timesheets-chevron" style="font-size:18px;color:#888;transition:transform .2s;">▼</span>
-          </div>
-          <div id="my-timesheets-history-panel" style="display:none;margin-top:16px;">
-            <div id="my-timesheets-list"><p style="color:#888;font-size:13px;">Loading...</p></div>
-          </div>
+        <div id="ts-success" style="display:none;" class="success-banner">
+          <div class="big-check">✅</div><h2>Timesheet Submitted!</h2>
+          <p>Your timesheet has been received. Your supervisor will review and contact you about any discrepancies.</p>
+          <button class="btn-primary" style="margin-top:12px;background:rgba(255,255,255,.2);border:2px solid rgba(255,255,255,.5);" onclick="resetTimesheet()">Submit Another Week</button>
         </div>
+        <div class="card" style="margin-top:8px;"><div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:12px;">📋 My Recent Timesheets</div><div id="my-timesheets-list"><p style="color:#888;font-size:13px;">Loading...</p></div></div>
       </div>
 
       <!-- VEHICLE REPORT -->
       <div id="section-vehicle" class="portal-section">
-        <div class="card-title" style="font-size:22px;color:var(--navy);margin-bottom:4px;">🚐 Vehicle Report</div>
-        <p style="color:#888;font-size:14px;margin-bottom:24px;">Report vehicle issues, upload receipts, or document damage. Your submission goes directly to your supervisor.</p>
+        <div class="card-title" style="font-size:22px;color:var(--navy);margin-bottom:4px;">🚐 Vehicle</div>
+        <p style="color:#888;font-size:14px;margin-bottom:24px;">Submit a vehicle report or request an oil change. Your supervisor will be notified immediately.</p>
+
+        <!-- OIL CHANGE REQUEST CARD -->
+        <div class="card" style="margin-bottom:20px;border-left:4px solid #e67e22;">
+          <div style="font-size:16px;font-weight:800;color:var(--navy);margin-bottom:4px;">🛢️ Request an Oil Change</div>
+          <div class="card-sub" style="margin-bottom:16px;">Let your supervisor know your vehicle needs an oil change.</div>
+          <div id="oil-request-form">
+            <div class="form-row">
+              <div class="form-field"><label>Vehicle ID *</label><input type="text" id="ocr-vehicle-id" placeholder="e.g. 876-CQD"></div>
+              <div class="form-field"><label>Current Mileage *</label><input type="number" id="ocr-mileage" placeholder="e.g. 87500"></div>
+            </div>
+            <div class="form-field"><label>Notes (optional)</label>
+              <textarea id="ocr-notes" placeholder="Any additional info — e.g. oil light is on, overdue by about 500 miles..." style="width:100%;min-height:60px;padding:10px;border:2px solid var(--border);border-radius:8px;font-size:13px;font-family:Arial,sans-serif;outline:none;resize:vertical;"></textarea>
+            </div>
+            <button class="btn-primary" onclick="submitOilChangeRequest()" style="background:#e67e22;">🛢️ Submit Oil Change Request</button>
+          </div>
+          <div id="ocr-success" style="display:none;" class="success-banner" style="background:linear-gradient(135deg,#e67e22,#d35400);">
+            <div>✅</div><h2 style="font-size:18px;margin-top:8px;">Request Submitted!</h2>
+            <p>Your supervisor has been notified. They will schedule your oil change.</p>
+            <button class="btn-primary" style="margin-top:12px;background:rgba(255,255,255,.2);border:2px solid rgba(255,255,255,.5);" onclick="resetOilRequest()">Submit Another Request</button>
+          </div>
+        </div>
         <div class="vehicle-report-card">
           <div class="form-row" style="margin-bottom:16px;">
             <div class="form-field"><label>Vehicle ID / Asset Tag *</label><input type="text" id="vr-vehicle-id" placeholder="e.g. 876-CQD"></div>
@@ -1447,6 +1438,16 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
                 <div class="form-field"><label>Oil Change Interval (miles)</label><input type="number" id="fv-oil-miles" placeholder="e.g. 5000"></div>
                 <div class="form-field"><label>Oil Change Interval (months)</label><input type="number" id="fv-oil-months" placeholder="e.g. 6"></div>
               </div>
+              <div class="form-row">
+                <div class="form-field"><label>Max Occupancy</label><input type="number" id="fv-occupancy" placeholder="e.g. 6" min="1" max="20"></div>
+                <div class="form-field"><label>Wheelchair Accessible?</label>
+                  <select id="fv-wheelchair" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                    <option value="">— Select —</option>
+                    <option value="yes">✅ Yes</option>
+                    <option value="no">❌ No</option>
+                  </select>
+                </div>
+              </div>
               <div class="form-field"><label>Notes</label><textarea id="fv-notes" style="min-height:60px;" placeholder="Any additional notes about this vehicle..."></textarea></div>
               <div style="display:flex;gap:10px;align-items:center;">
                 <button class="btn btn-primary" onclick="saveFleetVehicle()">Save Vehicle</button>
@@ -1500,13 +1501,31 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
               </div>
               <div class="form-row">
                 <div class="form-field"><label>Status</label>
-                  <select id="ti-status" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                  <select id="ti-status" onchange="handleTireStatusChange()" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
                     <option>In Storage</option>
                     <option>Mounted</option>
                     <option>Disposed</option>
                   </select>
                 </div>
                 <div class="form-field"><label>Storage Location</label><input type="text" id="ti-storage" placeholder="e.g. Norway Shop, Bay 2"></div>
+              </div>
+              <div id="ti-mounted-fields" style="display:none;">
+                <div class="form-row">
+                  <div class="form-field"><label>Vehicle ID (if mounted)</label>
+                    <select id="ti-vehicle" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                      <option value="">— Select Vehicle —</option>
+                    </select>
+                  </div>
+                  <div class="form-field"><label>Position</label>
+                    <select id="ti-position" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                      <option value="">— Select Position —</option>
+                      <option>Front Left</option>
+                      <option>Front Right</option>
+                      <option>Rear Left</option>
+                      <option>Rear Right</option>
+                    </select>
+                  </div>
+                </div>
               </div>
               <div class="form-field"><label>Notes</label><textarea id="ti-notes" style="min-height:50px;"></textarea></div>
               <div style="display:flex;gap:10px;align-items:center;margin-top:8px;">
@@ -2226,7 +2245,7 @@ function showSection(id){
   });
   if(id==='timeoff')loadMyRequests();
   if(id==='memos-emp'){switchMemoCard('unread');loadEmpMemoHistory();loadEmpSentMessages();}
-  if(id==='timesheet'){tsCurrentId=null;buildTimesheetRows();}
+  if(id==='timesheet')loadMyTimesheets();
   if(id==='vehicle')loadMyVehicleReports();
   if(id==='incident'){buildIncidentForm();loadMyIncidents();}
 }
@@ -2618,105 +2637,23 @@ function toggleMyRequestsHistory(){
 
 // TIMESHEET
 const DAYS=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
-let tsAutoSaveTimer=null;
-let tsCurrentId=null; // Supabase row ID for current week draft
-
-function getTsWeekEnding(){
-  const today=new Date();
-  const day=today.getDay();
-  const daysUntilFri=day<=5?5-day:6;
-  const fri=new Date(today);
-  fri.setDate(today.getDate()+daysUntilFri);
-  return fri.toISOString().split('T')[0];
-}
-
 function buildTimesheetRows(){
   const container=document.getElementById('timesheet-rows');if(!container)return;
-  const weekEnding=getTsWeekEnding();
-  const label=document.getElementById('ts-week-label');
-  if(label)label.textContent='Week ending '+weekEnding;
   container.innerHTML=DAYS.map(day=>`
-    <div class="ts-day-card" id="ts-card-${day}">
-      <div class="ts-day-header">
-        <span class="ts-day-name">${day}</span>
-        <span class="ts-day-total" id="ts-${day}-total">—</span>
-      </div>
-      <div class="ts-vehicle-row">
-        <input type="text" id="ts-${day}-vehicle" placeholder="Vehicle ID (e.g. 876-CQD)" oninput="tsAutoSave()">
-      </div>
-      <div class="ts-shift-row">
-        <div><div class="ts-shift-label">Shift 1 Start</div><input type="time" id="ts-${day}-s1start" oninput="calcRowTotal('${day}')" onchange="calcRowTotal('${day}')"></div>
-        <div><div class="ts-shift-label">Shift 1 End</div><input type="time" id="ts-${day}-s1end" oninput="calcRowTotal('${day}')" onchange="calcRowTotal('${day}')"></div>
-        <button class="ts-add-shift-btn" id="ts-${day}-add-shift" onclick="toggleShift2('${day}')">+ Split Shift</button>
-      </div>
-      <div class="ts-shift2-row" id="ts-${day}-shift2" style="display:none;">
-        <div class="ts-shift-row">
-          <div><div class="ts-shift-label">Shift 2 Start</div><input type="time" id="ts-${day}-s2start" oninput="calcRowTotal('${day}')" onchange="calcRowTotal('${day}')"></div>
-          <div><div class="ts-shift-label">Shift 2 End</div><input type="time" id="ts-${day}-s2end" oninput="calcRowTotal('${day}')" onchange="calcRowTotal('${day}')"></div>
-          <button class="ts-remove-shift-btn" onclick="toggleShift2('${day}')">✕ Remove</button>
-        </div>
-      </div>
-      <div class="ts-missed-punch-row">
-        <label><input type="checkbox" id="ts-${day}-missed" onchange="toggleMissedPunch('${day}')"> Missed TWE Punch</label>
-        <div class="ts-missed-punch-details" id="ts-${day}-missed-details" style="display:none;">
-          <select id="ts-${day}-missed-type" onchange="handleMissedTypeChange('${day}')">
-            <option value="">What was missed...</option>
-            <option>Missed Clock In</option>
-            <option>Missed Clock Out</option>
-            <option>Missed Both</option>
-          </select>
-          <input type="time" id="ts-${day}-missed-time" placeholder="Approx. time" oninput="tsAutoSave()">
-          <div id="ts-${day}-missed-both" style="display:none;grid-column:1/-1;display:none;">
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px;">
-              <div><div style="font-size:11px;color:#888;margin-bottom:3px;">Clock In Time</div><input type="time" id="ts-${day}-missed-time-in" oninput="tsAutoSave()"></div>
-              <div><div style="font-size:11px;color:#888;margin-bottom:3px;">Clock Out Time</div><input type="time" id="ts-${day}-missed-time-out" oninput="tsAutoSave()"></div>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div class="timesheet-row">
+      <div style="font-weight:600;font-size:13px;">${day}</div>
+      <div><input type="text" id="ts-${day}-vehicle" placeholder="e.g. 876-CQD"></div>
+      <div><input type="time" id="ts-${day}-s1start" oninput="calcRowTotal('${day}')" onchange="calcRowTotal('${day}')"></div>
+      <div><input type="time" id="ts-${day}-s1end" oninput="calcRowTotal('${day}')" onchange="calcRowTotal('${day}')"></div>
+      <div><input type="time" id="ts-${day}-s2start" oninput="calcRowTotal('${day}')" onchange="calcRowTotal('${day}')"></div>
+      <div><input type="time" id="ts-${day}-s2end" oninput="calcRowTotal('${day}')" onchange="calcRowTotal('${day}')"></div>
+      <div class="timesheet-total" id="ts-${day}-total">—</div>
     </div>`).join('');
-  // Load any existing draft for this week
-  loadTsDraft(weekEnding);
+  // Default week ending to next Friday
+  const today=new Date(),day=today.getDay(),daysUntilFri=day<=5?5-day:6;
+  const fri=new Date(today);fri.setDate(today.getDate()+daysUntilFri);
+  const el=document.getElementById('ts-week-ending');if(el)el.value=fri.toISOString().split('T')[0];
 }
-
-function toggleShift2(day){
-  const el=document.getElementById(`ts-${day}-shift2`);
-  const btn=document.getElementById(`ts-${day}-add-shift`);
-  const isVisible=el.style.display!=='none';
-  el.style.display=isVisible?'none':'block';
-  btn.textContent=isVisible?'+ Split Shift':'↑ Hide Shift 2';
-  if(isVisible){
-    const s2start=document.getElementById(`ts-${day}-s2start`);
-    const s2end=document.getElementById(`ts-${day}-s2end`);
-    if(s2start)s2start.value='';
-    if(s2end)s2end.value='';
-    calcRowTotal(day);
-  }
-  tsAutoSave();
-}
-
-function toggleMissedPunch(day){
-  const cb=document.getElementById(`ts-${day}-missed`);
-  const details=document.getElementById(`ts-${day}-missed-details`);
-  details.style.display=cb.checked?'grid':'none';
-  if(!cb.checked){
-    // clear missed type so both-panel hides too
-    const typeEl=document.getElementById(`ts-${day}-missed-type`);
-    if(typeEl)typeEl.value='';
-    handleMissedTypeChange(day);
-  }
-  tsAutoSave();
-}
-function handleMissedTypeChange(day){
-  const typeEl=document.getElementById(`ts-${day}-missed-type`);
-  const singleTime=document.getElementById(`ts-${day}-missed-time`);
-  const bothPanel=document.getElementById(`ts-${day}-missed-both`);
-  const isBoth=typeEl&&typeEl.value==='Missed Both';
-  if(singleTime)singleTime.style.display=isBoth?'none':'block';
-  if(bothPanel)bothPanel.style.display=isBoth?'block':'none';
-  tsAutoSave();
-}
-
 function calcRowTotal(day){
   const s1s=document.getElementById(`ts-${day}-s1start`)?.value;
   const s1e=document.getElementById(`ts-${day}-s1end`)?.value;
@@ -2725,29 +2662,38 @@ function calcRowTotal(day){
   function toMins(t){if(!t)return null;const[h,m]=t.split(':').map(Number);return h*60+m;}
   let total=0;
   const s1start=toMins(s1s),s1end=toMins(s1e);
-  if(s1start!==null&&s1end!==null){let d=s1end-s1start;if(d<0)d+=24*60;total+=d;}
+  if(s1start!==null&&s1end!==null){
+    let d=s1end-s1start;
+    if(d<0)d+=24*60; // overnight
+    total+=d;
+  }
   const s2start=toMins(s2s),s2end=toMins(s2e);
-  if(s2start!==null&&s2end!==null){let d=s2end-s2start;if(d<0)d+=24*60;total+=d;}
+  if(s2start!==null&&s2end!==null){
+    let d=s2end-s2start;
+    if(d<0)d+=24*60; // overnight
+    total+=d;
+  }
   const hrs=total/60;
-  const totalEl=document.getElementById(`ts-${day}-total`);
-  if(totalEl)totalEl.textContent=hrs>0?hrs.toFixed(2)+' hrs':'—';
-  const card=document.getElementById(`ts-card-${day}`);
-  if(card)card.classList.toggle('ts-has-hours',hrs>0);
+  document.getElementById(`ts-${day}-total`).textContent=hrs>0?hrs.toFixed(2)+' hrs':'—';
   updateTotalHours();
-  tsAutoSave();
 }
-
 function updateTotalHours(){
   let grand=0;
   DAYS.forEach(day=>{
     const el=document.getElementById(`ts-${day}-total`);
-    if(el&&el.textContent!=='—'){const val=parseFloat(el.textContent);if(!isNaN(val))grand+=val;}
+    if(el&&el.textContent!=='—'){
+      const val=parseFloat(el.textContent);
+      if(!isNaN(val))grand+=val;
+    }
   });
   const display=document.getElementById('ts-total-display');
-  if(display)display.textContent=`${grand.toFixed(2)} hrs`;
+  if(display)display.textContent=`Total: ${grand.toFixed(2)} hrs`;
 }
-
-function getTsRowData(){
+async function submitTimesheet(){
+  const weekEnding=document.getElementById('ts-week-ending')?.value;
+  const mileage=document.getElementById('ts-mileage')?.value||'';
+  const notes=document.getElementById('ts-notes')?.value||'';
+  if(!weekEnding){alert('Please select the week ending date.');return;}
   const rows={};let hasHours=false;
   DAYS.forEach(day=>{
     const vehicle=document.getElementById(`ts-${day}-vehicle`)?.value||'';
@@ -2757,166 +2703,65 @@ function getTsRowData(){
     const s2e=document.getElementById(`ts-${day}-s2end`)?.value||'';
     const totalEl=document.getElementById(`ts-${day}-total`);
     const total=totalEl&&totalEl.textContent!=='—'?parseFloat(totalEl.textContent):0;
-    const missed=document.getElementById(`ts-${day}-missed`)?.checked||false;
-    const missedType=document.getElementById(`ts-${day}-missed-type`)?.value||'';
-    const missedTime=document.getElementById(`ts-${day}-missed-time`)?.value||'';
-    const missedTimeIn=document.getElementById(`ts-${day}-missed-time-in`)?.value||'';
-    const missedTimeOut=document.getElementById(`ts-${day}-missed-time-out`)?.value||'';
     if(s1s||s1e||s2s||s2e)hasHours=true;
-    rows[day]={vehicle,s1s,s1e,s2s,s2e,total,missed,missedType,missedTime,missedTimeIn,missedTimeOut};
+    rows[day]={vehicle,s1s,s1e,s2s,s2e,total};
   });
-  return{rows,hasHours};
-}
-
-function tsAutoSave(){
-  // Debounce — wait 1.5s after last keystroke before saving
-  if(tsAutoSaveTimer)clearTimeout(tsAutoSaveTimer);
-  const indicator=document.getElementById('ts-autosave-indicator');
-  if(indicator)indicator.textContent='Saving...';
-  tsAutoSaveTimer=setTimeout(async()=>{
-    try{
-      const weekEnding=getTsWeekEnding();
-      const{rows}=getTsRowData();
-      const notes=document.getElementById('ts-notes')?.value||'';
-      const payload={employee_name:user.name,employee_email:user.email,county:user.county,week_ending:weekEnding,hours_data:JSON.stringify(rows),notes,status:'DRAFT',submitted_at:new Date().toISOString()};
-      if(tsCurrentId){
-        await db.from('timesheets').update(payload).eq('id',tsCurrentId);
-      }else{
-        const{data,error}=await db.from('timesheets').insert([payload]).select('id').single();
-        if(data)tsCurrentId=data.id;
-      }
-      if(indicator)indicator.textContent='✓ Saved';
-      setTimeout(()=>{if(indicator)indicator.textContent='';},2000);
-    }catch(e){
-      const indicator=document.getElementById('ts-autosave-indicator');
-      if(indicator)indicator.textContent='⚠ Save failed';
-    }
-  },1500);
-}
-
-async function loadTsDraft(weekEnding){
-  // Check if there's an existing draft or submitted timesheet for this week
+  if(!hasHours){alert('Please enter at least one day of hours.');return;}
   try{
-    const{data}=await db.from('timesheets').select('*').eq('employee_email',user.email).eq('week_ending',weekEnding).order('submitted_at',{ascending:false}).limit(1);
-    if(!data||data.length===0){tsCurrentId=null;return;}
-    const ts=data[0];
-    tsCurrentId=ts.id;
-    // Update status badge
-    const badge=document.getElementById('ts-status-badge');
-    if(badge){
-      if(ts.status==='APPROVED'){badge.textContent='APPROVED';badge.style.background='#d4edda';badge.style.color='#155724';}
-      else if(ts.status==='PENDING'){badge.textContent='SUBMITTED';badge.style.background='#cce5ff';badge.style.color='#004085';}
-      else{badge.textContent='DRAFT';badge.style.background='#fff3cd';badge.style.color='#856404';}
-    }
-    // If approved, lock the form
-    const isLocked=ts.status==='APPROVED';
-    // Restore saved data
-    if(ts.hours_data){
-      const saved=JSON.parse(ts.hours_data);
-      DAYS.forEach(day=>{
-        if(!saved[day])return;
-        const d=saved[day];
-        const set=(id,val)=>{const el=document.getElementById(id);if(el){el.value=val||'';if(isLocked)el.disabled=true;}};
-        set(`ts-${day}-vehicle`,d.vehicle);
-        set(`ts-${day}-s1start`,d.s1s);
-        set(`ts-${day}-s1end`,d.s1e);
-        if(d.s2s||d.s2e){
-          document.getElementById(`ts-${day}-shift2`).style.display='block';
-          document.getElementById(`ts-${day}-add-shift`).textContent='↑ Hide Shift 2';
-          set(`ts-${day}-s2start`,d.s2s);
-          set(`ts-${day}-s2end`,d.s2e);
-        }
-        if(d.missed){
-          const cb=document.getElementById(`ts-${day}-missed`);
-          if(cb){cb.checked=true;if(isLocked)cb.disabled=true;}
-          document.getElementById(`ts-${day}-missed-details`).style.display='grid';
-          set(`ts-${day}-missed-type`,d.missedType);
-          if(d.missedType==='Missed Both'){
-            const singleTime=document.getElementById(`ts-${day}-missed-time`);
-            const bothPanel=document.getElementById(`ts-${day}-missed-both`);
-            if(singleTime)singleTime.style.display='none';
-            if(bothPanel)bothPanel.style.display='block';
-            set(`ts-${day}-missed-time-in`,d.missedTimeIn);
-            set(`ts-${day}-missed-time-out`,d.missedTimeOut);
-          } else {
-            set(`ts-${day}-missed-time`,d.missedTime);
-          }
-        }
-        calcRowTotal(day);
-      });
-    }
-    if(ts.notes){const el=document.getElementById('ts-notes');if(el){el.value=ts.notes;if(isLocked)el.disabled=true;}}
-    // Lock submit button if approved
-    const submitBtn=document.getElementById('ts-submit-btn');
-    if(submitBtn&&isLocked){submitBtn.disabled=true;submitBtn.textContent='✅ Approved by Supervisor';submitBtn.style.background='#27AE60';}
-    else if(submitBtn&&ts.status==='PENDING'){submitBtn.textContent='✅ Submitted — Resubmit?';}
-  }catch(e){console.log('Could not load draft:',e);}
-}
-
-async function submitTimesheet(){
-  const{rows,hasHours}=getTsRowData();
-  const warning=document.getElementById('ts-submit-warning');
-  if(!hasHours){if(warning)warning.style.display='block';return;}
-  if(warning)warning.style.display='none';
-  const weekEnding=getTsWeekEnding();
-  const notes=document.getElementById('ts-notes')?.value||'';
-  try{
-    const payload={employee_name:user.name,employee_email:user.email,county:user.county,week_ending:weekEnding,hours_data:JSON.stringify(rows),notes,status:'PENDING',submitted_at:new Date().toISOString()};
-    if(tsCurrentId){
-      await db.from('timesheets').update(payload).eq('id',tsCurrentId);
-    }else{
-      const{data}=await db.from('timesheets').insert([payload]).select('id').single();
-      if(data)tsCurrentId=data.id;
-    }
-    const badge=document.getElementById('ts-status-badge');
-    if(badge){badge.textContent='SUBMITTED';badge.style.background='#cce5ff';badge.style.color='#004085';}
-    const btn=document.getElementById('ts-submit-btn');
-    if(btn)btn.textContent='✅ Submitted — Resubmit?';
-    const indicator=document.getElementById('ts-autosave-indicator');
-    if(indicator){indicator.textContent='✓ Submitted successfully';setTimeout(()=>{indicator.textContent='';},3000);}
+    await db.from('timesheets').insert([{employee_name:user.name,employee_email:user.email,county:user.county,week_ending:weekEnding,mileage_note:mileage,hours_data:JSON.stringify(rows),notes,status:'PENDING',submitted_at:new Date().toISOString()}]);
+    document.getElementById('ts-success').style.display='block';
+    document.querySelector('#section-timesheet .timesheet-week').style.display='none';
+    document.querySelectorAll('#section-timesheet .card')[0].style.display='none';
+    document.querySelectorAll('#section-timesheet .card')[1].style.display='none';
   }catch(e){alert('Unable to submit timesheet. Please try again.\n'+e.message);}
 }
-
-function toggleMyTimesheetsHistory(){
-  const panel=document.getElementById('my-timesheets-history-panel');
-  const chevron=document.getElementById('my-timesheets-chevron');
-  const isOpen=panel.style.display!=='none';
-  panel.style.display=isOpen?'none':'block';
-  chevron.style.transform=isOpen?'':'rotate(180deg)';
-  if(!isOpen)loadMyTimesheets();
+function resetTimesheet(){
+  document.getElementById('ts-success').style.display='none';
+  document.querySelector('#section-timesheet .timesheet-week').style.display='block';
+  document.querySelectorAll('#section-timesheet .card')[0].style.display='block';
+  document.querySelectorAll('#section-timesheet .card')[1].style.display='block';
+  buildTimesheetRows();
+  document.getElementById('ts-notes').value='';document.getElementById('ts-mileage').value='';
 }
-
 async function loadMyTimesheets(){
   const el=document.getElementById('my-timesheets-list');if(!el)return;
   try{
-    const{data}=await db.from('timesheets').select('*').eq('employee_email',user.email).order('submitted_at',{ascending:false}).limit(20);
-    if(!data||data.length===0){el.innerHTML='<p style="color:#888;font-size:13px;">No timesheets found.</p>';return;}
-    el.innerHTML=data.map(t=>{
-      const statusClass=t.status==='APPROVED'?'approved':t.status==='PENDING'?'pending':'';
-      const statusLabel=t.status==='PENDING'?'SUBMITTED':t.status;
-      const rows=t.hours_data?JSON.parse(t.hours_data):{};
-      const detail=DAYS.filter(d=>rows[d]&&(rows[d].s1s||rows[d].s1e)).map(d=>{
-        const r=rows[d];
-        let s=`<strong>${d}:</strong> ${r.s1s||'?'}–${r.s1e||'?'}`;
-        if(r.s2s)s+=` / ${r.s2s}–${r.s2e||'?'}`;
-        if(r.missed){
-          const mp=r.missedType==='Missed Both'?`⚠ Missed Both (In: ${r.missedTimeIn||'?'} / Out: ${r.missedTimeOut||'?'})`:r.missedType==='Missed Clock In'?`⚠ Missed Clock In (${r.missedTime||'?'})`:r.missedType==='Missed Clock Out'?`⚠ Missed Clock Out (${r.missedTime||'?'})`:'⚠ Missed punch';
-          s+=` <span style="color:var(--warn);font-size:11px;">${mp}</span>`;
-        }
-        return s;
-      }).join('<br>');
-      return `<div style="border:1px solid var(--border);border-radius:8px;margin-bottom:10px;overflow:hidden;">
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#f7f9fc;cursor:pointer;" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
-          <div><strong style="font-size:13px;">Week ending ${t.week_ending}</strong><br><span style="color:#888;font-size:11px;">Submitted ${new Date(t.submitted_at).toLocaleDateString()}</span></div>
-          <span class="badge badge-${statusClass}">${statusLabel}</span>
-        </div>
-        <div style="display:none;padding:12px 14px;font-size:12px;line-height:1.8;">
-          ${detail||'<span style="color:#888;">No hours recorded</span>'}
-          ${t.notes?`<div style="margin-top:8px;padding-top:8px;border-top:1px solid #eee;color:#666;"><strong>Notes:</strong> ${t.notes}</div>`:''}
-        </div>
-      </div>`;
-    }).join('');
+    const {data}=await db.from('timesheets').select('*').eq('employee_email',user.email).order('submitted_at',{ascending:false}).limit(10);
+    if(!data||data.length===0){el.innerHTML='<p style="color:#888;font-size:13px;">No timesheets submitted yet.</p>';return;}
+    el.innerHTML=data.map(t=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;"><div><strong>Week ending ${t.week_ending}</strong><br><span style="color:#888;font-size:12px;">Submitted ${new Date(t.submitted_at).toLocaleDateString()}</span></div><span class="badge badge-${t.status==='APPROVED'?'approved':t.status==='FLAGGED'?'flag':'pending'}">${t.status}</span></div>`).join('');
   }catch(e){el.innerHTML='<p style="color:#888;font-size:13px;">Unable to load timesheets.</p>';}
+}
+
+// OIL CHANGE REQUEST
+async function submitOilChangeRequest(){
+  const vehicleId=document.getElementById('ocr-vehicle-id').value.trim();
+  const mileage=document.getElementById('ocr-mileage').value.trim();
+  if(!vehicleId||!mileage){alert('Vehicle ID and current mileage are required.');return;}
+  const notes=document.getElementById('ocr-notes').value.trim();
+  try{
+    await db.from('vehicle_reports').insert([{
+      employee_name:user.name,
+      employee_email:user.email,
+      county:user.county,
+      vehicle_id:vehicleId,
+      report_date:new Date().toISOString().split('T')[0],
+      issue_types:JSON.stringify(['Oil Change Request']),
+      description:'OIL CHANGE REQUEST — Current Mileage: '+mileage+(notes?'
+Notes: '+notes:''),
+      status:'PENDING',
+      submitted_at:new Date().toISOString()
+    }]);
+    document.getElementById('oil-request-form').style.display='none';
+    document.getElementById('ocr-success').style.display='block';
+  }catch(e){alert('Unable to submit request. Please try again.
+'+e.message);}
+}
+function resetOilRequest(){
+  document.getElementById('ocr-vehicle-id').value='';
+  document.getElementById('ocr-mileage').value='';
+  document.getElementById('ocr-notes').value='';
+  document.getElementById('ocr-success').style.display='none';
+  document.getElementById('oil-request-form').style.display='block';
 }
 
 // VEHICLE REPORT
@@ -3670,6 +3515,9 @@ function checkFleetOverdue(){
   allFleetVehiclesCache.forEach(v=>{
     const maint=allFleetMaintenanceCache.filter(m=>m.vehicle_id===v.vehicle_id);
     const lastOil=maint.filter(m=>m.maintenance_type==='Oil Change').sort((a,b)=>new Date(b.service_date)-new Date(a.service_date))[0];
+    // Oil change flagged by mileage request (oil_change_request flag) or overdue next_due_date
+    const hasOilRequest=maint.some(m=>m.maintenance_type==='Oil Change Request'&&m.notes&&m.notes.includes('PENDING'));
+    if(hasOilRequest)overdueCount++;
     if(lastOil?.next_due_date&&new Date(lastOil.next_due_date)<today)overdueCount++;
     const lastInspection=maint.filter(m=>m.maintenance_type==='Inspection').sort((a,b)=>new Date(b.service_date)-new Date(a.service_date))[0];
     if(lastInspection?.next_due_date&&new Date(lastInspection.next_due_date)<today)overdueCount++;
@@ -3711,8 +3559,10 @@ function renderFleetVehicleGrid(){
     const oilOverdue=lastOil?.next_due_date&&new Date(lastOil.next_due_date)<today;
     const inspOverdue=lastInspection?.next_due_date&&new Date(lastInspection.next_due_date)<today;
     const statusColor=v.status==='Active'?'var(--success)':v.status==='Out of Service'||v.status==='Awaiting Repair'?'var(--red)':'var(--warn)';
+    const oilRequest=allFleetMaintenanceCache.filter(m=>m.vehicle_id===v.vehicle_id&&m.maintenance_type==='Oil Change Request'&&m.status==='PENDING');
     const alerts=[];
-    if(oilOverdue)alerts.push('<span style="background:#fef3e8;color:var(--warn);font-size:11px;font-weight:700;padding:2px 8px;border-radius:8px;">🛢️ Oil Overdue</span>');
+    if(oilRequest.length)alerts.push('<span style="background:#fef3e8;color:var(--warn);font-size:11px;font-weight:700;padding:2px 8px;border-radius:8px;">🛢️ Oil Change Requested</span>');
+    if(oilOverdue)alerts.push('<span style="background:#fdecea;color:var(--red);font-size:11px;font-weight:700;padding:2px 8px;border-radius:8px;">🛢️ Oil Overdue</span>');
     if(inspOverdue)alerts.push('<span style="background:#fdecea;color:var(--red);font-size:11px;font-weight:700;padding:2px 8px;border-radius:8px;">📋 Inspection Overdue</span>');
     return '<div class="card" style="cursor:pointer;'+(oilOverdue||inspOverdue?'border-color:var(--warn);':'')+'padding:18px;" data-vid="'+v.vehicle_id+'" onclick="openFleetVehicle(this.dataset.vid)">'+
       '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">'+
@@ -3725,7 +3575,10 @@ function renderFleetVehicleGrid(){
       '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px;color:#666;margin-bottom:10px;">'+
         (v.county?'<div>📍 '+v.county+'</div>':'')+
         (v.license_plate?'<div>🔤 '+v.license_plate+'</div>':'')+
-        (lastOil?'<div>🛢️ Oil: '+new Date(lastOil.service_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+'</div>':'<div style="color:#aaa;">🛢️ No oil record</div>')+
+        (v.max_occupancy?'<div>👥 Max: '+v.max_occupancy+' passengers</div>':'')+
+        (v.wheelchair_accessible?'<div>'+(v.wheelchair_accessible==='yes'?'♿ Wheelchair Accessible':'🚫 Not Accessible')+'</div>':'')+
+        (lastOil?'<div>🛢️ Last Oil: '+new Date(lastOil.service_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+'</div>':'<div style="color:#aaa;">🛢️ No oil record</div>')+
+        (lastOil?.next_due_mileage?'<div style="color:'+(oilOverdue?'var(--red)':'#666')+';">📍 Next Oil: '+lastOil.next_due_mileage.toLocaleString()+' mi</div>':'')+
         (lastInspection?'<div>📋 Insp: '+new Date(lastInspection.service_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+'</div>':'<div style="color:#aaa;">📋 No inspection</div>')+
       '</div>'+
       (alerts.length?'<div style="display:flex;gap:6px;flex-wrap:wrap;">'+alerts.join('')+'</div>':'')+
@@ -3839,12 +3692,14 @@ async function saveFleetVehicle(){
       status:document.getElementById('fv-status').value,
       oil_change_interval_miles:parseInt(document.getElementById('fv-oil-miles').value)||null,
       oil_change_interval_months:parseInt(document.getElementById('fv-oil-months').value)||null,
+      max_occupancy:parseInt(document.getElementById('fv-occupancy').value)||null,
+      wheelchair_accessible:document.getElementById('fv-wheelchair').value||null,
       notes:document.getElementById('fv-notes').value.trim()||null,
       created_by:adminName,
       created_at:new Date().toISOString()
     }]);
     if(error)throw error;
-    ['fv-id','fv-make','fv-model','fv-year','fv-vin','fv-plate','fv-oil-miles','fv-oil-months','fv-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    ['fv-id','fv-make','fv-model','fv-year','fv-vin','fv-plate','fv-oil-miles','fv-oil-months','fv-occupancy','fv-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});document.getElementById('fv-wheelchair').value='';;
     document.getElementById('fv-county').value='';
     document.getElementById('fv-status').value='Active';
     const msg=document.getElementById('fv-msg');msg.style.display='inline';setTimeout(()=>msg.style.display='none',3000);
@@ -4215,16 +4070,34 @@ async function deleteChangeover(id){
   catch(e){alert('Error: '+e.message);}
 }
 
+function handleTireStatusChange(){
+  const status=document.getElementById('ti-status').value;
+  const mountedFields=document.getElementById('ti-mounted-fields');
+  if(mountedFields)mountedFields.style.display=status==='Mounted'?'block':'none';
+  if(status==='Mounted'){
+    // Populate vehicle dropdown
+    const sel=document.getElementById('ti-vehicle');
+    if(sel){
+      sel.innerHTML='<option value="">— Select Vehicle —</option>'+
+        allFleetVehiclesCache.map(v=>'<option value="'+v.vehicle_id+'">'+v.vehicle_id+(v.make?' — '+v.make:'')+'</option>').join('');
+    }
+  }
+}
 async function saveTire(){
   const tireId=document.getElementById('ti-id').value.trim();
   if(!tireId){alert('Tire ID is required.');return;}
+  const status=document.getElementById('ti-status').value;
+  const vehicleId=status==='Mounted'?document.getElementById('ti-vehicle').value||null:null;
+  const position=status==='Mounted'?document.getElementById('ti-position').value||null:null;
   try{
     await db.from('fleet_tires').insert([{
       tire_id:tireId,
       brand:document.getElementById('ti-brand').value.trim()||null,
       size:document.getElementById('ti-size').value.trim()||null,
       tire_type:document.getElementById('ti-type').value||null,
-      status:document.getElementById('ti-status').value,
+      status,
+      vehicle_id:vehicleId,
+      position,
       storage_location:document.getElementById('ti-storage').value.trim()||null,
       notes:document.getElementById('ti-notes').value.trim()||null,
       added_by:adminName,
@@ -4233,6 +4106,7 @@ async function saveTire(){
     ['ti-id','ti-brand','ti-size','ti-notes','ti-storage'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
     document.getElementById('ti-type').value='';
     document.getElementById('ti-status').value='In Storage';
+    document.getElementById('ti-mounted-fields').style.display='none';
     const msg=document.getElementById('ti-msg');msg.style.display='inline';setTimeout(()=>msg.style.display='none',2000);
     await loadFleetTires();
     renderTireInventory();
