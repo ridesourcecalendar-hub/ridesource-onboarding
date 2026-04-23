@@ -1615,12 +1615,18 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
             <!-- OIL CHANGE FORM -->
             <div id="fm-form-oil">
               <div class="form-row">
-                <div class="form-field"><label>Service Date *</label><input type="date" id="fm-date"></div>
-                <div class="form-field"><label>Mileage at Service</label><input type="number" id="fm-mileage" placeholder="e.g. 45230"></div>
+                <div class="form-field"><label>Service Date *</label><input type="date" id="fm-date" onchange="autoCalcNextOilDate()"></div>
+                <div class="form-field"><label>Mileage at Service</label><input type="number" id="fm-mileage" placeholder="e.g. 45230" oninput="autoCalcNextOilMileage()"></div>
               </div>
               <div class="form-row">
-                <div class="form-field"><label>Next Due Date</label><input type="date" id="fm-next-date"></div>
-                <div class="form-field"><label>Next Due Mileage</label><input type="number" id="fm-next-mileage" placeholder="e.g. 50230"></div>
+                <div class="form-field">
+                  <label>Next Due Date <span style="font-size:11px;color:#888;">(auto-calculated)</span></label>
+                  <input type="date" id="fm-next-date">
+                </div>
+                <div class="form-field">
+                  <label>Next Due Mileage <span style="font-size:11px;color:#888;">(auto-calculated)</span></label>
+                  <input type="number" id="fm-next-mileage" placeholder="e.g. 50230">
+                </div>
               </div>
               <div class="form-row">
                 <div class="form-field"><label>Shop / Location</label><input type="text" id="fm-shop" placeholder="e.g. Napa Auto, Ellsworth ME"></div>
@@ -3550,26 +3556,34 @@ async function loadFleetMaintenance(){
 
 function checkFleetOverdue(){
   const today=new Date();
-  let overdueCount=0;
+  const soon=new Date(today);soon.setDate(today.getDate()+14); // 2 weeks warning
+  let overdueCount=0;let soonCount=0;
   allFleetVehiclesCache.forEach(v=>{
     const maint=allFleetMaintenanceCache.filter(m=>m.vehicle_id===v.vehicle_id);
     const lastOil=maint.filter(m=>m.maintenance_type==='Oil Change').sort((a,b)=>new Date(b.service_date)-new Date(a.service_date))[0];
-    // Oil change flagged by mileage request (oil_change_request flag) or overdue next_due_date
-    const hasOilRequest=maint.some(m=>m.maintenance_type==='Oil Change Request'&&m.notes&&m.notes.includes('PENDING'));
+    const hasOilRequest=allVehicleRecordsCache&&allVehicleRecordsCache.some(r=>r.vehicle_id===v.vehicle_id&&(r.issue_types||'').includes('Oil Change Request')&&r.status==='PENDING');
     if(hasOilRequest)overdueCount++;
-    if(lastOil?.next_due_date&&new Date(lastOil.next_due_date)<today)overdueCount++;
+    if(lastOil?.next_due_date){
+      const due=new Date(lastOil.next_due_date);
+      if(due<today)overdueCount++;
+      else if(due<=soon)soonCount++;
+    }
     const lastInspection=maint.filter(m=>m.maintenance_type==='Inspection').sort((a,b)=>new Date(b.service_date)-new Date(a.service_date))[0];
-    if(lastInspection?.next_due_date&&new Date(lastInspection.next_due_date)<today)overdueCount++;
+    if(lastInspection?.next_due_date){
+      const due=new Date(lastInspection.next_due_date);
+      if(due<today)overdueCount++;
+      else if(due<=soon)soonCount++;
+    }
   });
   const badge=document.getElementById('badge-fleet');
-  if(badge){badge.style.display=overdueCount>0?'inline':'none';badge.textContent='!';}
-  // Also show on dashboard
-  updateFleetDashAlert(overdueCount);
+  if(badge){badge.style.display=(overdueCount+soonCount)>0?'inline':'none';badge.textContent='!';}
+  updateFleetDashAlert(overdueCount,soonCount);
 }
 
-function updateFleetDashAlert(count){
+function updateFleetDashAlert(count,soonCount){
   let el=document.getElementById('fleet-dash-alert');
-  if(count>0){
+  const total=(count||0)+(soonCount||0);
+  if(total>0){
     if(!el){
       el=document.createElement('div');
       el.id='fleet-dash-alert';
@@ -3577,7 +3591,11 @@ function updateFleetDashAlert(count){
       const wrap=document.getElementById('dash-flags-wrap');
       if(wrap)wrap.parentNode.insertBefore(el,wrap.nextSibling);
     }
-    el.innerHTML='<div class="card" style="border-color:var(--warn);border-width:2px;background:#fffbf0;cursor:pointer;" onclick="showAdmin(this.dataset.sec)" data-sec="fleet"><div style="display:flex;align-items:center;gap:12px;"><div style="background:var(--warn);color:#fff;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🔧</div><div><div style="font-size:14px;font-weight:700;color:var(--warn);">'+count+' overdue maintenance item'+(count>1?'s':'')+'</div><div style="font-size:12px;color:#888;margin-top:2px;">Click to view Fleet Maintenance →</div></div></div></div>';
+    let msg='';
+    if(count>0)msg+=count+' overdue';
+    if(count>0&&soonCount>0)msg+=' · ';
+    if(soonCount>0)msg+=soonCount+' due within 2 weeks';
+    el.innerHTML='<div class="card" style="border-color:var(--warn);border-width:2px;background:#fffbf0;cursor:pointer;" onclick="showAdmin(this.dataset.sec)" data-sec="fleet"><div style="display:flex;align-items:center;gap:12px;"><div style="background:var(--warn);color:#fff;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🔧</div><div><div style="font-size:14px;font-weight:700;color:var(--warn);">Fleet: '+msg+'</div><div style="font-size:12px;color:#888;margin-top:2px;">Click to view Fleet Maintenance</div></div></div></div>';
   } else if(el){
     el.innerHTML='';
   }
@@ -3598,11 +3616,16 @@ function renderFleetVehicleGrid(){
     const oilOverdue=lastOil?.next_due_date&&new Date(lastOil.next_due_date)<today;
     const inspOverdue=lastInspection?.next_due_date&&new Date(lastInspection.next_due_date)<today;
     const statusColor=v.status==='Active'?'var(--success)':v.status==='Out of Service'||v.status==='Awaiting Repair'?'var(--red)':'var(--warn)';
-    const oilRequest=allFleetMaintenanceCache.filter(m=>m.vehicle_id===v.vehicle_id&&m.maintenance_type==='Oil Change Request'&&m.status==='PENDING');
+    const soon=new Date(today);soon.setDate(today.getDate()+14);
+    const oilSoon=lastOil?.next_due_date&&new Date(lastOil.next_due_date)>today&&new Date(lastOil.next_due_date)<=soon;
+    const inspSoon=lastInspection?.next_due_date&&new Date(lastInspection.next_due_date)>today&&new Date(lastInspection.next_due_date)<=soon;
+    const oilRequest=allVehicleRecordsCache&&allVehicleRecordsCache.some(r=>r.vehicle_id===v.vehicle_id&&(r.issue_types||'').includes('Oil Change Request')&&r.status==='PENDING');
     const alerts=[];
-    if(oilRequest.length)alerts.push('<span style="background:#fef3e8;color:var(--warn);font-size:11px;font-weight:700;padding:2px 8px;border-radius:8px;">🛢️ Oil Change Requested</span>');
-    if(oilOverdue)alerts.push('<span style="background:#fdecea;color:var(--red);font-size:11px;font-weight:700;padding:2px 8px;border-radius:8px;">🛢️ Oil Overdue</span>');
-    if(inspOverdue)alerts.push('<span style="background:#fdecea;color:var(--red);font-size:11px;font-weight:700;padding:2px 8px;border-radius:8px;">📋 Inspection Overdue</span>');
+    if(oilRequest)alerts.push('<span style="background:#fef3e8;color:var(--warn);font-size:11px;font-weight:700;padding:2px 8px;border-radius:8px;">🛢️ Oil Requested</span>');
+    if(oilOverdue)alerts.push('<span style="background:#fdecea;color:var(--red);font-size:11px;font-weight:700;padding:2px 8px;border-radius:8px;">🔴 Oil Overdue</span>');
+    else if(oilSoon)alerts.push('<span style="background:#fff3cd;color:#856404;font-size:11px;font-weight:700;padding:2px 8px;border-radius:8px;">🟡 Oil Due Soon</span>');
+    if(inspOverdue)alerts.push('<span style="background:#fdecea;color:var(--red);font-size:11px;font-weight:700;padding:2px 8px;border-radius:8px;">🔴 Inspection Overdue</span>');
+    else if(inspSoon)alerts.push('<span style="background:#fff3cd;color:#856404;font-size:11px;font-weight:700;padding:2px 8px;border-radius:8px;">🟡 Inspection Due Soon</span>');
     return '<div class="card" style="cursor:pointer;'+(oilOverdue||inspOverdue?'border-color:var(--warn);':'')+'padding:18px;" data-vid="'+v.vehicle_id+'" onclick="openFleetVehicle(this.dataset.vid)">'+
       '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">'+
         '<div>'+
@@ -3654,6 +3677,24 @@ async function openFleetVehicle(vehicleId){
   document.getElementById('fleet-vehicle-modal').classList.add('open');
 }
 
+function autoCalcNextOilDate(){
+  const dateEl=document.getElementById('fm-date');
+  const nextDateEl=document.getElementById('fm-next-date');
+  if(!dateEl?.value||!nextDateEl)return;
+  const v=allFleetVehiclesCache.find(x=>x.vehicle_id===currentFleetVehicleId);
+  const months=v?.oil_change_interval_months||3; // default 3 months
+  const serviceDate=new Date(dateEl.value);
+  serviceDate.setMonth(serviceDate.getMonth()+months);
+  nextDateEl.value=serviceDate.toISOString().split('T')[0];
+}
+function autoCalcNextOilMileage(){
+  const mileageEl=document.getElementById('fm-mileage');
+  const nextMileageEl=document.getElementById('fm-next-mileage');
+  if(!mileageEl?.value||!nextMileageEl)return;
+  const v=allFleetVehiclesCache.find(x=>x.vehicle_id===currentFleetVehicleId);
+  const interval=v?.oil_change_interval_miles||5000; // default 5000 miles
+  nextMileageEl.value=parseInt(mileageEl.value)+interval;
+}
 function switchFleetMaintTab(tab){
   currentFleetMaintTab=tab;
   ['oil','tires','preventative','repair','inspection'].forEach(t=>{
