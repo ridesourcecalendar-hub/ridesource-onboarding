@@ -2792,8 +2792,8 @@ async function submitOilChangeRequest(){
     }]);
     document.getElementById('oil-request-form').style.display='none';
     document.getElementById('ocr-success').style.display='block';
-  }catch(e){alert('Unable to submit request. Please try again.
-'+e.message);}
+  }catch(e){alert('Unable to submit request. Please try again. '+e.message);}
+
 }
 function resetOilRequest(){
   document.getElementById('ocr-vehicle-id').value='';
@@ -5563,7 +5563,7 @@ function renderRequestsTable(){
     const isPending=r.status==='PENDING'||r.status==='PTO_PENDING';
     const dates=r.start_date+(r.end_date&&r.end_date!==r.start_date?' – '+r.end_date:'');
     const reason=isDemo?'—':r.reason||'—';
-    return '<div style="display:grid;grid-template-columns:36px 1fr 110px 120px 120px 100px 80px;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border);align-items:center;font-size:13px;background:#fff;" onmouseenter="this.style.background='#f7f9fc'" onmouseleave="this.style.background='#fff'">'+
+    return '<div style="display:grid;grid-template-columns:36px 1fr 110px 120px 120px 100px 80px;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border);align-items:center;font-size:13px;background:#fff;">'+
       '<div style="width:32px;height:32px;border-radius:50%;background:'+avatarColor+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">'+initials+'</div>'+
       '<div><div style="font-weight:700;color:var(--navy);">'+displayName+'</div><div style="font-size:11px;color:#888;margin-top:1px;">'+r.county+'</div></div>'+
       '<div style="color:#555;">'+dates+'</div>'+
