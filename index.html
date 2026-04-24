@@ -785,6 +785,58 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 
 
       <!-- MEMOS & MESSAGES -->
+      <!-- EXPENSES SECTION -->
+      <div id="section-expenses" class="portal-section">
+        <div class="card-title" style="font-size:22px;color:var(--navy);margin-bottom:4px;">💰 Expenses & Reimbursements</div>
+        <p style="color:#888;font-size:14px;margin-bottom:24px;">Submit tolls, parking fees, or work-related expenses for reimbursement. Your supervisor will review and approve.</p>
+
+        <!-- SUBMIT CARD -->
+        <div class="card" style="margin-bottom:20px;">
+          <div style="font-size:16px;font-weight:800;color:var(--navy);margin-bottom:4px;">📤 Submit an Expense</div>
+          <div class="card-sub" style="margin-bottom:16px;">Fill in the details below. Attach a receipt photo if you have one.</div>
+          <div id="exp-submit-form">
+            <div class="form-row">
+              <div class="form-field"><label>Expense Type *</label>
+                <select id="exp-type" style="width:100%;padding:11px 14px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                  <option value="">Select type...</option>
+                  <option>Toll</option>
+                  <option>Parking</option>
+                  <option>Reimbursement</option>
+                </select>
+              </div>
+              <div class="form-field"><label>Date *</label><input type="date" id="exp-date" style="width:100%;padding:11px 14px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-field"><label>Amount ($) *</label><input type="number" id="exp-amount" placeholder="0.00" step="0.01" min="0" style="width:100%;padding:11px 14px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+              <div class="form-field"><label>Vehicle ID (if applicable)</label><input type="text" id="exp-vehicle" placeholder="e.g. RS-01" style="width:100%;padding:11px 14px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+            </div>
+            <div class="form-field"><label>Description *</label>
+              <textarea id="exp-description" placeholder="Briefly describe the expense — e.g. Toll on I-95 northbound, Bangor to Ellsworth, passenger transport..." style="width:100%;min-height:70px;padding:11px 14px;border:2px solid var(--border);border-radius:8px;font-size:13px;font-family:Arial,sans-serif;outline:none;resize:vertical;margin-top:4px;"></textarea>
+            </div>
+            <div class="form-field"><label>Receipt Photo (optional)</label>
+              <input type="file" id="exp-receipt" accept="image/*,.pdf" style="width:100%;padding:8px;border:2px solid var(--border);border-radius:8px;font-size:13px;">
+            </div>
+            <button class="btn-primary" onclick="submitExpense()" style="margin-top:8px;">💰 Submit Expense</button>
+          </div>
+          <div id="exp-success" style="display:none;" class="success-banner">
+            <div>✅</div><h2 style="font-size:18px;margin-top:8px;">Expense Submitted!</h2>
+            <p>Your supervisor has been notified and will review your submission.</p>
+            <button class="btn-primary" style="margin-top:12px;background:rgba(255,255,255,.2);border:2px solid rgba(255,255,255,.5);" onclick="resetExpenseForm()">Submit Another</button>
+          </div>
+        </div>
+
+        <!-- HISTORY CARD -->
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;" onclick="toggleExpenseHistory()">
+            <div style="font-size:16px;font-weight:800;color:var(--navy);">📋 My Submission History</div>
+            <span id="exp-history-chevron" style="font-size:18px;color:#888;transition:transform .2s;">▼</span>
+          </div>
+          <div id="exp-history-panel" style="display:none;margin-top:16px;">
+            <div id="exp-history-list"><p style="color:#888;font-size:13px;">Loading...</p></div>
+          </div>
+        </div>
+      </div>
+
       <div id="section-memos-emp" class="portal-section">
         <div class="card-title" style="font-size:22px;color:#5b21b6;margin-bottom:4px;">📢 Memos &amp; Messages</div>
         <p style="color:#888;font-size:14px;margin-bottom:20px;">View memos from your supervisor and send messages to the office.</p>
@@ -882,6 +934,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
         <div class="nav-item" onclick="showAdmin('vehicle-records')" id="nav-adm-vehicle-records"><span class="nav-icon">🚐</span>Vehicle Records</div>
         <div class="nav-item" onclick="showAdmin('fleet')" id="nav-adm-fleet"><span class="nav-icon">🔧</span>Fleet Maintenance<span class="nav-badge" id="badge-fleet" style="background:var(--red);display:none;">!</span></div>
         <div class="nav-item" onclick="showAdmin('incidents')" id="nav-adm-incidents"><span class="nav-icon">🚨</span>Incident Log<span class="nav-badge" id="badge-incidents" style="background:var(--red);">0</span></div>
+        <div class="nav-item" onclick="showAdmin('expenses')" id="nav-adm-expenses"><span class="nav-icon">💰</span>Expenses<span class="nav-badge" id="badge-expenses" style="background:var(--warn);display:none;">0</span></div>
         <div class="sidebar-label">Resources</div>
         <div class="nav-item" onclick="showAdmin('documents')" id="nav-adm-documents"><span class="nav-icon">📥</span>Document Library</div>
       </div>
@@ -2061,6 +2114,58 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
         </div>
       </div>
 
+      <!-- ADMIN EXPENSES SECTION -->
+      <div id="section-adm-expenses" class="admin-section">
+        <div style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:2px;">💰 Expenses & Reimbursements</div>
+        <p style="color:#888;font-size:13px;margin-bottom:16px;">Review and action employee expense submissions. Export approved expenses for payroll processing.</p>
+
+        <div style="display:grid;grid-template-columns:1fr 260px;gap:20px;align-items:start;">
+          <!-- LEFT: Table -->
+          <div>
+            <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center;">
+              <input type="text" id="exp-search" placeholder="Search by employee name..." oninput="renderExpensesTable()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;flex:1;min-width:160px;">
+              <select id="exp-type-filter" onchange="renderExpensesTable()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:#fff;">
+                <option value="">All Types</option>
+                <option>Toll</option>
+                <option>Parking</option>
+                <option>Reimbursement</option>
+              </select>
+              <button class="btn btn-sm" style="background:#e8f4fd;color:#1565c0;" onclick="exportExpenses()">⬇️ Export CSV</button>
+            </div>
+            <div style="display:flex;gap:4px;margin-bottom:0;border-bottom:2px solid var(--border);">
+              <button id="exp-tab-PENDING" class="req-tab req-tab-active" onclick="setExpTab('PENDING')">Pending <span class="req-count" id="exp-count-PENDING" style="background:var(--red);color:#fff;">0</span></button>
+              <button id="exp-tab-APPROVED" class="req-tab req-tab-approved" onclick="setExpTab('APPROVED')">Approved <span class="req-count" id="exp-count-APPROVED" style="background:#ddd;color:#555;">0</span></button>
+              <button id="exp-tab-DENIED" class="req-tab req-tab-denied" onclick="setExpTab('DENIED')">Denied <span class="req-count" id="exp-count-DENIED" style="background:#ddd;color:#555;">0</span></button>
+              <button id="exp-tab-ALL" class="req-tab" style="margin-left:auto;" onclick="setExpTab('ALL')">All</button>
+            </div>
+            <div id="expenses-table" style="margin-top:0;">Loading...</div>
+          </div>
+
+          <!-- RIGHT: Quick Summary -->
+          <div class="card" style="position:sticky;top:80px;">
+            <div style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:16px;">Quick Summary</div>
+            <div style="display:flex;flex-direction:column;gap:0;">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);">
+                <span style="font-size:13px;color:#555;">Pending</span>
+                <span style="font-size:16px;font-weight:800;color:var(--red);" id="exp-qs-pending">0</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);">
+                <span style="font-size:13px;color:#555;">Approved This Month</span>
+                <span style="font-size:16px;font-weight:800;color:var(--navy);" id="exp-qs-approved">0</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);">
+                <span style="font-size:13px;color:#555;">Total Approved ($)</span>
+                <span style="font-size:16px;font-weight:800;color:var(--success);" id="exp-qs-total">$0.00</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;">
+                <span style="font-size:13px;color:#555;">Pending Amount ($)</span>
+                <span style="font-size:16px;font-weight:800;color:var(--warn);" id="exp-qs-pending-amt">$0.00</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div><!-- end main-content -->
   </div><!-- end portal-layout -->
 
@@ -2098,6 +2203,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
     <button onclick="showSection('vehicle');closeMobileMenu()" style="padding:12px 8px;background:var(--light);border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:600;color:var(--navy);cursor:pointer;text-align:left;">🚐 Vehicle Report</button>
     <button onclick="showSection('incident');closeMobileMenu()" style="padding:12px 8px;background:var(--light);border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:600;color:var(--navy);cursor:pointer;text-align:left;">🚨 Incident Report</button>
+    <button onclick="showSection('expenses');closeMobileMenu()" style="padding:12px 8px;background:#fffbf0;border:1px solid #ffc107;border-radius:8px;font-size:13px;font-weight:600;color:var(--navy);cursor:pointer;text-align:left;">💰 Expenses</button>
   </div>
   <button onclick="logout()" style="width:100%;padding:12px;background:#fdecea;border:1px solid #f5c6c2;border-radius:8px;font-size:13px;font-weight:700;color:var(--red);cursor:pointer;">Sign Out</button>
 </div>
@@ -2200,7 +2306,7 @@ window.addEventListener('load',async function(){
         buildMgrGuide();buildHbRef();
         loadEmployeeFolders();
         loadDashboard();loadRequests();loadCallOuts();loadFlags();loadOnboarding();renderCalendar();
-        loadTimesheets();loadVehicleRecords();loadIncidents();loadMemos();loadEmployeeMessages();loadFleetVehicles();loadFleetMaintenance();loadFleetTires();loadFleetChangeovers();
+        loadTimesheets();loadVehicleRecords();loadIncidents();loadMemos();loadEmployeeMessages();loadFleetVehicles();loadFleetMaintenance();loadFleetTires();loadFleetChangeovers();loadExpenses();
       }
     }
   }catch(e){sessionStorage.removeItem('rs_session');}
@@ -2292,7 +2398,7 @@ async function adminLogin(){
   buildMgrGuide();buildHbRef();
   loadEmployeeFolders(); // pre-load profile cache so supervisor filters work immediately
   loadDashboard();loadRequests();loadCallOuts();loadFlags();loadOnboarding();renderCalendar();
-  loadTimesheets();loadVehicleRecords();loadIncidents();loadMemos();loadEmployeeMessages();loadFleetVehicles();loadFleetMaintenance();loadFleetTires();loadFleetChangeovers();
+  loadTimesheets();loadVehicleRecords();loadIncidents();loadMemos();loadEmployeeMessages();loadFleetVehicles();loadFleetMaintenance();loadFleetTires();loadFleetChangeovers();loadExpenses();
 }
 function adminLogout(){
   sessionStorage.removeItem('rs_session');
@@ -7084,6 +7190,184 @@ async function buildDocx(templateId){
   closeModal('template-modal');
 }
 
+
+// ═══════════════════════════════════════════════
+// EXPENSES & REIMBURSEMENTS
+// ═══════════════════════════════════════════════
+let allExpensesCache=[];
+let currentExpTab='PENDING';
+
+async function submitExpense(){
+  const type=document.getElementById('exp-type').value;
+  const date=document.getElementById('exp-date').value;
+  const amount=document.getElementById('exp-amount').value;
+  const description=document.getElementById('exp-description').value.trim();
+  if(!type||!date||!amount||!description){alert('Please fill in all required fields.');return;}
+  let receiptUrl=null;
+  const fileInput=document.getElementById('exp-receipt');
+  if(fileInput?.files?.length){
+    try{
+      const file=fileInput.files[0];
+      const fileName='expenses/'+user.email+'-'+Date.now()+'-'+file.name;
+      const {data:uploadData,error:uploadError}=await db.storage.from('ridesource-uploads').upload(fileName,file);
+      if(!uploadError&&uploadData){
+        const {data:urlData}=db.storage.from('ridesource-uploads').getPublicUrl(fileName);
+        receiptUrl=urlData?.publicUrl||null;
+      }
+    }catch(e){console.log('Receipt upload failed:',e);}
+  }
+  try{
+    await db.from('expense_submissions').insert([{
+      employee_name:user.name,
+      employee_email:user.email,
+      county:user.county,
+      expense_type:type,
+      expense_date:date,
+      amount:parseFloat(amount),
+      description,
+      receipt_url:receiptUrl,
+      status:'PENDING',
+      submitted_at:new Date().toISOString()
+    }]);
+    document.getElementById('exp-submit-form').style.display='none';
+    document.getElementById('exp-success').style.display='block';
+  }catch(e){alert('Unable to submit. Please try again. '+e.message);}
+
+}
+
+function resetExpenseForm(){
+  document.getElementById('exp-type').value='';
+  document.getElementById('exp-date').value='';
+  document.getElementById('exp-amount').value='';
+  document.getElementById('exp-vehicle').value='';
+  document.getElementById('exp-description').value='';
+  document.getElementById('exp-receipt').value='';
+  document.getElementById('exp-success').style.display='none';
+  document.getElementById('exp-submit-form').style.display='block';
+}
+
+function toggleExpenseHistory(){
+  const panel=document.getElementById('exp-history-panel');
+  const chevron=document.getElementById('exp-history-chevron');
+  const isOpen=panel.style.display!=='none';
+  panel.style.display=isOpen?'none':'block';
+  chevron.style.transform=isOpen?'':'rotate(180deg)';
+  if(!isOpen)loadMyExpenses();
+}
+
+async function loadMyExpenses(){
+  const el=document.getElementById('exp-history-list');if(!el)return;
+  try{
+    const{data}=await db.from('expense_submissions').select('*').eq('employee_email',user.email).order('submitted_at',{ascending:false}).limit(20);
+    if(!data||data.length===0){el.innerHTML='<p style="color:#888;font-size:13px;">No expenses submitted yet.</p>';return;}
+    el.innerHTML=data.map(e=>{
+      const statusClass=e.status==='APPROVED'?'approved':e.status==='DENIED'?'denied':'pending';
+      return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;">'+
+        '<div>'+
+          '<strong>'+e.expense_type+'</strong> — $'+parseFloat(e.amount).toFixed(2)+
+          '<div style="font-size:12px;color:#888;margin-top:2px;">'+e.expense_date+' · '+e.description.substring(0,50)+(e.description.length>50?'...':'')+'</div>'+
+        '</div>'+
+        '<div style="display:flex;align-items:center;gap:8px;">'+
+          (e.receipt_url?'<a href="'+e.receipt_url+'" target="_blank" style="font-size:11px;color:#1565c0;">📎 Receipt</a>':'')+
+          '<span class="badge badge-'+statusClass+'">'+e.status+'</span>'+
+        '</div>'+
+      '</div>';
+    }).join('');
+  }catch(e){el.innerHTML='<p style="color:#888;font-size:13px;">Unable to load expenses.</p>';}
+}
+
+// ADMIN EXPENSES
+async function loadExpenses(){
+  try{
+    const{data}=await db.from('expense_submissions').select('*').order('submitted_at',{ascending:false});
+    allExpensesCache=data||[];
+    renderExpensesTable();
+    updateExpenseBadge();
+  }catch(e){console.log('Expenses:',e);}
+}
+
+function updateExpenseBadge(){
+  const pending=allExpensesCache.filter(e=>e.status==='PENDING').length;
+  const badge=document.getElementById('badge-expenses');
+  if(badge){badge.textContent=pending;badge.style.display=pending>0?'inline':'none';}
+}
+
+function setExpTab(tab){
+  currentExpTab=tab;
+  ['PENDING','APPROVED','DENIED','ALL'].forEach(t=>{
+    const btn=document.getElementById('exp-tab-'+t);
+    if(btn)btn.className='req-tab'+(t===tab?' req-tab-active':'')+(t==='APPROVED'?' req-tab-approved':'')+(t==='DENIED'?' req-tab-denied':'');
+  });
+  renderExpensesTable();
+}
+
+function renderExpensesTable(){
+  const el=document.getElementById('expenses-table');if(!el)return;
+  const isDemo=adminStaff?.role==='demo';
+  const search=(document.getElementById('exp-search')?.value||'').toLowerCase();
+  const typeFilter=document.getElementById('exp-type-filter')?.value||'';
+  let filtered=allExpensesCache;
+  if(currentExpTab!=='ALL')filtered=filtered.filter(e=>e.status===currentExpTab);
+  if(search)filtered=filtered.filter(e=>(e.employee_name||'').toLowerCase().includes(search));
+  if(typeFilter)filtered=filtered.filter(e=>e.expense_type===typeFilter);
+  // Update counts
+  ['PENDING','APPROVED','DENIED'].forEach(s=>{
+    const el2=document.getElementById('exp-count-'+s);
+    if(el2)el2.textContent=allExpensesCache.filter(e=>e.status===s).length;
+  });
+  // Update quick summary
+  const now=new Date();
+  const monthStart=new Date(now.getFullYear(),now.getMonth(),1);
+  const pending=allExpensesCache.filter(e=>e.status==='PENDING');
+  const approved=allExpensesCache.filter(e=>e.status==='APPROVED'&&new Date(e.decided_at||e.submitted_at)>=monthStart);
+  document.getElementById('exp-qs-pending').textContent=pending.length;
+  document.getElementById('exp-qs-approved').textContent=approved.length;
+  document.getElementById('exp-qs-total').textContent='$'+approved.reduce((s,e)=>s+parseFloat(e.amount||0),0).toFixed(2);
+  document.getElementById('exp-qs-pending-amt').textContent='$'+pending.reduce((s,e)=>s+parseFloat(e.amount||0),0).toFixed(2);
+  if(!filtered.length){el.innerHTML='<div style="padding:20px 0;text-align:center;color:#888;font-size:13px;">No expenses found.</div>';return;}
+  const header='<div style="display:grid;grid-template-columns:36px 1fr 90px 80px 100px 90px 80px;gap:8px;padding:8px 12px;background:var(--gray);border-radius:8px 8px 0 0;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-top:12px;">'+
+    '<div></div><div>Employee</div><div>Date</div><div>Type</div><div>Description</div><div>Amount</div><div></div></div>';
+  const rows=filtered.map((e,idx)=>{
+    const displayName=isDemo?'Employee '+(idx+1):e.employee_name;
+    const initials=isDemo?'E':getInitials(e.employee_name);
+    const avatarColor=getAvatarColor(e.employee_name);
+    const isPending=e.status==='PENDING';
+    const statusClass=e.status==='APPROVED'?'approved':e.status==='DENIED'?'denied':'pending';
+    return '<div style="display:grid;grid-template-columns:36px 1fr 90px 80px 100px 90px 80px;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border);align-items:center;font-size:13px;background:#fff;">'+
+      '<div style="width:32px;height:32px;border-radius:50%;background:'+avatarColor+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;">'+initials+'</div>'+
+      '<div><div style="font-weight:700;color:var(--navy);">'+displayName+'</div><div style="font-size:11px;color:#888;">'+e.county+'</div></div>'+
+      '<div style="color:#555;font-size:12px;">'+e.expense_date+'</div>'+
+      '<div><span style="background:#f0f4fb;color:var(--navy);font-size:11px;font-weight:700;padding:2px 8px;border-radius:8px;">'+e.expense_type+'</span></div>'+
+      '<div style="color:#888;font-size:12px;">'+(e.description||'').substring(0,35)+(e.description?.length>35?'...':'')+'</div>'+
+      '<div style="font-weight:800;color:var(--navy);">$'+parseFloat(e.amount).toFixed(2)+'</div>'+
+      '<div style="display:flex;gap:4px;justify-content:flex-end;">'+
+        (e.receipt_url?'<a href="'+e.receipt_url+'" target="_blank" style="width:28px;height:28px;border-radius:6px;border:1px solid #ddd;background:#fff;color:#1565c0;display:flex;align-items:center;justify-content:center;font-size:14px;text-decoration:none;" title="View Receipt">📎</a>':'')+
+        (isPending&&!isDemo?
+          '<button style="width:28px;height:28px;border-radius:6px;border:1px solid #27AE60;background:#fff;color:#27AE60;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;" data-eid="'+e.id+'" data-status="APPROVED" onclick="decideExpense(this.dataset.eid,this.dataset.status)" title="Approve">✓</button>'+
+          '<button style="width:28px;height:28px;border-radius:6px;border:1px solid var(--red);background:#fff;color:var(--red);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;" data-eid="'+e.id+'" data-status="DENIED" onclick="decideExpense(this.dataset.eid,this.dataset.status)" title="Deny">✗</button>'
+        :'<span class="badge badge-'+statusClass+'" style="font-size:10px;">'+e.status+'</span>')+
+      '</div>'+
+    '</div>';
+  }).join('');
+  el.innerHTML=header+'<div style="border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;overflow:hidden;">'+rows+'</div>';
+}
+
+async function decideExpense(id,status){
+  try{
+    await db.from('expense_submissions').update({status,decided_by:adminName,decided_at:new Date().toISOString()}).eq('id',id);
+    await loadExpenses();
+  }catch(e){alert('Error: '+e.message);}
+}
+
+function exportExpenses(){
+  const approved=allExpensesCache.filter(e=>e.status==='APPROVED');
+  if(!approved.length){alert('No approved expenses to export.');return;}
+  const header=['Employee','Email','County','Type','Date','Amount','Description','Approved By','Approved Date'];
+  const rows=approved.map(e=>[e.employee_name,e.employee_email,e.county,e.expense_type,e.expense_date,'$'+parseFloat(e.amount).toFixed(2),e.description||'',e.decided_by||'',e.decided_at?new Date(e.decided_at).toLocaleDateString():''].map(v=>'"'+(v||'').toString().replace(/"/g,'""')+'"'));
+  const csv=[header,...rows].map(r=>r.join(',')).join('\n');
+
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='expenses_'+new Date().toISOString().split('T')[0]+'.csv';a.click();
+}
 </script>
 <!-- MODALS -->
 <div class="modal-overlay" id="policy-modal">
