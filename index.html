@@ -1516,12 +1516,17 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
           <div class="profile-tab-panel" id="ppanel-performance">
             <!-- Sub-tabs -->
             <div style="display:flex;gap:4px;border-bottom:2px solid var(--border);margin-bottom:20px;">
+              <button id="perf-card-btn-ratings" onclick="switchPerfCard('ratings')" style="padding:8px 16px;font-size:13px;font-weight:700;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;background:none;color:#888;">⭐ Ratings</button>
               <button id="perf-card-btn-reviews" onclick="switchPerfCard('reviews')" style="padding:8px 16px;font-size:13px;font-weight:700;border:none;border-bottom:2px solid var(--navy);margin-bottom:-2px;cursor:pointer;background:none;color:var(--navy);">📋 Reviews</button>
               <button id="perf-card-btn-warnings" onclick="switchPerfCard('warnings')" style="padding:8px 16px;font-size:13px;font-weight:700;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;background:none;color:#888;">⚠️ Warnings</button>
               <button id="perf-card-btn-attendance" onclick="switchPerfCard('attendance')" style="padding:8px 16px;font-size:13px;font-weight:700;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;background:none;color:#888;">📅 Attendance</button>
               <button id="perf-card-btn-pip" onclick="switchPerfCard('pip')" style="padding:8px 16px;font-size:13px;font-weight:700;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;background:none;color:#888;">📈 PIPs</button>
             </div>
             <!-- Reviews Panel - 30/60/90 day tracker -->
+            <!-- Ratings Panel -->
+            <div id="perf-panel-ratings" style="display:none;">
+              <div id="pdata-ratings"><p style="color:#888;font-size:13px;">Loading...</p></div>
+            </div>
             <div id="perf-panel-reviews">
               <div id="pdata-reviews"><p style="color:#888;font-size:13px;">Loading...</p></div>
             </div>
@@ -6010,7 +6015,7 @@ function _switchProfileTabOriginal(tab){
 let currentPerfCard='warnings';
 function switchPerfCard(card){
   currentPerfCard=card;
-  ['warnings','reviews','attendance','pip'].forEach(c=>{
+  ['ratings','warnings','reviews','attendance','pip'].forEach(c=>{
     const btn=document.getElementById('perf-card-btn-'+c);
     const panel=document.getElementById('perf-panel-'+c);
     const active=c===card;
@@ -6024,6 +6029,7 @@ function switchPerfCard(card){
   const p=currentProfileEmployee;
   if(!p)return;
   if(card==='warnings')loadProfileWarnings(p.employee_name,p.county);
+  if(card==='ratings')loadProfileRatings(p);
   if(card==='reviews')loadProfileReviews(p);
   if(card==='attendance')loadProfileAttendance(p.employee_name);
   if(card==='pip')loadProfilePIP(p.employee_name,p.employee_email);
@@ -9814,6 +9820,160 @@ window.addEventListener('load',async function(){
     }
   }catch(e){}
 },true);
+
+// ═══════════════════════════════════════════════
+// EMPLOYEE PERFORMANCE RATINGS
+// ═══════════════════════════════════════════════
+const PERF_CATEGORIES=[
+  {key:'safety',label:'Safety',icon:'🛡️',desc:'Follows safety protocols, accident-free record, proper vehicle operation'},
+  {key:'driving',label:'Driving Capability',icon:'🚐',desc:'Driving skill, route knowledge, vehicle handling, pre/post trip inspection'},
+  {key:'attendance',label:'Attendance & Reliability',icon:'📅',desc:'Punctuality, call-out frequency, schedule adherence, dependability'},
+  {key:'customer',label:'Customer Service',icon:'🤝',desc:'Passenger interaction, professionalism, communication, complaints'},
+  {key:'overall',label:'Overall Performance',icon:'⭐',desc:'General assessment of performance across all areas'},
+];
+
+function renderStars(rating,category,interactive){
+  let html='<div style="display:flex;gap:4px;align-items:center;">';
+  for(let i=1;i<=5;i++){
+    const filled=i<=rating;
+    if(interactive){
+      html+=`<span data-cat="${category}" data-val="${i}" onclick="setRatingStar(this)" style="font-size:24px;cursor:pointer;color:${filled?'#f59e0b':'#ddd'};transition:color .1s;" onmouseenter="hoverStars(this)" onmouseleave="unhoverStars(this,'${category}',${rating})">${filled?'★':'☆'}</span>`;
+    } else {
+      html+=`<span style="font-size:20px;color:${filled?'#f59e0b':'#ddd'};">${filled?'★':'☆'}</span>`;
+    }
+  }
+  html+='</div>';
+  return html;
+}
+
+function hoverStars(el){
+  const cat=el.dataset.cat;
+  const val=parseInt(el.dataset.val);
+  document.querySelectorAll(`[data-cat="${cat}"]`).forEach(s=>{
+    s.style.color=parseInt(s.dataset.val)<=val?'#f59e0b':'#ddd';
+    s.textContent=parseInt(s.dataset.val)<=val?'★':'☆';
+  });
+}
+
+function unhoverStars(el,cat,currentRating){
+  document.querySelectorAll(`[data-cat="${cat}"]`).forEach(s=>{
+    const filled=parseInt(s.dataset.val)<=currentRating;
+    s.style.color=filled?'#f59e0b':'#ddd';
+    s.textContent=filled?'★':'☆';
+  });
+}
+
+let pendingRatings={};
+function setRatingStar(el){
+  const cat=el.dataset.cat;
+  const val=parseInt(el.dataset.val);
+  pendingRatings[cat]=val;
+  document.querySelectorAll(`[data-cat="${cat}"]`).forEach(s=>{
+    const filled=parseInt(s.dataset.val)<=val;
+    s.style.color=filled?'#f59e0b':'#ddd';
+    s.textContent=filled?'★':'☆';
+    s.onmouseleave=function(){unhoverStars(s,cat,val);};
+  });
+  // Show save button
+  const saveBtn=document.getElementById('ratings-save-btn');
+  if(saveBtn)saveBtn.style.display='block';
+}
+
+async function loadProfileRatings(p){
+  const el=document.getElementById('pdata-ratings');if(!el)return;
+  pendingRatings={};
+  try{
+    // Load all ratings for this employee
+    const{data}=await db.from('performance_ratings').select('*').eq('employee_email',p.employee_email).order('created_at',{ascending:false});
+    const ratings=data||[];
+    // Get latest rating per category
+    const latest={};
+    ratings.forEach(r=>{if(!latest[r.category])latest[r.category]=r;});
+
+    let html=`<div style="margin-bottom:16px;">
+      <div style="font-size:14px;font-weight:800;color:var(--navy);margin-bottom:4px;">Performance Ratings — ${p.employee_name}</div>
+      <div style="font-size:12px;color:#888;">Click stars to set a rating. Ratings are saved per category with timestamp.</div>
+    </div>`;
+
+    PERF_CATEGORIES.forEach(cat=>{
+      const current=latest[cat.key];
+      const currentRating=current?.rating||0;
+      html+=`<div style="border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;background:#fafafa;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:800;color:var(--navy);">${cat.icon} ${cat.label}</div>
+            <div style="font-size:11px;color:#888;margin-top:2px;">${cat.desc}</div>
+            ${current?`<div style="font-size:11px;color:#aaa;margin-top:4px;">Last rated by ${current.rated_by} on ${new Date(current.created_at).toLocaleDateString()}</div>`:''}
+          </div>
+          <div>
+            ${renderStars(currentRating,cat.key,true)}
+            ${currentRating>0?`<div style="font-size:11px;color:#888;text-align:center;margin-top:2px;">${currentRating}/5</div>`:'<div style="font-size:11px;color:#aaa;text-align:center;margin-top:2px;">Not rated</div>'}
+          </div>
+        </div>
+        <div style="margin-top:10px;">
+          <input type="text" id="rating-note-${cat.key}" placeholder="Add a note (optional)..." value="${current?.notes||''}" style="width:100%;padding:7px 12px;border:1px solid var(--border);border-radius:6px;font-size:12px;outline:none;">
+        </div>
+      </div>`;
+    });
+
+    html+=`<div style="display:flex;align-items:center;gap:10px;margin-top:4px;">
+      <button id="ratings-save-btn" onclick="saveProfileRatings('${p.employee_email}','${p.employee_name}')" style="background:var(--navy);color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;display:none;">💾 Save Ratings</button>
+      <span id="ratings-saved-msg" style="font-size:13px;color:var(--success);display:none;">✓ Ratings saved!</span>
+    </div>`;
+
+    // Rating history
+    if(ratings.length>0){
+      html+=`<div style="margin-top:20px;"><div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Rating History</div>`;
+      const byReview={};
+      ratings.forEach(r=>{
+        const key=r.review_type||'Standalone '+new Date(r.created_at).toLocaleDateString();
+        if(!byReview[key])byReview[key]=[];
+        byReview[key].push(r);
+      });
+      html+=Object.entries(byReview).slice(0,5).map(([label,items])=>`
+        <div style="border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:6px;">
+          <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:6px;">${label}</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            ${items.map(r=>{
+              const cat=PERF_CATEGORIES.find(c=>c.key===r.category);
+              return `<div style="font-size:12px;"><span style="color:#888;">${cat?cat.icon+' '+cat.label:r.category}:</span> ${'★'.repeat(r.rating)+'☆'.repeat(5-r.rating)} <span style="color:#aaa;">(${r.rating}/5)</span></div>`;
+            }).join('')}
+          </div>
+        </div>`).join('');
+      html+='</div>';
+    }
+
+    el.innerHTML=html;
+  }catch(e){
+    el.innerHTML='<p style="color:#888;font-size:13px;">Please run the Supabase SQL to create the performance_ratings table.</p>';
+  }
+}
+
+async function saveProfileRatings(email,name){
+  if(!Object.keys(pendingRatings).length){alert('No ratings to save. Click the stars to set a rating.');return;}
+  const btn=document.getElementById('ratings-save-btn');
+  if(btn){btn.disabled=true;btn.textContent='Saving...';}
+  try{
+    const inserts=Object.entries(pendingRatings).map(([cat,rating])=>({
+      employee_email:email,employee_name:name,
+      category:cat,rating,
+      notes:document.getElementById('rating-note-'+cat)?.value||'',
+      rated_by:adminName,
+      created_at:new Date().toISOString()
+    }));
+    await db.from('performance_ratings').insert(inserts);
+    pendingRatings={};
+    const msg=document.getElementById('ratings-saved-msg');
+    if(btn){btn.style.display='none';btn.disabled=false;btn.textContent='💾 Save Ratings';}
+    if(msg){msg.style.display='inline';setTimeout(()=>msg.style.display='none',3000);}
+    // Reload
+    const p=currentProfileEmployee;
+    if(p)loadProfileRatings(p);
+  }catch(e){
+    if(btn){btn.disabled=false;btn.textContent='💾 Save Ratings';}
+    alert('Error saving ratings: '+e.message);
+  }
+}
 </script>
 <!-- MODALS -->
 <div class="modal-overlay" id="policy-modal">
