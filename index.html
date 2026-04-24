@@ -2154,7 +2154,7 @@ function getSupervisorEmail(employeeEmail){
   }
   return SUPERVISOR_EMAIL; // fallback to Tiffany
 }
-const PORTAL_URL='https://github.com/ridesourcecalendar-hub/ridesource-onboarding/raw/main/index.html';
+const PORTAL_URL='https://ridesource-staff.vercel.app';
 const PORTAL_STAFF=[]; // Staff loaded from Supabase — no credentials stored in code
 const ADMIN_PASSWORD=''; // Legacy — no longer used
 if(typeof supabase==='undefined'){console.error('Supabase failed to load');alert('Portal failed to load. Please refresh the page.');}
@@ -5047,7 +5047,7 @@ function generateOnboardingPacket(){
   const pkgStartDate=document.getElementById('pkg-start-date').value;
   const hireDate=pkgStartDate?new Date(pkgStartDate+'T00:00:00').toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}):(p.hire_date?new Date(p.hire_date+'T00:00:00').toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}):'[Start Date]');
   const position=p.position||'Driver';
-  const PORTAL_URL_LINK='https://github.com/ridesourcecalendar-hub/ridesource-onboarding/raw/main/index.html';
+  const PORTAL_URL_LINK='https://ridesource-staff.vercel.app';
   const GITHUB_BASE='https://github.com/ridesourcecalendar-hub/ridesource-onboarding/raw/main/';
 
   const html=`<!DOCTYPE html>
@@ -5318,7 +5318,7 @@ const MGR_SECTIONS=[
   {title:'Sec 4: Timesheets',content:`<h1>Section 4: Timesheet Review</h1><p>Employees submit weekly timesheets every Friday through the Staff Portal. Review these in the Admin Portal under Timesheets.</p><h2>Review Process</h2><ol><li>Navigate to Admin Portal → Timesheets → Pending</li><li>Compare submitted hours against TWE clock-in records</li><li>Click Approve for accurate timesheets</li><li>Flag discrepancies and follow up with the driver directly</li><li>At end of pay period: click Export CSV to download all timesheets for payroll</li><li>Archive locally and delete from portal to manage Supabase storage</li></ol><div class="callout"><strong>Maine Law Requirement</strong>Retain payroll records for a minimum of 3 years. Always export and save locally before deleting from the portal.</div>`},
   {title:'Sec 5: Vehicle',content:`<h1>Section 5: Vehicle Records</h1><p>Drivers submit vehicle reports through the Staff Portal. All submissions appear in Admin Portal → Vehicle Records.</p><h2>What Drivers Can Submit</h2><ul><li>Damage reports with photos</li><li>Mechanical issues</li><li>Oil change receipts</li><li>Repair receipts</li><li>Windshield or glass damage</li><li>Tire issues and more</li></ul><p>Review reports promptly. Mileage information submitted in timesheets also feeds into vehicle maintenance awareness. Use the Export CSV button to save records before archiving.</p>`},
   {title:'Sec 6: Call-Outs',content:`<h1>Section 6: Call-Out Log &amp; Attendance</h1><p>When an employee calls out, log it in Admin Portal → Call-Out Log. This data automatically powers the Attendance Warning Generator.</p><h2>Attendance Thresholds</h2><table><tr><td><strong>1–3 call-outs</strong></td><td>Verbal coaching with written follow-up</td></tr><tr><td><strong>4–6 call-outs</strong></td><td>Formal meeting; PIP and final written warning</td></tr><tr><td><strong>More than 6</strong></td><td>Review for termination; consider protected leave exceptions</td></tr></table>`},
-  {title:'Sec 7: Quick Ref',content:`<h1>Section 7: Quick Reference</h1><table><tr><td><strong>Staff Portal URL</strong></td><td>https://ridesourcecalendar-hub.github.io/ridesource-onboarding/index.html</td></tr><tr><td><strong>HR Contact</strong></td><td>tiffanyb@ridesourcemaine.com | 207-812-5357</td></tr></table>`}
+  {title:'Sec 7: Quick Ref',content:`<h1>Section 7: Quick Reference</h1><table><tr><td><strong>Staff Portal URL</strong></td><td>https://ridesource-staff.vercel.app</td></tr><tr><td><strong>HR Contact</strong></td><td>tiffanyb@ridesourcemaine.com | 207-812-5357</td></tr></table>`}
 ];
 const HB_REF_SECTIONS=HANDBOOK_SECTIONS;
 function buildMgrGuide(){
