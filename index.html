@@ -911,11 +911,12 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 <!-- ADMIN PORTAL -->
 <div id="screen-admin" class="screen">
   <div class="header">
-    <div class="header-logo">
+    <div class="header-logo" onclick="showAdmin('dashboard')" style="cursor:pointer;" title="Home">
       <div class="header-logo-text">Ride<span>Source</span></div>
       <div class="header-logo-sub">Reliable · Safe · Transportation</div>
     </div>
     <div class="header-right">
+      <button id="admin-refresh-btn" onclick="adminRefreshAll()" title="Refresh all data" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px;">🔄 Refresh</button>
       <div class="header-badge" id="admin-role-badge">ADMIN</div>
       <span style="color:rgba(255,255,255,.7);font-size:13px;" id="admin-display"></span>
       <button class="btn-logout" onclick="adminLogout()">Sign Out</button>
@@ -2429,6 +2430,7 @@ async function adminLogin(){
   loadEmployeeFolders(); // pre-load profile cache so supervisor filters work immediately
   loadDashboard();loadRequests();loadCallOuts();loadFlags();loadOnboarding();renderCalendar();
   loadTimesheets();loadVehicleRecords();loadIncidents();loadMemos();loadEmployeeMessages();loadFleetVehicles();loadFleetMaintenance();loadFleetTires();loadFleetChangeovers();loadExpenses();
+  setupRealtimeSubscriptions();
 }
 function adminLogout(){
   sessionStorage.removeItem('rs_session');
@@ -5760,6 +5762,92 @@ function printWarning(){
 
 // TIME OFF REQUESTS ADMIN
 let currentReqTab='PENDING';
+// ═══════════════════════════════════════════════
+// REAL-TIME & REFRESH
+// ═══════════════════════════════════════════════
+let realtimeChannels=[];
+
+function setupRealtimeSubscriptions(){
+  // Clean up existing subscriptions
+  realtimeChannels.forEach(ch=>{try{db.removeChannel(ch);}catch(e){}});
+  realtimeChannels=[];
+
+  // Time off requests — notify admin when new one arrives
+  const torChannel=db.channel('time_off_requests_changes')
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'time_off_requests'},payload=>{
+      showRealtimeToast('📅 New time off request from '+payload.new.employee_name);
+      loadRequests();
+      loadDashboard();
+    }).subscribe();
+  realtimeChannels.push(torChannel);
+
+  // Memos — employee messages
+  const msgChannel=db.channel('employee_messages_changes')
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'employee_messages'},payload=>{
+      showRealtimeToast('✉️ New message from '+payload.new.from_name);
+      loadEmployeeMessages();
+    }).subscribe();
+  realtimeChannels.push(msgChannel);
+
+  // Vehicle reports
+  const vrChannel=db.channel('vehicle_reports_changes')
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'vehicle_reports'},payload=>{
+      showRealtimeToast('🚐 New vehicle report from '+payload.new.employee_name);
+      loadVehicleRecords();
+      loadFleetVehicles();
+    }).subscribe();
+  realtimeChannels.push(vrChannel);
+
+  // Expenses
+  const expChannel=db.channel('expense_submissions_changes')
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'expense_submissions'},payload=>{
+      showRealtimeToast('💰 New expense from '+payload.new.employee_name);
+      loadExpenses();
+    }).subscribe();
+  realtimeChannels.push(expChannel);
+
+  // Timesheets
+  const tsChannel=db.channel('timesheets_changes')
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'timesheets'},payload=>{
+      showRealtimeToast('🕐 New timesheet from '+payload.new.employee_name);
+      loadTimesheets();
+    }).subscribe();
+  realtimeChannels.push(tsChannel);
+}
+
+function showRealtimeToast(msg){
+  let toast=document.getElementById('realtime-toast');
+  if(!toast){
+    toast=document.createElement('div');
+    toast.id='realtime-toast';
+    toast.style.cssText='position:fixed;bottom:80px;right:20px;background:var(--navy);color:#fff;padding:12px 18px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.3);transition:opacity .3s;max-width:280px;';
+    document.body.appendChild(toast);
+  }
+  toast.textContent=msg;
+  toast.style.opacity='1';
+  toast.style.display='block';
+  clearTimeout(toast._timer);
+  toast._timer=setTimeout(()=>{toast.style.opacity='0';setTimeout(()=>toast.style.display='none',300);},4000);
+}
+
+async function adminRefreshAll(){
+  const btn=document.getElementById('admin-refresh-btn');
+  if(btn){btn.textContent='🔄 Refreshing...';btn.disabled=true;}
+  try{
+    await Promise.all([
+      loadRequests(),loadCallOuts(),loadFlags(),loadOnboarding(),
+      loadTimesheets(),loadVehicleRecords(),loadIncidents(),
+      loadMemos(),loadEmployeeMessages(),loadFleetVehicles(),
+      loadFleetMaintenance(),loadFleetTires(),loadExpenses(),
+      loadEmployeeFolders()
+    ]);
+    loadDashboard();
+    renderCalendar();
+    showRealtimeToast('✅ All data refreshed');
+  }catch(e){console.log('Refresh error:',e);}
+  if(btn){btn.textContent='🔄 Refresh';btn.disabled=false;}
+}
+
 function toggleAdminTimeOffForm(){
   const f=document.getElementById('admin-tor-form');
   const icon=document.getElementById('admin-tor-toggle');
