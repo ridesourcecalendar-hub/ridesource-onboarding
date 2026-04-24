@@ -1212,7 +1212,8 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
               <option value="Inactive">Inactive</option>
               <option value="Separated">Separated</option>
             </select>
-            <button class="btn btn-primary btn-sm" onclick="openCreateProfileModal()">＋ Create Profile</button>
+            <button class="btn btn-primary btn-sm" onclick="openOnboardingWizard()" style="background:var(--success);">🚀 New Employee Setup</button>
+            <button class="btn btn-sm" style="background:#f0f0f0;color:#555;" onclick="openCreateProfileModal()">＋ Quick Add Profile</button>
           </div>
           <div id="emp-folder-grid"><p style="color:#888;font-size:13px;">Loading profiles...</p></div>
         </div>
@@ -8103,6 +8104,312 @@ async function saveSupChecklistNotes(profileId,notes){
     await db.from('employee_profiles').update({sup_checklist:JSON.stringify(current)}).eq('id',profileId);
   }catch(e){console.log('Notes save error:',e);}
 }
+
+// ═══════════════════════════════════════════════
+// NEW EMPLOYEE ONBOARDING WIZARD
+// ═══════════════════════════════════════════════
+let wizCurrentStep=1;
+
+function openOnboardingWizard(){
+  wizCurrentStep=1;
+  // Reset all fields
+  ['wiz-fname','wiz-lname','wiz-email','wiz-phone','wiz-position','wiz-trainer',
+   'wiz-company-phone','wiz-phone-pin','wiz-twe-login','wiz-payentry',
+   'wiz-vehicle','wiz-driver-id','wiz-door-code','wiz-key','wiz-wex','wiz-insurance','wiz-step3-notes'
+  ].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['wiz-bg-check','wiz-i9','wiz-w4','wiz-dd'].forEach(id=>{const el=document.getElementById(id);if(el)el.checked=false;});
+  document.getElementById('wiz-emp-type').value='FT';
+  document.getElementById('wiz-county').value='';
+  document.getElementById('wiz-supervisor').value='';
+  document.getElementById('wiz-start-date').value='';
+  wizRenderStep(1);
+  document.getElementById('onboarding-wizard-modal').classList.add('open');
+}
+
+function wizRenderStep(step){
+  wizCurrentStep=step;
+  [1,2,3,4].forEach(s=>{
+    const panel=document.getElementById('wiz-step-'+s);
+    if(panel)panel.style.display=s===step?'block':'none';
+    const dot=document.getElementById('wiz-dot-'+s);
+    if(dot){
+      dot.style.background=s<step?'var(--success)':s===step?'var(--navy)':'#ddd';
+      dot.style.color=s<=step?'#fff':'#888';
+      dot.textContent=s<step?'✓':s;
+    }
+  });
+  const labels=['','Step 1 of 4 — Basic Information','Step 2 of 4 — Onboarding Checklist','Step 3 of 4 — Equipment & Assignments','Step 4 of 4 — Review & Launch'];
+  const label=document.getElementById('wiz-step-label');
+  if(label)label.textContent=labels[step];
+  const back=document.getElementById('wiz-btn-back');
+  const next=document.getElementById('wiz-btn-next');
+  const launch=document.getElementById('wiz-btn-launch');
+  if(back)back.style.display=step>1?'block':'none';
+  if(next)next.style.display=step<4?'block':'none';
+  if(launch)launch.style.display=step===4?'block':'none';
+  if(step===4)wizBuildReview();
+}
+
+function wizStep(dir){
+  const next=wizCurrentStep+dir;
+  if(next<1||next>4)return;
+  // Validate step 1
+  if(wizCurrentStep===1&&dir>0){
+    const fname=document.getElementById('wiz-fname').value.trim();
+    const lname=document.getElementById('wiz-lname').value.trim();
+    const email=document.getElementById('wiz-email').value.trim();
+    const county=document.getElementById('wiz-county').value;
+    const position=document.getElementById('wiz-position').value.trim();
+    const start=document.getElementById('wiz-start-date').value;
+    if(!fname||!lname||!email||!county||!position||!start){
+      alert('Please fill in all required fields (First Name, Last Name, Email, County, Position, Start Date).');
+      return;
+    }
+  }
+  wizRenderStep(next);
+}
+
+function wizBuildReview(){
+  const fname=document.getElementById('wiz-fname').value.trim();
+  const lname=document.getElementById('wiz-lname').value.trim();
+  const email=document.getElementById('wiz-email').value.trim();
+  const phone=document.getElementById('wiz-phone').value.trim();
+  const position=document.getElementById('wiz-position').value.trim();
+  const empType=document.getElementById('wiz-emp-type').value;
+  const start=document.getElementById('wiz-start-date').value;
+  const county=document.getElementById('wiz-county').value;
+  const supervisor=document.getElementById('wiz-supervisor').value;
+  const trainer=document.getElementById('wiz-trainer').value.trim();
+  // Step 3 fields
+  const compPhone=document.getElementById('wiz-company-phone').value.trim();
+  const phonePin=document.getElementById('wiz-phone-pin').value.trim();
+  const tweLogin=document.getElementById('wiz-twe-login').value.trim();
+  const payentry=document.getElementById('wiz-payentry').value.trim();
+  const vehicle=document.getElementById('wiz-vehicle').value.trim();
+  const driverId=document.getElementById('wiz-driver-id').value.trim();
+  const doorCode=document.getElementById('wiz-door-code').value.trim();
+  const key=document.getElementById('wiz-key').value.trim();
+  const wex=document.getElementById('wiz-wex').value.trim();
+  const insurance=document.getElementById('wiz-insurance').value.trim();
+
+  const emailEl=document.getElementById('wiz-review-email');
+  if(emailEl)emailEl.textContent=email;
+
+  const review=document.getElementById('wiz-review-content');
+  if(!review)return;
+
+  const field=(label,val)=>val?`<div style="display:flex;gap:8px;padding:5px 0;font-size:13px;"><span style="color:#888;min-width:140px;">${label}</span><span style="font-weight:600;color:var(--navy);">${val}</span></div>`:'';
+
+  review.innerHTML=`
+    <div class="card" style="margin-bottom:10px;padding:14px 18px;">
+      <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Employee</div>
+      ${field('Name',fname+' '+lname)}
+      ${field('Email',email)}
+      ${field('Phone',phone)}
+      ${field('Position',position+' ('+empType+')')}
+      ${field('Start Date',start)}
+      ${field('County',county)}
+      ${field('Supervisor',supervisor||'Unassigned')}
+      ${field('Trainer',trainer)}
+    </div>
+    ${(compPhone||tweLogin||vehicle||driverId||doorCode)?`
+    <div class="card" style="margin-bottom:10px;padding:14px 18px;">
+      <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Equipment & Assignments</div>
+      ${field('Company Phone',compPhone)}
+      ${field('Phone PIN',phonePin)}
+      ${field('TWE Login',tweLogin)}
+      ${field('PayEntry',payentry)}
+      ${field('Vehicle',vehicle)}
+      ${field('Driver ID',driverId)}
+      ${field('Door Code',doorCode)}
+      ${field('Key',key)}
+      ${field('WEX Card',wex)}
+      ${field('Insurance',insurance)}
+    </div>`:''}
+    <div class="card" style="padding:14px 18px;">
+      <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Onboarding Packet</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;">
+        <span style="background:var(--navy);color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:8px;">✓ Employee Handbook</span>
+        <span style="background:var(--navy);color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:8px;">✓ Policy Sign-Offs</span>
+        <span style="background:var(--navy);color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:8px;">✓ Driver Training Guide</span>
+        <span style="background:var(--navy);color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:8px;">✓ Portal Access</span>
+        ${document.getElementById('wiz-bg-check')?.checked?'<span style="background:#f0f0f0;color:#555;font-size:11px;font-weight:700;padding:3px 10px;border-radius:8px;">✓ Background Check</span>':''}
+        ${document.getElementById('wiz-i9')?.checked?'<span style="background:#f0f0f0;color:#555;font-size:11px;font-weight:700;padding:3px 10px;border-radius:8px;">✓ I-9 Verification</span>':''}
+        ${document.getElementById('wiz-w4')?.checked?'<span style="background:#f0f0f0;color:#555;font-size:11px;font-weight:700;padding:3px 10px;border-radius:8px;">✓ W-4 / W-4ME</span>':''}
+        ${document.getElementById('wiz-dd')?.checked?'<span style="background:#f0f0f0;color:#555;font-size:11px;font-weight:700;padding:3px 10px;border-radius:8px;">✓ Direct Deposit</span>':''}
+      </div>
+    </div>`;
+}
+
+async function launchOnboarding(){
+  const btn=document.getElementById('wiz-btn-launch');
+  if(btn){btn.disabled=true;btn.textContent='Launching...';}
+
+  const fname=document.getElementById('wiz-fname').value.trim();
+  const lname=document.getElementById('wiz-lname').value.trim();
+  const fullName=fname+' '+lname;
+  const email=document.getElementById('wiz-email').value.trim();
+  const phone=document.getElementById('wiz-phone').value.trim();
+  const position=document.getElementById('wiz-position').value.trim();
+  const empType=document.getElementById('wiz-emp-type').value;
+  const start=document.getElementById('wiz-start-date').value;
+  const county=document.getElementById('wiz-county').value;
+  const supervisor=document.getElementById('wiz-supervisor').value;
+  const trainer=document.getElementById('wiz-trainer').value.trim();
+
+  // Build supervisor checklist pre-populated data
+  const compPhone=document.getElementById('wiz-company-phone').value.trim();
+  const phonePin=document.getElementById('wiz-phone-pin').value.trim();
+  const tweLogin=document.getElementById('wiz-twe-login').value.trim();
+  const payentry=document.getElementById('wiz-payentry').value.trim();
+  const vehicle=document.getElementById('wiz-vehicle').value.trim();
+  const driverId=document.getElementById('wiz-driver-id').value.trim();
+  const doorCode=document.getElementById('wiz-door-code').value.trim();
+  const key=document.getElementById('wiz-key').value.trim();
+  const wex=document.getElementById('wiz-wex').value.trim();
+  const insurance=document.getElementById('wiz-insurance').value.trim();
+  const step3notes=document.getElementById('wiz-step3-notes').value.trim();
+
+  // Pre-populate supervisor checklist Phase 7 items
+  const supChecklist={};
+  const phase7='Phase 7: ID & System Logins';
+  if(compPhone)supChecklist[phase7+'::Phone Number assigned and documented']=true;
+  if(tweLogin)supChecklist[phase7+'::TWE Login Information provided']=true;
+  if(payentry)supChecklist[phase7+'::PayEntry Information provided']=true;
+  if(vehicle)supChecklist[phase7+'::Vehicle Assignment documented']=true;
+  if(driverId)supChecklist[phase7+'::Driver ID issued']=true;
+  if(doorCode)supChecklist[phase7+'::Door Code provided']=true;
+
+  // Phase 1 admin setup items
+  const phase1='Phase 1: Administrative Setup';
+  supChecklist[phase1+'::Welcome to RideSource - Mission, Values & Team Introduction']=true;
+  if(document.getElementById('wiz-i9')?.checked)supChecklist[phase1+'::Complete I-9 Employment Eligibility Verification (paper)']=true;
+  if(document.getElementById('wiz-w4')?.checked)supChecklist[phase1+'::Complete W-4 Federal Tax Withholding Form (paper)']=true;
+  if(document.getElementById('wiz-dd')?.checked)supChecklist[phase1+'::Provide Direct Deposit Banking Information (paper)']=true;
+  if(vehicle)supChecklist[phase1+'::Workspace / Vehicle Assignment Confirmed']=true;
+
+  // Build ID sheet data for notes
+  const idSheet={
+    phoneNumber:compPhone,phonePin,tweLogin,payentry,vehicle,
+    driverId,doorCode,key,wex,insurance,
+    trainer,notes:step3notes
+  };
+
+  try{
+    // Create employee profile
+    const{data:profile,error}=await db.from('employee_profiles').insert([{
+      employee_name:fullName,
+      employee_email:email,
+      phone,
+      county,
+      position,
+      employment_type:empType,
+      hire_date:start,
+      assigned_supervisor:supervisor,
+      employment_status:'Onboarding',
+      sup_checklist:JSON.stringify(supChecklist),
+      onboarding_id_sheet:JSON.stringify(idSheet),
+      created_at:new Date().toISOString(),
+      updated_at:new Date().toISOString()
+    }]).select('id').single();
+
+    if(error)throw error;
+
+    // Also add to ridesource_employees table for portal login
+    try{
+      await db.from('ridesource_employees').insert([{
+        name:fullName,email,county,
+        created_at:new Date().toISOString()
+      }]);
+    }catch(e2){console.log('Employee login table:',e2);}
+
+    // Send welcome email via EmailJS
+    try{
+      if(typeof emailjs!=='undefined'){
+        await emailjs.send(EMAILJS_SERVICE_ID,'template_26w7bfc',{
+          employee_name:fullName,
+          employee_email:email,
+          county,
+          request_type:'NEW EMPLOYEE WELCOME',
+          start_date:start,
+          end_date:'',
+          time_detail:'Your staff portal is ready! Log in at '+PORTAL_URL,
+          reason:'Welcome to the RideSource team! Your onboarding materials are ready in the Staff Portal.',
+          portal_url:PORTAL_URL,
+          to_email:email
+        });
+      }
+    }catch(emailErr){console.log('Welcome email:',emailErr);}
+
+    // Close wizard and refresh
+    closeModal('onboarding-wizard-modal');
+    await loadEmployeeFolders();
+    renderEmployeeFolderList();
+
+    // Open the new profile and offer to print ID sheet
+    if(profile?.id){
+      setTimeout(()=>{
+        openEmployeeProfile(profile.id);
+        if(compPhone||tweLogin||vehicle){
+          if(confirm('Employee created! Would you like to print their ID/Assignment sheet now?')){
+            printEmployeeIdSheet(fullName,start,supervisor,trainer,idSheet);
+          }
+        }
+      },500);
+    }
+
+    showRealtimeToast('✅ '+fullName+' has been added and welcome email sent!');
+
+  }catch(e){
+    if(btn){btn.disabled=false;btn.textContent='🚀 Launch Onboarding';}
+    alert('Error creating employee: '+e.message);
+  }
+}
+
+function printEmployeeIdSheet(name,startDate,supervisor,trainer,ids){
+  const win=window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html><head><title>ID Sheet - ${name}</title>
+  <style>body{font-family:Arial,sans-serif;max-width:700px;margin:40px auto;color:#1B2A4A;}
+  h1{font-size:20px;border-bottom:3px solid #1B2A4A;padding-bottom:8px;}
+  h2{font-size:13px;color:#888;text-transform:uppercase;letter-spacing:.5px;margin:20px 0 8px;}
+  table{width:100%;border-collapse:collapse;}
+  td{padding:10px 14px;border:1px solid #e0e0e0;font-size:13px;}
+  td:first-child{background:#f5f5f5;font-weight:700;width:40%;}
+  .logo{font-size:22px;font-weight:900;color:#1B2A4A;margin-bottom:4px;}
+  .logo span{color:#C0392B;}
+  @media print{body{margin:20px;}}
+  </style></head><body>
+  <div class="logo">Ride<span>Source</span> Inc.</div>
+  <div style="font-size:12px;color:#888;margin-bottom:16px;">CONFIDENTIAL — EMPLOYEE ID & ASSIGNMENT SHEET</div>
+  <h1>${name}</h1>
+  <h2>Employee Information</h2>
+  <table>
+    <tr><td>Start Date</td><td>${startDate||'—'}</td></tr>
+    <tr><td>Supervisor</td><td>${supervisor||'—'}</td></tr>
+    <tr><td>Trainer</td><td>${trainer||'—'}</td></tr>
+  </table>
+  <h2>System Logins & IDs</h2>
+  <table>
+    <tr><td>Phone Number</td><td>${ids.phoneNumber||'—'}</td></tr>
+    <tr><td>Phone PIN</td><td>${ids.phonePin||'—'}</td></tr>
+    <tr><td>TWE Login</td><td>${ids.tweLogin||'—'}</td></tr>
+    <tr><td>PayEntry</td><td>${ids.payentry||'—'}</td></tr>
+    <tr><td>Driver ID</td><td>${ids.driverId||'—'}</td></tr>
+    <tr><td>Door Code</td><td>${ids.doorCode||'—'}</td></tr>
+    <tr><td>Front Door Key</td><td>${ids.key||'—'}</td></tr>
+    <tr><td>Vehicle Assignment</td><td>${ids.vehicle||'—'}</td></tr>
+    <tr><td>WEX Card</td><td>${ids.wex||'—'}</td></tr>
+    <tr><td>Insurance</td><td>${ids.insurance||'—'}</td></tr>
+  </table>
+  ${ids.notes?'<h2>Additional Notes</h2><p style="font-size:13px;">'+ids.notes+'</p>':''}
+  <div style="margin-top:40px;border-top:1px solid #ddd;padding-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:30px;">
+    <div><div style="border-bottom:1px solid #333;margin-bottom:4px;height:30px;"></div><div style="font-size:11px;color:#888;">Employee Signature / Date</div></div>
+    <div><div style="border-bottom:1px solid #333;margin-bottom:4px;height:30px;"></div><div style="font-size:11px;color:#888;">Supervisor Signature / Date</div></div>
+  </div>
+  <script>window.print();<\/script>
+  </body></html>`);
+  win.document.close();
+}
 </script>
 <!-- MODALS -->
 <div class="modal-overlay" id="policy-modal">
@@ -8171,6 +8478,162 @@ async function saveSupChecklistNotes(profileId,notes){
       <button class="btn btn-red btn-sm" onclick="deleteAdminRequest()" style="margin-right:auto;">🗑️ Delete Request</button>
       <button class="btn btn-secondary" onclick="closeModal('edit-request-modal')">Cancel</button>
       <button class="btn btn-primary" onclick="saveEditedRequest()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- NEW EMPLOYEE ONBOARDING WIZARD -->
+<div class="modal-overlay" id="onboarding-wizard-modal">
+  <div class="modal" style="max-width:680px;max-height:90vh;overflow-y:auto;">
+    <button class="modal-close" onclick="closeModal('onboarding-wizard-modal')">✕</button>
+
+    <!-- Header with step indicators -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <div>
+        <h3 style="color:var(--navy);margin:0;">New Employee Setup</h3>
+        <div style="font-size:12px;color:#888;margin-top:2px;" id="wiz-step-label">Step 1 of 4 — Basic Information</div>
+      </div>
+      <div style="display:flex;gap:6px;">
+        <div id="wiz-dot-1" style="width:28px;height:28px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;">1</div>
+        <div id="wiz-dot-2" style="width:28px;height:28px;border-radius:50%;background:#ddd;color:#888;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;">2</div>
+        <div id="wiz-dot-3" style="width:28px;height:28px;border-radius:50%;background:#ddd;color:#888;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;">3</div>
+        <div id="wiz-dot-4" style="width:28px;height:28px;border-radius:50%;background:#ddd;color:#888;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;">4</div>
+      </div>
+    </div>
+
+    <!-- STEP 1: Basic Info -->
+    <div id="wiz-step-1">
+      <div class="form-row">
+        <div class="form-field"><label>First Name *</label><input type="text" id="wiz-fname" placeholder="First name" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+        <div class="form-field"><label>Last Name *</label><input type="text" id="wiz-lname" placeholder="Last name" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-field"><label>Email Address *</label><input type="email" id="wiz-email" placeholder="email@ridesourcemaine.com" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+        <div class="form-field"><label>Personal Phone</label><input type="text" id="wiz-phone" placeholder="207-555-0000" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-field"><label>Position / Title *</label><input type="text" id="wiz-position" placeholder="e.g. FT Agency Driver, PT Agency Driver, Volunteer" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+        <div class="form-field"><label>Employment Type</label>
+          <select id="wiz-emp-type" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+            <option value="FT">Full Time</option>
+            <option value="PT">Part Time</option>
+            <option value="Volunteer">Volunteer</option>
+            <option value="Per Diem">Per Diem</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-field"><label>Start Date *</label><input type="date" id="wiz-start-date" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+        <div class="form-field"><label>County *</label>
+          <select id="wiz-county" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+            <option value="">Select county</option>
+            <option>Androscoggin</option><option>Aroostook</option><option>Cumberland</option><option>Franklin</option><option>Hancock</option><option>Kennebec</option><option>Knox</option><option>Lincoln</option><option>Oxford</option><option>Penobscot</option><option>Piscataquis</option><option>Sagadahoc</option><option>Somerset</option><option>Waldo</option><option>Washington</option><option>York</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-field"><label>Assigned Supervisor</label>
+          <select id="wiz-supervisor" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+            <option value="">— Unassigned —</option>
+            <option value="Tiffany Gallagher">Tiffany Gallagher</option>
+            <option value="Nicole Geel">Nicole Geel</option>
+            <option value="Robin Lausier">Robin Lausier</option>
+          </select>
+        </div>
+        <div class="form-field"><label>Trainer</label><input type="text" id="wiz-trainer" placeholder="Trainer name" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+      </div>
+    </div>
+
+    <!-- STEP 2: Onboarding Checklist -->
+    <div id="wiz-step-2" style="display:none;">
+      <p style="font-size:13px;color:#888;margin-bottom:16px;">Select items for this employee's onboarding packet. Required items are pre-selected.</p>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <label style="display:flex;align-items:flex-start;gap:12px;padding:12px;border:2px solid var(--navy);border-radius:8px;background:#f0f4fb;cursor:default;">
+          <input type="checkbox" checked disabled style="width:16px;height:16px;margin-top:2px;flex-shrink:0;">
+          <div><div style="font-weight:700;font-size:13px;">Employee Handbook</div><div style="font-size:11px;color:#888;">Assign handbook for review and e-signature</div></div>
+          <span style="margin-left:auto;font-size:10px;font-weight:700;background:var(--navy);color:#fff;padding:2px 8px;border-radius:6px;white-space:nowrap;">Required</span>
+        </label>
+        <label style="display:flex;align-items:flex-start;gap:12px;padding:12px;border:2px solid var(--navy);border-radius:8px;background:#f0f4fb;cursor:default;">
+          <input type="checkbox" checked disabled style="width:16px;height:16px;margin-top:2px;flex-shrink:0;">
+          <div><div style="font-weight:700;font-size:13px;">Company Policy Sign-Offs</div><div style="font-size:11px;color:#888;">Assign all 12 active policies for acknowledgment</div></div>
+          <span style="margin-left:auto;font-size:10px;font-weight:700;background:var(--navy);color:#fff;padding:2px 8px;border-radius:6px;white-space:nowrap;">Required</span>
+        </label>
+        <label style="display:flex;align-items:flex-start;gap:12px;padding:12px;border:2px solid var(--navy);border-radius:8px;background:#f0f4fb;cursor:default;">
+          <input type="checkbox" checked disabled style="width:16px;height:16px;margin-top:2px;flex-shrink:0;">
+          <div><div style="font-weight:700;font-size:13px;">Driver Training Guide</div><div style="font-size:11px;color:#888;">Assign training guide for completion</div></div>
+          <span style="margin-left:auto;font-size:10px;font-weight:700;background:var(--navy);color:#fff;padding:2px 8px;border-radius:6px;white-space:nowrap;">Required</span>
+        </label>
+        <label style="display:flex;align-items:flex-start;gap:12px;padding:12px;border:2px solid var(--navy);border-radius:8px;background:#f0f4fb;cursor:default;">
+          <input type="checkbox" checked disabled style="width:16px;height:16px;margin-top:2px;flex-shrink:0;">
+          <div><div style="font-weight:700;font-size:13px;">Staff Portal Access</div><div style="font-size:11px;color:#888;">Employee profile created, portal login activated</div></div>
+          <span style="margin-left:auto;font-size:10px;font-weight:700;background:var(--navy);color:#fff;padding:2px 8px;border-radius:6px;white-space:nowrap;">Required</span>
+        </label>
+        <label style="display:flex;align-items:flex-start;gap:12px;padding:12px;border:1px solid var(--border);border-radius:8px;cursor:pointer;" id="wiz-ck-bg">
+          <input type="checkbox" id="wiz-bg-check" style="width:16px;height:16px;margin-top:2px;flex-shrink:0;cursor:pointer;">
+          <div><div style="font-weight:700;font-size:13px;">Background Check / OccuScreen</div><div style="font-size:11px;color:#888;">Initiate background screening process (paper form)</div></div>
+        </label>
+        <label style="display:flex;align-items:flex-start;gap:12px;padding:12px;border:1px solid var(--border);border-radius:8px;cursor:pointer;">
+          <input type="checkbox" id="wiz-i9" style="width:16px;height:16px;margin-top:2px;flex-shrink:0;cursor:pointer;">
+          <div><div style="font-weight:700;font-size:13px;">I-9 Verification</div><div style="font-size:11px;color:#888;">Employment eligibility verification (paper form, complete in person)</div></div>
+        </label>
+        <label style="display:flex;align-items:flex-start;gap:12px;padding:12px;border:1px solid var(--border);border-radius:8px;cursor:pointer;">
+          <input type="checkbox" id="wiz-w4" style="width:16px;height:16px;margin-top:2px;flex-shrink:0;cursor:pointer;">
+          <div><div style="font-weight:700;font-size:13px;">W-4 / W-4ME Tax Forms</div><div style="font-size:11px;color:#888;">Federal and Maine withholding (paper or download)</div></div>
+        </label>
+        <label style="display:flex;align-items:flex-start;gap:12px;padding:12px;border:1px solid var(--border);border-radius:8px;cursor:pointer;">
+          <input type="checkbox" id="wiz-dd" style="width:16px;height:16px;margin-top:2px;flex-shrink:0;cursor:pointer;">
+          <div><div style="font-weight:700;font-size:13px;">Direct Deposit Authorization</div><div style="font-size:11px;color:#888;">Payroll Management Inc. form — attach voided check</div></div>
+        </label>
+      </div>
+    </div>
+
+    <!-- STEP 3: Equipment & Assignments (Phase 1 + Phase 7) -->
+    <div id="wiz-step-3" style="display:none;">
+      <p style="font-size:13px;color:#888;margin-bottom:16px;">Fill in what you know now. This information will appear on the employee's printable ID sheet and auto-populate their supervisor checklist.</p>
+
+      <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">📱 Technology & Systems</div>
+      <div class="form-row">
+        <div class="form-field"><label>Company Phone Number Assigned</label><input type="text" id="wiz-company-phone" placeholder="207-555-0000" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+        <div class="form-field"><label>Phone PIN</label><input type="text" id="wiz-phone-pin" placeholder="e.g. 1234" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-field"><label>TWE Login</label><input type="text" id="wiz-twe-login" placeholder="TWE username" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+        <div class="form-field"><label>PayEntry Login</label><input type="text" id="wiz-payentry" placeholder="PayEntry username" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+      </div>
+
+      <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin:14px 0 10px;">🚐 Vehicle & Facility</div>
+      <div class="form-row">
+        <div class="form-field"><label>Vehicle Assignment</label><input type="text" id="wiz-vehicle" placeholder="e.g. RS-01, Unit 7" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+        <div class="form-field"><label>Driver ID</label><input type="text" id="wiz-driver-id" placeholder="Driver ID number" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-field"><label>Door Code</label><input type="text" id="wiz-door-code" placeholder="Building door code" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+        <div class="form-field"><label>Front Door Key Assigned</label><input type="text" id="wiz-key" placeholder="Key number / Yes / No" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+      </div>
+
+      <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin:14px 0 10px;">💳 Cards & Insurance</div>
+      <div class="form-row">
+        <div class="form-field"><label>WEX Card (if applicable)</label><input type="text" id="wiz-wex" placeholder="WEX card number or N/A" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+        <div class="form-field"><label>Insurance Info</label><input type="text" id="wiz-insurance" placeholder="Insurance provider / policy" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+      </div>
+      <div class="form-field"><label>Additional Notes / Other</label><textarea id="wiz-step3-notes" placeholder="Any other assignments or info for this employee..." style="width:100%;min-height:60px;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;font-family:Arial,sans-serif;outline:none;resize:vertical;"></textarea></div>
+    </div>
+
+    <!-- STEP 4: Review & Launch -->
+    <div id="wiz-step-4" style="display:none;">
+      <p style="font-size:13px;color:#888;margin-bottom:16px;">Review everything below. Clicking <strong>Launch Onboarding</strong> will create the employee profile and send them a welcome email with their portal access link.</p>
+      <div id="wiz-review-content"></div>
+      <div style="background:#fff3cd;border-left:4px solid var(--warn);border-radius:0 8px 8px 0;padding:10px 14px;font-size:12px;margin-top:12px;">
+        📧 A welcome email will be sent to <strong id="wiz-review-email"></strong> with their portal login link.
+      </div>
+    </div>
+
+    <!-- Navigation buttons -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:24px;padding-top:16px;border-top:1px solid var(--border);">
+      <button id="wiz-btn-back" onclick="wizStep(-1)" style="padding:10px 20px;background:#f0f0f0;color:#555;border:1px solid #ddd;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;display:none;">← Back</button>
+      <div style="flex:1;"></div>
+      <button id="wiz-btn-next" onclick="wizStep(1)" style="padding:10px 24px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">Continue →</button>
+      <button id="wiz-btn-launch" onclick="launchOnboarding()" style="padding:10px 24px;background:var(--success);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;display:none;">🚀 Launch Onboarding</button>
     </div>
   </div>
 </div>
