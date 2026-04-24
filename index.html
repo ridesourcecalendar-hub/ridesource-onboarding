@@ -1078,7 +1078,17 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
       <!-- ONBOARDING TRACKER -->
       <div id="section-adm-onboarding-tracker" class="admin-section">
         <div style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:4px;">✅ Onboarding Tracker</div>
-        <p style="color:#888;font-size:13px;margin-bottom:20px;">Track which employees have completed policy acknowledgments.</p>
+        <p style="color:#888;font-size:13px;margin-bottom:16px;">Track employee digital sign-offs and supervisor checklist progress.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
+          <div class="card" style="text-align:center;">
+            <div style="font-size:28px;font-weight:800;color:var(--navy);" id="onboard-count-complete">—</div>
+            <div style="font-size:12px;color:#888;margin-top:4px;">Fully Complete</div>
+          </div>
+          <div class="card" style="text-align:center;">
+            <div style="font-size:28px;font-weight:800;color:var(--warn);" id="onboard-count-pending">—</div>
+            <div style="font-size:12px;color:#888;margin-top:4px;">In Progress</div>
+          </div>
+        </div>
         <div id="onboarding-data" style="font-size:13px;color:#888;">Loading...</div>
       </div>
 
@@ -1233,6 +1243,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
             <button class="profile-tab" id="ptab-callouts" onclick="switchProfileTab('callouts')">📞 Call-Out History</button>
             <button class="profile-tab" id="ptab-timeoff" onclick="switchProfileTab('timeoff')">📅 Time Off</button>
             <button class="profile-tab" id="ptab-memos" onclick="switchProfileTab('memos')">📢 Memos</button>
+            <button class="profile-tab" id="ptab-sup-checklist" onclick="switchProfileTab('sup-checklist')">✅ Sup. Checklist</button>
           </div>
 
           <!-- Info Tab -->
@@ -1313,6 +1324,11 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
           <!-- Time Off Tab -->
           <div class="profile-tab-panel" id="ppanel-timeoff">
             <div id="pdata-timeoff"><p style="color:#888;font-size:13px;">Loading...</p></div>
+          </div>
+
+          <!-- SUPERVISOR CHECKLIST PANEL -->
+          <div class="profile-tab-panel" id="ppanel-sup-checklist">
+            <div id="pdata-sup-checklist"><p style="color:#888;font-size:13px;">Loading checklist...</p></div>
           </div>
 
         </div><!-- end detail view -->
@@ -4944,6 +4960,17 @@ function closeProfileDetail(){
   document.getElementById('emp-folder-list-view').style.display='block';
 }
 function switchProfileTab(tab){
+  ['info','policies','performance','callouts','timeoff','memos','sup-checklist'].forEach(t=>{
+    document.getElementById('ptab-'+t)?.classList.toggle('active',t===tab);
+    document.getElementById('ppanel-'+t)?.classList.toggle('active',t===tab);
+  });
+  const p=currentProfileEmployee;
+  if(!p)return;
+  if(tab==='performance'){switchPerfCard('warnings');loadProfileWarnings(p.employee_name,p.county);}
+  if(tab==='memos')loadProfileMemos(p.employee_name,p.employee_email);
+  if(tab==='sup-checklist')loadSupChecklist(currentProfileId);
+}
+function _switchProfileTabOriginal(tab){
   ['info','policies','performance','callouts','timeoff','memos'].forEach(t=>{
     document.getElementById('ptab-'+t)?.classList.toggle('active',t===tab);
     document.getElementById('ppanel-'+t)?.classList.toggle('active',t===tab);
@@ -6167,23 +6194,38 @@ async function manualLookup(){
 
 // ONBOARDING TRACKER
 async function loadOnboarding(){
-  let sigs=[],hbSigs=[];
+  let sigs=[],hbSigs=[],profiles=[];
   try{const r=await db.from('policy_signatures').select('*').order('signed_at',{ascending:false});sigs=r.data||[];}catch(e){}
   try{const r=await db.from('handbook_signatures').select('*').order('signed_at',{ascending:false});hbSigs=r.data||[];}catch(e){}
+  try{const r=await db.from('employee_profiles').select('id,employee_name,employee_email,county,sup_checklist').order('employee_name',{ascending:true});profiles=r.data||[];}catch(e){}
   const el=document.getElementById('onboarding-data');
   const printList=document.getElementById('print-requests-list');
-  if(sigs.length===0&&hbSigs.length===0){el.innerHTML='<p style="color:#888;font-size:13px;">No onboarding signatures recorded yet.</p>';if(printList)printList.innerHTML='No printed copy requests yet.';return;}
+  if(sigs.length===0&&hbSigs.length===0&&profiles.length===0){el.innerHTML='<p style="color:#888;font-size:13px;">No onboarding data yet.</p>';return;}
   const byEmp={};
-  sigs.forEach(s=>{if(!byEmp[s.employee_email])byEmp[s.employee_email]={name:s.employee_name,email:s.employee_email,county:s.county,policies:[],handbookSigned:false,printRequested:false};byEmp[s.employee_email].policies.push(s.policy_name);});
+  sigs.forEach(s=>{if(!byEmp[s.employee_email])byEmp[s.employee_email]={name:s.employee_name,email:s.employee_email,county:s.county,policies:[],handbookSigned:false,printRequested:false,supPct:0};byEmp[s.employee_email].policies.push(s.policy_name);});
   hbSigs.forEach(h=>{if(byEmp[h.employee_email]){byEmp[h.employee_email].handbookSigned=true;byEmp[h.employee_email].printRequested=h.print_requested;}});
+  // Add supervisor checklist progress
+  const totalSupItems=SUP_CHECKLIST_PHASES.reduce((s,ph)=>s+ph.items.length,0);
+  profiles.forEach(p=>{
+    if(!byEmp[p.employee_email])byEmp[p.employee_email]={name:p.employee_name,email:p.employee_email,county:p.county,policies:[],handbookSigned:false,printRequested:false,supPct:0};
+    if(p.sup_checklist){
+      const saved=JSON.parse(p.sup_checklist);
+      const checked=Object.entries(saved).filter(([k,v])=>k!=='__notes__'&&v).length;
+      byEmp[p.employee_email].supPct=Math.round((checked/totalSupItems)*100);
+    }
+  });
   const isDemo=adminStaff?.role==='demo';
-  el.innerHTML='<div style="overflow-x:auto;"><table class="data-table"><thead><tr><th>Employee</th><th>County</th><th>Policies Signed</th><th>Handbook</th><th>Print Requested</th></tr></thead><tbody>'+
-    Object.values(byEmp).map((e,idx)=>`<tr><td><strong>${demoMask(e.name,idx)}</strong><br><span style="font-size:11px;color:#888;">${isDemo?'—':e.email}</span></td><td>${e.county}</td><td><span class="badge ${e.policies.length>=POLICIES.length?'badge-approved':'badge-warning'}">${e.policies.length}/${POLICIES.length}</span></td><td>${e.handbookSigned?'<span class="badge badge-approved">✓ Signed</span>':'<span class="badge badge-warning">Pending</span>'}</td><td>${e.printRequested?'<span class="badge badge-flag">📦 Yes</span>':'No'}</td></tr>`).join('')+
+  const allEmps=Object.values(byEmp);
+  const complete=allEmps.filter(e=>e.policies.length>=POLICIES.length&&e.handbookSigned&&e.supPct===100).length;
+  const pending=allEmps.length-complete;
+  const cc=document.getElementById('onboard-count-complete');if(cc)cc.textContent=complete;
+  const cp=document.getElementById('onboard-count-pending');if(cp)cp.textContent=pending;
+  el.innerHTML='<div style="overflow-x:auto;"><table class="data-table"><thead><tr><th>Employee</th><th>County</th><th>Policies Signed</th><th>Handbook</th><th>Sup. Checklist</th></tr></thead><tbody>'+
+    allEmps.map((e,idx)=>`<tr><td><strong>${demoMask(e.name,idx)}</strong><br><span style="font-size:11px;color:#888;">${isDemo?'---':e.email}</span></td><td>${e.county}</td><td><span class="badge ${e.policies.length>=POLICIES.length?'badge-approved':'badge-warning'}">${e.policies.length}/${POLICIES.length}</span></td><td>${e.handbookSigned?'<span class="badge badge-approved">+ Signed</span>':'<span class="badge badge-warning">Pending</span>'}</td><td><span class="badge ${e.supPct===100?'badge-approved':e.supPct>0?'badge-warning':'badge-pending'}">${e.supPct}%</span></td></tr>`).join('')+
     '</tbody></table></div>';
-  const printReqs=Object.values(byEmp).filter(e=>e.printRequested);
-  if(printList)printList.innerHTML=printReqs.length===0?'No printed copy requests.':`<div>${printReqs.map((e,idx)=>`<div style="padding:6px 0;border-bottom:1px solid #e0e0e0;font-size:12px;"><strong>${demoMask(e.name,idx)}</strong>${isDemo?'':' ('+e.email+')'} — ${e.county}</div>`).join('')}</div>`;
+  const printReqs=allEmps.filter(e=>e.printRequested);
+  if(printList)printList.innerHTML=printReqs.length===0?'No printed copy requests.':`<div>${printReqs.map((e,idx)=>`<div style="padding:6px 0;border-bottom:1px solid #e0e0e0;font-size:12px;"><strong>${demoMask(e.name,idx)}</strong>${isDemo?'':' ('+e.email+')'} - ${e.county}</div>`).join('')}</div>`;
 }
-
 // TIMESHEETS ADMIN
 let tsFilterStatus='PENDING';
 async function loadTimesheets(){
@@ -7516,6 +7558,179 @@ function exportExpenses(){
   const csv=[header,...rows].map(r=>r.join(',')).join('\n');
 
   const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='expenses_'+new Date().toISOString().split('T')[0]+'.csv';a.click();
+}
+
+// ═══════════════════════════════════════════════
+// SUPERVISOR ONBOARDING CHECKLIST
+// ═══════════════════════════════════════════════
+const SUP_CHECKLIST_PHASES = [
+  {phase:'Phase 1: Administrative Setup', items:[
+    'Welcome to RideSource — Mission, Values & Team Introduction',
+    'Complete I-9 Employment Eligibility Verification (paper)',
+    'Complete W-4 Federal Tax Withholding Form (paper)',
+    'Provide Direct Deposit Banking Information (paper)',
+    'Submit Emergency Contact Information',
+    'Photo ID Badge Issued',
+    'Workspace / Vehicle Assignment Confirmed',
+    'Building Access & Keys Provided',
+    'Uniform Issued (if applicable)',
+  ]},
+  {phase:'Phase 1: Technology & Systems', items:[
+    'Company Phone / Bluetooth Device Issued & Tested',
+    'Phone Mount Issued & Installed in Vehicle',
+    'Timekeeping System (TWE) Login & Training Completed',
+    'Scheduling / Dispatch Software Access (Parascope)',
+    'Staff Portal Access Confirmed',
+    'Added to PayEntry Payroll System',
+  ]},
+  {phase:'Phase 1: Facility & Vehicle Orientation', items:[
+    'Building Tour Completed',
+    'Emergency Exit Locations Identified',
+    'Fire Extinguisher & First Aid Kit Locations Reviewed',
+    'Vehicle(s) Assigned — Inspection Process Demonstrated',
+    'Dash Camera Location & Operation Explained',
+    'Panic Button Location & Use Demonstrated',
+  ]},
+  {phase:'Phase 2: Policies & Training', items:[
+    'At-Will Employment explained',
+    'Employee Classification confirmed in writing',
+    '90-Day Introductory Period reviewed',
+    'Work Schedule & shift structure reviewed',
+    'EEO Policy reviewed',
+    'Anti-Harassment Policy reviewed',
+    'Code of Conduct & Ethics reviewed',
+    'Attendance & Punctuality Policy reviewed',
+    'Pay Rate & Classification confirmed in writing',
+    'Payroll schedule and method explained',
+  ]},
+  {phase:'Phase 3: Benefits & Leave', items:[
+    'Health Insurance options reviewed',
+    'PTO accrual rate and request process reviewed',
+    'Company Holidays reviewed',
+    'FMLA eligibility explained',
+  ]},
+  {phase:'Phase 4: Safety & Compliance', items:[
+    'Emergency Evacuation Procedures reviewed',
+    'Accident & Incident Reporting procedure reviewed (SIGNED)',
+    'Drug & Alcohol-Free Workplace Policy reviewed (SIGNED)',
+    'Workers Compensation process explained',
+  ]},
+  {phase:'Phase 5: Technology & Property', items:[
+    'Hands-Free & Mobile Device Policy reviewed (SIGNED)',
+    'Vehicle Dash Camera Policy reviewed (SIGNED)',
+    'Company Vehicle Use Policy reviewed (SIGNED)',
+    'Panic Button — proper use demonstrated',
+  ]},
+  {phase:'Phase 6: Driver-Specific Training', items:[
+    'Defensive Driving & Safe Driving Practices reviewed',
+    'Pre-Trip & Post-Trip Inspection demonstrated (SIGNED)',
+    'Passenger Assistance & Accessibility Techniques reviewed',
+    'Wheelchair & Restraint System Operation (if applicable)',
+    'GPS & Route Planning Systems reviewed',
+    'Passenger Identity Verification Procedure (SIGNED)',
+    'Manifest Review & Confirmation Process reviewed',
+    'Emergency Response Procedures reviewed',
+  ]},
+  {phase:'Phase 7: ID & System Logins', items:[
+    'Phone Number assigned and documented',
+    'Door Code provided',
+    'Vehicle Assignment documented',
+    'Driver ID issued',
+    'TWE Login Information provided',
+    'PayEntry Information provided',
+  ]},
+  {phase:'Phase 8: Policy Signatures (Digital)', items:[
+    'Employee Handbook Acknowledgment (digital)',
+    'Client Confidentiality Agreement (digital)',
+    'Sexual Harassment Policy (digital)',
+    'Drug-Free Workplace Policy (digital)',
+    'Company Vehicle Use Policy (digital)',
+    'Personal Appearance & Professional Standards (digital)',
+    'Attendance & Punctuality Policy (digital)',
+    'Passenger Interaction and Service Standards (digital)',
+    'Cell Phone and Distracted Driving Policy (digital)',
+    'Accident and Incident Reporting Policy (digital)',
+    'Social Media and Public Communications Policy (digital)',
+  ]},
+];
+
+async function loadSupChecklist(profileId){
+  const el=document.getElementById('pdata-sup-checklist');
+  if(!el)return;
+  const p=allProfilesCache.find(x=>x.id===profileId);
+  if(!p){el.innerHTML='<p style="color:#888;font-size:13px;">No profile found.</p>';return;}
+
+  // Load saved checklist data
+  let savedData={};
+  try{
+    const {data}=await db.from('employee_profiles').select('sup_checklist').eq('id',profileId).single();
+    if(data?.sup_checklist)savedData=JSON.parse(data.sup_checklist);
+  }catch(e){}
+
+  // Count completion
+  const totalItems=SUP_CHECKLIST_PHASES.reduce((s,ph)=>s+ph.items.length,0);
+  const checkedItems=Object.values(savedData).filter(Boolean).length;
+  const pct=Math.round((checkedItems/totalItems)*100);
+
+  let html=`<div style="margin-bottom:20px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+      <div style="font-size:14px;font-weight:800;color:var(--navy);">Supervisor Onboarding Checklist</div>
+      <span style="font-size:12px;font-weight:700;color:${pct===100?'var(--success)':pct>50?'var(--warn)':'var(--red)'};">${checkedItems}/${totalItems} (${pct}%)</span>
+    </div>
+    <div style="background:#eee;border-radius:10px;height:8px;overflow:hidden;">
+      <div style="background:${pct===100?'var(--success)':pct>50?'var(--warn)':'var(--red)'};height:100%;width:${pct}%;border-radius:10px;transition:width .3s;"></div>
+    </div>
+    <div style="font-size:11px;color:#888;margin-top:4px;">Check off items as you complete them. Progress saves automatically.</div>
+  </div>`;
+
+  SUP_CHECKLIST_PHASES.forEach(ph=>{
+    html+=`<div style="margin-bottom:16px;">
+      <div style="font-size:12px;font-weight:800;color:var(--navy);text-transform:uppercase;letter-spacing:.5px;padding:8px 0;border-bottom:2px solid var(--border);margin-bottom:8px;">${ph.phase}</div>`;
+    ph.items.forEach(item=>{
+      const key=ph.phase+'::'+item;
+      const checked=savedData[key]||false;
+      html+=`<label style="display:flex;align-items:flex-start;gap:10px;padding:7px 0;cursor:pointer;border-bottom:1px solid #f5f5f5;">
+        <input type="checkbox" data-profile="${profileId}" data-key="${key.replace(/"/g,'&quot;')}" ${checked?'checked':''} onchange="saveSupChecklistItem(this)" style="width:16px;height:16px;margin-top:2px;cursor:pointer;flex-shrink:0;">
+        <span style="font-size:13px;color:${checked?'#aaa':'#333'};text-decoration:${checked?'line-through':'none'};">${item}</span>
+      </label>`;
+    });
+    html+='</div>';
+  });
+
+  html+=`<div style="margin-top:16px;padding-top:16px;border-top:2px solid var(--border);">
+    <div style="font-size:12px;font-weight:700;color:#888;margin-bottom:8px;">Supervisor Notes</div>
+    <textarea id="sup-checklist-notes" placeholder="Any follow-up items, notes about this employee's onboarding..." style="width:100%;min-height:80px;padding:10px;border:2px solid var(--border);border-radius:8px;font-size:13px;font-family:Arial,sans-serif;outline:none;resize:vertical;" onchange="saveSupChecklistNotes('${profileId}',this.value)">${savedData['__notes__']||''}</textarea>
+  </div>`;
+
+  el.innerHTML=html;
+}
+
+async function saveSupChecklistItem(checkbox){
+  const profileId=checkbox.dataset.profile;
+  const key=checkbox.dataset.key;
+  const checked=checkbox.checked;
+  // Update visual immediately
+  const label=checkbox.closest('label');
+  const span=label?.querySelector('span');
+  if(span){span.style.color=checked?'#aaa':'#333';span.style.textDecoration=checked?'line-through':'none';}
+  // Load current data, update, save
+  try{
+    const {data}=await db.from('employee_profiles').select('sup_checklist').eq('id',profileId).single();
+    const current=data?.sup_checklist?JSON.parse(data.sup_checklist):{};
+    current[key]=checked;
+    await db.from('employee_profiles').update({sup_checklist:JSON.stringify(current)}).eq('id',profileId);
+    // Refresh progress bar
+    loadSupChecklist(profileId);
+  }catch(e){console.log('Checklist save error:',e);}
+}
+
+async function saveSupChecklistNotes(profileId,notes){
+  try{
+    const {data}=await db.from('employee_profiles').select('sup_checklist').eq('id',profileId).single();
+    const current=data?.sup_checklist?JSON.parse(data.sup_checklist):{};
+    current['__notes__']=notes;
+    await db.from('employee_profiles').update({sup_checklist:JSON.stringify(current)}).eq('id',profileId);
+  }catch(e){console.log('Notes save error:',e);}
 }
 </script>
 <!-- MODALS -->
