@@ -932,6 +932,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
     </div>
     <div class="header-right">
       <button id="admin-refresh-btn" onclick="adminRefreshAll()" title="Refresh all data" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px;">🔄 Refresh</button>
+      <button id="admin-config-btn" onclick="showAdmin('config')" title="Portal Settings" style="display:none;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:6px 12px;font-size:16px;cursor:pointer;">⚙️</button>
       <div class="header-badge" id="admin-role-badge">ADMIN</div>
       <span style="color:rgba(255,255,255,.7);font-size:13px;" id="admin-display"></span>
       <button class="btn-logout" onclick="adminLogout()">Sign Out</button>
@@ -2404,6 +2405,136 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
         </div>
       </div>
 
+      <!-- CONFIG PANEL (Admin only) -->
+      <div id="section-adm-config" class="admin-section">
+        <div style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:2px;">⚙️ Portal Configuration</div>
+        <p style="color:#888;font-size:13px;margin-bottom:20px;">Manage staff accounts, documents, and portal settings. Admin access only.</p>
+
+        <!-- Config Tabs -->
+        <div style="display:flex;gap:4px;border-bottom:2px solid var(--border);margin-bottom:24px;">
+          <button id="cfg-tab-users" onclick="setCfgTab('users')" style="padding:10px 18px;font-size:13px;font-weight:800;border:none;border-bottom:2px solid var(--navy);margin-bottom:-2px;cursor:pointer;background:none;color:var(--navy);">👥 User Management</button>
+          <button id="cfg-tab-portal" onclick="setCfgTab('portal')" style="padding:10px 18px;font-size:13px;font-weight:700;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;background:none;color:#888;">🏢 Portal Settings</button>
+          <button id="cfg-tab-docs" onclick="setCfgTab('docs')" style="padding:10px 18px;font-size:13px;font-weight:700;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;background:none;color:#888;">📄 Documents</button>
+          <button id="cfg-tab-security" onclick="setCfgTab('security')" style="padding:10px 18px;font-size:13px;font-weight:700;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;background:none;color:#888;">🔒 Security</button>
+        </div>
+
+        <!-- USER MANAGEMENT TAB -->
+        <div id="cfg-panel-users">
+          <div class="card" style="margin-bottom:16px;">
+            <div style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:16px;">Current Staff Accounts</div>
+            <div id="cfg-staff-list"><p style="color:#888;font-size:13px;">Loading...</p></div>
+          </div>
+          <div class="card">
+            <div style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:4px;">➕ Add Staff Account</div>
+            <div class="card-sub" style="margin-bottom:16px;">New accounts can log into the admin portal immediately.</div>
+            <div class="form-row">
+              <div class="form-field"><label>Full Name *</label><input type="text" id="cfg-new-name" placeholder="e.g. Jane Smith" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+              <div class="form-field"><label>Email *</label><input type="email" id="cfg-new-email" placeholder="email@ridesourcemaine.com" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-field"><label>Title</label><input type="text" id="cfg-new-title" placeholder="e.g. Operations Manager" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+              <div class="form-field"><label>Role *</label>
+                <select id="cfg-new-role" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                  <option value="supervisor">Supervisor</option>
+                  <option value="hr">HR</option>
+                  <option value="admin">Admin</option>
+                  <option value="demo">Demo</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-field"><label>Password *</label><input type="password" id="cfg-new-password" placeholder="Minimum 8 characters" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+              <div class="form-field"><label>Confirm Password *</label><input type="password" id="cfg-new-password2" placeholder="Repeat password" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:center;">
+              <button class="btn btn-primary" onclick="addStaffAccount()">Add Account</button>
+              <span id="cfg-add-msg" style="font-size:13px;color:var(--success);display:none;">✓ Account added!</span>
+              <span id="cfg-add-err" style="font-size:13px;color:var(--red);display:none;"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- PORTAL SETTINGS TAB -->
+        <div id="cfg-panel-portal" style="display:none;">
+          <div class="card" style="margin-bottom:16px;">
+            <div style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:16px;">🏢 Company Information</div>
+            <div class="form-row">
+              <div class="form-field"><label>Company Name</label><input type="text" id="cfg-company-name" value="RideSource Inc." style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+              <div class="form-field"><label>Portal URL</label><input type="text" id="cfg-portal-url" value="https://ridesource-staff.vercel.app" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-field"><label>Supervisor Email (Region 2)</label><input type="email" id="cfg-sup-email-1" placeholder="tiffanyb@ridesourcemaine.com" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+              <div class="form-field"><label>HR Email</label><input type="email" id="cfg-hr-email" placeholder="hr@ridesourcemaine.com" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+            </div>
+            <button class="btn btn-primary" onclick="savePortalSettings()">Save Settings</button>
+            <span id="cfg-portal-msg" style="font-size:13px;color:var(--success);display:none;margin-left:10px;">✓ Saved!</span>
+          </div>
+          <div class="card">
+            <div style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:4px;">🚨 Urgent Banner</div>
+            <div class="card-sub" style="margin-bottom:16px;">Set a message that displays as a red banner on all employee dashboards. Leave blank to clear.</div>
+            <div class="form-field"><input type="text" id="cfg-banner-msg" placeholder="e.g. Office closed Monday April 28 — no service" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+            <div style="display:flex;gap:8px;margin-top:8px;">
+              <button class="btn btn-primary" style="background:#c0392b;" onclick="setUrgentBanner()">🚨 Set Banner</button>
+              <button class="btn btn-sm" style="background:#f0f0f0;color:#555;" onclick="clearUrgentBanner()">Clear Banner</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- DOCUMENTS TAB -->
+        <div id="cfg-panel-docs" style="display:none;">
+          <div class="card" style="margin-bottom:16px;">
+            <div style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:4px;">📤 Upload Custom Document</div>
+            <div class="card-sub" style="margin-bottom:16px;">Uploaded documents appear in the Document Library for all admins to download.</div>
+            <div class="form-row">
+              <div class="form-field"><label>Document Name *</label><input type="text" id="cfg-doc-name" placeholder="e.g. Updated Vehicle Safety Checklist" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+              <div class="form-field"><label>Category</label>
+                <select id="cfg-doc-category" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                  <option value="General">General</option>
+                  <option value="HR Forms">HR Forms</option>
+                  <option value="Onboarding">Onboarding</option>
+                  <option value="Performance">Performance</option>
+                  <option value="Compliance">Compliance</option>
+                  <option value="Fleet">Fleet</option>
+                  <option value="Training">Training</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-field"><label>File *</label><input type="file" id="cfg-doc-file" accept=".pdf,.doc,.docx,.xlsx,.png,.jpg" style="width:100%;padding:8px;border:2px solid var(--border);border-radius:8px;font-size:13px;"></div>
+            <div style="display:flex;gap:10px;align-items:center;margin-top:8px;">
+              <button class="btn btn-primary" onclick="uploadCustomDoc()">📤 Upload Document</button>
+              <span id="cfg-doc-msg" style="font-size:13px;color:var(--success);display:none;">✓ Uploaded!</span>
+              <span id="cfg-doc-progress" style="font-size:13px;color:#888;display:none;">Uploading...</span>
+            </div>
+          </div>
+          <div class="card">
+            <div style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:12px;">📚 Custom Documents</div>
+            <div id="cfg-custom-docs-list"><p style="color:#888;font-size:13px;">Loading...</p></div>
+          </div>
+        </div>
+
+        <!-- SECURITY TAB -->
+        <div id="cfg-panel-security" style="display:none;">
+          <div class="card" style="margin-bottom:16px;">
+            <div style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:4px;">🔑 Change Password</div>
+            <div class="card-sub" style="margin-bottom:16px;">Change your own admin password.</div>
+            <div class="form-row">
+              <div class="form-field"><label>New Password *</label><input type="password" id="cfg-pwd-new" placeholder="New password" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+              <div class="form-field"><label>Confirm Password *</label><input type="password" id="cfg-pwd-confirm" placeholder="Confirm password" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:center;">
+              <button class="btn btn-primary" onclick="changeOwnPassword()">Update Password</button>
+              <span id="cfg-pwd-msg" style="font-size:13px;color:var(--success);display:none;">✓ Password updated!</span>
+              <span id="cfg-pwd-err" style="font-size:13px;color:var(--red);display:none;"></span>
+            </div>
+          </div>
+          <div class="card">
+            <div style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:12px;">📋 Recent Login Activity</div>
+            <div id="cfg-login-log"><p style="color:#888;font-size:13px;">Loading...</p></div>
+          </div>
+        </div>
+
+      </div>
+
     </div><!-- end main-content -->
   </div><!-- end portal-layout -->
 
@@ -2630,6 +2761,9 @@ async function adminLogin(){
   // Update header badge to show role
   const badge=document.getElementById('admin-role-badge');
   if(badge)badge.textContent=staff.role==='admin'?'Admin':staff.role==='hr'?'HR':staff.role==='demo'?'DEMO':staff.title.split(' ')[0];
+  // Show gear icon only for admin role
+  const gearBtn=document.getElementById('admin-config-btn');
+  if(gearBtn)gearBtn.style.display=staff.role==='admin'?'block':'none';
   sessionStorage.setItem('rs_session',JSON.stringify({type:'admin',name:staff.name,role:staff.role,ts:Date.now()}));
   document.getElementById('screen-landing').classList.remove('active');
   document.getElementById('screen-admin').classList.add('active');
@@ -2679,6 +2813,7 @@ function showAdmin(id){
   }
   if(id==='incidents')loadIncidents();
   if(id==='memos'){loadMemos();loadEmployeeMessages();setMemoMainTab('compose');}
+  if(id==='config'){setCfgTab('users');loadPortalSettings();}
   if(id==='recognition'){renderRecogCalendar();}
   if(id==='fleet'){loadFleetVehicles();loadFleetMaintenance();loadFleetTires();loadFleetChangeovers();}
   // Keep profile cache fresh when navigating to sections that use it for filtering
@@ -9026,6 +9161,218 @@ function checkReviewsForDashboard(){
     }
     dashEl.innerHTML='<div class="card" style="border-color:var(--warn);border-width:2px;background:#fffbf0;cursor:pointer;" onclick="showAdmin(\"employee-folders\")">'+'<div style="display:flex;align-items:center;gap:12px;"><div style="background:var(--warn);color:#fff;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:18px;">📋</div>'+'<div><div style="font-size:14px;font-weight:700;color:var(--warn);">'+overdueReviews.length+' performance review'+(overdueReviews.length>1?'s':'')+' overdue</div>'+'<div style="font-size:12px;color:#888;margin-top:2px;">'+overdueReviews.map(r=>r.name+' ('+r.type+')').join(', ')+'</div></div></div></div>';
   } else if(dashEl){dashEl.innerHTML='';}
+}
+
+// ═══════════════════════════════════════════════
+// ADMIN CONFIG PANEL
+// ═══════════════════════════════════════════════
+
+function setCfgTab(tab){
+  ['users','portal','docs','security'].forEach(t=>{
+    const btn=document.getElementById('cfg-tab-'+t);
+    const panel=document.getElementById('cfg-panel-'+t);
+    if(btn){btn.style.borderBottom=t===tab?'2px solid var(--navy)':'2px solid transparent';btn.style.color=t===tab?'var(--navy)':'#888';btn.style.fontWeight=t===tab?'800':'700';}
+    if(panel)panel.style.display=t===tab?'block':'none';
+  });
+  if(tab==='users')loadStaffAccounts();
+  if(tab==='docs')loadCustomDocs();
+  if(tab==='security')loadLoginLog();
+}
+
+// USER MANAGEMENT
+async function loadStaffAccounts(){
+  const el=document.getElementById('cfg-staff-list');if(!el)return;
+  try{
+    const{data}=await db.from('admin_staff').select('id,name,title,email,role,created_at').order('name');
+    if(!data||!data.length){el.innerHTML='<p style="color:#888;font-size:13px;">No staff accounts found.</p>';return;}
+    el.innerHTML='<div style="overflow-x:auto;"><table class="data-table"><thead><tr><th>Name</th><th>Title</th><th>Email</th><th>Role</th><th>Actions</th></tr></thead><tbody>'+
+      data.map(s=>`<tr>
+        <td><strong>${s.name}</strong></td>
+        <td style="color:#888;">${s.title||'—'}</td>
+        <td style="color:#888;font-size:12px;">${s.email||'—'}</td>
+        <td><span class="badge badge-${s.role==='admin'?'approved':s.role==='hr'?'warning':'pending'}" style="font-size:10px;">${s.role.toUpperCase()}</span></td>
+        <td>
+          <button onclick="resetStaffPassword('${s.id}','${s.name}')" style="font-size:11px;padding:4px 8px;border-radius:4px;border:1px solid #ddd;background:#fff;cursor:pointer;color:#555;margin-right:4px;">🔑 Reset PW</button>
+          ${s.name!==adminName?`<button onclick="removeStaffAccount('${s.id}','${s.name}')" style="font-size:11px;padding:4px 8px;border-radius:4px;border:1px solid #fcc;background:#fff;cursor:pointer;color:var(--red);">🗑️ Remove</button>`:'<span style="font-size:11px;color:#aaa;">(you)</span>'}
+        </td>
+      </tr>`).join('')+
+    '</tbody></table></div>';
+  }catch(e){el.innerHTML='<p style="color:#888;font-size:13px;">Unable to load staff accounts.</p>';}
+}
+
+async function addStaffAccount(){
+  const name=document.getElementById('cfg-new-name').value.trim();
+  const email=document.getElementById('cfg-new-email').value.trim();
+  const title=document.getElementById('cfg-new-title').value.trim();
+  const role=document.getElementById('cfg-new-role').value;
+  const pwd=document.getElementById('cfg-new-password').value;
+  const pwd2=document.getElementById('cfg-new-password2').value;
+  const errEl=document.getElementById('cfg-add-err');
+  const msgEl=document.getElementById('cfg-add-msg');
+  errEl.style.display='none';msgEl.style.display='none';
+  if(!name||!email||!pwd){errEl.textContent='Name, email and password are required.';errEl.style.display='inline';return;}
+  if(pwd.length<8){errEl.textContent='Password must be at least 8 characters.';errEl.style.display='inline';return;}
+  if(pwd!==pwd2){errEl.textContent='Passwords do not match.';errEl.style.display='inline';return;}
+  try{
+    const{error}=await db.rpc('add_admin_staff',{p_name:name,p_title:title,p_email:email,p_role:role,p_password:pwd});
+    if(error)throw error;
+    ['cfg-new-name','cfg-new-email','cfg-new-title','cfg-new-password','cfg-new-password2'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    msgEl.style.display='inline';setTimeout(()=>msgEl.style.display='none',3000);
+    loadStaffAccounts();
+  }catch(e){errEl.textContent='Error: '+e.message;errEl.style.display='inline';}
+}
+
+async function resetStaffPassword(staffId,staffName){
+  const newPwd=prompt('Enter new password for '+staffName+' (min 8 characters):');
+  if(!newPwd||newPwd.length<8){alert('Password must be at least 8 characters.');return;}
+  try{
+    const{error}=await db.rpc('reset_staff_password',{p_id:staffId,p_password:newPwd});
+    if(error)throw error;
+    alert('Password updated for '+staffName+'.');
+  }catch(e){alert('Error: '+e.message);}
+}
+
+async function removeStaffAccount(staffId,staffName){
+  if(!confirm('Remove '+staffName+' from admin access? They will no longer be able to log in.'))return;
+  try{
+    await db.from('admin_staff').delete().eq('id',staffId);
+    loadStaffAccounts();
+  }catch(e){alert('Error: '+e.message);}
+}
+
+// PORTAL SETTINGS
+async function savePortalSettings(){
+  const settings={
+    company_name:document.getElementById('cfg-company-name')?.value||'RideSource Inc.',
+    portal_url:document.getElementById('cfg-portal-url')?.value||'https://ridesource-staff.vercel.app',
+    sup_email_1:document.getElementById('cfg-sup-email-1')?.value||'',
+    hr_email:document.getElementById('cfg-hr-email')?.value||''
+  };
+  try{
+    await db.from('portal_settings').upsert([{id:'main',...settings,updated_at:new Date().toISOString()}]);
+    const msg=document.getElementById('cfg-portal-msg');
+    msg.style.display='inline';setTimeout(()=>msg.style.display='none',3000);
+  }catch(e){alert('Save failed: '+e.message);}
+}
+
+async function loadPortalSettings(){
+  try{
+    const{data}=await db.from('portal_settings').select('*').eq('id','main').single();
+    if(!data)return;
+    const fields={
+      'cfg-company-name':'company_name',
+      'cfg-portal-url':'portal_url',
+      'cfg-sup-email-1':'sup_email_1',
+      'cfg-hr-email':'hr_email',
+      'cfg-banner-msg':'urgent_banner'
+    };
+    Object.entries(fields).forEach(([id,key])=>{
+      const el=document.getElementById(id);
+      if(el&&data[key])el.value=data[key];
+    });
+  }catch(e){}
+}
+
+async function setUrgentBanner(){
+  const msg=document.getElementById('cfg-banner-msg')?.value.trim();
+  if(!msg){alert('Please enter a banner message.');return;}
+  try{
+    await db.from('portal_settings').upsert([{id:'main',urgent_banner:msg,urgent_banner_active:true,updated_at:new Date().toISOString()}]);
+    alert('Banner set! Employees will see it on their next login.');
+  }catch(e){alert('Error: '+e.message);}
+}
+
+async function clearUrgentBanner(){
+  try{
+    await db.from('portal_settings').upsert([{id:'main',urgent_banner:'',urgent_banner_active:false,updated_at:new Date().toISOString()}]);
+    const el=document.getElementById('cfg-banner-msg');if(el)el.value='';
+    alert('Banner cleared.');
+  }catch(e){alert('Error: '+e.message);}
+}
+
+// DOCUMENT UPLOAD
+async function uploadCustomDoc(){
+  const name=document.getElementById('cfg-doc-name').value.trim();
+  const category=document.getElementById('cfg-doc-category').value;
+  const fileInput=document.getElementById('cfg-doc-file');
+  const msgEl=document.getElementById('cfg-doc-msg');
+  const progressEl=document.getElementById('cfg-doc-progress');
+  if(!name||!fileInput?.files?.length){alert('Document name and file are required.');return;}
+  const file=fileInput.files[0];
+  progressEl.style.display='inline';msgEl.style.display='none';
+  try{
+    const fileName='custom-docs/'+Date.now()+'-'+file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+    const{data:uploadData,error:uploadErr}=await db.storage.from('ridesource-uploads').upload(fileName,file);
+    if(uploadErr)throw uploadErr;
+    const{data:urlData}=db.storage.from('ridesource-uploads').getPublicUrl(fileName);
+    const fileUrl=urlData?.publicUrl;
+    await db.from('custom_documents').insert([{
+      name,category,file_url:fileUrl,
+      file_name:file.name,file_size:file.size,
+      uploaded_by:adminName,uploaded_at:new Date().toISOString()
+    }]);
+    progressEl.style.display='none';msgEl.style.display='inline';
+    setTimeout(()=>msgEl.style.display='none',3000);
+    document.getElementById('cfg-doc-name').value='';
+    fileInput.value='';
+    loadCustomDocs();
+  }catch(e){progressEl.style.display='none';alert('Upload failed: '+e.message);}
+}
+
+async function loadCustomDocs(){
+  const el=document.getElementById('cfg-custom-docs-list');if(!el)return;
+  try{
+    const{data}=await db.from('custom_documents').select('*').order('uploaded_at',{ascending:false});
+    if(!data||!data.length){el.innerHTML='<p style="color:#888;font-size:13px;">No custom documents uploaded yet.</p>';return;}
+    el.innerHTML=data.map(d=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;">
+      <div>
+        <div style="font-weight:700;color:var(--navy);">${d.name}</div>
+        <div style="font-size:11px;color:#888;">${d.category} · ${d.file_name} · Uploaded by ${d.uploaded_by} on ${new Date(d.uploaded_at).toLocaleDateString()}</div>
+      </div>
+      <div style="display:flex;gap:6px;">
+        <a href="${d.file_url}" target="_blank" style="padding:4px 10px;border-radius:4px;border:1px solid var(--navy);color:var(--navy);font-size:11px;font-weight:700;text-decoration:none;">⬇️ Download</a>
+        <button onclick="deleteCustomDoc('${d.id}')" style="padding:4px 10px;border-radius:4px;border:1px solid #fcc;background:#fff;color:var(--red);font-size:11px;cursor:pointer;">🗑️</button>
+      </div>
+    </div>`).join('');
+  }catch(e){el.innerHTML='<p style="color:#888;font-size:13px;">Unable to load documents.</p>';}
+}
+
+async function deleteCustomDoc(docId){
+  if(!confirm('Delete this document?'))return;
+  try{
+    await db.from('custom_documents').delete().eq('id',docId);
+    loadCustomDocs();
+  }catch(e){alert('Error: '+e.message);}
+}
+
+// SECURITY / LOGIN LOG
+async function loadLoginLog(){
+  const el=document.getElementById('cfg-login-log');if(!el)return;
+  try{
+    const{data}=await db.from('admin_login_log').select('*').order('logged_at',{ascending:false}).limit(20);
+    if(!data||!data.length){el.innerHTML='<p style="color:#888;font-size:13px;">No login activity recorded yet.</p>';return;}
+    el.innerHTML='<div style="overflow-x:auto;"><table class="data-table"><thead><tr><th>Staff</th><th>Role</th><th>Date/Time</th></tr></thead><tbody>'+
+      data.map(l=>`<tr><td><strong>${l.staff_name}</strong></td><td>${l.role}</td><td style="color:#888;font-size:12px;">${new Date(l.logged_at).toLocaleString()}</td></tr>`).join('')+
+    '</tbody></table></div>';
+  }catch(e){el.innerHTML='<p style="color:#888;font-size:13px;">Login log table not set up yet.</p>';}
+}
+
+async function changeOwnPassword(){
+  const pwd=document.getElementById('cfg-pwd-new').value;
+  const pwd2=document.getElementById('cfg-pwd-confirm').value;
+  const msgEl=document.getElementById('cfg-pwd-msg');
+  const errEl=document.getElementById('cfg-pwd-err');
+  msgEl.style.display='none';errEl.style.display='none';
+  if(pwd.length<8){errEl.textContent='Password must be at least 8 characters.';errEl.style.display='inline';return;}
+  if(pwd!==pwd2){errEl.textContent='Passwords do not match.';errEl.style.display='inline';return;}
+  try{
+    const{data}=await db.from('admin_staff').select('id').eq('name',adminName).single();
+    if(!data)throw new Error('Could not find your account.');
+    await db.rpc('reset_staff_password',{p_id:data.id,p_password:pwd});
+    document.getElementById('cfg-pwd-new').value='';
+    document.getElementById('cfg-pwd-confirm').value='';
+    msgEl.style.display='inline';setTimeout(()=>msgEl.style.display='none',3000);
+  }catch(e){errEl.textContent='Error: '+e.message;errEl.style.display='inline';}
 }
 </script>
 <!-- MODALS -->
