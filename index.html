@@ -1751,6 +1751,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
             <button class="profile-tab" id="fmtab-preventative" onclick="switchFleetMaintTab('preventative')">🔧 Preventative</button>
             <button class="profile-tab" id="fmtab-repair" onclick="switchFleetMaintTab('repair')">🚨 Repairs</button>
             <button class="profile-tab" id="fmtab-inspection" onclick="switchFleetMaintTab('inspection')">📋 Inspections</button>
+            <button class="profile-tab" id="fmtab-reports" onclick="switchFleetMaintTab('reports')" style="position:relative;">🚐 Driver Reports<span id="fmtab-reports-badge" style="display:none;position:absolute;top:2px;right:2px;background:var(--red);color:#fff;border-radius:50%;width:14px;height:14px;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;">!</span></button>
           </div>
           <!-- Generic Log Entry Form (hidden when tires tab active) -->
           <div id="fm-generic-form" class="card" style="margin-bottom:16px;background:#f8f9fc;">
@@ -4513,6 +4514,10 @@ async function openFleetVehicle(vehicleId){clearFleetForms();
   ['fm-rep-issue-type','fm-rep-parts-type','fm-linked-report','fm-insp-type','fm-insp-result'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   switchFleetMaintTab('oil');
   document.getElementById('fleet-vehicle-modal').classList.add('open');
+  // Update reports badge count
+  const openReports=(allVehicleRecordsCache||[]).filter(r=>r.vehicle_id===vehicleId&&!['CLOSED','RESOLVED'].includes(r.status||'NEW')).length;
+  const badge=document.getElementById('fmtab-reports-badge');
+  if(badge){badge.style.display=openReports>0?'flex':'none';badge.textContent=openReports>9?'!':openReports;}
 }
 
 function autoCalcNextOilDate(){
@@ -4533,6 +4538,55 @@ function autoCalcNextOilMileage(){
   const interval=v?.oil_change_interval_miles||5000; // default 5000 miles
   nextMileageEl.value=parseInt(mileageEl.value)+interval;
 }
+async function loadFleetVehicleReports(vehicleId){
+  let panel=document.getElementById('fm-reports-panel');
+  if(!panel)return;
+  const reports=(allVehicleRecordsCache||[]).filter(r=>r.vehicle_id===vehicleId).sort((a,b)=>new Date(b.submitted_at)-new Date(a.submitted_at));
+  // Update badge
+  const openCount=reports.filter(r=>!['CLOSED','RESOLVED'].includes(r.status||'NEW')).length;
+  const badge=document.getElementById('fmtab-reports-badge');
+  if(badge){badge.style.display=openCount>0?'flex':'none';badge.textContent=openCount>9?'!':openCount;}
+  if(!reports.length){
+    panel.innerHTML='<div style="padding:20px 0;text-align:center;color:#888;font-size:13px;">No driver reports for this vehicle yet.</div>';
+    return;
+  }
+  panel.innerHTML='<div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:12px;">Driver Reports for this Vehicle ('+reports.length+')</div>'+
+    reports.map(r=>{
+      const statusMap={'NEW':'Open','PENDING':'In Progress','RESOLVED':'Resolved','CLOSED':'Closed'};
+      const statusClass={'NEW':'flag','PENDING':'warning','RESOLVED':'approved','CLOSED':''}[r.status||'NEW']||'flag';
+      const statusLabel=statusMap[r.status||'NEW']||r.status||'Open';
+      const isOilReq=(r.issue_types||'').includes('Oil Change Request');
+      return '<div style="border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px;background:'+(isOilReq?'#fffbf0':'#fafafa')+';">'+
+        '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">'+
+          '<div style="flex:1;">'+
+            '<div style="font-size:13px;font-weight:700;color:var(--navy);">'+(isOilReq?'🛢️ ':'')+(r.issue_types||'General Report')+'</div>'+
+            '<div style="font-size:11px;color:#888;margin-top:2px;">'+r.employee_name+' · '+new Date(r.submitted_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+'</div>'+
+            (r.description?'<div style="font-size:12px;color:#555;margin-top:6px;white-space:pre-wrap;">'+r.description.substring(0,120)+(r.description.length>120?'...':'')+'</div>':'')+
+          '</div>'+
+          '<div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;flex-shrink:0;">'+
+            '<span class="badge badge-'+statusClass+'">'+statusLabel+'</span>'+
+            (r.status==="'NEW'"?'<button data-rid="'+r.id+'" data-s="PENDING" onclick="updateFleetReportStatus(this.dataset.rid,this.dataset.s,this)" style="font-size:10px;padding:3px 8px;border-radius:4px;border:1px solid #ddd;background:#fff;cursor:pointer;color:#555;">In Progress</button>':'')+
+            (r.status==="'NEW'"?'<button data-rid="'+r.id+'" data-s="PENDING" onclick="updateFleetReportStatus(this.dataset.rid,this.dataset.s,this)" style="font-size:10px;padding:3px 8px;border-radius:4px;border:1px solid #ddd;background:#fff;cursor:pointer;color:#555;">In Progress</button>':'')+
+            (r.status==="'PENDING'"?'<button data-rid="'+r.id+'" data-s="RESOLVED" onclick="updateFleetReportStatus(this.dataset.rid,this.dataset.s,this)" style="font-size:10px;padding:3px 8px;border-radius:4px;border:1px solid #27AE60;background:#fff;cursor:pointer;color:#27AE60;">Resolved</button>':'')+
+          '</div>'+
+        '</div>'+
+        (r.file_url?'<div style="margin-top:8px;"><a href="'+r.file_url+'" target="_blank" style="font-size:11px;color:#1565c0;">📎 View Photo</a></div>':'')+
+      '</div>';
+    }).join('');
+}
+
+async function updateFleetReportStatus(reportId,newStatus,btn){
+  try{
+    await db.from('vehicle_reports').update({status:newStatus}).eq('id',reportId);
+    // Refresh vehicle records cache
+    const{data}=await db.from('vehicle_reports').select('*').order('submitted_at',{ascending:false});
+    allVehicleRecordsCache=data||[];
+    loadFleetVehicleReports(currentFleetVehicleId);
+    renderOilRequestsStrip();
+    updateVrTabCounts(allVehicleRecordsCache);
+  }catch(e){alert('Error: '+e.message);}
+}
+
 function handleRepairIssueChange(){
   const sel=document.getElementById('fm-rep-issue-type');
   const txt=document.getElementById('fm-rep-problem');
@@ -4582,12 +4636,17 @@ function switchFleetMaintTab(tab){
     document.getElementById('fmtab-'+t)?.classList.toggle('active',t===tab);
   });
   const isTires=tab==='tires';
+  const isReports=tab==='reports';
   const genericForm=document.getElementById('fm-generic-form');
   const tirePanel=document.getElementById('fm-tire-panel');
   const historyEl=document.getElementById('fleet-maint-history');
-  if(genericForm)genericForm.style.display=isTires?'none':'block';
-  if(historyEl)historyEl.style.display=isTires?'none':'block';
+  if(genericForm)genericForm.style.display=(isTires||isReports)?'none':'block';
+  if(historyEl)historyEl.style.display=(isTires||isReports)?'none':'block';
   if(tirePanel)tirePanel.style.display=isTires?'block':'none';
+  // Reports panel
+  let reportsPanel=document.getElementById('fm-reports-panel');
+  if(!reportsPanel){reportsPanel=document.createElement('div');reportsPanel.id='fm-reports-panel';if(historyEl)historyEl.parentNode.insertBefore(reportsPanel,historyEl.nextSibling);}
+  reportsPanel.style.display=isReports?'block':'none';
   // Show/hide the correct sub-form
   ['oil','preventative','repair','inspection'].forEach(t=>{
     const f=document.getElementById('fm-form-'+t);
@@ -4599,6 +4658,7 @@ function switchFleetMaintTab(tab){
   if(titleEl&&titles[tab])titleEl.textContent=titles[tab];
   if(tab==='repair')populateLinkedReports(currentFleetVehicleId);
   if(isTires){renderTireMounted();loadTireChangeoversHistory();}
+  else if(tab==='reports'){loadFleetVehicleReports(currentFleetVehicleId);}
   else{loadFleetMaintHistory();}
 }
 
@@ -7194,6 +7254,7 @@ function renderVehicleRecordsTable(){
         <td><span class="badge badge-${r.status==='RESOLVED'?'approved':r.status==='IN_PROGRESS'?'warning':'flag'}">${r.status}</span></td>
         <td style="white-space:nowrap;">
           <button class="btn btn-primary btn-sm" onclick="openVehicleReportModal(${r.id})" style="margin-bottom:4px;">📋 Open</button><br>
+          ${r.vehicle_id&&allFleetVehiclesCache.some(v=>v.vehicle_id===r.vehicle_id)&&!isDemo?`<button class="btn btn-sm" style="background:#f0f4fb;color:var(--navy);font-size:10px;" onclick="showAdmin('fleet');setTimeout(()=>openFleetVehicle('${r.vehicle_id}'),400);">🔧 Fleet</button><br>`:''}
           ${(r.issue_types||'').includes('Oil Change')&&!isDemo?`<button class="btn btn-sm" style="background:#fef3e8;color:#e67e22;font-size:10px;" onclick="openFleetVehicle('${r.vehicle_id}')">🛢️ Open Vehicle</button><br>`:''}
           <select onchange="updateVehicleStatus(${r.id},this.value)" style="padding:4px 8px;border:1px solid var(--border);border-radius:4px;font-size:11px;margin-top:2px;"><option ${r.status==='NEW'?'selected':''}>NEW</option><option ${r.status==='IN_PROGRESS'?'selected':''}>IN_PROGRESS</option><option ${r.status==='RESOLVED'?'selected':''}>RESOLVED</option></select><br>
           <button class="btn btn-sm btn-red" onclick="deleteVehicleRecord(${r.id})" style="margin-top:4px;font-size:11px;">🗑️ Delete</button>
