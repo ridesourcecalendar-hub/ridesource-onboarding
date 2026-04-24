@@ -2167,6 +2167,40 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
         <div style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:2px;">💰 Expenses & Reimbursements</div>
         <p style="color:#888;font-size:13px;margin-bottom:16px;">Review and action employee expense submissions. Export approved expenses for payroll processing.</p>
 
+        <!-- Submit on behalf of employee -->
+        <div class="card" style="margin-bottom:16px;">
+          <div class="card-title" style="font-size:14px;cursor:pointer;" onclick="toggleAdminExpenseForm()">➕ Submit Expense on Behalf of Employee <span id="admin-exp-toggle" style="font-size:12px;color:#888;">▼ expand</span></div>
+          <div id="admin-exp-form" style="display:none;margin-top:16px;">
+            <div class="form-row">
+              <div class="form-field"><label>Employee Name *</label><input type="text" id="adm-exp-employee" placeholder="Full name..." style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+              <div class="form-field"><label>Employee Email *</label><input type="text" id="adm-exp-email" placeholder="email@ridesourcemaine.com" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-field"><label>Expense Type *</label>
+                <select id="adm-exp-type" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                  <option value="">Select type...</option>
+                  <option>Toll</option><option>Parking</option><option>Reimbursement</option>
+                </select>
+              </div>
+              <div class="form-field"><label>Date *</label><input type="date" id="adm-exp-date" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-field"><label>Amount ($) *</label><input type="number" id="adm-exp-amount" placeholder="0.00" step="0.01" min="0" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+              <div class="form-field"><label>County</label>
+                <select id="adm-exp-county" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                  <option value="">Select county...</option>
+                  <option>Hancock</option><option>Washington</option><option>Waldo</option><option>Knox</option><option>Oxford</option><option>Androscoggin</option><option>Cumberland</option><option>Franklin</option><option>Kennebec</option><option>Lincoln</option><option>Penobscot</option><option>Somerset</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-field"><label>Description *</label><textarea id="adm-exp-description" placeholder="Brief description of the expense..." style="width:100%;min-height:60px;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;font-family:Arial,sans-serif;outline:none;resize:vertical;"></textarea></div>
+            <div style="display:flex;gap:10px;align-items:center;">
+              <button class="btn btn-primary" onclick="submitAdminExpense()">Submit Expense</button>
+              <span id="adm-exp-msg" style="font-size:13px;color:var(--success);display:none;">✓ Expense submitted!</span>
+            </div>
+          </div>
+        </div>
+
         <div style="display:grid;grid-template-columns:1fr 260px;gap:20px;align-items:start;">
           <!-- LEFT: Table -->
           <div>
@@ -2205,9 +2239,13 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
                 <span style="font-size:13px;color:#555;">Total Approved ($)</span>
                 <span style="font-size:16px;font-weight:800;color:var(--success);" id="exp-qs-total">$0.00</span>
               </div>
-              <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);">
                 <span style="font-size:13px;color:#555;">Pending Amount ($)</span>
                 <span style="font-size:16px;font-weight:800;color:var(--warn);" id="exp-qs-pending-amt">$0.00</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;">
+                <span style="font-size:13px;color:#555;">Unpaid to Finance</span>
+                <span style="font-size:16px;font-weight:800;color:var(--red);" id="exp-qs-unpaid">$0.00</span>
               </div>
             </div>
           </div>
@@ -2957,6 +2995,50 @@ async function loadMyTimesheets(){
     if(!data||data.length===0){el.innerHTML='<p style="color:#888;font-size:13px;">No timesheets submitted yet.</p>';return;}
     el.innerHTML=data.map(t=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;"><div><strong>Week ending ${t.week_ending}</strong><br><span style="color:#888;font-size:12px;">Submitted ${new Date(t.submitted_at).toLocaleDateString()}</span></div><span class="badge badge-${t.status==='APPROVED'?'approved':t.status==='FLAGGED'?'flag':'pending'}">${t.status}</span></div>`).join('');
   }catch(e){el.innerHTML='<p style="color:#888;font-size:13px;">Unable to load timesheets.</p>';}
+}
+
+// ADMIN EXPENSE FUNCTIONS
+function toggleAdminExpenseForm(){
+  const form=document.getElementById('admin-exp-form');
+  const toggle=document.getElementById('admin-exp-toggle');
+  const isOpen=form.style.display!=='none';
+  form.style.display=isOpen?'none':'block';
+  if(toggle)toggle.textContent=isOpen?'▼ expand':'▲ collapse';
+}
+async function submitAdminExpense(){
+  const name=document.getElementById('adm-exp-employee').value.trim();
+  const email=document.getElementById('adm-exp-email').value.trim();
+  const type=document.getElementById('adm-exp-type').value;
+  const date=document.getElementById('adm-exp-date').value;
+  const amount=document.getElementById('adm-exp-amount').value;
+  const description=document.getElementById('adm-exp-description').value.trim();
+  const county=document.getElementById('adm-exp-county').value;
+  if(!name||!email||!type||!date||!amount||!description){alert('Please fill in all required fields.');return;}
+  try{
+    await db.from('expense_submissions').insert([{
+      employee_name:name,employee_email:email,county,
+      expense_type:type,expense_date:date,
+      amount:parseFloat(amount),description,
+      status:'APPROVED',decided_by:adminName,
+      decided_at:new Date().toISOString(),
+      submitted_at:new Date().toISOString()
+    }]);
+    ['adm-exp-employee','adm-exp-email','adm-exp-date','adm-exp-amount','adm-exp-description'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    document.getElementById('adm-exp-type').value='';
+    document.getElementById('adm-exp-county').value='';
+    const msg=document.getElementById('adm-exp-msg');msg.style.display='inline';setTimeout(()=>msg.style.display='none',3000);
+    loadExpenses();
+  }catch(e){alert('Error submitting expense: '+e.message);}
+}
+async function markExpensePaid(id,paid){
+  try{
+    await db.from('expense_submissions').update({
+      paid_to_finance:paid,
+      paid_date:paid?new Date().toISOString():null,
+      paid_by:paid?adminName:null
+    }).eq('id',id);
+    loadExpenses();
+  }catch(e){alert('Error: '+e.message);}
 }
 
 // OIL CHANGE REQUEST
@@ -6075,7 +6157,7 @@ async function decideRequest(id,status){
       });
     }
   }catch(e){console.log('Email notification error:',e);}
-  loadRequests();loadDashboard();
+  loadRequests();loadDashboard();renderCalendar();
 }
 function openEditRequest(id){
   const r=allRequestsCache.find(x=>x.id===id);
@@ -6681,7 +6763,7 @@ async function renderCalendar(){
           if(t==='Mid-Day Appointment')return'appt';
           return'off';
         }
-        events[k].push({label:r.employee_name.split(' ')[0]+' ('+reqLabel(r.request_type)+')',color:COUNTY_COLORS[r.county]||'#555'});
+        events[k].push({label:r.employee_name.split(' ')[0]+' ('+reqLabel(r.request_type)+')',color:COUNTY_COLORS[r.county]||'#555',id:r.id,type:'timeoff'});
       }
     }
   });
@@ -6689,7 +6771,7 @@ async function renderCalendar(){
     const d=new Date(c.callout_date+'T00:00:00');
     if(d.getMonth()===calMonth&&d.getFullYear()===calYear){
       const k=d.getDate();if(!events[k])events[k]=[];
-      events[k].push({label:c.employee_name.split(' ')[0]+' (CO)',color:'#27AE60'});
+      events[k].push({label:c.employee_name.split(' ')[0]+' (CO)',color:'#27AE60',id:c.id,type:'callout'});
     }
   });
   const firstDay=new Date(calYear,calMonth,1).getDay();
@@ -6700,13 +6782,46 @@ async function renderCalendar(){
   for(let d=1;d<=daysInMonth;d++){
     const isToday=new Date().getDate()===d&&new Date().getMonth()===calMonth&&new Date().getFullYear()===calYear;
     const evs=events[d]||[];
-    calHtml+=`<div style="min-height:80px;border:1px solid #e8e8e8;border-radius:4px;padding:4px;background:${isToday?'#EAF0FB':'#fff'};"><div style="font-size:12px;font-weight:${isToday?'800':'600'};color:${isToday?'var(--navy)':'#333'};margin-bottom:3px;">${d}</div>${evs.map(e=>`<div style="background:${e.color};color:#fff;font-size:10px;padding:2px 5px;border-radius:3px;margin-bottom:2px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">${e.label}</div>`).join('')}</div>`;
+    calHtml+=`<div style="min-height:80px;border:1px solid #e8e8e8;border-radius:4px;padding:4px;background:${isToday?'#EAF0FB':'#fff'};"><div style="font-size:12px;font-weight:${isToday?'800':'600'};color:${isToday?'var(--navy)':'#333'};margin-bottom:3px;">${d}</div>${evs.map(e=>`<div onclick="calEventClick(event,'${e.type}','${e.id}','${e.label}')" style="background:${e.color};color:#fff;font-size:10px;padding:2px 5px;border-radius:3px;margin-bottom:2px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;cursor:pointer;position:relative;" title="Click to manage">${e.label}</div>`).join('')}</div>`;
   }
   calHtml+=`</div>`;
   document.getElementById('cal-grid').innerHTML=calHtml;
   document.getElementById('cal-legend').innerHTML=
     `<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;"><span style="width:12px;height:12px;background:#27AE60;border-radius:2px;display:inline-block;"></span>Call-Out</span> `+
     Object.entries(COUNTY_COLORS).map(([c,col])=>`<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;"><span style="width:12px;height:12px;background:${col};border-radius:2px;display:inline-block;"></span>${c}</span>`).join(' ');
+}
+function calEventClick(e,type,id,label){
+  e.stopPropagation();
+  // Show a small popup with options
+  const existing=document.getElementById('cal-event-popup');
+  if(existing)existing.remove();
+  const popup=document.createElement('div');
+  popup.id='cal-event-popup';
+  popup.style.cssText='position:fixed;background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px 16px;box-shadow:0 4px 20px rgba(0,0,0,.15);z-index:9999;min-width:200px;font-size:13px;';
+  popup.style.left=Math.min(e.clientX,window.innerWidth-220)+'px';
+  popup.style.top=Math.min(e.clientY+10,window.innerHeight-120)+'px';
+  popup.innerHTML=`<div style="font-weight:700;color:var(--navy);margin-bottom:10px;">${label}</div>`+
+    (type==='timeoff'?`<button onclick="deleteCalEvent('timeoff','${id}')" style="width:100%;padding:7px 12px;background:#fdecea;color:var(--red);border:1px solid #f5c6c2;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;text-align:left;">🗑️ Remove from Calendar</button>`:`<button onclick="deleteCalEvent('callout','${id}')" style="width:100%;padding:7px 12px;background:#fdecea;color:var(--red);border:1px solid #f5c6c2;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;text-align:left;">🗑️ Delete Call-Out</button>`)+
+    `<button onclick="document.getElementById('cal-event-popup').remove()" style="width:100%;padding:7px 12px;background:#f5f5f5;color:#555;border:1px solid #ddd;border-radius:6px;font-size:12px;cursor:pointer;text-align:left;margin-top:6px;">Cancel</button>`;
+  document.body.appendChild(popup);
+  // Close on outside click
+  setTimeout(()=>document.addEventListener('click',function h(){document.getElementById('cal-event-popup')?.remove();document.removeEventListener('click',h);},300));
+}
+async function deleteCalEvent(type,id){
+  document.getElementById('cal-event-popup')?.remove();
+  if(type==='timeoff'){
+    if(!confirm('Remove this time off from the calendar? This will revert the request to Pending.'))return;
+    try{
+      await db.from('time_off_requests').update({status:'PENDING',decided_at:null,decided_by:null}).eq('id',id);
+      renderCalendar();loadRequests();loadDashboard();
+    }catch(e){alert('Error: '+e.message);}
+  } else {
+    if(!confirm('Delete this call-out record? This cannot be undone.'))return;
+    try{
+      await db.from('call_out_log').delete().eq('id',id);
+      renderCalendar();loadCallOuts();loadDashboard();
+    }catch(e){alert('Error: '+e.message);}
+  }
 }
 function changeMonth(dir){
   calMonth+=dir;
@@ -7554,6 +7669,8 @@ function renderExpensesTable(){
   document.getElementById('exp-qs-approved').textContent=approved.length;
   document.getElementById('exp-qs-total').textContent='$'+approved.reduce((s,e)=>s+parseFloat(e.amount||0),0).toFixed(2);
   document.getElementById('exp-qs-pending-amt').textContent='$'+pending.reduce((s,e)=>s+parseFloat(e.amount||0),0).toFixed(2);
+  const unpaid=allExpensesCache.filter(e=>e.status==='APPROVED'&&!e.paid_to_finance);
+  const unpaidEl=document.getElementById('exp-qs-unpaid');if(unpaidEl)unpaidEl.textContent='$'+unpaid.reduce((s,e)=>s+parseFloat(e.amount||0),0).toFixed(2);
   if(!filtered.length){el.innerHTML='<div style="padding:20px 0;text-align:center;color:#888;font-size:13px;">No expenses found.</div>';return;}
   const header='<div style="display:grid;grid-template-columns:36px 1fr 90px 80px 100px 90px 80px;gap:8px;padding:8px 12px;background:var(--gray);border-radius:8px 8px 0 0;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-top:12px;">'+
     '<div></div><div>Employee</div><div>Date</div><div>Type</div><div>Description</div><div>Amount</div><div></div></div>';
@@ -7575,6 +7692,9 @@ function renderExpensesTable(){
         (isPending&&!isDemo?
           '<button style="width:28px;height:28px;border-radius:6px;border:1px solid #27AE60;background:#fff;color:#27AE60;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;" data-eid="'+e.id+'" data-status="APPROVED" onclick="decideExpense(this.dataset.eid,this.dataset.status)" title="Approve">✓</button>'+
           '<button style="width:28px;height:28px;border-radius:6px;border:1px solid var(--red);background:#fff;color:var(--red);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;" data-eid="'+e.id+'" data-status="DENIED" onclick="decideExpense(this.dataset.eid,this.dataset.status)" title="Deny">✗</button>'
+        :e.status==='APPROVED'&&!isDemo?
+          '<button onclick="markExpensePaid(\"'+e.id+'\",'+(!e.paid_to_finance)+')" style="font-size:10px;padding:2px 7px;border-radius:6px;border:1px solid '+(e.paid_to_finance?'#27AE60':'#ddd')+';background:'+(e.paid_to_finance?'#d4edda':'#fff')+';color:'+(e.paid_to_finance?'#155724':'#888')+';cursor:pointer;white-space:nowrap;">'+
+          (e.paid_to_finance?'✅ Paid':'💸 Mark Paid')+'</button>'
         :'<span class="badge badge-'+statusClass+'" style="font-size:10px;">'+e.status+'</span>')+
       '</div>'+
     '</div>';
@@ -7592,8 +7712,8 @@ async function decideExpense(id,status){
 function exportExpenses(){
   const approved=allExpensesCache.filter(e=>e.status==='APPROVED');
   if(!approved.length){alert('No approved expenses to export.');return;}
-  const header=['Employee','Email','County','Type','Date','Amount','Description','Approved By','Approved Date'];
-  const rows=approved.map(e=>[e.employee_name,e.employee_email,e.county,e.expense_type,e.expense_date,'$'+parseFloat(e.amount).toFixed(2),e.description||'',e.decided_by||'',e.decided_at?new Date(e.decided_at).toLocaleDateString():''].map(v=>'"'+(v||'').toString().replace(/"/g,'""')+'"'));
+  const header=['Employee','Email','County','Type','Date','Amount','Description','Approved By','Approved Date','Paid to Finance','Paid Date'];
+  const rows=approved.map(e=>[e.employee_name,e.employee_email,e.county,e.expense_type,e.expense_date,'$'+parseFloat(e.amount).toFixed(2),e.description||'',e.decided_by||'',e.decided_at?new Date(e.decided_at).toLocaleDateString():'',e.paid_to_finance?'Yes':'No',e.paid_date?new Date(e.paid_date).toLocaleDateString():''].map(v=>'"'+(v||'').toString().replace(/"/g,'""')+'"'));
   const csv=[header,...rows].map(r=>r.join(',')).join('\n');
 
   const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='expenses_'+new Date().toISOString().split('T')[0]+'.csv';a.click();
