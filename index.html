@@ -1157,25 +1157,26 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 
           <!-- RIGHT: Quick Summary -->
           <div class="card" style="position:sticky;top:80px;">
-            <div style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:16px;">Quick Summary</div>
+            <div style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:4px;">Quick Summary</div>
+            <div style="font-size:11px;color:#aaa;margin-bottom:12px;">Click any row to filter</div>
             <div style="display:flex;flex-direction:column;gap:0;">
-              <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);">
+              <div onclick="setReqTab('PENDING')" style="display:flex;justify-content:space-between;align-items:center;padding:12px 8px;border-bottom:1px solid var(--border);cursor:pointer;border-radius:8px;transition:background .15s;" onmouseenter="this.style.background='#f7f9fc'" onmouseleave="this.style.background=''">
                 <span style="font-size:13px;color:#555;">Pending Requests</span>
                 <span style="font-size:16px;font-weight:800;color:var(--red);" id="qs-pending">0</span>
               </div>
-              <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);">
+              <div onclick="setReqTab('APPROVED')" style="display:flex;justify-content:space-between;align-items:center;padding:12px 8px;border-bottom:1px solid var(--border);cursor:pointer;border-radius:8px;transition:background .15s;" onmouseenter="this.style.background='#f7f9fc'" onmouseleave="this.style.background=''">
                 <span style="font-size:13px;color:#555;">Approved This Month</span>
                 <span style="font-size:16px;font-weight:800;color:var(--navy);" id="qs-approved">0</span>
               </div>
-              <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);">
+              <div onclick="setReqTab('DENIED')" style="display:flex;justify-content:space-between;align-items:center;padding:12px 8px;border-bottom:1px solid var(--border);cursor:pointer;border-radius:8px;transition:background .15s;" onmouseenter="this.style.background='#f7f9fc'" onmouseleave="this.style.background=''">
                 <span style="font-size:13px;color:#555;">Denied This Month</span>
                 <span style="font-size:16px;font-weight:800;color:var(--navy);" id="qs-denied">0</span>
               </div>
-              <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);">
-                <span style="font-size:13px;color:#555;">Upcoming (Next 7 Days)</span>
+              <div onclick="filterReqUpcoming()" style="display:flex;justify-content:space-between;align-items:center;padding:12px 8px;border-bottom:1px solid var(--border);cursor:pointer;border-radius:8px;transition:background .15s;" onmouseenter="this.style.background='#f7f9fc'" onmouseleave="this.style.background=''">
+                <span style="font-size:13px;color:#555;">Upcoming (Next 7 Days) →</span>
                 <span style="font-size:16px;font-weight:800;color:var(--navy);" id="qs-upcoming">0</span>
               </div>
-              <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;">
+              <div onclick="setReqTab('PTO')" style="display:flex;justify-content:space-between;align-items:center;padding:12px 8px;cursor:pointer;border-radius:8px;transition:background .15s;" onmouseenter="this.style.background='#f7f9fc'" onmouseleave="this.style.background=''">
                 <span style="font-size:13px;color:#555;">PTO Pending</span>
                 <span style="font-size:16px;font-weight:800;color:#1565c0;" id="qs-pto">0</span>
               </div>
@@ -5907,6 +5908,44 @@ async function submitAdminTimeOff(){
     loadRequests();loadDashboard();
   }catch(e){alert('Error submitting request:\n\n'+(e.message||e.details||JSON.stringify(e)));}
 }
+function filterReqUpcoming(){
+  // Switch to ALL tab and apply upcoming filter
+  currentReqTab='ALL';
+  ['PENDING','APPROVED','DENIED','PTO','ALL'].forEach(t=>{
+    const btn=document.getElementById('req-tab-'+t);
+    if(btn)btn.className='req-tab'+(t==='ALL'?' req-tab-active':'')+(t==='APPROVED'?' req-tab-approved':'')+(t==='DENIED'?' req-tab-denied':'')+(t==='PTO'?' req-tab-pto':'');
+  });
+  // Filter the table to upcoming approved requests
+  const now=new Date();
+  const next7=new Date(now);next7.setDate(now.getDate()+7);
+  const el=document.getElementById('requests-table');
+  const isDemo=adminStaff?.role==='demo';
+  const filtered=allRequestsCache.filter(r=>r.status==='APPROVED'&&new Date(r.start_date)>=now&&new Date(r.start_date)<=next7);
+  if(!filtered.length){
+    el.innerHTML='<div style="padding:20px 0;text-align:center;color:#888;font-size:13px;">No upcoming approved requests in the next 7 days.</div>';
+    return;
+  }
+  const header='<div style="display:grid;grid-template-columns:36px 1fr 110px 120px 120px 100px 80px;gap:8px;padding:8px 12px;background:var(--gray);border-radius:8px 8px 0 0;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-top:12px;">'+
+    '<div></div><div>Employee</div><div>Dates</div><div>Type</div><div>Detail</div><div>Status</div><div></div></div>';
+  const rows=filtered.map((r,idx)=>{
+    const displayName=isDemo?'Employee '+(idx+1):r.employee_name;
+    const initials=isDemo?'E':getInitials(r.employee_name);
+    const avatarColor=getAvatarColor(r.employee_name);
+    const dates=r.start_date+(r.end_date&&r.end_date!==r.start_date?' - '+r.end_date:'');
+    const daysUntil=Math.ceil((new Date(r.start_date)-now)/(1000*60*60*24));
+    return '<div style="display:grid;grid-template-columns:36px 1fr 110px 120px 120px 100px 80px;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border);align-items:center;font-size:13px;background:#fff;">'+
+      '<div style="width:32px;height:32px;border-radius:50%;background:'+avatarColor+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;">'+initials+'</div>'+
+      '<div><div style="font-weight:700;color:var(--navy);">'+displayName+'</div><div style="font-size:11px;color:#888;">'+r.county+'</div></div>'+
+      '<div style="color:#555;">'+dates+'</div>'+
+      '<div style="color:#555;">'+r.request_type+'</div>'+
+      '<div style="color:#888;font-size:12px;">'+(r.time_detail||r.reason||'')+'</div>'+
+      '<div><span style="background:#fff3cd;color:#856404;font-size:10px;font-weight:700;padding:2px 8px;border-radius:8px;">In '+daysUntil+' day'+(daysUntil!==1?'s':'')+'</span></div>'+
+      '<div></div>'+
+    '</div>';
+  }).join('');
+  el.innerHTML=header+'<div style="border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;overflow:hidden;">'+rows+'</div>';
+}
+
 function setReqTab(tab){
   currentReqTab=tab;
   ['PENDING','APPROVED','DENIED','PTO','ALL'].forEach(t=>{
