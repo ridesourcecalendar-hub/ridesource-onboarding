@@ -400,6 +400,18 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
     <div class="main-content">
 
       <!-- DASHBOARD -->
+      <!-- URGENT MEMO BANNER -->
+      <div id="urgent-memo-banner" style="display:none;background:linear-gradient(135deg,#c0392b,#e74c3c);color:#fff;border-radius:12px;padding:16px 20px;margin-bottom:16px;cursor:pointer;" onclick="showSection('memos-emp')">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span style="font-size:24px;">🚨</span>
+          <div>
+            <div style="font-size:14px;font-weight:800;">Urgent Notice from Management</div>
+            <div id="urgent-memo-subject" style="font-size:13px;opacity:.9;margin-top:2px;"></div>
+          </div>
+          <span style="margin-left:auto;font-size:12px;opacity:.8;">Tap to read →</span>
+        </div>
+      </div>
+
       <div id="section-dashboard" class="portal-section" style="display:block;">
         <div class="progress-bar-wrap">
           <div class="progress-label"><span>Onboarding Progress</span><span id="progress-pct">0%</span></div>
@@ -2007,7 +2019,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
           <div class="card-title" style="cursor:pointer;" onclick="toggleMemoForm()">✏️ Create New Memo <span id="memo-form-toggle" style="font-size:12px;color:#888;">▼ expand</span></div>
           <div id="memo-create-form" style="display:none;margin-top:16px;">
             <div class="form-field"><label>Subject *</label><input type="text" id="memo-subject" placeholder="e.g. Updated Vehicle Inspection Procedures"></div>
-            <div class="form-field"><label>Message *</label><textarea id="memo-body" placeholder="Write your memo here. Employees will need to read and acknowledge this." style="min-height:120px;"></textarea></div>
+            <div class="form-field"><label>Message *</label><textarea id="memo-body" placeholder="Write your memo here..." style="min-height:120px;"></textarea></div>
             <div class="form-row">
               <div class="form-field"><label>Audience</label>
                 <select id="memo-audience" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
@@ -2022,6 +2034,24 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
                   <option value="normal">Normal</option>
                   <option value="urgent">🔴 Urgent</option>
                 </select>
+              </div>
+            </div>
+            <!-- Memo Options -->
+            <div style="background:#f7f9fc;border-radius:10px;padding:14px 16px;margin-bottom:14px;">
+              <div style="font-size:12px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">Memo Options</div>
+              <div style="display:flex;flex-direction:column;gap:10px;">
+                <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;">
+                  <input type="checkbox" id="memo-require-ack" style="width:16px;height:16px;cursor:pointer;">
+                  <div><strong>Require Acknowledgement</strong><div style="font-size:11px;color:#888;margin-top:1px;">Employees must click "I Acknowledge" to mark as read</div></div>
+                </label>
+                <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;">
+                  <input type="checkbox" id="memo-send-email" style="width:16px;height:16px;cursor:pointer;">
+                  <div><strong>Send Email Notification</strong><div style="font-size:11px;color:#888;margin-top:1px;">Also send this memo to employees' email addresses</div></div>
+                </label>
+                <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;">
+                  <input type="checkbox" id="memo-dashboard-banner" style="width:16px;height:16px;cursor:pointer;">
+                  <div><strong>Show as Dashboard Banner</strong><div style="font-size:11px;color:#888;margin-top:1px;">Display a prominent alert banner on the employee dashboard (great for closures, urgent notices)</div></div>
+                </label>
               </div>
             </div>
             <div style="display:flex;gap:10px;align-items:center;">
@@ -3096,6 +3126,9 @@ function renderAdminMemoList(){
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
             <div style="font-size:15px;font-weight:700;color:${m.is_active?'var(--navy)':'#aaa'};">${m.subject}</div>
             ${urgentBadge}
+            ${ackBadge}
+            ${bannerBadge}
+            ${emailBadge}
             <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:#ede9fe;color:#5b21b6;">${audienceLabel}</span>
           </div>
           <div style="font-size:11px;color:#aaa;margin-top:3px;">Sent by ${m.created_by} · ${dt}</div>
@@ -3123,10 +3156,16 @@ async function createMemo(){
   const body=document.getElementById('memo-body').value.trim();
   const audience=document.getElementById('memo-audience').value;
   const priority=document.getElementById('memo-priority').value;
+  const requireAck=document.getElementById('memo-require-ack')?.checked||false;
+  const sendEmail=document.getElementById('memo-send-email')?.checked||false;
+  const dashBanner=document.getElementById('memo-dashboard-banner')?.checked||false;
   if(!subject||!body){alert('Subject and message are required.');return;}
   try{
     const {error}=await db.from('memos').insert([{
       subject,body,audience,priority,
+      require_acknowledgement:requireAck,
+      send_email:sendEmail,
+      dashboard_banner:dashBanner,
       created_by:adminName,created_at:new Date().toISOString(),
       is_active:true,read_by:[]
     }]);
@@ -3135,9 +3174,12 @@ async function createMemo(){
     document.getElementById('memo-body').value='';
     document.getElementById('memo-audience').value='all';
     document.getElementById('memo-priority').value='normal';
+    document.getElementById('memo-require-ack').checked=false;
+    document.getElementById('memo-send-email').checked=false;
+    document.getElementById('memo-dashboard-banner').checked=false;
     const msg=document.getElementById('memo-send-msg');msg.style.display='inline';setTimeout(()=>msg.style.display='none',3000);
     loadMemos();
-  }catch(e){alert('Error creating memo:\n\n'+(e.message||e.details||JSON.stringify(e)));}
+  }catch(e){alert('Error creating memo: '+(e.message||e.details||JSON.stringify(e)));}
 }
 async function archiveMemo(id){
   if(!confirm('Archive this memo? Employees will no longer see it.'))return;
@@ -3173,6 +3215,18 @@ async function loadEmployeeMemos(){
   if(!user)return;
   try{
     const {data}=await db.from('memos').select('*').eq('is_active',true).order('created_at',{ascending:false});
+    // Check for urgent dashboard banner memos
+    const urgentBanner=(data||[]).find(m=>m.dashboard_banner&&m.priority==='urgent'&&!(m.read_by||[]).includes(user.email));
+    const bannerEl=document.getElementById('urgent-memo-banner');
+    const bannerSubjectEl=document.getElementById('urgent-memo-subject');
+    if(bannerEl&&bannerSubjectEl){
+      if(urgentBanner){
+        bannerEl.style.display='block';
+        bannerSubjectEl.textContent=urgentBanner.subject;
+      } else {
+        bannerEl.style.display='none';
+      }
+    }
     if(!data||!data.length){
       const wrap=document.getElementById('emp-memos-wrap');
       if(wrap)wrap.style.display='none';
@@ -3193,6 +3247,9 @@ async function loadEmployeeMemos(){
     wrap.style.display='block';
     list.innerHTML=unread.map(m=>{
       const urgentBadge=m.priority==='urgent'?'<span style="background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:6px;">🔴 URGENT</span>':'';
+      const ackBadge=m.require_acknowledgement?'<span style="background:#1565c0;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:6px;">✍️ ACK</span>':'';
+      const bannerBadge=m.dashboard_banner?'<span style="background:#e67e22;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:6px;">📌 BANNER</span>':'';
+      const emailBadge=m.send_email?'<span style="background:#27AE60;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:6px;">📧 EMAIL</span>':'';
       const dt=new Date(m.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
       return `<div style="border:1px solid #e0d0f5;border-radius:10px;padding:16px;margin-bottom:10px;background:#faf5ff;" id="emp-memo-card-${m.id}">
         <div style="font-size:14px;font-weight:700;color:#5b21b6;margin-bottom:4px;">${m.subject}${urgentBadge}</div>
@@ -3300,18 +3357,22 @@ async function loadEmpMemoHistory(){
     const read=relevant.filter(m=>(m.read_by||[]).includes(user.name));
     function memoCard(m,isRead){
       const urgentBadge=m.priority==='urgent'?'<span style="background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:6px;">🔴 URGENT</span>':'';
+      const ackBadge=m.require_acknowledgement?'<span style="background:#1565c0;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:6px;">✍️ ACK</span>':'';
+      const bannerBadge=m.dashboard_banner?'<span style="background:#e67e22;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:6px;">📌 BANNER</span>':'';
+      const emailBadge=m.send_email?'<span style="background:#27AE60;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:6px;">📧 EMAIL</span>':'';
       const dt=new Date(m.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
       const myComment=(m.comments||[]).find(c=>c.name===user.name);
+      const needsAck=m.require_acknowledgement&&!isRead;
       return '<div style="border:1px solid '+(isRead?'var(--border)':'#a78bfa')+';border-radius:10px;padding:14px;margin-bottom:10px;background:'+(isRead?'#fafafa':'#faf5ff')+';" id="emp-memo-hist-'+m.id+'">' +
         '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">' +
           '<div style="flex:1;">' +
-            '<div style="font-size:14px;font-weight:700;color:'+(isRead?'var(--navy)':'#5b21b6')+';">' + m.subject + urgentBadge + '</div>' +
-            '<div style="font-size:11px;color:#888;margin-top:2px;">From ' + m.created_by + ' · ' + dt + '</div>' +
+            '<div style="font-size:14px;font-weight:700;color:'+(isRead?'var(--navy)':'#5b21b6')+';">'+m.subject+urgentBadge+bannerBadge+ackBadge+'</div>' +
+            '<div style="font-size:11px;color:#888;margin-top:2px;">From '+m.created_by+' · '+dt+'</div>' +
           '</div>' +
           (isRead?'<span style="color:var(--success);font-size:11px;font-weight:700;">✓ Read</span>':'<span style="background:#5b21b6;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;">NEW</span>') +
         '</div>' +
-        '<div style="font-size:13px;color:#444;margin-top:10px;white-space:pre-wrap;">' + m.body + '</div>' +
-        (!isRead?'<div style="margin-top:12px;"><label style="font-size:11px;font-weight:700;color:#5b21b6;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px;">💬 Comment (optional)</label><textarea id="emp-hist-comment-'+m.id+'" placeholder="Add a comment or question..." style="width:100%;padding:8px 12px;border:1px solid #d0b8f5;border-radius:8px;font-size:13px;font-family:Arial,sans-serif;outline:none;resize:vertical;min-height:60px;"></textarea><button onclick="acknowledgeMemoFromHistory('+m.id+',this)" style="margin-top:8px;background:#5b21b6;color:#fff;border:none;padding:8px 18px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">✓ Acknowledge</button></div>':'') +
+        '<div style="font-size:13px;color:#444;margin-top:10px;white-space:pre-wrap;">'+m.body+'</div>' +
+        (!isRead?'<div style="margin-top:12px;">'+(needsAck?'<div style="background:#fffbf0;border:1px solid #ffc107;border-radius:8px;padding:8px 12px;font-size:12px;color:#856404;margin-bottom:10px;">✍️ This memo requires your acknowledgement before it can be marked as read.</div>':'')+'<label style="font-size:11px;font-weight:700;color:#5b21b6;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px;">💬 Comment (optional)</label><textarea id="emp-hist-comment-'+m.id+'" placeholder="Add a comment or question..." style="width:100%;padding:8px 12px;border:1px solid #d0b8f5;border-radius:8px;font-size:13px;font-family:Arial,sans-serif;outline:none;resize:vertical;min-height:60px;"></textarea><button onclick="acknowledgeMemoFromHistory('+m.id+',this)" style="margin-top:8px;background:#5b21b6;color:#fff;border:none;padding:8px 18px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">'+(needsAck?'✍️ I Acknowledge':'✓ Mark as Read')+'</button></div>':'') +
         (myComment?'<div style="margin-top:10px;background:#ede9fe;border-radius:8px;padding:8px 12px;font-size:12px;"><strong>Your comment:</strong> '+myComment.text+'</div>':'') +
       '</div>';
     }
