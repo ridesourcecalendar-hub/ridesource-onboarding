@@ -2027,94 +2027,162 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
         <div id="incident-table">Loading...</div>
       </div>
 
-      <!-- MEMOS (ADMIN) -->
+      <!-- MEMOS (ADMIN) - Collective Staff style -->
       <div id="section-adm-memos" class="admin-section">
-        <div style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:4px;">📢 Memos</div>
-        <p style="color:#888;font-size:13px;margin-bottom:20px;">Create memos for employees to read and acknowledge. Track who has and hasn't read each memo.</p>
+        <div style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:2px;">📢 Memos &amp; Messages</div>
+        <p style="color:#888;font-size:13px;margin-bottom:16px;">Compose announcements and message employees directly.</p>
 
-        <!-- Create Memo -->
-        <div class="card" style="margin-bottom:20px;">
-          <div class="card-title" style="cursor:pointer;" onclick="toggleMemoForm()">✏️ Create New Memo <span id="memo-form-toggle" style="font-size:12px;color:#888;">▼ expand</span></div>
-          <div id="memo-create-form" style="display:none;margin-top:16px;">
-            <div class="form-field"><label>Subject *</label><input type="text" id="memo-subject" placeholder="e.g. Updated Vehicle Inspection Procedures"></div>
-            <div class="form-field"><label>Message *</label><textarea id="memo-body" placeholder="Write your memo here..." style="min-height:120px;"></textarea></div>
-            <div class="form-row">
-              <div class="form-field"><label>Audience</label>
-                <select id="memo-audience" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
-                  <option value="all">All Active Employees</option>
-                  <option value="Tiffany Gallagher">Tiffany Gallagher's Team</option>
-                  <option value="Nicole Geel">Nicole Geel's Team</option>
-                  <option value="Robin Lausier">Robin Lausier's Team</option>
-                </select>
+        <!-- Three-tab navigation -->
+        <div style="display:flex;gap:4px;margin-bottom:20px;border-bottom:2px solid var(--border);">
+          <button id="memo-main-tab-compose" onclick="setMemoMainTab('compose')" style="padding:10px 20px;font-size:13px;font-weight:700;border:none;border-bottom:2px solid var(--navy);margin-bottom:-2px;cursor:pointer;background:none;color:var(--navy);">Compose</button>
+          <button id="memo-main-tab-sent" onclick="setMemoMainTab('sent')" style="padding:10px 20px;font-size:13px;font-weight:700;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;background:none;color:#888;">Sent Memos<span id="badge-emp-messages" style="background:var(--red);color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:6px;display:none;">●</span></button>
+          <button id="memo-main-tab-direct" onclick="setMemoMainTab('direct')" style="padding:10px 20px;font-size:13px;font-weight:700;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;background:none;color:#888;">Direct Messages<span id="badge-direct-messages" style="background:var(--red);color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:6px;display:none;">●</span></button>
+        </div>
+
+        <!-- COMPOSE TAB -->
+        <div id="memo-panel-compose">
+          <div style="display:grid;grid-template-columns:1fr 280px;gap:20px;align-items:start;">
+            <!-- Left: Form -->
+            <div class="card">
+              <div style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:16px;">New Memo</div>
+              <div class="form-field">
+                <label style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;">Subject Line</label>
+                <input type="text" id="memo-subject" placeholder="What is this memo about?" oninput="updateMemoPreview()" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;margin-top:4px;">
               </div>
-              <div class="form-field"><label>Priority</label>
-                <select id="memo-priority" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
-                  <option value="normal">Normal</option>
+              <div class="form-field">
+                <label style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;">Priority</label>
+                <select id="memo-priority" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;margin-top:4px;">
+                  <option value="normal">General Announcement</option>
                   <option value="urgent">🔴 Urgent</option>
                 </select>
               </div>
+              <div class="form-field">
+                <label style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;">Recipients</label>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px;">
+                  <button id="memo-aud-btn-all" onclick="setMemoAudience('all')" style="padding:10px;border-radius:8px;border:2px solid var(--navy);background:var(--navy);color:#fff;font-size:13px;font-weight:600;cursor:pointer;">All Staff</button>
+                  <button id="memo-aud-btn-tiffany" onclick="setMemoAudience('Tiffany Gallagher')" style="padding:10px;border-radius:8px;border:2px solid var(--border);background:#fff;color:#555;font-size:13px;font-weight:600;cursor:pointer;">Tiffany's Team</button>
+                  <button id="memo-aud-btn-nicole" onclick="setMemoAudience('Nicole Geel')" style="padding:10px;border-radius:8px;border:2px solid var(--border);background:#fff;color:#555;font-size:13px;font-weight:600;cursor:pointer;">Nicole's Team</button>
+                  <button id="memo-aud-btn-robin" onclick="setMemoAudience('Robin Lausier')" style="padding:10px;border-radius:8px;border:2px solid var(--border);background:#fff;color:#555;font-size:13px;font-weight:600;cursor:pointer;">Robin's Team</button>
+                </div>
+                <input type="hidden" id="memo-audience" value="all">
+              </div>
+              <div class="form-field">
+                <label style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;">Message</label>
+                <textarea id="memo-body" placeholder="Write your memo here..." oninput="updateMemoPreview()" style="width:100%;min-height:140px;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;font-family:Arial,sans-serif;outline:none;resize:vertical;margin-top:4px;"></textarea>
+              </div>
+              <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px;">
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;margin-bottom:8px;">
+                  <input type="checkbox" id="memo-dashboard-banner" style="width:15px;height:15px;cursor:pointer;">
+                  <span>Mark as URGENT — displays emergency banner on all employee dashboards</span>
+                </label>
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;">
+                  <input type="checkbox" id="memo-require-ack" style="width:15px;height:15px;cursor:pointer;">
+                  <span>Require employee acknowledgment</span>
+                </label>
+              </div>
+              <div style="display:flex;justify-content:flex-end;margin-top:16px;">
+                <button class="btn btn-primary" onclick="createMemo()" style="padding:10px 24px;">Send Memo →</button>
+              </div>
+              <span id="memo-send-msg" style="font-size:13px;color:var(--success);display:none;text-align:right;display:block;margin-top:8px;">✓ Memo sent!</span>
             </div>
-            <!-- Memo Options -->
-            <div style="background:#f7f9fc;border-radius:10px;padding:14px 16px;margin-bottom:14px;">
-              <div style="font-size:12px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">Memo Options</div>
-              <div style="display:flex;flex-direction:column;gap:10px;">
-                <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;">
-                  <input type="checkbox" id="memo-require-ack" style="width:16px;height:16px;cursor:pointer;">
-                  <div><strong>Require Acknowledgement</strong><div style="font-size:11px;color:#888;margin-top:1px;">Employees must click "I Acknowledge" to mark as read</div></div>
+            <!-- Right: Live Preview + Delivery Options -->
+            <div>
+              <div class="card" style="margin-bottom:12px;">
+                <div style="font-size:13px;font-weight:800;color:var(--navy);margin-bottom:12px;">Live Preview</div>
+                <div style="background:var(--light);border-radius:8px;padding:12px;">
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                    <div style="width:32px;height:32px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;">RS</div>
+                    <div><div style="font-size:12px;font-weight:700;color:var(--navy);">RideSource Inc.</div><div style="font-size:11px;color:#888;" id="memo-preview-date">Internal Memo</div></div>
+                  </div>
+                  <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:6px;" id="memo-preview-subject">Your subject will appear here</div>
+                  <div style="font-size:12px;color:#555;white-space:pre-wrap;" id="memo-preview-body">Your message will appear here as you type...</div>
+                  <div style="font-size:11px;color:#aaa;margin-top:8px;" id="memo-preview-footer">Sent by <span id="memo-preview-sender">Admin</span> · RideSource Inc.</div>
+                </div>
+              </div>
+              <div class="card">
+                <div style="font-size:13px;font-weight:800;color:var(--navy);margin-bottom:12px;">Delivery Options</div>
+                <label style="display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:8px;cursor:pointer;">
+                  <input type="checkbox" checked disabled style="width:14px;height:14px;"> In-app notification
                 </label>
-                <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;">
-                  <input type="checkbox" id="memo-send-email" style="width:16px;height:16px;cursor:pointer;">
-                  <div><strong>Send Email Notification</strong><div style="font-size:11px;color:#888;margin-top:1px;">Also send this memo to employees' email addresses</div></div>
+                <label style="display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:8px;cursor:pointer;">
+                  <input type="checkbox" id="memo-send-email" style="width:14px;height:14px;cursor:pointer;"> Email notification
                 </label>
-                <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;">
-                  <input type="checkbox" id="memo-dashboard-banner" style="width:16px;height:16px;cursor:pointer;">
-                  <div><strong>Show as Dashboard Banner</strong><div style="font-size:11px;color:#888;margin-top:1px;">Display a prominent alert banner on the employee dashboard (great for closures, urgent notices)</div></div>
+                <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;">
+                  <input type="checkbox" id="memo-require-ack-delivery" onchange="document.getElementById('memo-require-ack').checked=this.checked" style="width:14px;height:14px;cursor:pointer;"> Require acknowledgment
                 </label>
               </div>
             </div>
-            <div style="display:flex;gap:10px;align-items:center;">
-              <button class="btn btn-primary" onclick="createMemo()">📢 Send Memo</button>
-              <span id="memo-send-msg" style="font-size:13px;color:var(--success);display:none;">✓ Memo sent!</span>
+          </div>
+        </div>
+
+        <!-- SENT MEMOS TAB -->
+        <div id="memo-panel-sent" style="display:none;">
+          <!-- Stats bar -->
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;">
+            <div class="card" style="text-align:center;padding:16px;">
+              <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Sent This Month</div>
+              <div style="font-size:24px;font-weight:800;color:var(--navy);" id="memo-stat-sent">0</div>
+            </div>
+            <div class="card" style="text-align:center;padding:16px;">
+              <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Avg Read Rate</div>
+              <div style="font-size:24px;font-weight:800;color:var(--navy);" id="memo-stat-rate">—</div>
+            </div>
+            <div class="card" style="text-align:center;padding:16px;">
+              <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Acknowledged</div>
+              <div style="font-size:24px;font-weight:800;color:var(--navy);" id="memo-stat-ack">0</div>
+            </div>
+            <div class="card" style="text-align:center;padding:16px;">
+              <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Outstanding</div>
+              <div style="font-size:24px;font-weight:800;color:var(--red);" id="memo-stat-outstanding">0</div>
             </div>
           </div>
+          <!-- Filters -->
+          <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center;">
+            <select id="memo-audience-filter" onchange="renderAdminMemoList()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:#fff;">
+              <option value="">All Audiences</option>
+              <option value="all">All Employees</option>
+              <option value="Tiffany Gallagher">Tiffany's Team</option>
+              <option value="Nicole Geel">Nicole's Team</option>
+              <option value="Robin Lausier">Robin's Team</option>
+            </select>
+            <input type="text" id="memo-search" placeholder="🔍 Search memos..." oninput="renderAdminMemoList()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;flex:1;min-width:160px;">
+            <div style="display:flex;border-radius:8px;overflow:hidden;border:1px solid var(--border);">
+              <button id="memo-tab-active" onclick="setMemoTab('active')" style="padding:7px 14px;font-size:12px;font-weight:700;border:none;cursor:pointer;background:var(--navy);color:#fff;">Active</button>
+              <button id="memo-tab-archived" onclick="setMemoTab('archived')" style="padding:7px 14px;font-size:12px;font-weight:700;border:none;cursor:pointer;background:#f0f0f0;color:#888;">Archived</button>
+            </div>
+          </div>
+          <!-- Table header -->
+          <div style="display:grid;grid-template-columns:1fr 140px 80px 80px 100px;gap:8px;padding:8px 12px;background:var(--gray);border-radius:8px 8px 0 0;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;">
+            <div>Subject</div><div>Recipients</div><div>Sent</div><div>Read</div><div>Acknowledged</div>
+          </div>
+          <div id="memo-admin-list" style="border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;overflow:hidden;"><p style="color:#888;font-size:13px;padding:16px;">Loading...</p></div>
         </div>
 
-        <!-- Filters & Tabs -->
-        <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap;">
-          <div style="display:flex;border-radius:8px;overflow:hidden;border:1px solid var(--border);">
-            <button id="memo-tab-active" onclick="setMemoTab('active')" style="padding:8px 18px;font-size:13px;font-weight:700;border:none;cursor:pointer;background:#5b21b6;color:#fff;">Active</button>
-            <button id="memo-tab-archived" onclick="setMemoTab('archived')" style="padding:8px 18px;font-size:13px;font-weight:700;border:none;cursor:pointer;background:#f0f0f0;color:#888;">Archived</button>
-            <button id="memo-tab-messages" onclick="setMemoTab('messages')" style="padding:8px 18px;font-size:13px;font-weight:700;border:none;cursor:pointer;background:#f0f0f0;color:#888;">✉️ Employee Messages<span id="badge-emp-messages" style="background:#5b21b6;color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:6px;display:none;">●</span></button>
+        <!-- DIRECT MESSAGES TAB -->
+        <div id="memo-panel-direct" style="display:none;">
+          <div style="display:grid;grid-template-columns:220px 1fr;gap:0;border:1px solid var(--border);border-radius:12px;overflow:hidden;min-height:500px;">
+            <!-- Employee list -->
+            <div style="border-right:1px solid var(--border);background:#fafafa;">
+              <div style="padding:12px 16px;font-size:12px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);">Employees</div>
+              <div id="direct-msg-emp-list"><p style="color:#aaa;font-size:12px;padding:16px;">Loading...</p></div>
+            </div>
+            <!-- Thread -->
+            <div style="display:flex;flex-direction:column;">
+              <div id="direct-msg-thread-header" style="padding:14px 20px;border-bottom:1px solid var(--border);font-size:14px;font-weight:700;color:var(--navy);">Select an employee to view messages</div>
+              <div id="direct-msg-thread" style="flex:1;overflow-y:auto;padding:16px;min-height:380px;max-height:400px;"></div>
+              <div id="direct-msg-compose" style="display:none;padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:center;">
+                <input type="text" id="direct-msg-input" placeholder="Message employee... (Enter to send)" style="flex:1;padding:9px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendDirectMessage();}">
+                <button onclick="sendDirectMessage()" style="background:var(--navy);color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;">Send →</button>
+              </div>
+            </div>
           </div>
-          <select id="memo-audience-filter" onchange="renderAdminMemoList()" style="padding:8px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:#fff;">
-            <option value="">All Audiences</option>
-            <option value="all">All Employees</option>
-            <option value="Tiffany Gallagher">Tiffany's Team</option>
-            <option value="Nicole Geel">Nicole's Team</option>
-            <option value="Robin Lausier">Robin's Team</option>
-          </select>
-          <input type="text" id="memo-search" placeholder="🔍 Search memos..." oninput="renderAdminMemoList()" style="padding:8px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;flex:1;min-width:160px;">
-        </div>
-
-        <!-- Memo List -->
-        <div id="memo-admin-list"><p style="color:#888;font-size:13px;">Loading...</p></div>
-
-        <!-- Employee Messages Read/Unread Cards (shown when tab=messages) -->
-        <div id="emp-msg-cards-wrap" style="display:none;">
-          <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
-            <button id="adm-msg-card-btn-unread" onclick="switchAdmMsgCard('unread')" style="flex:1;min-width:140px;padding:14px 12px;border-radius:12px;border:2px solid #5b21b6;background:#5b21b6;color:#fff;font-size:14px;font-weight:700;cursor:pointer;text-align:center;transition:all .2s;">
-              <div style="font-size:20px;margin-bottom:4px;">🔔</div>
-              <div>Unread</div>
-              <div id="adm-msg-unread-count" style="font-size:12px;font-weight:400;margin-top:2px;opacity:.85;">0 unread</div>
-            </button>
-            <button id="adm-msg-card-btn-read" onclick="switchAdmMsgCard('read')" style="flex:1;min-width:140px;padding:14px 12px;border-radius:12px;border:2px solid var(--border);background:#fff;color:var(--navy);font-size:14px;font-weight:700;cursor:pointer;text-align:center;transition:all .2s;">
-              <div style="font-size:20px;margin-bottom:4px;">📬</div>
-              <div>Read</div>
-              <div id="adm-msg-read-count" style="font-size:12px;font-weight:400;margin-top:2px;color:#888;">0 read</div>
-            </button>
+          <!-- Keep legacy cards hidden but present for backward compat -->
+          <div id="emp-msg-cards-wrap" style="display:none;">
+            <div id="adm-msg-unread-count"></div>
+            <div id="adm-msg-read-count"></div>
+            <div id="adm-msg-panel-unread"></div>
+            <div id="adm-msg-panel-read" style="display:none;"></div>
           </div>
-          <div id="adm-msg-panel-unread"><p style="color:#888;font-size:13px;">Loading...</p></div>
-          <div id="adm-msg-panel-read" style="display:none;"><p style="color:#888;font-size:13px;">Loading...</p></div>
         </div>
       </div>
 
@@ -2526,7 +2594,7 @@ function showAdmin(id){
     loadEmployeeFolders();
   }
   if(id==='incidents')loadIncidents();
-  if(id==='memos'){loadMemos();loadEmployeeMessages();}
+  if(id==='memos'){loadMemos();loadEmployeeMessages();setMemoMainTab('compose');}
   if(id==='recognition'){renderRecogCalendar();}
   if(id==='fleet'){loadFleetVehicles();loadFleetMaintenance();loadFleetTires();loadFleetChangeovers();}
   // Keep profile cache fresh when navigating to sections that use it for filtering
@@ -3157,6 +3225,159 @@ async function notifyCompletion(){
 
 // ── MEMOS ──
 let allMemosCache=[];
+let currentMemoMainTab='compose';
+let currentDirectMsgEmployee=null;
+
+function setMemoMainTab(tab){
+  currentMemoMainTab=tab;
+  ['compose','sent','direct'].forEach(t=>{
+    const btn=document.getElementById('memo-main-tab-'+t);
+    const panel=document.getElementById('memo-panel-'+t);
+    if(btn){
+      btn.style.color=t===tab?'var(--navy)':'#888';
+      btn.style.borderBottom=t===tab?'2px solid var(--navy)':'2px solid transparent';
+      btn.style.fontWeight=t===tab?'800':'600';
+    }
+    if(panel)panel.style.display=t===tab?'block':'none';
+  });
+  if(tab==='sent'){loadMemos();renderSentMemoStats();}
+  if(tab==='direct'){loadDirectMessageEmployees();}
+}
+
+function setMemoAudience(val){
+  document.getElementById('memo-audience').value=val;
+  ['all','tiffany','nicole','robin'].forEach(k=>{
+    const btn=document.getElementById('memo-aud-btn-'+k);
+    if(btn){
+      const isActive=(k==='all'&&val==='all')||(k==='tiffany'&&val==='Tiffany Gallagher')||(k==='nicole'&&val==='Nicole Geel')||(k==='robin'&&val==='Robin Lausier');
+      btn.style.background=isActive?'var(--navy)':'#fff';
+      btn.style.color=isActive?'#fff':'#555';
+      btn.style.borderColor=isActive?'var(--navy)':'var(--border)';
+    }
+  });
+}
+
+function updateMemoPreview(){
+  const subject=document.getElementById('memo-subject')?.value||'Your subject will appear here';
+  const body=document.getElementById('memo-body')?.value||'Your message will appear here as you type...';
+  const subEl=document.getElementById('memo-preview-subject');
+  const bodyEl=document.getElementById('memo-preview-body');
+  const senderEl=document.getElementById('memo-preview-sender');
+  const dateEl=document.getElementById('memo-preview-date');
+  if(subEl)subEl.textContent=subject;
+  if(bodyEl)bodyEl.textContent=body;
+  if(senderEl)senderEl.textContent=adminName||'Admin';
+  if(dateEl)dateEl.textContent='Internal Memo · '+new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+
+function renderSentMemoStats(){
+  const now=new Date();
+  const monthStart=new Date(now.getFullYear(),now.getMonth(),1);
+  const thisMonth=allMemosCache.filter(m=>new Date(m.created_at)>=monthStart);
+  const totalReadBy=allMemosCache.reduce((s,m)=>(m.read_by||[]).length+s,0);
+  const totalExpected=allMemosCache.length*Math.max(1,allProfilesCache.length||1);
+  const rate=totalExpected>0?Math.round((totalReadBy/totalExpected)*100):0;
+  const totalAck=allMemosCache.reduce((s,m)=>{
+    if(!m.require_acknowledgement)return s;
+    return s+(m.read_by||[]).length;
+  },0);
+  const outstanding=allMemosCache.filter(m=>m.is_active&&(m.read_by||[]).length<(allProfilesCache.length||1)).length;
+  const s=document.getElementById('memo-stat-sent');if(s)s.textContent=thisMonth.length;
+  const r=document.getElementById('memo-stat-rate');if(r)r.textContent=rate+'%';
+  const a=document.getElementById('memo-stat-ack');if(a)a.textContent=totalAck;
+  const o=document.getElementById('memo-stat-outstanding');if(o)o.textContent=outstanding;
+}
+
+async function loadDirectMessageEmployees(){
+  const listEl=document.getElementById('direct-msg-emp-list');if(!listEl)return;
+  // Get unique employees from messages cache
+  const employees=allProfilesCache.length>0?allProfilesCache:[];
+  if(!employees.length){listEl.innerHTML='<p style="color:#aaa;font-size:12px;padding:16px;">No employee profiles found.</p>';return;}
+  // Count unread messages per employee
+  const unreadByEmp={};
+  try{
+    const{data}=await db.from('employee_messages').select('from_email,is_read').eq('is_read',false);
+    (data||[]).forEach(m=>{unreadByEmp[m.from_email]=(unreadByEmp[m.from_email]||0)+1;});
+  }catch(e){}
+  listEl.innerHTML=employees.map(e=>{
+    const unread=unreadByEmp[e.employee_email]||0;
+    const initials=getInitials(e.employee_name);
+    const color=getAvatarColor(e.employee_name);
+    return `<div onclick="openDirectThread('${e.employee_email}','${e.employee_name}')" style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);background:${currentDirectMsgEmployee===e.employee_email?'#f0f4fb':'#fafafa'};" id="direct-emp-${e.employee_email.replace('@','_').replace('.','_')}">
+      <div style="width:32px;height:32px;border-radius:50%;background:${color};color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">${initials}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:700;color:var(--navy);">${e.employee_name.split(' ')[0]}</div>
+        <div style="font-size:11px;color:#aaa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">No messages yet</div>
+      </div>
+      ${unread>0?`<span style="background:var(--red);color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;">${unread}</span>`:''}
+    </div>`;
+  }).join('');
+}
+
+async function openDirectThread(email,name){
+  currentDirectMsgEmployee=email;
+  // Update header
+  const header=document.getElementById('direct-msg-thread-header');
+  if(header)header.innerHTML=`<div style="display:flex;align-items:center;gap:10px;"><div style="width:36px;height:36px;border-radius:50%;background:${getAvatarColor(name)};color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;">${getInitials(name)}</div><div><div style="font-size:14px;font-weight:800;color:var(--navy);">${name}</div><div style="font-size:11px;color:#888;">Direct message thread</div></div></div>`;
+  // Show compose
+  const compose=document.getElementById('direct-msg-compose');
+  if(compose)compose.style.display='flex';
+  const input=document.getElementById('direct-msg-input');
+  if(input)input.placeholder=`Message ${name.split(' ')[0]}... (Enter to send)`;
+  // Load thread
+  await loadDirectThread(email,name);
+  // Mark as read
+  try{await db.from('employee_messages').update({is_read:true}).eq('from_email',email).eq('is_read',false);}catch(e){}
+  // Refresh employee list
+  loadDirectMessageEmployees();
+}
+
+async function loadDirectThread(email,name){
+  const threadEl=document.getElementById('direct-msg-thread');if(!threadEl)return;
+  try{
+    // Get messages from employee to admin
+    const{data:empMsgs}=await db.from('employee_messages').select('*').eq('from_email',email).order('sent_at',{ascending:true});
+    // Get admin replies stored in memos with direct=true
+    const{data:adminMsgs}=await db.from('employee_messages').select('*').eq('to_email',email).eq('from_admin',true).order('sent_at',{ascending:true});
+    // Merge and sort
+    const all=[...(empMsgs||[]).map(m=>({...m,side:'employee'})),...(adminMsgs||[]).map(m=>({...m,side:'admin'}))].sort((a,b)=>new Date(a.sent_at)-new Date(b.sent_at));
+    if(!all.length){threadEl.innerHTML='<p style="color:#aaa;font-size:13px;text-align:center;padding:40px 0;">No messages yet. Send the first message!</p>';return;}
+    threadEl.innerHTML=all.map(m=>{
+      const isAdmin=m.side==='admin';
+      const time=new Date(m.sent_at).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
+      return `<div style="display:flex;justify-content:${isAdmin?'flex-end':'flex-start'};margin-bottom:12px;">
+        <div style="max-width:70%;background:${isAdmin?'var(--navy)':'#f0f4fb'};color:${isAdmin?'#fff':'var(--navy)'};padding:10px 14px;border-radius:${isAdmin?'12px 12px 4px 12px':'12px 12px 12px 4px'};font-size:13px;">
+          ${m.message||m.body||''}
+          <div style="font-size:10px;opacity:.7;margin-top:4px;text-align:right;">${isAdmin?'You':'Employee'} · ${time}</div>
+        </div>
+      </div>`;
+    }).join('');
+    threadEl.scrollTop=threadEl.scrollHeight;
+  }catch(e){threadEl.innerHTML='<p style="color:#aaa;font-size:13px;padding:16px;">Unable to load messages.</p>';}
+}
+
+async function sendDirectMessage(){
+  const input=document.getElementById('direct-msg-input');
+  const msg=input?.value?.trim();
+  if(!msg||!currentDirectMsgEmployee)return;
+  input.value='';
+  try{
+    await db.from('employee_messages').insert([{
+      from_email:adminStaff?.email||'admin@ridesource',
+      from_name:adminName,
+      to_email:currentDirectMsgEmployee,
+      from_admin:true,
+      message:msg,
+      body:msg,
+      is_read:false,
+      sent_at:new Date().toISOString()
+    }]);
+    // Reload thread
+    const emp=allProfilesCache.find(e=>e.employee_email===currentDirectMsgEmployee);
+    if(emp)loadDirectThread(currentDirectMsgEmployee,emp.employee_name);
+  }catch(e){alert('Error sending message: '+e.message);}
+}
+
 async function loadMemos(){
   try{
     const {data}=await db.from('memos').select('*').order('created_at',{ascending:false});
@@ -3165,6 +3386,8 @@ async function loadMemos(){
     const badge=document.getElementById('badge-memos');
     if(badge)badge.textContent=unread||'0';
     renderAdminMemoList();
+    renderSentMemoStats();
+    updateMemoPreview();
   }catch(e){console.log('Memos:',e);}
 }
 let currentMemoTab='active';
@@ -3211,45 +3434,34 @@ function renderAdminMemoList(){
     const matchAudience=!audienceF||m.audience===audienceF;
     return matchTab&&matchSearch&&matchAudience;
   });
+  // Update stats
+  renderSentMemoStats();
   if(!filtered.length){
-    el.innerHTML=`<p style="color:#888;font-size:13px;">${currentMemoTab==='active'?'No active memos.':'No archived memos.'}</p>`;
+    el.innerHTML='<p style="color:#888;font-size:13px;padding:16px;">'+(currentMemoTab==='active'?'No active memos.':'No archived memos.')+'</p>';
     return;
   }
+  const totalEmployees=Math.max(allProfilesCache.length,1);
   el.innerHTML=filtered.map(m=>{
-    const dt=new Date(m.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    const dt=new Date(m.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric'});
     const readCount=(m.read_by||[]).length;
-    const urgentBadge=m.priority==='urgent'?'<span style="background:#fdecea;color:var(--red);font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:6px;">🔴 URGENT</span>':'';
-    const audienceLabel=m.audience==='all'?'All Employees':m.audience+"'s Team";
-    const readBadgeColor=readCount>0?'var(--success)':'#aaa';
-    return `<div class="card" style="margin-bottom:10px;${!m.is_active?'border-color:#ddd;':''}">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
-        <div style="flex:1;min-width:0;">
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-            <div style="font-size:15px;font-weight:700;color:${m.is_active?'var(--navy)':'#aaa'};">${m.subject}</div>
-            ${urgentBadge}
-            ${ackBadge}
-            ${bannerBadge}
-            ${emailBadge}
-            <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:#ede9fe;color:#5b21b6;">${audienceLabel}</span>
-          </div>
-          <div style="font-size:11px;color:#aaa;margin-top:3px;">Sent by ${m.created_by} · ${dt}</div>
-        </div>
-        <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
-          <span style="font-size:12px;color:${readBadgeColor};font-weight:700;">✓ ${readCount} read</span>
-          <button id="memo-collapse-btn-${m.id}" onclick="toggleMemoCard(${m.id})" style="background:#f0f0f0;color:#555;border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;">▼ expand</button>
-          ${m.is_active?`<button class="btn btn-sm" style="background:#e8f4fd;color:#1565c0;" onclick="editMemo(${m.id})">✏️ Edit</button><button class="btn btn-sm" style="background:#f0f0f0;color:#555;" onclick="archiveMemo(${m.id})">Archive</button>`:''}
-          <button class="btn btn-sm btn-red" style="font-size:11px;padding:4px 10px;" onclick="deleteMemo(${m.id})">🗑️</button>
-        </div>
-      </div>
-      <div id="memo-body-${m.id}" style="display:none;margin-top:12px;">
-        <div style="font-size:13px;color:#555;white-space:pre-wrap;background:var(--gray);padding:12px;border-radius:8px;margin-bottom:10px;">${m.body}</div>
-        <div style="font-size:12px;color:#888;margin-bottom:8px;">
-          ${readCount>0?`<strong>Read by:</strong> ${(m.read_by||[]).join(', ')}`:'<em>No acknowledgments yet.</em>'}
-        </div>
-        ${(m.comments||[]).length>0?`<div style="font-size:12px;font-weight:700;color:#555;margin-bottom:6px;">💬 Employee Comments</div>`+
-          (m.comments||[]).map(c=>`<div style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:8px 12px;margin-bottom:6px;font-size:12px;"><strong>${c.name}</strong> <span style="color:#aaa;font-size:11px;">${new Date(c.at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</span><div style="margin-top:4px;color:#444;">${c.text}</div></div>`).join(''):''}
-      </div>
-    </div>`;
+    const ackCount=m.require_acknowledgement?readCount:null;
+    const audienceLabel=m.audience==='all'?'All Staff':m.audience.split(' ')[0]+"'s Team";
+    const urgentBadge=m.priority==='urgent'?'<span style="background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:6px;margin-left:6px;">URGENT</span>':'';
+    const readColor=readCount>=totalEmployees?'var(--success)':readCount>0?'var(--warn)':'var(--red)';
+    return '<div style="display:grid;grid-template-columns:1fr 140px 80px 80px 100px;gap:8px;padding:12px;border-bottom:1px solid var(--border);align-items:center;font-size:13px;background:#fff;" style="cursor:default;">'+
+      '<div>'+
+        '<div style="font-weight:700;color:'+(m.is_active?'var(--navy)':'#aaa')+';">'+m.subject+urgentBadge+'</div>'+
+        '<div style="font-size:11px;color:#888;margin-top:2px;">'+(m.is_active?'Active':'Archived')+' · '+m.created_by+' · '+dt+(m.require_acknowledgement?' · ✍️ Ack required':'')+(m.dashboard_banner?' · 📌 Banner':'')+'</div>'+
+      '</div>'+
+      '<div style="font-size:12px;color:#555;">'+audienceLabel+'</div>'+
+      '<div style="font-size:12px;color:#888;">'+dt+'</div>'+
+      '<div><span style="font-size:12px;font-weight:700;color:'+readColor+';">'+readCount+'/'+totalEmployees+'</span></div>'+
+      '<div style="display:flex;gap:4px;align-items:center;">'+
+        (ackCount!==null?'<span style="font-size:12px;color:#888;">'+ackCount+'/'+totalEmployees+'</span>':'<span style="font-size:11px;color:#aaa;">--</span>')+
+        (m.is_active?'<button onclick="archiveMemo('+m.id+')" style="width:24px;height:24px;border-radius:4px;border:1px solid #ddd;background:#fff;color:#888;cursor:pointer;font-size:10px;margin-left:4px;" title="Archive">▾</button>':'')+
+        '<button onclick="deleteMemo('+m.id+')" style="width:24px;height:24px;border-radius:4px;border:1px solid #fcc;background:#fff;color:var(--red);cursor:pointer;font-size:11px;" title="Delete">✕</button>'+
+      '</div>'+
+    '</div>';
   }).join('');
 }
 async function createMemo(){
