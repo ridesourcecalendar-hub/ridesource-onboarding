@@ -341,8 +341,9 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
       </div>
       <div class="landing-sub">Staff Portal</div>
       <div class="portal-tabs">
-        <button class="portal-tab active" id="tab-emp" onclick="switchLanding('employee')">👤 Employee Portal</button>
-        <button class="portal-tab" id="tab-adm" onclick="switchLanding('admin')">🔒 Admin Portal</button>
+        <button class="portal-tab active" id="tab-emp" onclick="switchLanding('employee')">👤 Employee</button>
+        <button class="portal-tab" id="tab-vol" onclick="switchLanding('volunteer')" style="background:#f8f9fa;">🤝 Volunteer</button>
+        <button class="portal-tab" id="tab-adm" onclick="switchLanding('admin')">🔒 Admin</button>
       </div>
       <div id="landing-employee">
         <div class="landing-title">Welcome!</div>
@@ -355,6 +356,18 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
         </select>
         <button class="landing-btn" onclick="startPortal()">Enter Employee Portal →</button>
         <div class="error-msg" id="login-error">Please fill in all fields to continue.</div>
+      </div>
+      <div id="landing-volunteer" style="display:none;">
+        <div class="landing-title">Volunteer Portal</div>
+        <div class="landing-desc">Access your policy sign-offs, memos, and incident reporting.</div>
+        <input class="landing-field" id="vol-login-name" type="text" placeholder="Your Full Name" autocomplete="name">
+        <input class="landing-field" id="vol-login-email" type="email" placeholder="Your Email Address" autocomplete="email">
+        <select class="landing-field" id="vol-login-county">
+          <option value="">Select Your County</option>
+          <option>Androscoggin</option><option>Aroostook</option><option>Cumberland</option><option>Franklin</option><option>Hancock</option><option>Kennebec</option><option>Knox</option><option>Lincoln</option><option>Oxford</option><option>Penobscot</option><option>Piscataquis</option><option>Sagadahoc</option><option>Somerset</option><option>Waldo</option><option>Washington</option><option>York</option>
+        </select>
+        <button class="landing-btn" style="background:#2e7d4f;" onclick="startVolunteerPortal()">Enter Volunteer Portal →</button>
+        <div class="error-msg" id="vol-login-error">Please fill in all fields to continue.</div>
       </div>
       <div id="landing-admin" style="display:none;">
         <div class="landing-title">Admin &amp; Manager Access</div>
@@ -923,6 +936,184 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 </div><!-- end screen-portal -->
 
 <!-- ADMIN PORTAL -->
+<!-- VOLUNTEER PORTAL -->
+<div id="screen-volunteer" class="screen">
+  <div class="header">
+    <div class="header-logo">
+      <div class="header-logo-text">Ride<span>Source</span></div>
+      <div class="header-logo-sub">Volunteer Portal</div>
+    </div>
+    <div class="header-right">
+      <div class="header-user">Welcome, <strong id="vol-display-name"></strong></div>
+      <button class="btn-logout" onclick="volunteerLogout()">Sign Out</button>
+    </div>
+  </div>
+  <div class="portal-layout">
+    <div class="sidebar">
+      <div style="padding:0 8px;">
+        <div class="sidebar-label">Overview</div>
+        <div class="nav-item active" onclick="showVolSection('vol-dashboard')" id="vnav-dashboard"><span class="nav-icon">🏠</span>Dashboard</div>
+        <div class="sidebar-label">Documents</div>
+        <div class="nav-item" onclick="showVolSection('vol-handbook')" id="vnav-handbook"><span class="nav-icon">📖</span>Volunteer Handbook</div>
+        <div class="sidebar-label">Actions</div>
+        <div class="nav-item" onclick="showVolSection('vol-policies')" id="vnav-policies"><span class="nav-icon">✍️</span>Policy Sign-Offs<span class="nav-badge" id="vbadge-policies">0/12</span></div>
+        <div class="nav-item" onclick="showVolSection('vol-timeoff')" id="vnav-timeoff"><span class="nav-icon">📅</span>Request Time Off</div>
+        <div class="nav-item" onclick="showVolSection('vol-expenses')" id="vnav-expenses"><span class="nav-icon">💰</span>Expenses</div>
+        <div class="nav-item" onclick="showVolSection('vol-incident')" id="vnav-incident"><span class="nav-icon">🚨</span>Incident Report</div>
+        <div class="nav-item" onclick="showVolSection('vol-memos')" id="vnav-memos"><span class="nav-icon">📢</span>Memos<span class="nav-badge" id="vbadge-memos" style="background:var(--red);color:#fff;display:none;">!</span></div>
+      </div>
+    </div>
+    <div class="main-content">
+
+      <!-- VOL DASHBOARD -->
+      <div id="section-vol-dashboard" class="portal-section" style="display:block;">
+        <div style="background:linear-gradient(135deg,#2e7d4f,#1a5c35);border-radius:12px;padding:20px 24px;color:#fff;margin-bottom:20px;">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;opacity:.8;margin-bottom:4px;">Volunteer Portal</div>
+          <div style="font-size:22px;font-weight:800;" id="vol-welcome-name">Welcome!</div>
+          <div style="font-size:13px;opacity:.8;margin-top:4px;">Thank you for your service to the RideSource community.</div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;">
+          <div class="card" style="cursor:pointer;text-align:center;" onclick="showVolSection('vol-policies')">
+            <div style="font-size:28px;margin-bottom:6px;">✍️</div>
+            <div style="font-size:14px;font-weight:700;color:var(--navy);">Policy Sign-Offs</div>
+            <div style="font-size:12px;color:#888;margin-top:2px;" id="vdash-policies">Loading...</div>
+          </div>
+          <div class="card" style="cursor:pointer;text-align:center;" onclick="showVolSection('vol-timeoff')">
+            <div style="font-size:28px;margin-bottom:6px;">📅</div>
+            <div style="font-size:14px;font-weight:700;color:var(--navy);">Time Off</div>
+            <div style="font-size:12px;color:#888;margin-top:2px;">Submit a request</div>
+          </div>
+          <div class="card" style="cursor:pointer;text-align:center;" onclick="showVolSection('vol-expenses')">
+            <div style="font-size:28px;margin-bottom:6px;">💰</div>
+            <div style="font-size:14px;font-weight:700;color:var(--navy);">Expenses</div>
+            <div style="font-size:12px;color:#888;margin-top:2px;">Submit tolls & fees</div>
+          </div>
+          <div class="card" style="cursor:pointer;text-align:center;" onclick="showVolSection('vol-incident')">
+            <div style="font-size:28px;margin-bottom:6px;">🚨</div>
+            <div style="font-size:14px;font-weight:700;color:var(--navy);">Incident Report</div>
+            <div style="font-size:12px;color:#888;margin-top:2px;">Report an incident</div>
+          </div>
+          <div class="card" style="cursor:pointer;text-align:center;" onclick="showVolSection('vol-memos')">
+            <div style="font-size:28px;margin-bottom:6px;">📢</div>
+            <div style="font-size:14px;font-weight:700;color:var(--navy);">Memos</div>
+            <div style="font-size:12px;color:#888;margin-top:2px;" id="vdash-memos">No new memos</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VOL HANDBOOK (reuses employee handbook content) -->
+      <div id="section-vol-handbook" class="portal-section">
+        <div class="card-title" style="font-size:22px;color:var(--navy);margin-bottom:8px;">📖 Volunteer Handbook</div>
+        <p style="color:#888;font-size:14px;margin-bottom:16px;">Please read the volunteer handbook carefully. Your acknowledgment will be recorded.</p>
+        <div id="vol-handbook-content"><p style="color:#888;">Loading...</p></div>
+      </div>
+
+      <!-- VOL POLICIES (reuses employee policy section) -->
+      <div id="section-vol-policies" class="portal-section">
+        <div id="vol-policies-content"></div>
+      </div>
+
+      <!-- VOL TIME OFF (no PTO option) -->
+      <div id="section-vol-timeoff" class="portal-section">
+        <div class="card-title" style="font-size:22px;color:var(--navy);margin-bottom:4px;">📅 Time Off</div>
+        <p style="color:#888;font-size:14px;margin-bottom:24px;">Submit a time off request below.</p>
+        <div class="card" style="margin-bottom:20px;">
+          <div style="font-size:16px;font-weight:800;color:var(--navy);margin-bottom:4px;">📨 Submit a Request</div>
+          <div class="card-sub" style="margin-bottom:16px;">Select a request type to get started.</div>
+          <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:24px;">
+            <button class="req-type-btn btn-secondary" onclick="selectVolReqType(this,'Full Day Off')">☀️ Full Day Off</button>
+            <button class="req-type-btn btn-secondary" onclick="selectVolReqType(this,'Multiple Days')">📆 Multiple Days</button>
+            <button class="req-type-btn btn-secondary" onclick="selectVolReqType(this,'Start Late')">⏰ Start Late</button>
+            <button class="req-type-btn btn-secondary" onclick="selectVolReqType(this,'End Early')">🚪 End Early</button>
+            <button class="req-type-btn btn-secondary" onclick="selectVolReqType(this,'Mid-Day Appointment')">🏥 Mid-Day Appointment</button>
+          </div>
+          <div id="vol-req-form" style="display:none;">
+            <div id="vol-req-fields"></div>
+            <div class="form-field"><label>Reason</label>
+              <select id="vol-req-reason" style="width:100%;padding:11px 14px;border:2px solid var(--border);border-radius:8px;font-size:14px;outline:none;">
+                <option value="">Select a reason...</option>
+                <option>Personal Day</option>
+                <option>Medical Appointment</option>
+                <option>Family Emergency</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <button class="btn-primary" onclick="submitVolTimeOff()" style="margin-top:8px;">Submit Request</button>
+          </div>
+          <div id="vol-req-success" style="display:none;" class="success-banner">
+            <div>✅</div><h2 style="font-size:18px;margin-top:8px;">Request Submitted!</h2>
+            <p>Your supervisor has been notified.</p>
+            <button class="btn-primary" style="margin-top:12px;background:rgba(255,255,255,.2);border:2px solid rgba(255,255,255,.5);" onclick="resetVolTimeOff()">Submit Another</button>
+          </div>
+        </div>
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="toggleVolRequestHistory()">
+            <div style="font-size:16px;font-weight:800;color:var(--navy);">📋 My Submission History</div>
+            <span id="vol-req-chevron" style="font-size:18px;color:#888;transition:transform .2s;">▼</span>
+          </div>
+          <div id="vol-req-history-panel" style="display:none;margin-top:16px;">
+            <div id="vol-req-history-list"><p style="color:#888;font-size:13px;">Loading...</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VOL EXPENSES (reuses expense form) -->
+      <div id="section-vol-expenses" class="portal-section">
+        <div class="card-title" style="font-size:22px;color:var(--navy);margin-bottom:4px;">💰 Expenses & Reimbursements</div>
+        <p style="color:#888;font-size:14px;margin-bottom:24px;">Submit tolls, parking fees, or work-related expenses for reimbursement.</p>
+        <div class="card" style="margin-bottom:20px;">
+          <div id="vol-exp-submit-form">
+            <div class="form-row">
+              <div class="form-field"><label>Expense Type *</label>
+                <select id="vol-exp-type" style="width:100%;padding:11px 14px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                  <option value="">Select type...</option>
+                  <option>Toll</option><option>Parking</option><option>Reimbursement</option>
+                </select>
+              </div>
+              <div class="form-field"><label>Date *</label><input type="date" id="vol-exp-date" style="width:100%;padding:11px 14px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-field"><label>Amount ($) *</label><input type="number" id="vol-exp-amount" placeholder="0.00" step="0.01" min="0" style="width:100%;padding:11px 14px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+              <div class="form-field"><label>Description *</label><input type="text" id="vol-exp-description" placeholder="e.g. Toll on I-95 northbound" style="width:100%;padding:11px 14px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+            </div>
+            <div class="form-field"><label>Receipt Photo (optional)</label><input type="file" id="vol-exp-receipt" accept="image/*,.pdf" style="width:100%;padding:8px;border:2px solid var(--border);border-radius:8px;font-size:13px;"></div>
+            <button class="btn-primary" onclick="submitVolExpense()" style="margin-top:8px;">💰 Submit Expense</button>
+          </div>
+          <div id="vol-exp-success" style="display:none;" class="success-banner">
+            <div>✅</div><h2 style="font-size:18px;margin-top:8px;">Expense Submitted!</h2>
+            <p>Your supervisor will review your submission.</p>
+            <button class="btn-primary" style="margin-top:12px;background:rgba(255,255,255,.2);border:2px solid rgba(255,255,255,.5);" onclick="resetVolExpense()">Submit Another</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- VOL INCIDENT (reuses incident form) -->
+      <div id="section-vol-incident" class="portal-section">
+        <div class="card-title" style="font-size:22px;color:var(--navy);margin-bottom:8px;">🚨 Incident Report</div>
+        <p style="color:#888;font-size:14px;margin-bottom:16px;">Report any incident or accident immediately. Your submission goes directly to your supervisor.</p>
+        <div id="vol-incident-form-wrap"></div>
+      </div>
+
+      <!-- VOL MEMOS -->
+      <div id="section-vol-memos" class="portal-section">
+        <div class="card-title" style="font-size:22px;color:var(--navy);margin-bottom:8px;">📢 Memos</div>
+        <div id="vol-memos-list"><p style="color:#888;font-size:13px;">Loading...</p></div>
+      </div>
+
+    </div><!-- end main-content -->
+  </div><!-- end portal-layout -->
+
+  <!-- Mobile bottom nav -->
+  <div class="mobile-nav">
+    <button onclick="showVolSection('vol-dashboard')" class="mobile-nav-btn">🏠<span>Home</span></button>
+    <button onclick="showVolSection('vol-timeoff')" class="mobile-nav-btn">📅<span>Time Off</span></button>
+    <button onclick="showVolSection('vol-expenses')" class="mobile-nav-btn">💰<span>Expenses</span></button>
+    <button onclick="showVolSection('vol-memos')" class="mobile-nav-btn">📢<span>Memos</span></button>
+    <button onclick="showVolSection('vol-incident')" class="mobile-nav-btn">🚨<span>Incident</span></button>
+  </div>
+</div>
+
+
 <!-- ADMIN PORTAL -->
 <div id="screen-admin" class="screen">
   <div class="header">
@@ -2684,8 +2875,11 @@ window.addEventListener('load',async function(){
 // LANDING
 function switchLanding(mode){
   document.getElementById('landing-employee').style.display=mode==='employee'?'block':'none';
+  const volPanel=document.getElementById('landing-volunteer');
+  if(volPanel)volPanel.style.display=mode==='volunteer'?'block':'none';
   document.getElementById('landing-admin').style.display=mode==='admin'?'block':'none';
   document.getElementById('tab-emp').classList.toggle('active',mode==='employee');
+  const volTab=document.getElementById('tab-vol');if(volTab)volTab.classList.toggle('active',mode==='volunteer');
   document.getElementById('tab-adm').classList.toggle('active',mode==='admin');
 }
 
@@ -9374,6 +9568,252 @@ async function changeOwnPassword(){
     msgEl.style.display='inline';setTimeout(()=>msgEl.style.display='none',3000);
   }catch(e){errEl.textContent='Error: '+e.message;errEl.style.display='inline';}
 }
+
+// ═══════════════════════════════════════════════
+// VOLUNTEER PORTAL
+// ═══════════════════════════════════════════════
+let volUser = null;
+let currentVolSection = 'vol-dashboard';
+let volReqType = null;
+
+async function startVolunteerPortal(){
+  const name=document.getElementById('vol-login-name').value.trim();
+  const email=document.getElementById('vol-login-email').value.trim().toLowerCase();
+  const county=document.getElementById('vol-login-county').value;
+  const errEl=document.getElementById('vol-login-error');
+  errEl.style.display='none';
+  if(!name||!email||!county){errEl.style.display='block';return;}
+  // Check against ridesource_employees table (same as employee login)
+  try{
+    const{data}=await db.from('ridesource_employees').select('*').ilike('email',email).limit(1);
+    if(!data||data.length===0){errEl.textContent='No volunteer account found. Contact your supervisor.';errEl.style.display='block';return;}
+  }catch(e){console.log('Volunteer auth:',e);}
+  volUser={name,email,county};
+  document.getElementById('vol-display-name').textContent=name;
+  document.getElementById('vol-welcome-name').textContent='Welcome, '+name.split(' ')[0]+'!';
+  sessionStorage.setItem('rs_vol_session',JSON.stringify({name,email,county,ts:Date.now()}));
+  document.getElementById('screen-landing').classList.remove('active');
+  document.getElementById('screen-volunteer').classList.add('active');
+  showVolSection('vol-dashboard');
+  loadVolMemos();
+  loadVolDashboard();
+}
+
+function volunteerLogout(){
+  volUser=null;
+  sessionStorage.removeItem('rs_vol_session');
+  document.getElementById('screen-volunteer').classList.remove('active');
+  document.getElementById('screen-landing').classList.add('active');
+  switchLanding('volunteer');
+}
+
+function showVolSection(id){
+  currentVolSection=id;
+  document.querySelectorAll('#screen-volunteer .portal-section').forEach(s=>{
+    s.style.display=s.id==='section-'+id?'block':'none';
+  });
+  document.querySelectorAll('#screen-volunteer .nav-item').forEach(n=>n.classList.remove('active'));
+  const sectionKey=id.replace('vol-','');
+  const navEl=document.getElementById('vnav-'+sectionKey);
+  if(navEl)navEl.classList.add('active');
+  if(id==='vol-policies')loadVolPolicies();
+  if(id==='vol-memos')loadVolMemos();
+  if(id==='vol-incident')buildVolIncidentForm();
+}
+
+function loadVolDashboard(){
+  // Policy count
+  if(!volUser)return;
+  db.from('policy_signatures').select('policy_id').eq('employee_email',volUser.email).then(({data})=>{
+    const signed=new Set((data||[]).map(r=>r.policy_id)).size;
+    const el=document.getElementById('vdash-policies');
+    if(el)el.textContent=signed+'/'+POLICIES.length+' signed';
+  }).catch(()=>{});
+}
+
+async function loadVolPolicies(){
+  const el=document.getElementById('vol-policies-content');if(!el)return;
+  if(!volUser){el.innerHTML='<p style="color:#888;">Not logged in.</p>';return;}
+  // Reuse the employee policy rendering by temporarily setting user
+  const savedUser=user;
+  user=volUser;
+  try{
+    await loadPolicies();
+    // Copy content from employee policy section to volunteer
+    const empPolicies=document.getElementById('section-policies');
+    if(empPolicies)el.innerHTML=empPolicies.innerHTML;
+  }catch(e){}
+  user=savedUser;
+}
+
+// VOL TIME OFF
+function selectVolReqType(btn,type){
+  volReqType=type;
+  document.querySelectorAll('.req-type-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const formEl=document.getElementById('vol-req-form');
+  const fieldsEl=document.getElementById('vol-req-fields');
+  if(!formEl||!fieldsEl)return;
+  let html='';
+  if(type==='Full Day Off'){
+    html='<div class="sig-field"><label>Date</label><input type="date" id="vol-req-date1" style="width:100%;padding:11px 14px;border:2px solid var(--border);border-radius:8px;font-size:14px;outline:none;"></div>';
+  } else if(type==='Multiple Days'){
+    html='<div class="form-row"><div class="form-field"><label>From</label><input type="date" id="vol-req-date1" style="width:100%;padding:11px 14px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div><div class="form-field"><label>To</label><input type="date" id="vol-req-date2" style="width:100%;padding:11px 14px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div></div>';
+  } else {
+    html='<div class="form-row"><div class="form-field"><label>Date</label><input type="date" id="vol-req-date1" style="width:100%;padding:11px 14px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div><div class="form-field"><label>Time</label><input type="time" id="vol-req-time" style="width:100%;padding:11px 14px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div></div>';
+  }
+  fieldsEl.innerHTML=html;
+  formEl.style.display='block';
+}
+
+async function submitVolTimeOff(){
+  if(!volUser||!volReqType){alert('Please select a request type.');return;}
+  const date1=document.getElementById('vol-req-date1')?.value||'';
+  const date2=document.getElementById('vol-req-date2')?.value||date1;
+  const reason=document.getElementById('vol-req-reason')?.value||'';
+  if(!date1){alert('Please select a date.');return;}
+  try{
+    await db.from('time_off_requests').insert([{
+      employee_name:volUser.name,employee_email:volUser.email,county:volUser.county,
+      request_type:volReqType,start_date:date1,end_date:date2,
+      reason,status:'PENDING',submitted_at:new Date().toISOString()
+    }]);
+    document.getElementById('vol-req-form').style.display='none';
+    document.getElementById('vol-req-success').style.display='block';
+  }catch(e){alert('Unable to submit. Please try again.');}
+}
+
+function resetVolTimeOff(){
+  volReqType=null;
+  document.querySelectorAll('#section-vol-timeoff .req-type-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('vol-req-form').style.display='none';
+  document.getElementById('vol-req-success').style.display='none';
+}
+
+function toggleVolRequestHistory(){
+  const panel=document.getElementById('vol-req-history-panel');
+  const chevron=document.getElementById('vol-req-chevron');
+  const isOpen=panel.style.display!=='none';
+  panel.style.display=isOpen?'none':'block';
+  chevron.style.transform=isOpen?'':'rotate(180deg)';
+  if(!isOpen)loadVolRequestHistory();
+}
+
+async function loadVolRequestHistory(){
+  const el=document.getElementById('vol-req-history-list');if(!el||!volUser)return;
+  try{
+    const{data}=await db.from('time_off_requests').select('*').eq('employee_email',volUser.email).order('submitted_at',{ascending:false}).limit(10);
+    if(!data||!data.length){el.innerHTML='<p style="color:#888;font-size:13px;">No requests submitted yet.</p>';return;}
+    el.innerHTML=data.map(r=>{
+      const s=r.status==='APPROVED'?'approved':r.status==='DENIED'?'denied':'pending';
+      return '<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;"><div><strong>'+r.request_type+'</strong><br><span style="color:#888;font-size:12px;">'+r.start_date+(r.end_date&&r.end_date!==r.start_date?' - '+r.end_date:'')+'</span></div><span class="badge badge-'+s+'">'+r.status+'</span></div>';
+    }).join('');
+  }catch(e){el.innerHTML='<p style="color:#888;font-size:13px;">Unable to load.</p>';}
+}
+
+// VOL EXPENSES
+async function submitVolExpense(){
+  if(!volUser)return;
+  const type=document.getElementById('vol-exp-type').value;
+  const date=document.getElementById('vol-exp-date').value;
+  const amount=document.getElementById('vol-exp-amount').value;
+  const desc=document.getElementById('vol-exp-description').value.trim();
+  if(!type||!date||!amount||!desc){alert('Please fill in all required fields.');return;}
+  let receiptUrl=null;
+  const fileInput=document.getElementById('vol-exp-receipt');
+  if(fileInput?.files?.length){
+    try{
+      const file=fileInput.files[0];
+      const fileName='expenses/'+volUser.email+'-'+Date.now()+'-'+file.name;
+      const{data:up}=await db.storage.from('ridesource-uploads').upload(fileName,file);
+      if(up){const{data:u}=db.storage.from('ridesource-uploads').getPublicUrl(fileName);receiptUrl=u?.publicUrl;}
+    }catch(e){}
+  }
+  try{
+    await db.from('expense_submissions').insert([{
+      employee_name:volUser.name,employee_email:volUser.email,county:volUser.county,
+      expense_type:type,expense_date:date,amount:parseFloat(amount),description:desc,
+      receipt_url:receiptUrl,status:'PENDING',submitted_at:new Date().toISOString()
+    }]);
+    document.getElementById('vol-exp-submit-form').style.display='none';
+    document.getElementById('vol-exp-success').style.display='block';
+  }catch(e){alert('Unable to submit. Please try again.');}
+}
+
+function resetVolExpense(){
+  ['vol-exp-type','vol-exp-date','vol-exp-amount','vol-exp-description'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('vol-exp-receipt').value='';
+  document.getElementById('vol-exp-success').style.display='none';
+  document.getElementById('vol-exp-submit-form').style.display='block';
+}
+
+// VOL MEMOS
+async function loadVolMemos(){
+  const el=document.getElementById('vol-memos-list');if(!el||!volUser)return;
+  try{
+    const{data}=await db.from('memos').select('*').eq('is_active',true).order('created_at',{ascending:false});
+    if(!data||!data.length){el.innerHTML='<p style="color:#888;font-size:13px;">No memos at this time.</p>';return;}
+    const unread=data.filter(m=>!(m.read_by||[]).includes(volUser.email)).length;
+    const dashEl=document.getElementById('vdash-memos');
+    if(dashEl)dashEl.textContent=unread>0?unread+' unread memo'+(unread>1?'s':''):'All caught up!';
+    const badge=document.getElementById('vbadge-memos');
+    if(badge){badge.style.display=unread>0?'inline':'none';}
+    el.innerHTML=data.map(m=>{
+      const isRead=(m.read_by||[]).includes(volUser.email);
+      const dt=new Date(m.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+      return '<div style="border:1px solid '+(isRead?'var(--border)':'#a78bfa')+';border-radius:10px;padding:14px;margin-bottom:10px;background:'+(isRead?'#fafafa':'#faf5ff')+';">'+
+        '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">'+
+          '<div><div style="font-size:14px;font-weight:700;color:var(--navy);">'+m.subject+(m.priority==='urgent'?'<span style="background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:6px;margin-left:6px;">URGENT</span>':'')+'</div>'+
+          '<div style="font-size:11px;color:#888;margin-top:2px;">From '+m.created_by+' · '+dt+'</div></div>'+
+          (isRead?'<span style="color:var(--success);font-size:11px;font-weight:700;">✓ Read</span>':'<span style="background:#5b21b6;color:#fff;font-size:10px;padding:2px 8px;border-radius:10px;">NEW</span>')+
+        '</div>'+
+        '<div style="font-size:13px;color:#444;margin-top:10px;">'+m.body+'</div>'+
+        (!isRead?'<button data-mid="'+m.id+'" onclick="markVolMemoRead(this.dataset.mid,this)" style="margin-top:10px;background:#5b21b6;color:#fff;border:none;padding:7px 16px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;">✓ Mark as Read</button>':'')+
+      '</div>';
+    }).join('');
+  }catch(e){el.innerHTML='<p style="color:#888;font-size:13px;">Unable to load memos.</p>';}
+}
+
+async function markVolMemoRead(memoId,btn){
+  if(!volUser)return;
+  try{
+    const{data}=await db.from('memos').select('read_by').eq('id',memoId).single();
+    const readBy=[...(data?.read_by||[])];
+    if(!readBy.includes(volUser.email))readBy.push(volUser.email);
+    await db.from('memos').update({read_by:readBy}).eq('id',memoId);
+    btn.textContent='✓ Read';btn.style.background='#888';btn.disabled=true;
+    loadVolMemos();
+  }catch(e){}
+}
+
+// VOL INCIDENT - reuse employee incident form
+function buildVolIncidentForm(){
+  const wrap=document.getElementById('vol-incident-form-wrap');if(!wrap)return;
+  // Copy incident form from employee portal
+  const empForm=document.getElementById('section-incident');
+  if(empForm){wrap.innerHTML=empForm.innerHTML;}
+}
+
+// Session restore for volunteer
+window.addEventListener('load',async function(){
+  try{
+    const vs=sessionStorage.getItem('rs_vol_session');
+    if(vs){
+      const sess=JSON.parse(vs);
+      const age=sess.ts?Date.now()-sess.ts:Infinity;
+      if(age<8*60*60*1000&&sess.name&&sess.email&&sess.county){
+        volUser={name:sess.name,email:sess.email,county:sess.county};
+        document.getElementById('vol-display-name').textContent=sess.name;
+        document.getElementById('vol-welcome-name').textContent='Welcome, '+sess.name.split(' ')[0]+'!';
+        document.getElementById('screen-landing').classList.remove('active');
+        document.getElementById('screen-volunteer').classList.add('active');
+        showVolSection('vol-dashboard');
+        loadVolMemos();
+        loadVolDashboard();
+      }
+    }
+  }catch(e){}
+},true);
 </script>
 <!-- MODALS -->
 <div class="modal-overlay" id="policy-modal">
