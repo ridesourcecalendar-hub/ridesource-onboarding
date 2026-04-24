@@ -1451,6 +1451,15 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
         <div style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:4px;">🚐 Vehicle Records</div>
         <p style="color:#888;font-size:13px;margin-bottom:16px;">All vehicle reports from drivers and admin. Filter, update status, or create a new admin report below.</p>
 
+        <!-- Status tabs -->
+        <div style="display:flex;gap:4px;margin-bottom:16px;border-bottom:2px solid var(--border);flex-wrap:wrap;">
+          <button id="vr-tab-ALL" onclick="setVrTab('ALL')" style="padding:8px 14px;font-size:13px;font-weight:700;border:none;border-bottom:2px solid var(--navy);margin-bottom:-2px;cursor:pointer;background:none;color:var(--navy);">All <span id="vr-count-ALL" style="font-size:11px;background:#ddd;color:#555;padding:1px 6px;border-radius:8px;margin-left:4px;">0</span></button>
+          <button id="vr-tab-NEW" onclick="setVrTab('NEW')" style="padding:8px 14px;font-size:13px;font-weight:700;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;background:none;color:#888;">Open <span id="vr-count-NEW" style="font-size:11px;background:var(--red);color:#fff;padding:1px 6px;border-radius:8px;margin-left:4px;">0</span></button>
+          <button id="vr-tab-PENDING" onclick="setVrTab('PENDING')" style="padding:8px 14px;font-size:13px;font-weight:700;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;background:none;color:#888;">In Progress <span id="vr-count-PENDING" style="font-size:11px;background:#ddd;color:#555;padding:1px 6px;border-radius:8px;margin-left:4px;">0</span></button>
+          <button id="vr-tab-RESOLVED" onclick="setVrTab('RESOLVED')" style="padding:8px 14px;font-size:13px;font-weight:700;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;background:none;color:#888;">Resolved <span id="vr-count-RESOLVED" style="font-size:11px;background:#ddd;color:#555;padding:1px 6px;border-radius:8px;margin-left:4px;">0</span></button>
+          <button id="vr-tab-CLOSED" onclick="setVrTab('CLOSED')" style="padding:8px 14px;font-size:13px;font-weight:700;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;background:none;color:#888;">Closed <span id="vr-count-CLOSED" style="font-size:11px;background:#ddd;color:#555;padding:1px 6px;border-radius:8px;margin-left:4px;">0</span></button>
+        </div>
+
         <!-- ADMIN REPORT FORM (collapsible) -->
         <div class="card" style="margin-bottom:16px;border:2px solid var(--navy);">
           <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="toggleAdminVRForm()">
@@ -1799,9 +1808,57 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
                 <div class="form-field"><label>Service Date *</label><input type="date" id="fm-rep-date"></div>
                 <div class="form-field"><label>Mileage at Repair</label><input type="number" id="fm-rep-mileage" placeholder="e.g. 45230"></div>
               </div>
-              <div class="form-field"><label>Problem / Issue *</label><input type="text" id="fm-rep-problem" placeholder="e.g. Grinding noise from front left wheel"></div>
+              <div class="form-field"><label>Problem / Issue *</label>
+                <select id="fm-rep-issue-type" onchange="handleRepairIssueChange()" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;margin-bottom:6px;">
+                  <option value="">— Select Issue Type —</option>
+                  <option>Windshield / Glass</option>
+                  <option>Battery</option>
+                  <option>Electrical / Lights</option>
+                  <option>Brakes</option>
+                  <option>Tires / Wheels</option>
+                  <option>Engine / Mechanical</option>
+                  <option>Transmission</option>
+                  <option>Heating / AC / HVAC</option>
+                  <option>Suspension / Steering</option>
+                  <option>Exhaust</option>
+                  <option>Fluid Leak</option>
+                  <option>Body / Exterior Damage</option>
+                  <option>Interior / Seats</option>
+                  <option>Wheelchair Lift / Ramp</option>
+                  <option>Noise / Vibration</option>
+                  <option>Oil Change Request</option>
+                  <option>Other</option>
+                </select>
+                <input type="text" id="fm-rep-problem" placeholder="Describe the problem in detail..." style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+              </div>
               <div class="form-field"><label>Work Performed *</label><textarea id="fm-rep-work" style="min-height:60px;" placeholder="e.g. Replaced front left brake pads and rotor"></textarea></div>
-              <div class="form-field"><label>Parts Used (optional)</label><input type="text" id="fm-rep-parts" placeholder="e.g. Motorcraft brake pads, OEM rotor"></div>
+              <div class="form-field"><label>Parts Used (optional)</label>
+                <select id="fm-rep-parts-type" onchange="handleRepairPartsChange()" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;margin-bottom:6px;">
+                  <option value="">— Select Common Part —</option>
+                  <option>Brake Pads</option>
+                  <option>Brake Rotors</option>
+                  <option>Battery</option>
+                  <option>Windshield</option>
+                  <option>Wiper Blades</option>
+                  <option>Air Filter</option>
+                  <option>Cabin Air Filter</option>
+                  <option>Serpentine Belt</option>
+                  <option>Alternator</option>
+                  <option>Starter Motor</option>
+                  <option>Wheel Bearing</option>
+                  <option>CV Axle / CV Joint</option>
+                  <option>Shock / Strut</option>
+                  <option>Tie Rod</option>
+                  <option>Bulb / LED</option>
+                  <option>Fuse</option>
+                  <option>Thermostat</option>
+                  <option>Radiator Hose</option>
+                  <option>Coolant</option>
+                  <option>Transmission Fluid</option>
+                  <option>Other (specify below)</option>
+                </select>
+                <input type="text" id="fm-rep-parts" placeholder="Parts used — add/edit as needed..." style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+              </div>
               <div class="form-row">
                 <div class="form-field"><label>Shop / Location</label><input type="text" id="fm-rep-shop" placeholder="e.g. Sullivan Tire, Ellsworth ME"></div>
                 <div class="form-field"><label>Cost</label><input type="number" id="fm-rep-cost" placeholder="e.g. 320.00" step="0.01"></div>
@@ -4406,7 +4463,7 @@ function renderFleetVehicleGrid(){
   }).join('');
 }
 
-async function openFleetVehicle(vehicleId){
+async function openFleetVehicle(vehicleId){clearFleetForms();
   currentFleetVehicleId=vehicleId;
   const v=allFleetVehiclesCache.find(x=>x.vehicle_id===vehicleId);
   if(!v)return;
@@ -4434,6 +4491,15 @@ async function openFleetVehicle(vehicleId){
     sel.innerHTML='<option value="">— None —</option>'+
       allVehicleRecordsCache.filter(r=>r.vehicle_id===vehicleId).map(r=>'<option value="'+r.id+'">'+r.report_date+' — '+( r.issue_types||'').substring(0,40)+'</option>').join('');
   }
+  // Clear all form fields when opening a vehicle
+  ['fm-date','fm-mileage','fm-next-date','fm-next-mileage','fm-shop','fm-notes',
+   'fm-prev-date','fm-prev-mileage','fm-prev-notes',
+   'fm-rep-date','fm-rep-mileage','fm-rep-problem','fm-rep-work','fm-rep-parts','fm-rep-shop','fm-rep-notes',
+   'fm-insp-date','fm-insp-mileage','fm-insp-station','fm-insp-sticker','fm-insp-notes'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value='';
+  });
+  ['fm-cost','fm-rep-cost','fm-insp-cost'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['fm-rep-issue-type','fm-rep-parts-type','fm-linked-report','fm-insp-type','fm-insp-result'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   switchFleetMaintTab('oil');
   document.getElementById('fleet-vehicle-modal').classList.add('open');
 }
@@ -4456,7 +4522,50 @@ function autoCalcNextOilMileage(){
   const interval=v?.oil_change_interval_miles||5000; // default 5000 miles
   nextMileageEl.value=parseInt(mileageEl.value)+interval;
 }
+function handleRepairIssueChange(){
+  const sel=document.getElementById('fm-rep-issue-type');
+  const txt=document.getElementById('fm-rep-problem');
+  if(sel?.value&&sel.value!=='Other'){
+    if(!txt.value)txt.value=sel.value+': ';
+    else if(!txt.value.includes(sel.value))txt.value=sel.value+': '+txt.value;
+  }
+}
+function handleRepairPartsChange(){
+  const sel=document.getElementById('fm-rep-parts-type');
+  const txt=document.getElementById('fm-rep-parts');
+  if(sel?.value&&sel.value!=='Other (specify below)'){
+    txt.value=txt.value?txt.value+', '+sel.value:sel.value;
+  }
+  sel.value='';
+}
+function populateLinkedReports(vehicleId){
+  const sel=document.getElementById('fm-linked-report');
+  if(!sel)return;
+  const reports=(allVehicleRecordsCache||[]).filter(r=>r.vehicle_id===vehicleId&&r.status!=='CLOSED');
+  sel.innerHTML='<option value="">— None —</option>'+
+    reports.map(r=>'<option value="'+r.id+'">['+new Date(r.submitted_at).toLocaleDateString('en-US',{month:'short',day:'numeric'})+'] '+r.employee_name+' - '+(r.issue_types||'').substring(0,40)+'</option>').join('');
+}
+function clearFleetForms(){
+  // Clear all maintenance form fields to prevent data lingering
+  const fieldsToClear=['fm-date','fm-mileage','fm-next-date','fm-next-mileage','fm-shop','fm-cost','fm-notes',
+    'fm-prev-date','fm-prev-type','fm-prev-notes','fm-prev-next-date',
+    'fm-repair-date','fm-repair-problem','fm-repair-work','fm-repair-parts','fm-repair-cost','fm-repair-notes','fm-repair-link',
+    'fm-insp-date','fm-insp-type','fm-insp-next-date','fm-insp-sticker','fm-insp-station','fm-insp-notes',
+    'fm-tire-date','fm-tire-notes'];
+  fieldsToClear.forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  // Clear checkboxes
+  ['fm-insp-pass','fm-repair-linked'].forEach(id=>{const el=document.getElementById(id);if(el)el.checked=false;});
+}
 function switchFleetMaintTab(tab){
+  if(tab==='repair'){
+    // Populate vehicle reports dropdown for linking
+    const sel=document.getElementById('fm-linked-report');
+    if(sel&&currentFleetVehicleId){
+      const reports=allVehicleRecordsCache.filter(r=>r.vehicle_id===currentFleetVehicleId&&r.status!=='Resolved');
+      sel.innerHTML='<option value="">— None —</option>'+
+        reports.map(r=>'<option value="'+r.id+'">'+r.report_date+' — '+(r.issue_types||'').substring(0,50)+'</option>').join('');
+    }
+  }
   currentFleetMaintTab=tab;
   ['oil','tires','preventative','repair','inspection'].forEach(t=>{
     document.getElementById('fmtab-'+t)?.classList.toggle('active',t===tab);
@@ -4477,6 +4586,7 @@ function switchFleetMaintTab(tab){
   const titles={oil:'🛢️ Log Oil Change',preventative:'🔧 Log Preventative Service',repair:'🚨 Log Repair',inspection:'📋 Log Inspection'};
   const titleEl=document.getElementById('fm-form-title');
   if(titleEl&&titles[tab])titleEl.textContent=titles[tab];
+  if(tab==='repair')populateLinkedReports(currentFleetVehicleId);
   if(isTires){renderTireMounted();loadTireChangeoversHistory();}
   else{loadFleetMaintHistory();}
 }
@@ -4592,7 +4702,8 @@ async function saveFleetMaintEntry(){
     entry.mileage=parseInt(document.getElementById('fm-rep-mileage').value)||null;
     entry.shop_name=document.getElementById('fm-rep-shop').value.trim()||null;
     entry.cost=parseFloat(document.getElementById('fm-rep-cost').value)||null;
-    entry.linked_report_id=parseInt(document.getElementById('fm-linked-report').value)||null;
+    const linkedVal=document.getElementById('fm-linked-report').value;
+    if(linkedVal)entry.linked_report_id=linkedVal;
     const parts=document.getElementById('fm-rep-parts').value.trim();
     const repNotes=document.getElementById('fm-rep-notes').value.trim();
     entry.notes='Problem: '+problem+'\nWork: '+work+(parts?'\nParts: '+parts:'')+(repNotes?'\n'+repNotes:'');
@@ -4937,11 +5048,20 @@ function handleTireStatusChange(){
   const mountedFields=document.getElementById('ti-mounted-fields');
   if(mountedFields)mountedFields.style.display=status==='Mounted'?'block':'none';
   if(status==='Mounted'){
-    // Populate vehicle dropdown
     const sel=document.getElementById('ti-vehicle');
     if(sel){
-      sel.innerHTML='<option value="">— Select Vehicle —</option>'+
-        allFleetVehiclesCache.map(v=>'<option value="'+v.vehicle_id+'">'+v.vehicle_id+(v.make?' — '+v.make:'')+'</option>').join('');
+      const vehicles=allFleetVehiclesCache.filter(v=>v.status!=='Retired');
+      if(vehicles.length===0){
+        // Try loading vehicles first
+        loadFleetVehicles().then(()=>{
+          const v2=allFleetVehiclesCache.filter(v=>v.status!=='Retired');
+          sel.innerHTML='<option value="">— Select Vehicle —</option>'+
+            v2.map(v=>'<option value="'+v.vehicle_id+'">'+v.vehicle_id+(v.make?' ('+v.make+(v.model?' '+v.model:'')+')':'')+'</option>').join('');
+        });
+      } else {
+        sel.innerHTML='<option value="">— Select Vehicle —</option>'+
+          vehicles.map(v=>'<option value="'+v.vehicle_id+'">'+v.vehicle_id+(v.make?' ('+v.make+(v.model?' '+v.model:'')+')':'')+'</option>').join('');
+      }
     }
   }
 }
@@ -6987,10 +7107,35 @@ async function submitAdminVehicleReport(){
 async function loadVehicleRecords(){
   const {data}=await db.from('vehicle_reports').select('*').order('submitted_at',{ascending:false});
   allVehicleRecordsCache=data||[];
-  renderVehicleRecordsTable();
+  allVehicleRecordsCache=data||[];
+  updateVrTabCounts(allVehicleRecordsCache);
 }
 function filterVehicleRecords(){
   renderVehicleRecordsTable();
+}
+let currentVrTab='ALL';
+function setVrTab(tab){
+  currentVrTab=tab;
+  ['ALL','NEW','PENDING','RESOLVED','CLOSED'].forEach(t=>{
+    const btn=document.getElementById('vr-tab-'+t);
+    if(btn){
+      btn.style.borderBottom=t===tab?'2px solid var(--navy)':'2px solid transparent';
+      btn.style.color=t===tab?'var(--navy)':'#888';
+      btn.style.fontWeight=t===tab?'800':'600';
+    }
+  });
+  renderVehicleRecordsTable();
+}
+function updateVrTabCounts(records){
+  const counts={ALL:records.length,NEW:0,PENDING:0,RESOLVED:0,CLOSED:0};
+  records.forEach(r=>{
+    const s=r.status||'NEW';
+    if(counts[s]!==undefined)counts[s]++;
+  });
+  Object.entries(counts).forEach(([tab,count])=>{
+    const el=document.getElementById('vr-count-'+tab);
+    if(el)el.textContent=count;
+  });
 }
 function renderVehicleRecordsTable(){
   const el=document.getElementById('vehicle-records-table');
@@ -6998,11 +7143,20 @@ function renderVehicleRecordsTable(){
   const vehicleFilter=document.getElementById('vr-filter-vehicle')?.value.toLowerCase()||'';
   const typeFilter=document.getElementById('vr-filter-type')?.value||'';
   const sourceFilter=document.getElementById('vr-filter-source')?.value||'';
-  let filtered=allVehicleRecordsCache;
+  const tabMap={'NEW':'NEW','PENDING':'IN_PROGRESS','RESOLVED':'RESOLVED','CLOSED':'CLOSED'};
+  let filtered=currentVrTab&&currentVrTab!=='ALL'?allVehicleRecordsCache.filter(r=>(r.status||'NEW')===(tabMap[currentVrTab]||currentVrTab)):allVehicleRecordsCache;
   if(vehicleFilter)filtered=filtered.filter(r=>r.vehicle_id&&r.vehicle_id.toLowerCase().includes(vehicleFilter));
   if(typeFilter)filtered=filtered.filter(r=>r.issue_types&&r.issue_types.includes(typeFilter));
   if(sourceFilter==='admin')filtered=filtered.filter(r=>r.is_admin_report);
   if(sourceFilter==='driver')filtered=filtered.filter(r=>!r.is_admin_report);
+  // Update tab counts
+  ['NEW','IN_PROGRESS','RESOLVED','CLOSED'].forEach(s=>{
+    const tab=s==='IN_PROGRESS'?'PENDING':s;
+    const cnt=document.getElementById('vr-count-'+tab);
+    if(cnt)cnt.textContent=allVehicleRecordsCache.filter(r=>(r.status||'NEW')===s).length;
+  });
+  const allCnt=document.getElementById('vr-count-ALL');
+  if(allCnt)allCnt.textContent=allVehicleRecordsCache.length;
   if(!filtered||filtered.length===0){el.innerHTML='<p style="color:#888;font-size:13px;padding:12px 0;">No vehicle records found.</p>';return;}
   el.innerHTML='<div style="overflow-x:auto;"><table class="data-table"><thead><tr><th>Source</th><th>Reported By</th><th>Vehicle ID</th><th>Date</th><th>Vehicle Status</th><th>Issue Type(s)</th><th>Description</th><th>Record Status</th><th>Actions</th></tr></thead><tbody>'+
     filtered.map((r,idx)=>{
@@ -7023,6 +7177,7 @@ function renderVehicleRecordsTable(){
         <td><span class="badge badge-${r.status==='RESOLVED'?'approved':r.status==='IN_PROGRESS'?'warning':'flag'}">${r.status}</span></td>
         <td style="white-space:nowrap;">
           <button class="btn btn-primary btn-sm" onclick="openVehicleReportModal(${r.id})" style="margin-bottom:4px;">📋 Open</button><br>
+          ${(r.issue_types||'').includes('Oil Change')&&!isDemo?`<button class="btn btn-sm" style="background:#fef3e8;color:#e67e22;font-size:10px;" onclick="openFleetVehicle('${r.vehicle_id}')">🛢️ Open Vehicle</button><br>`:''}
           <select onchange="updateVehicleStatus(${r.id},this.value)" style="padding:4px 8px;border:1px solid var(--border);border-radius:4px;font-size:11px;margin-top:2px;"><option ${r.status==='NEW'?'selected':''}>NEW</option><option ${r.status==='IN_PROGRESS'?'selected':''}>IN_PROGRESS</option><option ${r.status==='RESOLVED'?'selected':''}>RESOLVED</option></select><br>
           <button class="btn btn-sm btn-red" onclick="deleteVehicleRecord(${r.id})" style="margin-top:4px;font-size:11px;">🗑️ Delete</button>
         </td>
