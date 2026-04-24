@@ -951,7 +951,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
         <div class="nav-item" onclick="showAdmin('onboarding-tracker')" id="nav-adm-onboarding-tracker"><span class="nav-icon">✅</span>Onboarding Tracker</div>
         <div class="nav-item" onclick="showAdmin('memos')" id="nav-adm-memos"><span class="nav-icon">📢</span>Memos<span class="nav-badge" id="badge-memos" style="background:#5b21b6;">0</span></div>
         <div class="sidebar-label">Employee Folders</div>
-        <div class="nav-item" onclick="showAdmin('employee-folders')" id="nav-adm-employee-folders"><span class="nav-icon">🗂️</span>Employee Profiles</div>
+        <div class="nav-item" data-sec="employee-folders" onclick="showAdmin(this.dataset.sec)" id="nav-adm-employee-folders"><span class="nav-icon">🗂️</span>Employee Profiles</div>
         <div class="sidebar-label">Time Off</div>
         <div class="nav-item" onclick="showAdmin('requests')" id="nav-adm-requests"><span class="nav-icon">📅</span>Time Off Requests<span class="nav-badge" id="badge-requests">0</span></div>
         <div class="nav-item" onclick="showAdmin('callouts')" id="nav-adm-callouts"><span class="nav-icon">📞</span>Call-Out Log</div>
@@ -1240,10 +1240,25 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
           <!-- Profile Header Card -->
           <div class="profile-header" id="emp-profile-header">
             <div class="profile-avatar" id="emp-profile-avatar">?</div>
-            <div style="flex:1;">
+            <div style="flex:1;min-width:0;">
               <div class="profile-name" id="emp-profile-name">—</div>
               <div class="profile-meta" id="emp-profile-meta">—</div>
-              <div id="emp-profile-badges"></div>
+              <div id="emp-profile-badges" style="margin-top:6px;"></div>
+            </div>
+            <!-- Stat cards -->
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-right:16px;">
+              <div style="background:rgba(255,255,255,.12);border-radius:8px;padding:8px 14px;text-align:center;min-width:70px;">
+                <div style="font-size:18px;font-weight:800;color:#fff;" id="pstat-tenure">—</div>
+                <div style="font-size:10px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.5px;">Tenure</div>
+              </div>
+              <div id="pstat-review-card" style="background:rgba(255,255,255,.12);border-radius:8px;padding:8px 14px;text-align:center;min-width:70px;cursor:pointer;" onclick="switchProfileTab('performance')">
+                <div style="font-size:18px;font-weight:800;color:#fff;" id="pstat-review">—</div>
+                <div style="font-size:10px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.5px;">Reviews</div>
+              </div>
+              <div style="background:rgba(255,255,255,.12);border-radius:8px;padding:8px 14px;text-align:center;min-width:70px;cursor:pointer;" onclick="switchProfileTab('callouts')">
+                <div style="font-size:18px;font-weight:800;color:#fff;" id="pstat-callouts">—</div>
+                <div style="font-size:10px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.5px;">Call-Outs</div>
+              </div>
             </div>
             <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;">
               <button onclick="openEditProfileModal()" class="btn btn-sm" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);">✏️ Edit Profile</button>
@@ -1307,23 +1322,18 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 
           <!-- Performance Tab -->
           <div class="profile-tab-panel" id="ppanel-performance">
-            <!-- Performance sub-cards -->
-            <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
-              <button id="perf-card-btn-warnings" onclick="switchPerfCard('warnings')" style="flex:1;min-width:120px;padding:12px 10px;border-radius:12px;border:2px solid var(--navy);background:var(--navy);color:#fff;font-size:13px;font-weight:700;cursor:pointer;text-align:center;transition:all .2s;">
-                <div style="font-size:18px;margin-bottom:3px;">⚠️</div><div>Warnings</div>
-              </button>
-              <button id="perf-card-btn-reviews" onclick="switchPerfCard('reviews')" style="flex:1;min-width:120px;padding:12px 10px;border-radius:12px;border:2px solid var(--border);background:#fff;color:var(--navy);font-size:13px;font-weight:700;cursor:pointer;text-align:center;transition:all .2s;">
-                <div style="font-size:18px;margin-bottom:3px;">📋</div><div>Reviews</div>
-              </button>
-              <button id="perf-card-btn-attendance" onclick="switchPerfCard('attendance')" style="flex:1;min-width:120px;padding:12px 10px;border-radius:12px;border:2px solid var(--border);background:#fff;color:var(--navy);font-size:13px;font-weight:700;cursor:pointer;text-align:center;transition:all .2s;">
-                <div style="font-size:18px;margin-bottom:3px;">📅</div><div>Attendance</div>
-              </button>
-              <button id="perf-card-btn-pip" onclick="switchPerfCard('pip')" style="flex:1;min-width:120px;padding:12px 10px;border-radius:12px;border:2px solid var(--border);background:#fff;color:var(--navy);font-size:13px;font-weight:700;cursor:pointer;text-align:center;transition:all .2s;">
-                <div style="font-size:18px;margin-bottom:3px;">📈</div><div>PIPs</div>
-              </button>
+            <!-- Sub-tabs -->
+            <div style="display:flex;gap:4px;border-bottom:2px solid var(--border);margin-bottom:20px;">
+              <button id="perf-card-btn-reviews" onclick="switchPerfCard('reviews')" style="padding:8px 16px;font-size:13px;font-weight:700;border:none;border-bottom:2px solid var(--navy);margin-bottom:-2px;cursor:pointer;background:none;color:var(--navy);">📋 Reviews</button>
+              <button id="perf-card-btn-warnings" onclick="switchPerfCard('warnings')" style="padding:8px 16px;font-size:13px;font-weight:700;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;background:none;color:#888;">⚠️ Warnings</button>
+              <button id="perf-card-btn-attendance" onclick="switchPerfCard('attendance')" style="padding:8px 16px;font-size:13px;font-weight:700;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;background:none;color:#888;">📅 Attendance</button>
+              <button id="perf-card-btn-pip" onclick="switchPerfCard('pip')" style="padding:8px 16px;font-size:13px;font-weight:700;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;background:none;color:#888;">📈 PIPs</button>
             </div>
-            <div id="perf-panel-warnings"><div id="pdata-warnings"><p style="color:#888;font-size:13px;">Loading...</p></div></div>
-            <div id="perf-panel-reviews" style="display:none;"><div id="pdata-reviews"><p style="color:#888;font-size:13px;">Loading...</p></div></div>
+            <!-- Reviews Panel - 30/60/90 day tracker -->
+            <div id="perf-panel-reviews">
+              <div id="pdata-reviews"><p style="color:#888;font-size:13px;">Loading...</p></div>
+            </div>
+            <div id="perf-panel-warnings" style="display:none;"><div id="pdata-warnings"><p style="color:#888;font-size:13px;">Loading...</p></div></div>
             <div id="perf-panel-attendance" style="display:none;"><div id="pdata-attendance"><p style="color:#888;font-size:13px;">Loading...</p></div></div>
             <div id="perf-panel-pip" style="display:none;"><div id="pdata-pip"><p style="color:#888;font-size:13px;">Loading...</p></div></div>
           </div>
@@ -4349,6 +4359,7 @@ async function loadFleetVehicles(){
     updateFleetCounts();
     renderFleetVehicleGrid();
     checkFleetOverdue();
+  checkReviewsForDashboard();
   }catch(e){console.log('Fleet vehicles:',e);}
 }
 
@@ -5568,6 +5579,8 @@ async function openProfileDetail(id){
   document.getElementById('emp-folder-list-view').style.display='none';
   document.getElementById('emp-folder-detail-view').style.display='block';
   switchProfileTab('info');
+  const calloutCount=(allCallOutsCache||[]).filter(c=>c.employee_name===p.employee_name).length;
+  updateProfileStatCards(p,calloutCount);
   // Load tab data
   loadProfileWarnings(p.employee_name,p.county);
   loadProfileCallOuts(p.employee_name,p.county);
@@ -5591,7 +5604,7 @@ function switchProfileTab(tab){
   });
   const p=currentProfileEmployee;
   if(!p)return;
-  if(tab==='performance'){switchPerfCard('warnings');loadProfileWarnings(p.employee_name,p.county);}
+  if(tab==='performance'){switchPerfCard('reviews');loadProfileWarnings(p.employee_name,p.county);}
   if(tab==='memos')loadProfileMemos(p.employee_name,p.employee_email);
   if(tab==='sup-checklist')loadSupChecklist(currentProfileId);
 }
@@ -5602,7 +5615,7 @@ function _switchProfileTabOriginal(tab){
   });
   const p=currentProfileEmployee;
   if(!p)return;
-  if(tab==='performance'){switchPerfCard('warnings');loadProfileWarnings(p.employee_name,p.county);}
+  if(tab==='performance'){switchPerfCard('reviews');loadProfileWarnings(p.employee_name,p.county);}
   if(tab==='memos')loadProfileMemos(p.employee_name,p.employee_email);
 }
 let currentPerfCard='warnings';
@@ -5612,13 +5625,17 @@ function switchPerfCard(card){
     const btn=document.getElementById('perf-card-btn-'+c);
     const panel=document.getElementById('perf-panel-'+c);
     const active=c===card;
-    if(btn){btn.style.background=active?'var(--navy)':'#fff';btn.style.color=active?'#fff':'var(--navy)';btn.style.borderColor=active?'var(--navy)':'var(--border)';}
+    if(btn){
+      btn.style.borderBottom=active?'2px solid var(--navy)':'2px solid transparent';
+      btn.style.color=active?'var(--navy)':'#888';
+      btn.style.fontWeight=active?'800':'600';
+    }
     if(panel)panel.style.display=active?'block':'none';
   });
   const p=currentProfileEmployee;
   if(!p)return;
   if(card==='warnings')loadProfileWarnings(p.employee_name,p.county);
-  if(card==='reviews')loadProfileReviews(p.employee_name,p.employee_email);
+  if(card==='reviews')loadProfileReviews(p);
   if(card==='attendance')loadProfileAttendance(p.employee_name);
   if(card==='pip')loadProfilePIP(p.employee_name,p.employee_email);
 }
@@ -8784,6 +8801,170 @@ function printEmployeeIdSheet(name,startDate,supervisor,trainer,ids){
   <script>window.print();<\/script>
   </body></html>`);
   win.document.close();
+}
+
+// ═══════════════════════════════════════════════
+// EMPLOYEE PROFILE REVIEWS + STAT CARDS
+// ═══════════════════════════════════════════════
+
+function calcTenure(hireDate){
+  if(!hireDate)return'—';
+  const hire=new Date(hireDate);
+  const now=new Date();
+  const months=Math.floor((now-hire)/(1000*60*60*24*30.44));
+  if(months<1)return'<1mo';
+  if(months<12)return months+'mo';
+  const years=Math.floor(months/12);
+  const rem=months%12;
+  return years+'y'+(rem>0?' '+rem+'mo':'');
+}
+
+function getReviewDates(hireDate){
+  if(!hireDate)return{d30:null,d60:null,d90:null};
+  const hire=new Date(hireDate);
+  const d30=new Date(hire);d30.setDate(d30.getDate()+30);
+  const d60=new Date(hire);d60.setDate(d60.getDate()+60);
+  const d90=new Date(hire);d90.setDate(d90.getDate()+90);
+  return{d30,d60,d90};
+}
+
+function getReviewStatus(reviewDate){
+  const now=new Date();
+  const diff=Math.ceil((reviewDate-now)/(1000*60*60*24));
+  if(reviewDate<now)return{status:'overdue',label:'Overdue',color:'var(--red)',diff};
+  if(diff<=7)return{status:'due-soon',label:'Due in '+diff+' day'+(diff!==1?'s':''),color:'var(--warn)',diff};
+  if(diff<=14)return{status:'upcoming',label:'In '+diff+' days',color:'#856404',diff};
+  return{status:'scheduled',label:reviewDate.toLocaleDateString('en-US',{month:'short',day:'numeric'}),color:'#888',diff};
+}
+
+function updateProfileStatCards(p,calloutCount){
+  // Tenure
+  const tenureEl=document.getElementById('pstat-tenure');
+  if(tenureEl)tenureEl.textContent=calcTenure(p.hire_date);
+  // Reviews
+  const reviewEl=document.getElementById('pstat-review');
+  const reviewCard=document.getElementById('pstat-review-card');
+  if(reviewEl&&p.hire_date){
+    const{d30,d60,d90}=getReviewDates(p.hire_date);
+    const now=new Date();
+    const daysEmployed=Math.floor((now-new Date(p.hire_date))/(1000*60*60*24));
+    if(daysEmployed<30){
+      const s=getReviewStatus(d30);
+      reviewEl.textContent='30d: '+s.label;
+      if(reviewCard)reviewCard.style.background=s.status==='overdue'?'rgba(192,57,43,.3)':s.status==='due-soon'?'rgba(230,126,34,.3)':'rgba(255,255,255,.12)';
+    } else if(daysEmployed<60){
+      const s=getReviewStatus(d60);
+      reviewEl.textContent='60d: '+s.label;
+      if(reviewCard)reviewCard.style.background=s.status==='overdue'?'rgba(192,57,43,.3)':s.status==='due-soon'?'rgba(230,126,34,.3)':'rgba(255,255,255,.12)';
+    } else if(daysEmployed<90){
+      const s=getReviewStatus(d90);
+      reviewEl.textContent='90d: '+s.label;
+      if(reviewCard)reviewCard.style.background=s.status==='overdue'?'rgba(192,57,43,.3)':s.status==='due-soon'?'rgba(230,126,34,.3)':'rgba(255,255,255,.12)';
+    } else {
+      reviewEl.textContent='Done';
+    }
+  } else if(reviewEl){reviewEl.textContent='—';}
+  // Call-outs
+  const coEl=document.getElementById('pstat-callouts');
+  if(coEl)coEl.textContent=(calloutCount||0)+'';
+}
+
+async function loadProfileReviews(p){
+  const el=document.getElementById('pdata-reviews');
+  if(!el)return;
+  if(!p?.hire_date){
+    el.innerHTML='<p style="color:#888;font-size:13px;">No hire date on file. Add a hire date to track review milestones.</p>';
+    return;
+  }
+  const hireDate=new Date(p.hire_date);
+  const now=new Date();
+  const daysEmployed=Math.floor((now-hireDate)/(1000*60*60*24));
+  const{d30,d60,d90}=getReviewDates(p.hire_date);
+
+  // Load completed reviews from submissions
+  let completedReviews=[];
+  try{
+    const{data}=await db.from('performance_reviews').select('*').eq('employee_email',p.employee_email).order('created_at',{ascending:false});
+    completedReviews=data||[];
+  }catch(e){}
+
+  const hasR30=completedReviews.some(r=>r.review_type==='30-Day');
+  const hasR60=completedReviews.some(r=>r.review_type==='60-Day');
+  const hasR90=completedReviews.some(r=>r.review_type==='90-Day');
+
+  function reviewRow(label,dueDate,completed,reviewType){
+    const s=getReviewStatus(dueDate);
+    const isPast=dueDate<now;
+    const formFile=reviewType==='30-Day'?'RideSource_30Day_Performance_Evaluation.docx':reviewType==='60-Day'?'RideSource_60Day_Performance_Evaluation.docx':'RideSource_90Day_Performance_Evaluation.docx';
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-radius:10px;margin-bottom:10px;background:${completed?'#f0faf5':isPast&&!completed?'#fef0f0':'#f7f9fc'};border:1px solid ${completed?'#27AE60':isPast&&!completed?'var(--red)':'var(--border)'};">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:36px;height:36px;border-radius:50%;background:${completed?'#27AE60':isPast&&!completed?'var(--red)':'var(--border)'};color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">${completed?'✓':'📋'}</div>
+        <div>
+          <div style="font-size:14px;font-weight:800;color:var(--navy);">${label} Performance Review</div>
+          <div style="font-size:12px;color:#888;margin-top:2px;">Due: ${dueDate.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})} · ${daysEmployed>=parseInt(label)&&!completed?'<span style="color:var(--red);font-weight:700;">OVERDUE</span>':completed?'<span style="color:#27AE60;font-weight:700;">COMPLETED</span>':'<span style="color:'+s.color+';font-weight:700;">'+s.label+'</span>'}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        ${!completed?`<button onclick="downloadDoc('${formFile}')" style="padding:6px 12px;background:var(--navy);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">📥 Download Form</button>`:''}
+        ${!completed?`<button onclick="markReviewComplete('${reviewType}','${p.employee_email}','${p.employee_name}',this)" style="padding:6px 12px;background:#27AE60;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">✓ Mark Complete</button>`:'<span style="font-size:12px;color:#27AE60;font-weight:700;">✓ Done</span>'}
+      </div>
+    </div>`;
+  }
+
+  const html=`
+    <div style="font-size:12px;color:#888;margin-bottom:16px;">Hired: <strong>${hireDate.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}</strong> · ${daysEmployed} days employed</div>
+    ${reviewRow('30-Day',d30,hasR30,'30-Day')}
+    ${reviewRow('60-Day',d60,hasR60,'60-Day')}
+    ${reviewRow('90-Day',d90,hasR90,'90-Day')}
+    ${completedReviews.length>0?`<div style="margin-top:20px;"><div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Review History</div>`+
+      completedReviews.map(r=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;"><div><strong>${r.review_type}</strong> <span style="color:#888;">by ${r.completed_by||'—'}</span></div><span style="color:#888;font-size:12px;">${new Date(r.created_at).toLocaleDateString()}</span></div>`).join('')+'</div>':''}
+  `;
+  el.innerHTML=html;
+}
+
+async function markReviewComplete(reviewType,email,name,btn){
+  if(!confirm('Mark '+reviewType+' review as complete for '+name+'?'))return;
+  try{
+    await db.from('performance_reviews').insert([{
+      employee_email:email,employee_name:name,
+      review_type:reviewType,
+      completed_by:adminName,
+      created_at:new Date().toISOString()
+    }]);
+    btn.textContent='✓ Marked!';btn.style.background='#888';btn.disabled=true;
+    const p=currentProfileEmployee;
+    if(p)setTimeout(()=>loadProfileReviews(p),500);
+  }catch(e){
+    // Table might not exist yet - create it
+    alert('Please run the SQL to create the performance_reviews table first.');
+  }
+}
+
+// Flag overdue reviews on dashboard
+function checkReviewsForDashboard(){
+  const overdueReviews=[];
+  allProfilesCache.forEach(p=>{
+    if(!p.hire_date||p.employment_status==='Separated')return;
+    const{d30,d60,d90}=getReviewDates(p.hire_date);
+    const now=new Date();
+    const daysEmployed=Math.floor((now-new Date(p.hire_date))/(1000*60*60*24));
+    if(daysEmployed>=25&&daysEmployed<=95){
+      if(d30<now&&daysEmployed>=30)overdueReviews.push({name:p.employee_name,type:'30-Day',id:p.id});
+      if(d60<now&&daysEmployed>=60)overdueReviews.push({name:p.employee_name,type:'60-Day',id:p.id});
+      if(d90<now&&daysEmployed>=90)overdueReviews.push({name:p.employee_name,type:'90-Day',id:p.id});
+    }
+  });
+  // Show on dashboard
+  let dashEl=document.getElementById('dash-reviews-alert');
+  if(overdueReviews.length>0){
+    if(!dashEl){
+      dashEl=document.createElement('div');
+      dashEl.id='dash-reviews-alert';
+      const wrap=document.getElementById('dash-flags-wrap');
+      if(wrap)wrap.parentNode.insertBefore(dashEl,wrap.nextSibling);
+    }
+    dashEl.innerHTML='<div class="card" style="border-color:var(--warn);border-width:2px;background:#fffbf0;cursor:pointer;" onclick="showAdmin(\"employee-folders\")">'+'<div style="display:flex;align-items:center;gap:12px;"><div style="background:var(--warn);color:#fff;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:18px;">📋</div>'+'<div><div style="font-size:14px;font-weight:700;color:var(--warn);">'+overdueReviews.length+' performance review'+(overdueReviews.length>1?'s':'')+' overdue</div>'+'<div style="font-size:12px;color:#888;margin-top:2px;">'+overdueReviews.map(r=>r.name+' ('+r.type+')').join(', ')+'</div></div></div></div>';
+  } else if(dashEl){dashEl.innerHTML='';}
 }
 </script>
 <!-- MODALS -->
