@@ -1487,6 +1487,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
             <button class="profile-tab" id="ptab-callouts" onclick="switchProfileTab('callouts')">📞 Call-Out History</button>
             <button class="profile-tab" id="ptab-timeoff" onclick="switchProfileTab('timeoff')">📅 Time Off</button>
             <button class="profile-tab" id="ptab-memos" onclick="switchProfileTab('memos')">📢 Memos</button>
+            <button class="profile-tab" id="ptab-availability" onclick="switchProfileTab('availability')">📅 Availability</button>
             <button class="profile-tab" id="ptab-sup-checklist" onclick="switchProfileTab('sup-checklist')">✅ Sup. Checklist</button>
           </div>
 
@@ -1568,6 +1569,11 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
           <!-- Time Off Tab -->
           <div class="profile-tab-panel" id="ppanel-timeoff">
             <div id="pdata-timeoff"><p style="color:#888;font-size:13px;">Loading...</p></div>
+          </div>
+
+          <!-- AVAILABILITY PANEL -->
+          <div class="profile-tab-panel" id="ppanel-availability">
+            <div id="pdata-availability"><p style="color:#888;font-size:13px;">Loading...</p></div>
           </div>
 
           <!-- SUPERVISOR CHECKLIST PANEL -->
@@ -4954,10 +4960,7 @@ async function openFleetVehicle(vehicleId){clearFleetForms();
           (v.vin?'<span style="font-size:11px;color:#aaa;">VIN: '+v.vin+'</span>':'')+
         '</div>'+
       '</div>'+
-      (adminStaff?.role==='admin'?
-        '<button data-vid="'+v.vehicle_id+'" onclick="confirmDeleteFleetVehicle(this.dataset.vid)" style="background:none;border:1px solid var(--red);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;color:var(--red);">🗑️ Delete</button>':
-        '<button data-vid="'+v.vehicle_id+'" onclick="archiveFleetVehicle(this.dataset.vid)" style="background:none;border:1px solid #ddd;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;color:#888;">📦 Archive</button>'
-      )+
+      '<button data-vid="'+v.vehicle_id+'" onclick="archiveFleetVehicle(this.dataset.vid)" style="background:none;border:1px solid #ddd;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;color:#888;">📦 Archive Vehicle</button>'+
     '</div>';
   // Populate linked report dropdown
   const sel=document.getElementById('fm-linked-report');
@@ -6120,7 +6123,7 @@ function closeProfileDetail(){
   document.getElementById('emp-folder-list-view').style.display='block';
 }
 function switchProfileTab(tab){
-  ['info','policies','performance','callouts','timeoff','memos','sup-checklist'].forEach(t=>{
+  ['info','policies','performance','callouts','timeoff','memos','availability','sup-checklist'].forEach(t=>{
     document.getElementById('ptab-'+t)?.classList.toggle('active',t===tab);
     document.getElementById('ppanel-'+t)?.classList.toggle('active',t===tab);
   });
@@ -6128,6 +6131,7 @@ function switchProfileTab(tab){
   if(!p)return;
   if(tab==='performance'){switchPerfCard('reviews');loadProfileWarnings(p.employee_name,p.county);}
   if(tab==='memos')loadProfileMemos(p.employee_name,p.employee_email);
+  if(tab==='availability')loadProfileAvailability(currentProfileEmployee);
   if(tab==='sup-checklist')loadSupChecklist(currentProfileId);
 }
 function _switchProfileTabOriginal(tab){
@@ -7796,7 +7800,7 @@ function renderVehicleRecordsTable(){
         <td><span class="badge badge-${r.status==='RESOLVED'?'approved':r.status==='IN_PROGRESS'?'warning':'flag'}">${r.status}</span></td>
         <td style="white-space:nowrap;">
           <button class="btn btn-primary btn-sm" onclick="openVehicleReportModal(${r.id})" style="margin-bottom:4px;">📋 Open</button><br>
-          ${r.vehicle_id&&allFleetVehiclesCache.some(v=>v.vehicle_id===r.vehicle_id)&&!isDemo?`<button class="btn btn-sm" style="background:#f0f4fb;color:var(--navy);font-size:10px;" onclick="showAdmin('fleet');setTimeout(()=>openFleetVehicle('${r.vehicle_id}'),400);">🔧 Fleet</button><br>`:''}
+          ${r.vehicle_id&&allFleetVehiclesCache.some(v=>v.vehicle_id===r.vehicle_id)&&!isDemo?`<button class="btn btn-sm" style="background:#f0f4fb;color:var(--navy);font-size:10px;" onclick="showAdmin('fleet');setTimeout(()=>openFleetVehicle('${r.vehicle_id}'),400);">🔧 Fleet</button><br>`:''}${(r.issue_types||'').includes('Oil Change')&&r.status==='NEW'&&!isDemo?`<button class="btn btn-sm" style="background:#fff3cd;color:#856404;font-size:10px;border:1px solid #ffc107;" onclick="openOilChangeApproval('${r.id}',{employee_name:'${(r.employee_name||'').replace(/'/g,'')}',employee_email:'${r.employee_email||''}',county:'${r.county||''}',vehicle_id:'${r.vehicle_id||''}',submitted_at:'${r.submitted_at||''}'})">✅ Approve Oil Change</button><br>`:''}
           ${(r.issue_types||'').includes('Oil Change')&&!isDemo?`<button class="btn btn-sm" style="background:#fef3e8;color:#e67e22;font-size:10px;" onclick="openFleetVehicle('${r.vehicle_id}')">🛢️ Open Vehicle</button><br>`:''}
           <select onchange="updateVehicleStatus(${r.id},this.value)" style="padding:4px 8px;border:1px solid var(--border);border-radius:4px;font-size:11px;margin-top:2px;"><option ${r.status==='NEW'?'selected':''}>NEW</option><option ${r.status==='IN_PROGRESS'?'selected':''}>IN_PROGRESS</option><option ${r.status==='RESOLVED'?'selected':''}>RESOLVED</option></select><br>
           <button class="btn btn-sm btn-red" onclick="deleteVehicleRecord(${r.id})" style="margin-top:4px;font-size:11px;">🗑️ Delete</button>
@@ -9508,7 +9512,8 @@ async function loadProfileReviews(p){
         </div>
       </div>
       <div style="display:flex;gap:8px;align-items:center;">
-        ${!completed?`<button onclick="downloadDoc('${formFile}')" style="padding:6px 12px;background:var(--navy);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">📥 Download Form</button>`:''}
+        ${!completed?`<button onclick="openDigitalReview(currentProfileEmployee,'${reviewType}')" style="padding:6px 12px;background:var(--navy);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">📝 Complete Digital Form</button>`:''}
+        ${!completed?`<button onclick="downloadDoc('${formFile}')" style="padding:6px 12px;background:#f0f4fb;color:var(--navy);border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">📥 Download Paper Form</button>`:''}
         ${!completed?`<button onclick="markReviewComplete('${reviewType}','${p.employee_email}','${p.employee_name}',this)" style="padding:6px 12px;background:#27AE60;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">✓ Mark Complete</button>`:'<span style="font-size:12px;color:#27AE60;font-weight:700;">✓ Done</span>'}
       </div>
     </div>`;
@@ -10181,6 +10186,307 @@ async function saveProfileRatings(email,name){
     alert('Error saving ratings: '+e.message);
   }
 }
+
+// ═══════════════════════════════════════════════
+// DRIVER AVAILABILITY
+// ═══════════════════════════════════════════════
+const AVAIL_DAYS=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const AVAIL_TIMES=['Early Morning (5-8am)','Morning (8-11am)','Midday (11am-2pm)','Afternoon (2-5pm)','Evening (5-8pm)','Night (8pm+)'];
+
+async function loadProfileAvailability(p){
+  const el=document.getElementById('pdata-availability');if(!el)return;
+  let saved={};
+  try{
+    const{data}=await db.from('employee_profiles').select('availability_data').eq('id',currentProfileId).single();
+    if(data?.availability_data)saved=JSON.parse(data.availability_data);
+  }catch(e){}
+
+  const isDemo=adminStaff?.role==='demo';
+  let html=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+    <div>
+      <div style="font-size:14px;font-weight:800;color:var(--navy);">Driver Availability</div>
+      <div style="font-size:12px;color:#888;margin-top:2px;">Check all times this driver is available. Changes save automatically.</div>
+    </div>
+    <button onclick="clearAvailability('${currentProfileId}')" style="font-size:11px;padding:4px 10px;border-radius:6px;border:1px solid #ddd;background:#fff;cursor:pointer;color:#888;">Clear All</button>
+  </div>
+  <div style="overflow-x:auto;">
+  <table style="width:100%;border-collapse:collapse;font-size:13px;">
+    <thead>
+      <tr style="background:var(--navy);color:#fff;">
+        <th style="padding:10px 12px;text-align:left;border-radius:8px 0 0 0;white-space:nowrap;">Time Slot</th>
+        ${AVAIL_DAYS.map((d,i)=>`<th style="padding:10px 8px;text-align:center;${i===6?'border-radius:0 8px 0 0':''};">${d.substring(0,3)}</th>`).join('')}
+      </tr>
+    </thead>
+    <tbody>
+      ${AVAIL_TIMES.map((time,ti)=>`
+        <tr style="background:${ti%2===0?'#fafafa':'#fff'};">
+          <td style="padding:10px 12px;font-weight:600;color:var(--navy);white-space:nowrap;border-bottom:1px solid #eee;">${time}</td>
+          ${AVAIL_DAYS.map(day=>{
+            const key=day+'::'+time;
+            const checked=saved[key]||false;
+            return `<td style="text-align:center;border-bottom:1px solid #eee;padding:8px;">
+              <input type="checkbox" data-profile="${currentProfileId}" data-key="${key}" ${checked?'checked':''} ${isDemo?'disabled':''}
+              onchange="saveAvailabilityItem(this)"
+              style="width:18px;height:18px;cursor:pointer;accent-color:var(--navy);">
+            </td>`;
+          }).join('')}
+        </tr>`).join('')}
+    </tbody>
+  </table>
+  </div>
+  <div id="avail-save-indicator" style="font-size:12px;color:#888;margin-top:8px;text-align:right;"></div>`;
+
+  el.innerHTML=html;
+}
+
+async function saveAvailabilityItem(checkbox){
+  const profileId=checkbox.dataset.profile;
+  const key=checkbox.dataset.key;
+  const checked=checkbox.checked;
+  const ind=document.getElementById('avail-save-indicator');
+  if(ind)ind.textContent='Saving...';
+  try{
+    const{data}=await db.from('employee_profiles').select('availability_data').eq('id',profileId).single();
+    const current=data?.availability_data?JSON.parse(data.availability_data):{};
+    current[key]=checked;
+    await db.from('employee_profiles').update({availability_data:JSON.stringify(current)}).eq('id',profileId);
+    if(ind){ind.textContent='✓ Saved';setTimeout(()=>ind.textContent='',2000);}
+  }catch(e){if(ind)ind.textContent='Save failed';}
+}
+
+async function clearAvailability(profileId){
+  if(!confirm('Clear all availability for this driver?'))return;
+  try{
+    await db.from('employee_profiles').update({availability_data:'{}'}).eq('id',profileId);
+    const p=currentProfileEmployee;if(p)loadProfileAvailability(p);
+  }catch(e){alert('Error: '+e.message);}
+}
+
+// ═══════════════════════════════════════════════
+// DIGITAL REVIEW FORMS
+// ═══════════════════════════════════════════════
+const REVIEW_SECTIONS={
+  A:[
+    {num:1,title:'Attendance & Punctuality',desc:'Reports to work on time consistently. Notifies supervisor appropriately when absent. Call-out frequency and pattern are within acceptable standards.'},
+    {num:2,title:'Professionalism & Conduct',desc:'Maintains a professional demeanor with passengers, coworkers, dispatch, and the public at all times. Follows the Code of Conduct.'},
+  ],
+  B:[
+    {num:3,title:'Passenger Interaction & Service Standards',desc:'Greets passengers appropriately, confirms identity, provides required level of assistance. Treats all passengers with dignity and respect.'},
+    {num:4,title:'Vehicle Operation & Safe Driving',desc:'Operates assigned vehicle safely. Follows posted speed limits and defensive driving practices. Properly secures all passengers and wheelchair restraints before moving.'},
+    {num:5,title:'Pre-Trip & Post-Trip Inspections',desc:'Completes the Daily Vehicle Maintenance Report accurately every shift. Reports mechanical issues, damage, or safety concerns to supervisor promptly.'},
+    {num:6,title:'Parascope & Trip Documentation',desc:'Uses the Parascope dispatch system accurately and in real time. Selects "On the Way" at departure. Closes trips promptly and obtains required signatures for every trip.'},
+  ],
+  C:[
+    {num:7,title:'HIPAA & Confidentiality',desc:'Maintains strict confidentiality of all passenger information including name, destination, health information, and personal circumstances.'},
+    {num:8,title:'Policy Compliance',desc:'Follows all RideSource policies including the Hands-Free Device Policy, Drug-Free Workplace, Vehicle Use Policy, and Dash Camera Policy. No violations noted.'},
+    {num:9,title:'Communication & Teamwork',desc:'Communicates effectively with dispatch, supervisor, and office staff. Responds appropriately to direction and feedback. Works cooperatively as part of the team.'},
+    {num:10,title:'Initiative & Attitude',desc:'Demonstrates a positive attitude and willingness to learn. Asks questions when unsure. Shows initiative and contributes to a productive work environment.'},
+  ]
+};
+
+function openDigitalReview(p,reviewType){
+  const modal=document.getElementById('digital-review-modal');
+  const content=document.getElementById('digital-review-content');
+  if(!modal||!content)return;
+
+  const sectionLabels={A:'Section A: Attendance, Conduct & Professionalism',B:'Section B: Passenger Service & Operations',C:'Section C: Compliance & Communication'};
+  const ratingLabels={'1':'1 — Needs Improvement','2':'2 — Developing','3':'3 — Meets Expectations','4':'4 — Exceeds Expectations','5':'5 — Outstanding'};
+
+  const recommendations=reviewType==='90-Day'?
+    ['Continue Employment','Continue with Action Plan','Performance Improvement Plan (PIP)','Extend Introductory Period','Separate Employment']:
+    ['Continue Employment','Continue with Action Plan','Performance Improvement Plan (PIP)'];
+
+  let html=`
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;">RideSource Inc.</div>
+      <div style="font-size:20px;font-weight:900;color:var(--navy);margin-top:4px;">${reviewType} Performance Evaluation</div>
+      <div style="font-size:12px;color:#888;margin-top:4px;">Confidential — Retain in Employee Personnel File</div>
+    </div>
+    <div style="background:#f7f9fc;border-radius:10px;padding:14px 16px;margin-bottom:20px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px;">
+        <div><span style="color:#888;font-size:11px;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:2px;">Employee</span><strong>${p.employee_name}</strong></div>
+        <div><span style="color:#888;font-size:11px;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:2px;">Position</span><strong>${p.position||'—'}</strong></div>
+        <div><span style="color:#888;font-size:11px;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:2px;">County</span><strong>${p.county||'—'}</strong></div>
+        <div><span style="color:#888;font-size:11px;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:2px;">Supervisor</span><strong>${p.assigned_supervisor||adminName}</strong></div>
+        <div><span style="color:#888;font-size:11px;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:2px;">Start Date</span><strong>${p.hire_date||'—'}</strong></div>
+        <div><span style="color:#888;font-size:11px;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:2px;">Review Date</span><strong>${new Date().toLocaleDateString()}</strong></div>
+      </div>
+    </div>
+    <div style="background:#fffbf0;border-radius:8px;padding:10px 14px;margin-bottom:20px;font-size:12px;color:#856404;">
+      <strong>Rating Scale:</strong> 1 — Needs Improvement &nbsp;·&nbsp; 2 — Developing &nbsp;·&nbsp; 3 — Meets Expectations &nbsp;·&nbsp; 4 — Exceeds Expectations &nbsp;·&nbsp; 5 — Outstanding
+    </div>`;
+
+  Object.entries(REVIEW_SECTIONS).forEach(([sec,items])=>{
+    html+=`<div style="margin-bottom:20px;">
+      <div style="background:var(--navy);color:#fff;padding:8px 14px;border-radius:8px 8px 0 0;font-size:12px;font-weight:700;">${sectionLabels[sec]}</div>`;
+    items.forEach(item=>{
+      html+=`<div style="border:1px solid var(--border);border-top:none;padding:14px;">
+        <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:4px;">${item.num}. ${item.title}</div>
+        <div style="font-size:12px;color:#888;margin-bottom:10px;font-style:italic;">${item.desc}</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
+          ${[1,2,3,4,5].map(r=>`<label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:12px;padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:#fff;">
+            <input type="radio" name="dr-rating-${item.num}" value="${r}" style="cursor:pointer;"> ${r}
+          </label>`).join('')}
+        </div>
+        <textarea placeholder="Supervisor comments..." style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:Arial,sans-serif;outline:none;resize:vertical;min-height:50px;" id="dr-comment-${item.num}"></textarea>
+      </div>`;
+    });
+    html+='</div>';
+  });
+
+  html+=`<div style="margin-bottom:20px;">
+    <div style="background:#555;color:#fff;padding:8px 14px;border-radius:8px 8px 0 0;font-size:12px;font-weight:700;">Overall Evaluation & Goals</div>
+    <div style="border:1px solid var(--border);border-top:none;padding:14px;">
+      <div style="margin-bottom:10px;"><label style="font-size:12px;font-weight:700;color:var(--navy);">Overall Rating</label>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;">
+          ${[1,2,3,4,5].map(r=>`<label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:12px;padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:#fff;">
+            <input type="radio" name="dr-overall" value="${r}" style="cursor:pointer;"> ${r}
+          </label>`).join('')}
+        </div>
+      </div>
+      <div class="form-row" style="margin-top:10px;">
+        <div class="form-field"><label style="font-size:12px;">Overall Summary Comments</label><textarea id="dr-overall-comments" placeholder="Summary of performance..." style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:Arial,sans-serif;outline:none;resize:vertical;min-height:60px;"></textarea></div>
+        <div class="form-field"><label style="font-size:12px;">Goals for Next Period</label><textarea id="dr-goals" placeholder="Goals and expectations going forward..." style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:Arial,sans-serif;outline:none;resize:vertical;min-height:60px;"></textarea></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-bottom:20px;">
+    <div style="background:#555;color:#fff;padding:8px 14px;border-radius:8px 8px 0 0;font-size:12px;font-weight:700;">Supervisor Recommendation</div>
+    <div style="border:1px solid var(--border);border-top:none;padding:14px;">
+      ${recommendations.map(r=>`<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;padding:6px 0;border-bottom:1px solid #f5f5f5;">
+        <input type="radio" name="dr-recommendation" value="${r}" style="width:16px;height:16px;cursor:pointer;"> ${r}
+      </label>`).join('')}
+    </div>
+  </div>
+
+  <div style="margin-bottom:20px;">
+    <div style="background:#555;color:#fff;padding:8px 14px;border-radius:8px 8px 0 0;font-size:12px;font-weight:700;">Employee Comments</div>
+    <div style="border:1px solid var(--border);border-top:none;padding:14px;">
+      <textarea id="dr-employee-comments" placeholder="Employee comments (optional)..." style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:Arial,sans-serif;outline:none;resize:vertical;min-height:60px;"></textarea>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:10px;align-items:center;padding-top:16px;border-top:1px solid var(--border);">
+    <button onclick="saveDigitalReview('${p.employee_email}','${p.employee_name}','${reviewType}')" class="btn btn-primary" style="background:#27AE60;">✅ Save & Complete Review</button>
+    <button onclick="printDigitalReview('${p.employee_name}','${reviewType}')" class="btn btn-sm" style="background:#f0f0f0;color:#555;">🖨️ Print</button>
+    <button onclick="closeModal('digital-review-modal')" class="btn btn-sm" style="background:#f0f0f0;color:#555;">Cancel</button>
+    <span id="dr-save-msg" style="font-size:13px;color:var(--success);display:none;">✓ Review saved!</span>
+  </div>`;
+
+  content.innerHTML=html;
+  modal.classList.add('open');
+}
+
+async function saveDigitalReview(email,name,reviewType){
+  const ratings={};
+  let allRated=true;
+  Object.values(REVIEW_SECTIONS).flat().forEach(item=>{
+    const sel=document.querySelector(`input[name="dr-rating-${item.num}"]:checked`);
+    if(sel)ratings[item.num]={rating:parseInt(sel.value),comment:document.getElementById('dr-comment-'+item.num)?.value||''};
+    else allRated=false;
+  });
+  const overallSel=document.querySelector('input[name="dr-overall"]:checked');
+  const recommendSel=document.querySelector('input[name="dr-recommendation"]:checked');
+  if(!allRated||!overallSel){alert('Please complete all ratings before saving.');return;}
+  if(!recommendSel){alert('Please select a supervisor recommendation.');return;}
+  try{
+    await db.from('performance_reviews').insert([{
+      employee_email:email,employee_name:name,review_type:reviewType,
+      completed_by:adminName,
+      ratings_data:JSON.stringify(ratings),
+      overall_rating:parseInt(overallSel.value),
+      overall_comments:document.getElementById('dr-overall-comments')?.value||'',
+      goals:document.getElementById('dr-goals')?.value||'',
+      recommendation:recommendSel.value,
+      employee_comments:document.getElementById('dr-employee-comments')?.value||'',
+      created_at:new Date().toISOString()
+    }]);
+    const msg=document.getElementById('dr-save-msg');
+    if(msg){msg.style.display='inline';setTimeout(()=>msg.style.display='none',3000);}
+    const p=currentProfileEmployee;if(p)loadProfileReviews(p);
+  }catch(e){alert('Error saving review: '+e.message);}
+}
+
+function printDigitalReview(name,reviewType){
+  window.print();
+}
+
+// ═══════════════════════════════════════════════
+// OIL CHANGE APPROVAL
+// ═══════════════════════════════════════════════
+let pendingOilChangeId=null;
+let pendingOilChangeData=null;
+
+function openOilChangeApproval(reportId,reportData){
+  pendingOilChangeId=reportId;
+  pendingOilChangeData=reportData;
+  const infoEl=document.getElementById('oil-approval-driver-info');
+  if(infoEl)infoEl.innerHTML=`<div style="font-size:13px;"><strong>${reportData.employee_name}</strong> · ${reportData.county}<br><span style="color:#888;font-size:12px;">Vehicle: ${reportData.vehicle_id||'Unknown'} · Submitted: ${new Date(reportData.submitted_at).toLocaleDateString()}</span></div>`;
+  document.getElementById('oil-shop-name').value='';
+  document.getElementById('oil-instructions').value='';
+  document.getElementById('oil-vip-fields').style.display='none';
+  ['prompto','vip','other'].forEach(t=>{
+    const btn=document.getElementById('oil-shop-'+t);
+    if(btn){btn.style.borderColor='var(--border)';btn.style.background='#fff';btn.style.color='#555';}
+  });
+  document.getElementById('oil-approval-modal').classList.add('open');
+}
+
+function selectOilShopType(type){
+  ['prompto','vip','other'].forEach(t=>{
+    const btn=document.getElementById('oil-shop-'+t);
+    if(btn){btn.style.borderColor=t===type?'var(--navy)':'var(--border)';btn.style.background=t===type?'var(--navy)':'#fff';btn.style.color=t===type?'#fff':'#555';}
+  });
+  document.getElementById('oil-vip-fields').style.display=type==='vip'?'grid':'none';
+  if(type==='prompto')document.getElementById('oil-shop-name').placeholder='e.g. Prompto, 123 Main St, Ellsworth ME';
+  if(type==='vip')document.getElementById('oil-shop-name').placeholder='e.g. VIP Auto Service, 456 Center St, Bangor ME';
+  if(type==='other')document.getElementById('oil-shop-name').placeholder='Enter shop name and address...';
+}
+
+async function sendOilChangeApproval(){
+  if(!pendingOilChangeId||!pendingOilChangeData){closeModal('oil-approval-modal');return;}
+  const shopName=document.getElementById('oil-shop-name').value.trim();
+  if(!shopName){alert('Please enter a shop name and address.');return;}
+  const apptDate=document.getElementById('oil-appt-date')?.value;
+  const apptTime=document.getElementById('oil-appt-time')?.value;
+  const instructions=document.getElementById('oil-instructions').value.trim();
+  const isVip=document.getElementById('oil-shop-vip')?.style.background==='var(--navy)' || (apptDate&&apptTime);
+
+  let message=`Your oil change request for Vehicle ${pendingOilChangeData.vehicle_id||'your vehicle'} has been approved.`;
+  message+=`
+
+Shop: ${shopName}`;
+  if(isVip&&apptDate)message+=`
+Appointment: ${new Date(apptDate+'T12:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}${apptTime?' at '+apptTime:''}`;
+  else message+=`
+No appointment needed — walk-ins welcome.`;
+  message+=`
+
+Remember: Please upload your receipt in the Vehicle Records section when complete.`;
+  if(instructions)message+=`
+
+Additional instructions: ${instructions}`;
+
+  try{
+    // Update report status
+    await db.from('vehicle_reports').update({status:'PENDING',mechanic_notes:'Oil change approved. Shop: '+shopName+(apptDate?' Appointment: '+apptDate+' '+apptTime:'')}).eq('id',pendingOilChangeId);
+    // Send in-app message to employee
+    await db.from('employee_messages').insert([{
+      from_email:adminStaff?.email||'admin@ridesource',
+      from_name:adminName,
+      to_email:pendingOilChangeData.employee_email,
+      from_admin:true,
+      message,body:message,
+      is_read:false,
+      sent_at:new Date().toISOString()
+    }]);
+    closeModal('oil-approval-modal');
+    loadVehicleRecords();
+    loadFleetVehicles();
+    alert('Oil change approved! Driver has been notified via in-app message.');
+  }catch(e){alert('Error: '+e.message);}
+}
 </script>
 <!-- MODALS -->
 <div class="modal-overlay" id="policy-modal">
@@ -10250,6 +10556,50 @@ async function saveProfileRatings(email,name){
       <button class="btn btn-secondary" onclick="closeModal('edit-request-modal')">Cancel</button>
       <button class="btn btn-primary" onclick="saveEditedRequest()">Save Changes</button>
     </div>
+  </div>
+</div>
+
+<!-- OIL CHANGE APPROVAL MODAL -->
+<div class="modal-overlay" id="oil-approval-modal">
+  <div class="modal" style="max-width:520px;">
+    <button class="modal-close" onclick="closeModal('oil-approval-modal')">✕</button>
+    <h3 style="color:var(--navy);margin-bottom:4px;">🛢️ Approve Oil Change Request</h3>
+    <p style="color:#888;font-size:13px;margin-bottom:20px;">Select a shop and send instructions to the driver.</p>
+    <div id="oil-approval-driver-info" style="background:#f7f9fc;border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:13px;"></div>
+    <div class="form-field">
+      <label>Shop Type *</label>
+      <div style="display:flex;gap:8px;margin-top:6px;margin-bottom:12px;">
+        <button id="oil-shop-prompto" onclick="selectOilShopType('prompto')" style="flex:1;padding:10px;border-radius:8px;border:2px solid var(--border);background:#fff;font-size:13px;font-weight:700;cursor:pointer;color:#555;">⚡ Prompto<div style="font-size:11px;font-weight:400;color:#888;margin-top:2px;">Quick, no appointment</div></button>
+        <button id="oil-shop-vip" onclick="selectOilShopType('vip')" style="flex:1;padding:10px;border-radius:8px;border:2px solid var(--border);background:#fff;font-size:13px;font-weight:700;cursor:pointer;color:#555;">📅 VIP Auto<div style="font-size:11px;font-weight:400;color:#888;margin-top:2px;">Appointment required</div></button>
+        <button id="oil-shop-other" onclick="selectOilShopType('other')" style="flex:1;padding:10px;border-radius:8px;border:2px solid var(--border);background:#fff;font-size:13px;font-weight:700;cursor:pointer;color:#555;">📍 Other<div style="font-size:11px;font-weight:400;color:#888;margin-top:2px;">Specify below</div></button>
+      </div>
+    </div>
+    <div id="oil-vip-fields" style="display:none;">
+      <div class="form-row">
+        <div class="form-field"><label>Appointment Date</label><input type="date" id="oil-appt-date" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+        <div class="form-field"><label>Appointment Time</label><input type="time" id="oil-appt-time" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+      </div>
+    </div>
+    <div class="form-field">
+      <label>Shop Name & Address *</label>
+      <input type="text" id="oil-shop-name" placeholder="e.g. Prompto, 123 Main St, Ellsworth" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;margin-top:4px;">
+    </div>
+    <div class="form-field">
+      <label>Additional Instructions (optional)</label>
+      <textarea id="oil-instructions" placeholder="Any specific instructions for the driver..." style="width:100%;min-height:60px;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;font-family:Arial,sans-serif;outline:none;resize:vertical;margin-top:4px;"></textarea>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;margin-top:16px;">
+      <button class="btn btn-primary" onclick="sendOilChangeApproval()" style="background:#27AE60;">✅ Approve & Notify Driver</button>
+      <button class="btn btn-sm" style="background:#f0f0f0;color:#555;" onclick="closeModal('oil-approval-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- DIGITAL REVIEW FORM MODAL -->
+<div class="modal-overlay" id="digital-review-modal">
+  <div class="modal" style="max-width:700px;max-height:90vh;overflow-y:auto;">
+    <button class="modal-close" onclick="closeModal('digital-review-modal')">✕</button>
+    <div id="digital-review-content"></div>
   </div>
 </div>
 
