@@ -70,6 +70,10 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 .progress-track{height:8px;background:#eee;border-radius:4px;overflow:hidden;}
 .progress-fill{height:100%;background:linear-gradient(90deg,var(--navy),#4a7fd4);border-radius:4px;transition:width .5s ease;}
 .card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:28px;margin-bottom:24px;}
+.card-navy{background:#fff;border:2px solid var(--navy);border-radius:12px;padding:16px 20px;margin-bottom:16px;}
+.card-accent{background:#fff;border-left:4px solid var(--navy);border-top:1px solid var(--border);border-right:1px solid var(--border);border-bottom:1px solid var(--border);border-radius:0 12px 12px 0;padding:16px 20px;margin-bottom:16px;}
+.admin-section .card{border-color:var(--border);}
+.admin-section .card:hover{border-color:#b8c8e8;transition:border-color .2s;}
 .card-title{font-size:18px;font-weight:700;color:var(--navy);margin-bottom:6px;display:flex;align-items:center;gap:10px;}
 .card-sub{font-size:13px;color:#888;margin-bottom:20px;}
 .doc-reader{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;}
@@ -215,6 +219,8 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 .timesheet-row input[type="time"],.timesheet-row input[type="text"]{width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:12px;outline:none;}
 .timesheet-row input:focus{border-color:var(--navy);}
 .timesheet-total{font-size:13px;font-weight:700;color:var(--navy);}
+.dash-quick-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px 10px;background:#fff;border:2px solid var(--border);border-radius:12px;cursor:pointer;transition:all .15s;text-align:center;gap:4px;}
+.dash-quick-btn:hover{background:#f7f9fc;transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.08);}
 .vehicle-report-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:16px;}
 .issue-type-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-bottom:16px;}
 .issue-type-btn{padding:10px 12px;border:2px solid var(--border);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;background:#fff;color:#555;transition:all .2s;text-align:center;}
@@ -1183,19 +1189,81 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 
       <!-- ADMIN DASHBOARD -->
       <div id="section-adm-dashboard" class="admin-section" style="display:block;">
-        <div style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:4px;">Admin Dashboard</div>
-        <p style="color:#888;font-size:13px;margin-bottom:20px;">Welcome back, <strong id="dash-admin-name"></strong>. Here's your team at a glance.</p>
-        <div class="stats-grid" id="dash-stats"></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-          <div class="card"><div class="card-title">⏳ Pending Time Off Requests</div><div id="dash-pending-list" style="font-size:13px;color:#888;">Loading...</div></div>
-          <div class="card"><div class="card-title">🚩 Attendance Flags</div><div id="dash-flags-list" style="font-size:13px;color:#888;">Loading...</div></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+          <div>
+            <div style="font-size:22px;font-weight:800;color:var(--navy);">Admin Dashboard</div>
+            <p style="color:#888;font-size:13px;margin-top:2px;">Welcome back, <strong id="dash-admin-name"></strong>. Here's your team at a glance.</p>
+          </div>
+          <div style="font-size:12px;color:#aaa;" id="dash-last-updated"></div>
         </div>
-        <div id="dash-open-incidents-wrap" style="display:none;margin-top:16px;">
+
+        <!-- Stat cards (clickable) -->
+        <div class="stats-grid" id="dash-stats" style="margin-bottom:16px;"></div>
+
+        <!-- Quick Actions Row -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:20px;">
+          <button onclick="showAdmin('time-off')" class="dash-quick-btn" style="border-color:#ffc107;">
+            <span style="font-size:20px;">⏳</span>
+            <div style="font-size:13px;font-weight:700;color:var(--navy);">Time Off</div>
+            <div style="font-size:11px;color:#888;margin-top:2px;" id="dq-timeoff">Loading...</div>
+          </button>
+          <button onclick="showAdmin('timesheets')" class="dash-quick-btn" style="border-color:#3b82f6;">
+            <span style="font-size:20px;">🕐</span>
+            <div style="font-size:13px;font-weight:700;color:var(--navy);">Timesheets</div>
+            <div style="font-size:11px;color:#888;margin-top:2px;" id="dq-timesheets">Loading...</div>
+          </button>
+          <button onclick="showAdmin('vehicle-records')" class="dash-quick-btn" style="border-color:#ef4444;">
+            <span style="font-size:20px;">🚐</span>
+            <div style="font-size:13px;font-weight:700;color:var(--navy);">Vehicle Reports</div>
+            <div style="font-size:11px;color:#888;margin-top:2px;" id="dq-vehicles">Loading...</div>
+          </button>
+          <button onclick="showAdmin('incidents')" class="dash-quick-btn" style="border-color:#f97316;">
+            <span style="font-size:20px;">🚨</span>
+            <div style="font-size:13px;font-weight:700;color:var(--navy);">Incidents</div>
+            <div style="font-size:11px;color:#888;margin-top:2px;" id="dq-incidents">Loading...</div>
+          </button>
+          <button onclick="showAdmin('memos')" class="dash-quick-btn" style="border-color:#8b5cf6;">
+            <span style="font-size:20px;">📢</span>
+            <div style="font-size:13px;font-weight:700;color:var(--navy);">Memos</div>
+            <div style="font-size:11px;color:#888;margin-top:2px;" id="dq-memos">Loading...</div>
+          </button>
+          <button onclick="showAdmin('expenses')" class="dash-quick-btn" style="border-color:#22c55e;">
+            <span style="font-size:20px;">💰</span>
+            <div style="font-size:13px;font-weight:700;color:var(--navy);">Expenses</div>
+            <div style="font-size:11px;color:#888;margin-top:2px;" id="dq-expenses">Loading...</div>
+          </button>
+        </div>
+
+        <!-- Flagged items -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+          <div class="card" style="border-color:var(--navy);border-width:2px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+              <div class="card-title" style="margin:0;">⏳ Pending Time Off</div>
+              <button onclick="showAdmin('time-off')" style="font-size:11px;color:var(--navy);background:none;border:none;cursor:pointer;font-weight:700;">View All →</button>
+            </div>
+            <div id="dash-pending-list" style="font-size:13px;color:#888;">Loading...</div>
+          </div>
+          <div class="card" style="border-color:var(--navy);border-width:2px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+              <div class="card-title" style="margin:0;">🚩 Attendance Flags</div>
+              <button onclick="showAdmin('call-outs')" style="font-size:11px;color:var(--navy);background:none;border:none;cursor:pointer;font-weight:700;">View All →</button>
+            </div>
+            <div id="dash-flags-list" style="font-size:13px;color:#888;">Loading...</div>
+          </div>
+        </div>
+
+        <!-- Alerts row -->
+        <div id="dash-open-incidents-wrap" style="display:none;margin-bottom:16px;">
           <div class="card" style="border-color:var(--red);border-width:2px;">
-            <div class="card-title" style="color:var(--red);">🚨 Open Incident Reports — Action Required</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+              <div class="card-title" style="color:var(--red);margin:0;">🚨 Open Incidents — Action Required</div>
+              <button onclick="showAdmin('incidents')" style="font-size:11px;color:var(--red);background:none;border:none;cursor:pointer;font-weight:700;">View All →</button>
+            </div>
             <div id="dash-open-incidents" style="font-size:13px;color:#888;"></div>
           </div>
         </div>
+        <div id="dash-reviews-alert"></div>
+        <div id="dash-flags-wrap"></div>
       </div>
 
       <!-- MANAGER GUIDE -->
@@ -1880,19 +1948,6 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
             </div>
           </div>
 
-          <!-- Vehicle Search + Filter -->
-          <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center;">
-            <input type="text" id="fleet-search" placeholder="🔍 Search by vehicle ID, make, model..." oninput="renderFleetVehicleGrid()" style="flex:1;min-width:180px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
-            <select id="fleet-county-filter" onchange="renderFleetVehicleGrid()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:#fff;">
-              <option value="">All Counties</option>
-              <option>Androscoggin</option><option>Aroostook</option><option>Cumberland</option><option>Franklin</option><option>Hancock</option><option>Kennebec</option><option>Knox</option><option>Lincoln</option><option>Oxford</option><option>Penobscot</option><option>Piscataquis</option><option>Sagadahoc</option><option>Somerset</option><option>Waldo</option><option>Washington</option><option>York</option>
-            </select>
-            <select id="fleet-status-filter" onchange="renderFleetVehicleGrid()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:#fff;">
-              <option value="">All Statuses</option>
-              <option>Active</option><option>In Service</option><option>Out of Service</option><option>Awaiting Repair</option><option>Retired</option>
-            </select>
-            <span id="fleet-vehicle-count" style="font-size:12px;color:#888;white-space:nowrap;"></span>
-          </div>
           <!-- Vehicle Grid -->
           <div id="fleet-vehicle-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;">
             <p style="color:#888;font-size:13px;">Loading vehicles...</p>
@@ -2206,39 +2261,8 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
           <div id="fm-tire-panel" style="display:none;">
             <!-- Current tires on vehicle -->
             <div class="card" style="margin-bottom:14px;">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-                <div style="font-size:13px;font-weight:700;color:var(--navy);">🚗 Currently Mounted</div>
-                <button onclick="toggleMountTireForm()" style="font-size:11px;padding:4px 10px;border-radius:6px;border:1px solid var(--navy);background:#fff;color:var(--navy);cursor:pointer;font-weight:700;">+ Mount a Tire</button>
-              </div>
+              <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:12px;">🚗 Currently Mounted</div>
               <div id="tire-mounted-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;"></div>
-              <!-- Quick mount form -->
-              <div id="mount-tire-form" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
-                <div style="font-size:12px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">Mount a tire to this vehicle</div>
-                <div class="form-row">
-                  <div class="form-field"><label>Select from Inventory</label>
-                    <select id="mount-tire-select" style="width:100%;padding:9px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
-                      <option value="">— Select tire —</option>
-                    </select>
-                  </div>
-                  <div class="form-field"><label>Or enter Tire ID manually</label>
-                    <input type="text" id="mount-tire-manual" placeholder="e.g. TIRE-001" style="width:100%;padding:9px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
-                  </div>
-                </div>
-                <div class="form-row">
-                  <div class="form-field"><label>Position *</label>
-                    <select id="mount-tire-position" style="width:100%;padding:9px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
-                      <option value="">— Select position —</option>
-                      <option>Front Left</option>
-                      <option>Front Right</option>
-                      <option>Rear Left</option>
-                      <option>Rear Right</option>
-                    </select>
-                  </div>
-                  <div class="form-field" style="display:flex;align-items:flex-end;">
-                    <button onclick="mountTireToVehicle()" class="btn btn-primary" style="width:100%;">🔩 Mount Tire</button>
-                  </div>
-                </div>
-              </div>
             </div>
             <!-- Log Changeover -->
             <div class="card" style="margin-bottom:14px;background:#f8f9fc;">
@@ -4830,8 +4854,7 @@ function renderOilRequestsStrip(){
   const strip=document.getElementById('fleet-oil-requests-strip');
   if(!strip)return;
   const requests=allVehicleRecordsCache?allVehicleRecordsCache.filter(r=>
-    ((r.issue_types||'').includes('Oil Change Request')||(r.issue_types||'').includes('Oil Change'))
-    &&(r.status==='NEW'||r.status==='OPEN')
+    (r.issue_types||'').includes('Oil Change Request')&&r.status==='PENDING'
   ):[];
   if(!requests.length){strip.style.display='none';return;}
   strip.style.display='block';
@@ -4844,6 +4867,7 @@ function renderOilRequestsStrip(){
         '<span style="color:#888;margin-left:8px;font-size:12px;">'+new Date(r.submitted_at).toLocaleDateString('en-US',{month:'short',day:'numeric'})+'</span>'+
         (r.description?'<div style="font-size:12px;color:#666;margin-top:2px;">'+r.description.substring(0,80)+'</div>':'')+
       '</div>'+
+      '<button style="background:var(--navy);color:#fff;border:none;border-radius:6px;padding:5px 12px;font-size:12px;cursor:pointer;white-space:nowrap;" '+
       '<button data-vid="'+r.vehicle_id+'" onclick="openFleetVehicle(this.dataset.vid)" style="background:var(--navy);color:#fff;border:none;border-radius:6px;padding:5px 12px;font-size:12px;cursor:pointer;white-space:nowrap;">🔧 Open Vehicle</button>'+
     '</div>').join('')+
   '</div>';
@@ -4948,17 +4972,7 @@ function renderFleetVehicleGrid(){
     return;
   }
   const today=new Date();
-  const search=(document.getElementById('fleet-search')?.value||'').toLowerCase();
-  const countyF=document.getElementById('fleet-county-filter')?.value||'';
-  const statusF=document.getElementById('fleet-status-filter')?.value||'';
-  let filteredVehicles=allFleetVehiclesCache;
-  if(search)filteredVehicles=filteredVehicles.filter(v=>(v.vehicle_id||'').toLowerCase().includes(search)||(v.make||'').toLowerCase().includes(search)||(v.model||'').toLowerCase().includes(search));
-  if(countyF)filteredVehicles=filteredVehicles.filter(v=>v.county===countyF);
-  if(statusF)filteredVehicles=filteredVehicles.filter(v=>v.status===statusF);
-  const countEl=document.getElementById('fleet-vehicle-count');
-  if(countEl)countEl.textContent=filteredVehicles.length+' of '+allFleetVehiclesCache.length+' vehicles';
-  if(!filteredVehicles.length){el.innerHTML='<p style="color:#888;font-size:13px;">No vehicles match your search.</p>';return;}
-  el.innerHTML=filteredVehicles.map(v=>{
+  el.innerHTML=allFleetVehiclesCache.map(v=>{
     const maint=allFleetMaintenanceCache.filter(m=>m.vehicle_id===v.vehicle_id);
     const lastOil=maint.filter(m=>m.maintenance_type==='Oil Change').sort((a,b)=>new Date(b.service_date)-new Date(a.service_date))[0];
     const lastInspection=maint.filter(m=>m.maintenance_type==='Inspection').sort((a,b)=>new Date(b.service_date)-new Date(a.service_date))[0];
@@ -5638,23 +5652,21 @@ function handleTireStatusChange(){
   const mountedFields=document.getElementById('ti-mounted-fields');
   if(mountedFields)mountedFields.style.display=status==='Mounted'?'block':'none';
   if(status==='Mounted'){
-    populateTireVehicleDropdown();
-  }
-}
-
-async function populateTireVehicleDropdown(){
-  const sel=document.getElementById('ti-vehicle');
-  if(!sel)return;
-  // Always reload to ensure fresh data
-  if(!allFleetVehiclesCache||allFleetVehiclesCache.length===0){
-    await loadFleetVehicles();
-  }
-  const vehicles=allFleetVehiclesCache.filter(v=>v.status!=='Retired'&&v.status!=='Archived');
-  sel.innerHTML='<option value="">— Select Vehicle —</option>'+
-    vehicles.map(v=>'<option value="'+v.vehicle_id+'">'+v.vehicle_id+(v.make?' — '+v.make+(v.model?' '+v.model:'')+' ('+v.county+')':'')+'</option>').join('');
-  // If inside a vehicle modal, pre-select current vehicle
-  if(currentFleetVehicleId){
-    sel.value=currentFleetVehicleId;
+    const sel=document.getElementById('ti-vehicle');
+    if(sel){
+      const vehicles=allFleetVehiclesCache.filter(v=>v.status!=='Retired');
+      if(vehicles.length===0){
+        // Try loading vehicles first
+        loadFleetVehicles().then(()=>{
+          const v2=allFleetVehiclesCache.filter(v=>v.status!=='Retired');
+          sel.innerHTML='<option value="">— Select Vehicle —</option>'+
+            v2.map(v=>'<option value="'+v.vehicle_id+'">'+v.vehicle_id+(v.make?' ('+v.make+(v.model?' '+v.model:'')+')':'')+'</option>').join('');
+        });
+      } else {
+        sel.innerHTML='<option value="">— Select Vehicle —</option>'+
+          vehicles.map(v=>'<option value="'+v.vehicle_id+'">'+v.vehicle_id+(v.make?' ('+v.make+(v.model?' '+v.model:'')+')':'')+'</option>').join('');
+      }
+    }
   }
 }
 async function saveTire(){
@@ -5886,6 +5898,7 @@ function renderIncidentTable(){
         '</div>'+
         (isDemo?'':'<div style="display:flex;gap:8px;flex-wrap:wrap;">'+
           '<button class="btn btn-sm" style="background:var(--light);color:var(--navy);" onclick="openIncidentModal('+r.id+')">📋 Review</button>'+
+          (r.status==='Closed'||r.status==='Archived'?'<button class="btn btn-sm" style="background:#f0faf4;color:#27AE60;border:1px solid #27AE60;" data-iid="'+r.id+'" onclick="archiveIncidentToProfile(this.dataset.iid)">📂 Archive to Profile</button>':'')+ 
           '<button class="btn btn-sm btn-red" onclick="deleteIncidentReport('+r.id+')">🗑️ Delete</button>'+
         '</div>')+
       '</div>'+
@@ -6773,13 +6786,43 @@ async function loadDashboard(){
   try{const r=await db.from('timesheets').select('*').eq('status','PENDING');sheets=r.data||[];}catch(e){}
   const unique=[...new Set(sigs.map(s=>s.employee_email))].length;
   document.getElementById('badge-timesheets').textContent=sheets.length||'0';
+
+  // Stat cards
   document.getElementById('dash-stats').innerHTML=`
-    <div class="admin-stat-card"><div class="admin-stat-icon" style="background:#fff3cd;">⏳</div><div><div class="admin-stat-val">${reqs.length}</div><div class="admin-stat-label">Pending Requests</div></div></div>
-    <div class="admin-stat-card"><div class="admin-stat-icon" style="background:#fdecea;">📞</div><div><div class="admin-stat-val">${callouts.length}</div><div class="admin-stat-label">Total Call-Outs</div></div></div>
-    <div class="admin-stat-card"><div class="admin-stat-icon" style="background:#d4edda;">✅</div><div><div class="admin-stat-val">${unique}</div><div class="admin-stat-label">Onboarded Employees</div></div></div>
-    <div class="admin-stat-card"><div class="admin-stat-icon" style="background:#e8f4fd;">🕐</div><div><div class="admin-stat-val">${sheets.length}</div><div class="admin-stat-label">Timesheets Pending</div></div></div>`;
+    <div class="admin-stat-card" style="cursor:pointer;" onclick="showAdmin('time-off')"><div class="admin-stat-icon" style="background:#fff3cd;">⏳</div><div><div class="admin-stat-val">${reqs.length}</div><div class="admin-stat-label">Pending Requests</div></div></div>
+    <div class="admin-stat-card" style="cursor:pointer;" onclick="showAdmin('call-outs')"><div class="admin-stat-icon" style="background:#fdecea;">📞</div><div><div class="admin-stat-val">${callouts.length}</div><div class="admin-stat-label">Total Call-Outs</div></div></div>
+    <div class="admin-stat-card" style="cursor:pointer;" onclick="showAdmin('employee-folders')"><div class="admin-stat-icon" style="background:#d4edda;">✅</div><div><div class="admin-stat-val">${unique}</div><div class="admin-stat-label">Onboarded Employees</div></div></div>
+    <div class="admin-stat-card" style="cursor:pointer;" onclick="showAdmin('timesheets')"><div class="admin-stat-icon" style="background:#e8f4fd;">🕐</div><div><div class="admin-stat-val">${sheets.length}</div><div class="admin-stat-label">Timesheets Pending</div></div></div>`;
+
+  // Quick action button counts
+  const openVr=(allVehicleRecordsCache||[]).filter(r=>r.status==='NEW'||r.status==='OPEN').length;
+  const openInc=(allIncidentsCache||[]).filter(i=>i.status!=='Closed'&&i.status!=='Archived').length;
+  const unreadMemos=(allMemosCache||[]).filter(m=>m.is_active).length;
+  const pendingExp=(allExpensesCache||[]).filter(e=>e.status==='PENDING').length;
+  const setQ=(id,txt,urgent)=>{const el=document.getElementById(id);if(el){el.textContent=txt;el.style.color=urgent&&txt!=='All clear ✓'?'var(--red)':'#888';}};
+  setQ('dq-timeoff',reqs.length>0?reqs.length+' pending':'All clear ✓',reqs.length>0);
+  setQ('dq-timesheets',sheets.length>0?sheets.length+' to review':'All clear ✓',sheets.length>0);
+  setQ('dq-vehicles',openVr>0?openVr+' open':'All clear ✓',openVr>0);
+  setQ('dq-incidents',openInc>0?openInc+' open':'All clear ✓',openInc>0);
+  setQ('dq-memos',unreadMemos>0?unreadMemos+' active':'None active',false);
+  setQ('dq-expenses',pendingExp>0?pendingExp+' pending':'All clear ✓',pendingExp>0);
+
+  // Last updated
+  const lu=document.getElementById('dash-last-updated');
+  if(lu)lu.textContent='Last updated: '+new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+
+  // Pending time off list
   const pendList=document.getElementById('dash-pending-list');
-  pendList.innerHTML=reqs.length===0?'No pending requests. ✓':reqs.slice(0,5).map(r=>`<div style="padding:6px 0;border-bottom:1px solid #f0f0f0;font-size:12px;"><strong>${r.employee_name}</strong> — ${r.request_type} — ${r.start_date}</div>`).join('');
+  if(pendList)pendList.innerHTML=reqs.length===0?'<span style="color:var(--success);">✓ No pending requests</span>':
+    reqs.slice(0,5).map(r=>`<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f0f0f0;font-size:12px;">
+      <div><strong>${r.employee_name}</strong> — ${r.request_type}</div>
+      <div style="color:#888;">${r.start_date}</div>
+    </div>`).join('')+(reqs.length>5?`<div style="font-size:11px;color:var(--navy);margin-top:6px;cursor:pointer;" onclick="showAdmin('time-off')">+${reqs.length-5} more →</div>`:'');
+
+  // Set admin name
+  const nameEl=document.getElementById('dash-admin-name');
+  if(nameEl)nameEl.textContent=adminName;
+
   loadFlagsInto('dash-flags-list',callouts);
 }
 function detectFlags(callouts){
@@ -7855,38 +7898,23 @@ function renderVehicleRecordsTable(){
         <td style="font-size:12px;max-width:160px;">${isDemo?'—':(r.description||'').substring(0,60)+((r.description||'').length>60?'...':'')}${hasAdminNotes&&!isDemo?'<br><span style="font-size:10px;color:#1565c0;">📝 Admin notes added</span>':''}</td>
         <td><span class="badge badge-${r.status==='RESOLVED'?'approved':r.status==='IN_PROGRESS'?'warning':'flag'}">${r.status}</span></td>
         <td style="white-space:nowrap;">
-          '<td style="white-space:nowrap;">'+
-          '<button class="btn btn-primary btn-sm" data-rid="'+r.id+'" onclick="openVehicleReportModal(parseInt(this.dataset.rid))" style="margin-bottom:4px;">📋 Open</button><br>'+
-          (r.vehicle_id&&allFleetVehiclesCache.some(v=>v.vehicle_id===r.vehicle_id)&&!isDemo?'<button class="btn btn-sm" style="background:#f0f4fb;color:var(--navy);font-size:10px;" data-vid="'+r.vehicle_id+'" onclick="showAdmin(\'fleet\');setTimeout(()=>openFleetVehicle(this.dataset.vid),400);">🔧 Fleet</button><br>':'')+
-          ((r.issue_types||'').includes('Oil Change')&&(r.status==='NEW'||r.status==='OPEN')&&!isDemo?'<button class="btn btn-sm" style="background:#fff3cd;color:#856404;font-size:10px;border:1px solid #ffc107;" data-rid="'+r.id+'" data-name="'+(r.employee_name||'').replace(/\'/g,'')+'" data-email="'+(r.employee_email||'')+'" data-county="'+(r.county||'')+'" data-vid="'+(r.vehicle_id||'')+'" data-ts="'+(r.submitted_at||'')+'" onclick="openOilChangeApproval(this.dataset.rid,{employee_name:this.dataset.name,employee_email:this.dataset.email,county:this.dataset.county,vehicle_id:this.dataset.vid,submitted_at:this.dataset.ts})">✅ Approve Oil Change</button><br>':'')+
-          '<select data-rid="'+r.id+'" onchange="updateVehicleStatus(this.dataset.rid,this.value)" style="padding:4px 8px;border:1px solid var(--border);border-radius:4px;font-size:11px;margin-top:2px;">'+
-          '<option value="NEW" '+(r.status==='NEW'?'selected':'')+'>Open</option>'+
-          '<option value="IN_PROGRESS" '+(r.status==='IN_PROGRESS'?'selected':'')+'>In Progress</option>'+
-          '<option value="RESOLVED" '+(r.status==='RESOLVED'?'selected':'')+'>Resolved</option>'+
-          '<option value="CLOSED" '+(r.status==='CLOSED'?'selected':'')+'>Closed</option>'+
-          '</select><br>'+
-          (!isDemo?'<button class="btn btn-sm btn-red" data-rid="'+r.id+'" onclick="deleteVehicleRecord(this.dataset.rid)" style="margin-top:4px;font-size:11px;">🗑️ Delete</button>':'')+
-          '</td>'+
+          <button class="btn btn-primary btn-sm" onclick="openVehicleReportModal(${r.id})" style="margin-bottom:4px;">📋 Open</button><br>
+          ${r.vehicle_id&&allFleetVehiclesCache.some(v=>v.vehicle_id===r.vehicle_id)&&!isDemo?`<button class="btn btn-sm" style="background:#f0f4fb;color:var(--navy);font-size:10px;" onclick="showAdmin('fleet');setTimeout(()=>openFleetVehicle('${r.vehicle_id}'),400);">🔧 Fleet</button><br>`:''}${(r.issue_types||'').includes('Oil Change')&&r.status==='NEW'&&!isDemo?`<button class="btn btn-sm" style="background:#fff3cd;color:#856404;font-size:10px;border:1px solid #ffc107;" onclick="openOilChangeApproval('${r.id}',{employee_name:'${(r.employee_name||'').replace(/'/g,'')}',employee_email:'${r.employee_email||''}',county:'${r.county||''}',vehicle_id:'${r.vehicle_id||''}',submitted_at:'${r.submitted_at||''}'})">✅ Approve Oil Change</button><br>`:''}
+          ${(r.issue_types||'').includes('Oil Change')&&!isDemo?`<button class="btn btn-sm" style="background:#fef3e8;color:#e67e22;font-size:10px;" onclick="openFleetVehicle('${r.vehicle_id}')">🛢️ Open Vehicle</button><br>`:''}
+          <select onchange="updateVehicleStatus(${r.id},this.value)" style="padding:4px 8px;border:1px solid var(--border);border-radius:4px;font-size:11px;margin-top:2px;"><option ${r.status==='NEW'?'selected':''}>NEW</option><option ${r.status==='IN_PROGRESS'?'selected':''}>IN_PROGRESS</option><option ${r.status==='RESOLVED'?'selected':''}>RESOLVED</option></select><br>
+          <button class="btn btn-sm btn-red" onclick="deleteVehicleRecord(${r.id})" style="margin-top:4px;font-size:11px;">🗑️ Delete</button>
+        </td>
       </tr>`;
     }).join('')+
     '</tbody></table></div><div style="margin-top:12px;"><button class="btn btn-sm" style="background:#e8f4fd;color:#1565c0;" onclick="exportVehicleRecords()">⬇️ Export CSV</button></div>';
 }
 async function deleteVehicleRecord(id){
   if(!confirm('Delete this vehicle record? This cannot be undone.'))return;
-  try{
-    const{error}=await db.from('vehicle_reports').delete().eq('id',parseInt(id)||id);
-    if(error)throw error;
-    await loadVehicleRecords();
-    loadFleetVehicles();
-    showRealtimeToast('Record deleted.');
-  }catch(e){alert('Error deleting: '+e.message);}
+  try{await db.from('vehicle_reports').delete().eq('id',id);loadVehicleRecords();}catch(e){alert('Error: '+e.message);}
 }
 async function updateVehicleStatus(id,status){
-  try{
-    await db.from('vehicle_reports').update({status}).eq('id',id);
-    await loadVehicleRecords();
-    loadFleetVehicles(); // refresh fleet cards too
-  }catch(e){alert('Error updating status: '+e.message);}
+  await db.from('vehicle_reports').update({status}).eq('id',id);
+  loadVehicleRecords();
 }
 function openVehicleReportModal(id){
   const r=allVehicleRecordsCache.find(x=>x.id===id);
@@ -8961,6 +8989,7 @@ function renderExpensesTable(){
       '<div style="font-weight:800;color:var(--navy);">$'+parseFloat(e.amount).toFixed(2)+'</div>'+
       '<div style="display:flex;gap:4px;justify-content:flex-end;">'+
         (e.receipt_url?'<a href="'+e.receipt_url+'" target="_blank" style="width:28px;height:28px;border-radius:6px;border:1px solid #ddd;background:#fff;color:#1565c0;display:flex;align-items:center;justify-content:center;font-size:14px;text-decoration:none;" title="View Receipt">📎</a>':'')+
+        (!isDemo?'<button style="width:28px;height:28px;border-radius:6px;border:1px solid #ddd;background:#fff;color:#555;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;" data-eid="'+e.id+'" onclick="emailExpense(this.dataset.eid)" title="Email expense details">✉️</button>':'')+
         (isPending&&!isDemo?
           '<button style="width:28px;height:28px;border-radius:6px;border:1px solid #27AE60;background:#fff;color:#27AE60;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;" data-eid="'+e.id+'" data-status="APPROVED" onclick="decideExpense(this.dataset.eid,this.dataset.status)" title="Approve">✓</button>'+
           '<button style="width:28px;height:28px;border-radius:6px;border:1px solid var(--red);background:#fff;color:var(--red);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;" data-eid="'+e.id+'" data-status="DENIED" onclick="decideExpense(this.dataset.eid,this.dataset.status)" title="Deny">✗</button>'
@@ -10560,62 +10589,64 @@ Additional instructions: ${instructions}`;
 }
 
 // ═══════════════════════════════════════════════
-// MOUNT TIRE TO VEHICLE (from inside vehicle card)
+// INCIDENT ARCHIVE TO EMPLOYEE PROFILE
 // ═══════════════════════════════════════════════
-function toggleMountTireForm(){
-  const form=document.getElementById('mount-tire-form');
-  if(!form)return;
-  const isOpen=form.style.display!=='none';
-  form.style.display=isOpen?'none':'block';
-  if(!isOpen){
-    // Populate available tires from inventory (not already mounted)
-    const sel=document.getElementById('mount-tire-select');
-    if(sel){
-      const available=allTiresCache.filter(t=>t.status!=='Mounted'&&t.status!=='Disposed');
-      sel.innerHTML='<option value="">— Select from inventory —</option>'+
-        available.map(t=>'<option value="'+t.tire_id+'">'+t.tire_id+(t.brand?' — '+t.brand:'')+(t.size?' '+t.size:'')+(t.tire_type?' ('+t.tire_type+')':'')+'</option>').join('');
-    }
+async function archiveIncidentToProfile(incidentId){
+  const incident=allIncidentsCache.find(i=>i.id===parseInt(incidentId)||i.id===incidentId);
+  if(!incident){alert('Incident not found.');return;}
+  // Find matching employee profile
+  const profile=allProfilesCache.find(p=>p.employee_name===incident.employee_name||p.employee_email===incident.employee_email);
+  if(!profile){
+    alert('No employee profile found for '+incident.employee_name+'. Please create a profile first.');
+    return;
   }
+  if(!confirm('Archive this incident report to '+incident.employee_name+"'s profile? It will appear in their Performance tab."))return;
+  try{
+    // Load existing incident data from profile
+    const{data}=await db.from('employee_profiles').select('incident_history').eq('id',profile.id).single();
+    const history=data?.incident_history?JSON.parse(data.incident_history):[];
+    history.push({
+      incident_id:incident.id,
+      incident_date:incident.incident_date,
+      nature:(incident.nature_of_incident||[]).join(', '),
+      location:incident.location||'',
+      description:incident.description||'',
+      status:incident.status,
+      archived_at:new Date().toISOString(),
+      archived_by:adminName
+    });
+    await db.from('employee_profiles').update({incident_history:JSON.stringify(history)}).eq('id',profile.id);
+    // Mark incident as archived
+    await db.from('incident_reports').update({status:'Archived'}).eq('id',incident.id);
+    await loadIncidents();
+    showRealtimeToast('📂 Incident archived to '+incident.employee_name+"'s profile");
+  }catch(e){alert('Error archiving: '+e.message);}
 }
 
-async function mountTireToVehicle(){
-  if(!currentFleetVehicleId){alert('No vehicle selected.');return;}
-  const selectVal=document.getElementById('mount-tire-select')?.value;
-  const manualVal=document.getElementById('mount-tire-manual')?.value.trim();
-  const tireId=selectVal||manualVal;
-  const position=document.getElementById('mount-tire-position')?.value;
-  if(!tireId){alert('Please select a tire from inventory or enter a Tire ID.');return;}
-  if(!position){alert('Please select a position.');return;}
-  try{
-    // Check if tire already exists in DB
-    const{data:existing}=await db.from('fleet_tires').select('id').eq('tire_id',tireId).single();
-    if(existing){
-      // Update existing tire
-      await db.from('fleet_tires').update({
-        status:'Mounted',
-        vehicle_id:currentFleetVehicleId,
-        position
-      }).eq('tire_id',tireId);
-    } else {
-      // Create new tire record
-      await db.from('fleet_tires').insert([{
-        tire_id:tireId,
-        status:'Mounted',
-        vehicle_id:currentFleetVehicleId,
-        position,
-        added_by:adminName,
-        added_at:new Date().toISOString()
-      }]);
-    }
-    // Reset form and refresh
-    document.getElementById('mount-tire-select').value='';
-    document.getElementById('mount-tire-manual').value='';
-    document.getElementById('mount-tire-position').value='';
-    document.getElementById('mount-tire-form').style.display='none';
-    await loadFleetTires();
-    renderTireMounted();
-    showRealtimeToast('✅ Tire mounted to '+position+' on '+currentFleetVehicleId);
-  }catch(e){alert('Error mounting tire: '+e.message);}
+// ═══════════════════════════════════════════════
+// EXPENSE MAILTO EXPORT
+// ═══════════════════════════════════════════════
+function emailExpense(expenseId){
+  const e=allExpensesCache.find(x=>x.id===expenseId);
+  if(!e)return;
+  const subject=encodeURIComponent('Expense Reimbursement — '+e.expense_type+' — '+e.employee_name+' — '+e.expense_date);
+  const body=encodeURIComponent(
+    'RIDESOURCE EXPENSE REIMBURSEMENT\n'
+    +'================================\n\n'
+    +'Employee: '+e.employee_name+'\n'
+    +'Email: '+e.employee_email+'\n'
+    +'County: '+(e.county||'—')+'\n\n'
+    +'Expense Type: '+e.expense_type+'\n'
+    +'Date: '+e.expense_date+'\n'
+    +'Amount: $'+parseFloat(e.amount).toFixed(2)+'\n'
+    +'Description: '+(e.description||'—')+'\n\n'
+    +'Status: '+e.status+'\n'
+    +(e.paid_to_finance?'Paid to Finance: Yes — '+new Date(e.paid_date).toLocaleDateString()+'\n':'Paid to Finance: No\n')
+    +(e.receipt_url?'\nReceipt: '+e.receipt_url:'\n(No receipt attached)')
+    +'\n\n================================\n'
+    +'Exported from RideSource Staff Portal on '+new Date().toLocaleDateString()
+  );
+  window.location.href='mailto:?subject='+subject+'&body='+body;
 }
 </script>
 <!-- MODALS -->
