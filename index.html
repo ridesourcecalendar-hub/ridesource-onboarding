@@ -2075,12 +2075,17 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
           <div id="fleet-modal-header" style="margin-bottom:20px;"></div>
           <!-- Maintenance Tabs -->
           <div style="display:flex;gap:2px;border-bottom:2px solid var(--border);margin-bottom:20px;flex-wrap:wrap;">
-            <button class="profile-tab active" id="fmtab-oil" onclick="switchFleetMaintTab('oil')">🛢️ Oil Changes</button>
+            <button class="profile-tab active" id="fmtab-overview" onclick="switchFleetMaintTab('overview')">📊 Overview</button>
+            <button class="profile-tab" id="fmtab-oil" onclick="switchFleetMaintTab('oil')">🛢️ Oil Changes</button>
             <button class="profile-tab" id="fmtab-tires" onclick="switchFleetMaintTab('tires')">🔄 Tires</button>
             <button class="profile-tab" id="fmtab-preventative" onclick="switchFleetMaintTab('preventative')">🔧 Preventative</button>
             <button class="profile-tab" id="fmtab-repair" onclick="switchFleetMaintTab('repair')">🚨 Repairs</button>
             <button class="profile-tab" id="fmtab-inspection" onclick="switchFleetMaintTab('inspection')">📋 Inspections</button>
             <button class="profile-tab" id="fmtab-reports" onclick="switchFleetMaintTab('reports')" style="position:relative;">🚐 Driver Reports<span id="fmtab-reports-badge" style="display:none;position:absolute;top:2px;right:2px;background:var(--red);color:#fff;border-radius:50%;width:14px;height:14px;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;">!</span></button>
+          </div>
+          <!-- OVERVIEW PANEL -->
+          <div id="fm-overview-panel" style="display:block;">
+            <div id="fm-overview-content"><p style="color:#888;font-size:13px;">Loading...</p></div>
           </div>
           <!-- Generic Log Entry Form (hidden when tires tab active) -->
           <div id="fm-generic-form" class="card" style="margin-bottom:16px;background:#f8f9fc;">
@@ -5045,7 +5050,7 @@ async function openFleetVehicle(vehicleId){clearFleetForms();
   });
   ['fm-cost','fm-rep-cost','fm-insp-cost'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   ['fm-rep-issue-type','fm-rep-parts-type','fm-linked-report','fm-insp-type','fm-insp-result'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  switchFleetMaintTab('oil');
+  switchFleetMaintTab('overview');
   document.getElementById('fleet-vehicle-modal').classList.add('open');
   // Update reports badge count
   const openReports=(allVehicleRecordsCache||[]).filter(r=>r.vehicle_id===vehicleId&&!['CLOSED','RESOLVED'].includes(r.status||'NEW')).length;
@@ -5156,44 +5161,45 @@ function clearFleetForms(){
 }
 function switchFleetMaintTab(tab){
   if(tab==='repair'){
-    // Populate vehicle reports dropdown for linking
     const sel=document.getElementById('fm-linked-report');
     if(sel&&currentFleetVehicleId){
-      const reports=allVehicleRecordsCache.filter(r=>r.vehicle_id===currentFleetVehicleId&&r.status!=='Resolved');
+      const reports=allVehicleRecordsCache.filter(r=>r.vehicle_id===currentFleetVehicleId&&r.status!=='Resolved'&&r.status!=='Closed');
       sel.innerHTML='<option value="">— None —</option>'+
         reports.map(r=>'<option value="'+r.id+'">'+r.report_date+' — '+(r.issue_types||'').substring(0,50)+'</option>').join('');
     }
   }
   currentFleetMaintTab=tab;
-  ['oil','tires','preventative','repair','inspection'].forEach(t=>{
-    document.getElementById('fmtab-'+t)?.classList.toggle('active',t===tab);
-  });
+  const isOverview=tab==='overview';
   const isTires=tab==='tires';
   const isReports=tab==='reports';
+  ['overview','oil','tires','preventative','repair','inspection','reports'].forEach(t=>{
+    document.getElementById('fmtab-'+t)?.classList.toggle('active',t===tab);
+  });
   const genericForm=document.getElementById('fm-generic-form');
   const tirePanel=document.getElementById('fm-tire-panel');
   const historyEl=document.getElementById('fleet-maint-history');
-  if(genericForm)genericForm.style.display=(isTires||isReports)?'none':'block';
-  if(historyEl)historyEl.style.display=(isTires||isReports)?'none':'block';
+  const overviewPanel=document.getElementById('fm-overview-panel');
+  if(overviewPanel)overviewPanel.style.display=isOverview?'block':'none';
+  if(genericForm)genericForm.style.display=(isTires||isReports||isOverview)?'none':'block';
+  if(historyEl)historyEl.style.display=(isTires||isReports||isOverview)?'none':'block';
   if(tirePanel)tirePanel.style.display=isTires?'block':'none';
-  // Reports panel
   let reportsPanel=document.getElementById('fm-reports-panel');
   if(!reportsPanel){reportsPanel=document.createElement('div');reportsPanel.id='fm-reports-panel';if(historyEl)historyEl.parentNode.insertBefore(reportsPanel,historyEl.nextSibling);}
   reportsPanel.style.display=isReports?'block':'none';
-  // Show/hide the correct sub-form
   ['oil','preventative','repair','inspection'].forEach(t=>{
     const f=document.getElementById('fm-form-'+t);
     if(f)f.style.display=t===tab?'block':'none';
   });
-  // Update form title
   const titles={oil:'🛢️ Log Oil Change',preventative:'🔧 Log Preventative Service',repair:'🚨 Log Repair',inspection:'📋 Log Inspection'};
   const titleEl=document.getElementById('fm-form-title');
   if(titleEl&&titles[tab])titleEl.textContent=titles[tab];
-  if(tab==='repair')populateLinkedReports(currentFleetVehicleId);
+  if(isOverview){renderFleetOverview(currentFleetVehicleId);}
+  else if(tab==='repair')populateLinkedReports(currentFleetVehicleId);
   if(isTires){renderTireMounted();loadTireChangeoversHistory();}
-  else if(tab==='reports'){loadFleetVehicleReports(currentFleetVehicleId);}
-  else{loadFleetMaintHistory();}
+  else if(isReports){loadFleetVehicleReports(currentFleetVehicleId);}
+  else if(!isOverview){loadFleetMaintHistory();}
 }
+
 
 async function loadFleetMaintHistory(){
   const el=document.getElementById('fleet-maint-history');
@@ -10647,6 +10653,143 @@ function emailExpense(expenseId){
     +'Exported from RideSource Staff Portal on '+new Date().toLocaleDateString()
   );
   window.location.href='mailto:?subject='+subject+'&body='+body;
+}
+
+// ═══════════════════════════════════════════════
+// FLEET VEHICLE OVERVIEW TAB
+// ═══════════════════════════════════════════════
+async function renderFleetOverview(vehicleId){
+  const el=document.getElementById('fm-overview-content');
+  if(!el||!vehicleId)return;
+  const v=allFleetVehiclesCache.find(x=>x.vehicle_id===vehicleId);
+  if(!v){el.innerHTML='<p style="color:#888;">Vehicle not found.</p>';return;}
+
+  const maint=allFleetMaintenanceCache.filter(m=>m.vehicle_id===vehicleId);
+  const reports=(allVehicleRecordsCache||[]).filter(r=>r.vehicle_id===vehicleId);
+  const openReports=reports.filter(r=>!['Resolved','Closed','RESOLVED','CLOSED'].includes(r.status||'NEW'));
+  const today=new Date();
+
+  // Last oil change
+  const lastOil=maint.filter(m=>m.maintenance_type==='Oil Change').sort((a,b)=>new Date(b.service_date)-new Date(a.service_date))[0];
+  // Last inspection
+  const lastInsp=maint.filter(m=>m.maintenance_type==='Inspection').sort((a,b)=>new Date(b.service_date)-new Date(a.service_date))[0];
+  // Open repairs
+  const openRepairs=maint.filter(m=>m.maintenance_type==='Repair'&&m.status!=='Completed').length;
+
+  // Oil change status
+  let oilStatus='Unknown';let oilColor='#888';
+  if(lastOil){
+    if(lastOil.next_due_date){
+      const due=new Date(lastOil.next_due_date);
+      const daysLeft=Math.ceil((due-today)/(1000*60*60*24));
+      if(daysLeft<0){oilStatus='Overdue by '+Math.abs(daysLeft)+' days';oilColor='var(--red)';}
+      else if(daysLeft<=14){oilStatus='Due in '+daysLeft+' days';oilColor='var(--warn)';}
+      else{oilStatus='Due '+due.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});oilColor='var(--success)';}
+    } else {
+      oilStatus='Logged '+new Date(lastOil.service_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+      oilColor='#888';
+    }
+  } else {
+    oilStatus='No record';oilColor='var(--red)';
+  }
+
+  // Mounted tires
+  const mounted=allTiresCache.filter(t=>t.vehicle_id===vehicleId&&t.status==='Mounted').length;
+
+  el.innerHTML=`
+    <!-- Status summary row -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:20px;">
+      <div style="background:#f7f9fc;border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;">
+        <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Status</div>
+        <div style="font-size:13px;font-weight:800;color:${v.status==='Active'||v.status==='In Service'?'var(--success)':'var(--warn)'};">${v.status||'—'}</div>
+      </div>
+      <div style="background:#f7f9fc;border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;cursor:pointer;" onclick="switchFleetMaintTab('reports')">
+        <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Open Reports</div>
+        <div style="font-size:13px;font-weight:800;color:${openReports.length>0?'var(--red)':'var(--success)'};">${openReports.length}</div>
+      </div>
+      <div style="background:#f7f9fc;border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;cursor:pointer;" onclick="switchFleetMaintTab('oil')">
+        <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Oil Change</div>
+        <div style="font-size:12px;font-weight:800;color:${oilColor};">${oilStatus}</div>
+      </div>
+      <div style="background:#f7f9fc;border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;cursor:pointer;" onclick="switchFleetMaintTab('tires')">
+        <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Tires Mounted</div>
+        <div style="font-size:13px;font-weight:800;color:var(--navy);">${mounted}/4</div>
+      </div>
+      <div style="background:#f7f9fc;border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;cursor:pointer;" onclick="switchFleetMaintTab('inspection')">
+        <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Last Inspection</div>
+        <div style="font-size:12px;font-weight:800;color:var(--navy);">${lastInsp?new Date(lastInsp.service_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'No record'}</div>
+      </div>
+    </div>
+
+    <!-- Quick actions -->
+    <div style="margin-bottom:20px;">
+      <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Quick Actions</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button onclick="switchFleetMaintTab('oil')" style="padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:#fff;font-size:12px;font-weight:700;cursor:pointer;color:var(--navy);">🛢️ Log Oil Change</button>
+        <button onclick="switchFleetMaintTab('repair')" style="padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:#fff;font-size:12px;font-weight:700;cursor:pointer;color:var(--navy);">🔧 Log Repair</button>
+        <button onclick="switchFleetMaintTab('inspection')" style="padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:#fff;font-size:12px;font-weight:700;cursor:pointer;color:var(--navy);">📋 Log Inspection</button>
+        <button onclick="switchFleetMaintTab('reports')" style="padding:8px 14px;border-radius:8px;border:${openReports.length>0?'2px solid var(--red)':'1px solid var(--border)'};background:${openReports.length>0?'#fdecea':'#fff'};font-size:12px;font-weight:700;cursor:pointer;color:${openReports.length>0?'var(--red)':'var(--navy)'};">🚐 Driver Reports ${openReports.length>0?'('+openReports.length+' open)':''}</button>
+      </div>
+    </div>
+
+    <!-- Open driver reports -->
+    ${openReports.length>0?`
+    <div style="margin-bottom:20px;">
+      <div style="font-size:11px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">🚨 Open Driver Reports — Needs Attention</div>
+      ${openReports.map(r=>`
+        <div style="border:1px solid #fcc;border-radius:8px;padding:10px 14px;margin-bottom:6px;background:#fef8f8;display:flex;align-items:center;justify-content:space-between;gap:8px;">
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--navy);">${r.issue_types||'Report'}</div>
+            <div style="font-size:11px;color:#888;margin-top:2px;">${r.employee_name} · ${r.report_date} · <span style="font-weight:700;color:${r.status==='NEW'?'var(--red)':r.status==='IN_PROGRESS'?'var(--warn)':'#888'};">${r.status||'NEW'}</span></div>
+            ${r.description?`<div style="font-size:11px;color:#555;margin-top:3px;">${r.description.substring(0,80)}${r.description.length>80?'...':''}</div>`:''}
+          </div>
+          <div style="display:flex;gap:4px;flex-shrink:0;">
+            <button onclick="logRepairFromReport('${r.id}','${(r.issue_types||'').replace(/'/g,'')}')" style="font-size:11px;padding:4px 10px;border-radius:6px;border:1px solid var(--navy);background:var(--navy);color:#fff;cursor:pointer;white-space:nowrap;">🔧 Log Repair</button>
+          </div>
+        </div>`).join('')}
+    </div>`:''}
+
+    <!-- Recent maintenance history -->
+    <div>
+      <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Recent Maintenance (Last 5)</div>
+      ${maint.length===0?'<p style="color:#888;font-size:13px;">No maintenance logged yet.</p>':
+        maint.sort((a,b)=>new Date(b.service_date)-new Date(a.service_date)).slice(0,5).map(m=>`
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f5f5f5;font-size:13px;">
+          <div>
+            <span style="font-weight:700;color:var(--navy);">${m.maintenance_type}</span>
+            ${m.notes?`<span style="color:#888;font-size:12px;margin-left:8px;">${m.notes.substring(0,40)}</span>`:''}
+          </div>
+          <div style="color:#888;font-size:12px;white-space:nowrap;">${new Date(m.service_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</div>
+        </div>`).join('')}
+    </div>
+  `;
+}
+
+function logRepairFromReport(reportId,issueType){
+  // Switch to repair tab and pre-fill from report
+  switchFleetMaintTab('repair');
+  // Pre-fill issue type
+  const issueSelect=document.getElementById('fm-rep-issue-type');
+  if(issueSelect){
+    // Find best matching issue
+    const opts=[...issueSelect.options].map(o=>o.value);
+    const match=opts.find(o=>issueType.toLowerCase().includes(o.toLowerCase()))||'Other';
+    issueSelect.value=match;
+    if(match)handleRepairIssueChange();
+  }
+  // Pre-select linked report
+  const linkSel=document.getElementById('fm-linked-report');
+  if(linkSel){
+    // Small delay to let populateLinkedReports run
+    setTimeout(()=>{
+      linkSel.value=reportId;
+    },300);
+  }
+  // Auto-update report to In Progress
+  db.from('vehicle_reports').update({status:'IN_PROGRESS'}).eq('id',reportId).then(()=>{
+    allVehicleRecordsCache=allVehicleRecordsCache.map(r=>r.id===reportId||r.id===parseInt(reportId)?{...r,status:'IN_PROGRESS'}:r);
+    showRealtimeToast('Report marked In Progress — fill in repair details below');
+  }).catch(e=>console.log(e));
 }
 </script>
 <!-- MODALS -->
