@@ -1189,79 +1189,89 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 
       <!-- ADMIN DASHBOARD -->
       <div id="section-adm-dashboard" class="admin-section" style="display:block;">
+        <!-- Header -->
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
           <div>
             <div style="font-size:22px;font-weight:800;color:var(--navy);">Admin Dashboard</div>
-            <p style="color:#888;font-size:13px;margin-top:2px;">Welcome back, <strong id="dash-admin-name"></strong>. Here's your team at a glance.</p>
+            <p style="color:#888;font-size:13px;margin-top:2px;">Welcome back, <strong id="dash-admin-name"></strong> · <span id="dash-last-updated" style="color:#aaa;font-size:12px;"></span></p>
           </div>
-          <div style="font-size:12px;color:#aaa;" id="dash-last-updated"></div>
+          <button onclick="adminRefreshAll()" style="background:var(--navy);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;">🔄 Refresh</button>
         </div>
 
-        <!-- Stat cards (clickable) -->
-        <div class="stats-grid" id="dash-stats" style="margin-bottom:16px;"></div>
+        <!-- Row 1: Key Stats -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;" id="dash-stats"></div>
 
-        <!-- Quick Actions Row -->
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:20px;">
-          <button onclick="showAdmin('time-off')" class="dash-quick-btn" style="border-color:#ffc107;">
-            <span style="font-size:20px;">⏳</span>
-            <div style="font-size:13px;font-weight:700;color:var(--navy);">Time Off</div>
-            <div style="font-size:11px;color:#888;margin-top:2px;" id="dq-timeoff">Loading...</div>
-          </button>
-          <button onclick="showAdmin('timesheets')" class="dash-quick-btn" style="border-color:#3b82f6;">
-            <span style="font-size:20px;">🕐</span>
-            <div style="font-size:13px;font-weight:700;color:var(--navy);">Timesheets</div>
-            <div style="font-size:11px;color:#888;margin-top:2px;" id="dq-timesheets">Loading...</div>
-          </button>
-          <button onclick="showAdmin('vehicle-records')" class="dash-quick-btn" style="border-color:#ef4444;">
-            <span style="font-size:20px;">🚐</span>
-            <div style="font-size:13px;font-weight:700;color:var(--navy);">Vehicle Reports</div>
-            <div style="font-size:11px;color:#888;margin-top:2px;" id="dq-vehicles">Loading...</div>
-          </button>
-          <button onclick="showAdmin('incidents')" class="dash-quick-btn" style="border-color:#f97316;">
-            <span style="font-size:20px;">🚨</span>
-            <div style="font-size:13px;font-weight:700;color:var(--navy);">Incidents</div>
-            <div style="font-size:11px;color:#888;margin-top:2px;" id="dq-incidents">Loading...</div>
-          </button>
-          <button onclick="showAdmin('memos')" class="dash-quick-btn" style="border-color:#8b5cf6;">
-            <span style="font-size:20px;">📢</span>
-            <div style="font-size:13px;font-weight:700;color:var(--navy);">Memos</div>
-            <div style="font-size:11px;color:#888;margin-top:2px;" id="dq-memos">Loading...</div>
-          </button>
-          <button onclick="showAdmin('expenses')" class="dash-quick-btn" style="border-color:#22c55e;">
-            <span style="font-size:20px;">💰</span>
-            <div style="font-size:13px;font-weight:700;color:var(--navy);">Expenses</div>
-            <div style="font-size:11px;color:#888;margin-top:2px;" id="dq-expenses">Loading...</div>
-          </button>
-        </div>
-
-        <!-- Flagged items -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
-          <div class="card" style="border-color:var(--navy);border-width:2px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-              <div class="card-title" style="margin:0;">⏳ Pending Time Off</div>
+        <!-- Row 2: This Week's Schedule -->
+        <div class="card" style="margin-bottom:20px;padding:16px 20px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <div style="font-size:15px;font-weight:800;color:var(--navy);">📅 This Week's Schedule</div>
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#888;">
+                <span style="width:10px;height:10px;border-radius:50%;background:#3b82f6;display:inline-block;"></span>PTO
+                <span style="width:10px;height:10px;border-radius:50%;background:#f59e0b;display:inline-block;margin-left:6px;"></span>Personal
+                <span style="width:10px;height:10px;border-radius:50%;background:#10b981;display:inline-block;margin-left:6px;"></span>Other
+              </div>
               <button onclick="showAdmin('time-off')" style="font-size:11px;color:var(--navy);background:none;border:none;cursor:pointer;font-weight:700;">View All →</button>
             </div>
-            <div id="dash-pending-list" style="font-size:13px;color:#888;">Loading...</div>
           </div>
-          <div class="card" style="border-color:var(--navy);border-width:2px;">
+          <div id="dash-week-schedule" style="overflow-x:auto;"></div>
+        </div>
+
+        <!-- Row 3: Alerts + Quick Actions -->
+        <div style="display:grid;grid-template-columns:1fr 320px;gap:16px;margin-bottom:16px;">
+          <!-- Alerts & Activity Feed -->
+          <div class="card" style="padding:16px 20px;">
+            <div style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:14px;">🔔 Alerts &amp; Activity</div>
+            <div id="dash-activity-feed"><p style="color:#888;font-size:13px;">Loading...</p></div>
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="card" style="padding:16px 20px;">
+            <div style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:14px;">⚡ Quick Actions</div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <button onclick="openOnboardingWizard()" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:#f7f9fc;cursor:pointer;text-align:left;width:100%;">
+                <span style="font-size:18px;">🚀</span><div><div style="font-size:13px;font-weight:700;color:var(--navy);">New Employee</div><div style="font-size:11px;color:#888;">Add &amp; send onboarding</div></div>
+              </button>
+              <button onclick="showAdmin('memos');setMemoMainTab('compose')" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:#f7f9fc;cursor:pointer;text-align:left;width:100%;">
+                <span style="font-size:18px;">📢</span><div><div style="font-size:13px;font-weight:700;color:var(--navy);">Send Memo</div><div style="font-size:11px;color:#888;">Compose announcement</div></div>
+              </button>
+              <button onclick="showAdmin('timesheets')" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:#f7f9fc;cursor:pointer;text-align:left;width:100%;">
+                <span style="font-size:18px;">🕐</span><div><div style="font-size:13px;font-weight:700;color:var(--navy);">Review Timesheets</div><div style="font-size:11px;color:#888;" id="qa-timesheets">Loading...</div></div>
+              </button>
+              <button onclick="showAdmin('fleet')" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:#f7f9fc;cursor:pointer;text-align:left;width:100%;">
+                <span style="font-size:18px;">🚐</span><div><div style="font-size:13px;font-weight:700;color:var(--navy);">Fleet Overview</div><div style="font-size:11px;color:#888;" id="qa-fleet">Loading...</div></div>
+              </button>
+              <button onclick="showAdmin('expenses')" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:#f7f9fc;cursor:pointer;text-align:left;width:100%;">
+                <span style="font-size:18px;">💰</span><div><div style="font-size:13px;font-weight:700;color:var(--navy);">Expenses</div><div style="font-size:11px;color:#888;" id="qa-expenses">Loading...</div></div>
+              </button>
+              <button onclick="exportTimesheets()" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:#f7f9fc;cursor:pointer;text-align:left;width:100%;">
+                <span style="font-size:18px;">⬇️</span><div><div style="font-size:13px;font-weight:700;color:var(--navy);">Export Timesheets</div><div style="font-size:11px;color:#888;">Download CSV</div></div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 4: Attendance flags -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div class="card" style="padding:16px 20px;">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-              <div class="card-title" style="margin:0;">🚩 Attendance Flags</div>
+              <div style="font-size:14px;font-weight:800;color:var(--navy);">🚩 Attendance Flags</div>
               <button onclick="showAdmin('call-outs')" style="font-size:11px;color:var(--navy);background:none;border:none;cursor:pointer;font-weight:700;">View All →</button>
             </div>
             <div id="dash-flags-list" style="font-size:13px;color:#888;">Loading...</div>
           </div>
-        </div>
-
-        <!-- Alerts row -->
-        <div id="dash-open-incidents-wrap" style="display:none;margin-bottom:16px;">
-          <div class="card" style="border-color:var(--red);border-width:2px;">
+          <div class="card" style="padding:16px 20px;">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-              <div class="card-title" style="color:var(--red);margin:0;">🚨 Open Incidents — Action Required</div>
-              <button onclick="showAdmin('incidents')" style="font-size:11px;color:var(--red);background:none;border:none;cursor:pointer;font-weight:700;">View All →</button>
+              <div style="font-size:14px;font-weight:800;color:var(--navy);">🚨 Open Incidents</div>
+              <button onclick="showAdmin('incidents')" style="font-size:11px;color:var(--navy);background:none;border:none;cursor:pointer;font-weight:700;">View All →</button>
             </div>
-            <div id="dash-open-incidents" style="font-size:13px;color:#888;"></div>
+            <div id="dash-open-incidents" style="font-size:13px;color:#888;">Loading...</div>
           </div>
         </div>
+
+        <!-- Hidden legacy elements kept for compatibility -->
+        <div id="dash-pending-list" style="display:none;"></div>
+        <div id="dash-open-incidents-wrap" style="display:none;"></div>
         <div id="dash-reviews-alert"></div>
         <div id="dash-flags-wrap"></div>
       </div>
@@ -6785,52 +6795,164 @@ function changeHbRefSection(dir){const n=hbRefSection+dir;if(n>=0&&n<HB_REF_SECT
 
 // ADMIN DASHBOARD
 async function loadDashboard(){
-  let reqs=[],callouts=[],sigs=[],sheets=[];
+  let reqs=[],callouts=[],sigs=[],sheets=[],incidents=[];
   try{const r=await db.from('time_off_requests').select('*').in('status',['PENDING','PTO_PENDING']);reqs=r.data||[];}catch(e){}
   try{const r=await db.from('call_out_log').select('*').order('callout_date',{ascending:false}).limit(100);callouts=r.data||[];}catch(e){}
   try{const r=await db.from('policy_signatures').select('employee_email');sigs=r.data||[];}catch(e){}
   try{const r=await db.from('timesheets').select('*').eq('status','PENDING');sheets=r.data||[];}catch(e){}
+  try{const r=await db.from('incident_reports').select('*').not('status','in','(Closed,Archived)').order('submitted_at',{ascending:false}).limit(5);incidents=r.data||[];}catch(e){}
+
   const unique=[...new Set(sigs.map(s=>s.employee_email))].length;
-  document.getElementById('badge-timesheets').textContent=sheets.length||'0';
+  const badge=document.getElementById('badge-timesheets');
+  if(badge)badge.textContent=sheets.length||'0';
 
-  // Stat cards
-  document.getElementById('dash-stats').innerHTML=`
-    <div class="admin-stat-card" style="cursor:pointer;" onclick="showAdmin('time-off')"><div class="admin-stat-icon" style="background:#fff3cd;">⏳</div><div><div class="admin-stat-val">${reqs.length}</div><div class="admin-stat-label">Pending Requests</div></div></div>
-    <div class="admin-stat-card" style="cursor:pointer;" onclick="showAdmin('call-outs')"><div class="admin-stat-icon" style="background:#fdecea;">📞</div><div><div class="admin-stat-val">${callouts.length}</div><div class="admin-stat-label">Total Call-Outs</div></div></div>
-    <div class="admin-stat-card" style="cursor:pointer;" onclick="showAdmin('employee-folders')"><div class="admin-stat-icon" style="background:#d4edda;">✅</div><div><div class="admin-stat-val">${unique}</div><div class="admin-stat-label">Onboarded Employees</div></div></div>
-    <div class="admin-stat-card" style="cursor:pointer;" onclick="showAdmin('timesheets')"><div class="admin-stat-icon" style="background:#e8f4fd;">🕐</div><div><div class="admin-stat-val">${sheets.length}</div><div class="admin-stat-label">Timesheets Pending</div></div></div>`;
-
-  // Quick action button counts
+  // Row 1 — Key Stats
   const openVr=(allVehicleRecordsCache||[]).filter(r=>r.status==='NEW'||r.status==='OPEN').length;
-  const openInc=(allIncidentsCache||[]).filter(i=>i.status!=='Closed'&&i.status!=='Archived').length;
-  const unreadMemos=(allMemosCache||[]).filter(m=>m.is_active).length;
   const pendingExp=(allExpensesCache||[]).filter(e=>e.status==='PENDING').length;
-  const setQ=(id,txt,urgent)=>{const el=document.getElementById(id);if(el){el.textContent=txt;el.style.color=urgent&&txt!=='All clear ✓'?'var(--red)':'#888';}};
-  setQ('dq-timeoff',reqs.length>0?reqs.length+' pending':'All clear ✓',reqs.length>0);
-  setQ('dq-timesheets',sheets.length>0?sheets.length+' to review':'All clear ✓',sheets.length>0);
-  setQ('dq-vehicles',openVr>0?openVr+' open':'All clear ✓',openVr>0);
-  setQ('dq-incidents',openInc>0?openInc+' open':'All clear ✓',openInc>0);
-  setQ('dq-memos',unreadMemos>0?unreadMemos+' active':'None active',false);
-  setQ('dq-expenses',pendingExp>0?pendingExp+' pending':'All clear ✓',pendingExp>0);
+  const oilDue=(allFleetVehiclesCache||[]).filter(v=>{
+    const maint=(allFleetMaintenanceCache||[]).filter(m=>m.vehicle_id===v.vehicle_id&&m.maintenance_type==='Oil Change');
+    const last=maint.sort((a,b)=>new Date(b.service_date)-new Date(a.service_date))[0];
+    if(!last?.next_due_date)return false;
+    return new Date(last.next_due_date)<=new Date(Date.now()+14*24*60*60*1000);
+  }).length;
+  document.getElementById('dash-stats').innerHTML=`
+    <div class="admin-stat-card" style="cursor:pointer;" onclick="showAdmin('employee-folders')">
+      <div class="admin-stat-icon" style="background:#e0e7ff;">👥</div>
+      <div><div class="admin-stat-val">${unique}</div><div class="admin-stat-label">Active Employees</div></div>
+    </div>
+    <div class="admin-stat-card" style="cursor:pointer;" onclick="showAdmin('time-off')">
+      <div class="admin-stat-icon" style="background:#fff3cd;">⏳</div>
+      <div><div class="admin-stat-val">${reqs.length}</div><div class="admin-stat-label">Pending Approvals</div></div>
+    </div>
+    <div class="admin-stat-card" style="cursor:pointer;" onclick="showAdmin('vehicle-records')">
+      <div class="admin-stat-icon" style="background:#fdecea;">🚐</div>
+      <div><div class="admin-stat-val">${openVr}</div><div class="admin-stat-label">Open Vehicle Reports</div></div>
+    </div>
+    <div class="admin-stat-card" style="cursor:pointer;" onclick="showAdmin('fleet')">
+      <div class="admin-stat-icon" style="background:#fff3cd;">🛢️</div>
+      <div><div class="admin-stat-val">${oilDue}</div><div class="admin-stat-label">Oil Changes Due</div></div>
+    </div>`;
 
-  // Last updated
-  const lu=document.getElementById('dash-last-updated');
-  if(lu)lu.textContent='Last updated: '+new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+  // Row 2 — This Week's Schedule
+  renderWeekSchedule(reqs);
 
-  // Pending time off list
-  const pendList=document.getElementById('dash-pending-list');
-  if(pendList)pendList.innerHTML=reqs.length===0?'<span style="color:var(--success);">✓ No pending requests</span>':
-    reqs.slice(0,5).map(r=>`<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f0f0f0;font-size:12px;">
-      <div><strong>${r.employee_name}</strong> — ${r.request_type}</div>
-      <div style="color:#888;">${r.start_date}</div>
-    </div>`).join('')+(reqs.length>5?`<div style="font-size:11px;color:var(--navy);margin-top:6px;cursor:pointer;" onclick="showAdmin('time-off')">+${reqs.length-5} more →</div>`:'');
+  // Row 3 — Activity Feed
+  renderActivityFeed(reqs,sheets,openVr,incidents,pendingExp);
 
-  // Set admin name
-  const nameEl=document.getElementById('dash-admin-name');
-  if(nameEl)nameEl.textContent=adminName;
+  // Quick action subtitles
+  const qts=document.getElementById('qa-timesheets');if(qts)qts.textContent=sheets.length>0?sheets.length+' pending review':'All reviewed ✓';
+  const qtf=document.getElementById('qa-fleet');if(qtf)qtf.textContent=oilDue>0?oilDue+' oil changes due':'Fleet up to date ✓';
+  const qte=document.getElementById('qa-expenses');if(qte)qte.textContent=pendingExp>0?pendingExp+' pending':'All clear ✓';
 
+  // Row 4 — Attendance flags
   loadFlagsInto('dash-flags-list',callouts);
+
+  // Open incidents
+  const incEl=document.getElementById('dash-open-incidents');
+  if(incEl){
+    if(!incidents.length){incEl.innerHTML='<span style="color:var(--success);">✓ No open incidents</span>';}
+    else{incEl.innerHTML=incidents.map(i=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f0f0f0;font-size:12px;cursor:pointer;" onclick="showAdmin('incidents')">
+      <div><strong>${i.employee_name||'—'}</strong> · ${(i.nature_of_incident||[]).slice(0,2).join(', ')||'—'}</div>
+      <div style="color:#888;">${i.incident_date||'—'}</div>
+    </div>`).join('');}
+  }
+
+  // Admin name + timestamp
+  const nameEl=document.getElementById('dash-admin-name');if(nameEl)nameEl.textContent=adminName;
+  const luEl=document.getElementById('dash-last-updated');if(luEl)luEl.textContent='Updated '+new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+
+  checkReviewsForDashboard();
 }
+
+function renderWeekSchedule(requests){
+  const el=document.getElementById('dash-week-schedule');if(!el)return;
+  const today=new Date();
+  const dayOfWeek=today.getDay();
+  const monday=new Date(today);monday.setDate(today.getDate()-(dayOfWeek===0?6:dayOfWeek-1));
+  const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const dates=days.map((_,i)=>{const d=new Date(monday);d.setDate(monday.getDate()+i);return d;});
+  const weekRequests=requests.filter(r=>{
+    const start=new Date(r.start_date);const end=new Date(r.end_date||r.start_date);
+    return r.status==='APPROVED'&&dates.some(d=>d>=new Date(start.toDateString())&&d<=new Date(end.toDateString()));
+  });
+  const typeColor={'PTO':'#3b82f6','Full Day Off':'#3b82f6','Multiple Days':'#3b82f6','Start Late':'#f59e0b','End Early':'#f59e0b','Mid-Day Appointment':'#10b981'};
+  el.innerHTML='<table style="width:100%;border-collapse:collapse;min-width:500px;"><thead><tr>'+
+    dates.map((d,i)=>{
+      const isToday=d.toDateString()===today.toDateString();
+      return`<th style="text-align:left;padding:8px 10px;font-size:12px;font-weight:700;color:${isToday?'var(--navy)':'#888'};border-bottom:2px solid ${isToday?'var(--navy)':'var(--border)'};min-width:100px;">
+        ${days[i]}<br><span style="font-size:11px;font-weight:${isToday?'800':'400'};">${d.toLocaleDateString('en-US',{month:'short',day:'numeric'})}</span>
+      </th>`;
+    }).join('')+
+    '</tr></thead><tbody><tr>'+
+    dates.map(d=>{
+      const dayReqs=weekRequests.filter(r=>{
+        const start=new Date(r.start_date);const end=new Date(r.end_date||r.start_date);
+        return d>=new Date(start.toDateString())&&d<=new Date(end.toDateString());
+      });
+      const isToday=d.toDateString()===today.toDateString();
+      return`<td style="vertical-align:top;padding:8px 6px;min-height:60px;background:${isToday?'#f0f4fb':'transparent'};border-radius:6px;">
+        ${dayReqs.length===0?'<span style="font-size:11px;color:#ddd;">—</span>':dayReqs.map(r=>`
+          <div style="background:${typeColor[r.request_type]||'#6366f1'};color:#fff;border-radius:6px;padding:4px 8px;font-size:11px;font-weight:700;margin-bottom:4px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;" title="${r.employee_name} — ${r.request_type}">
+            ${r.employee_name.split(' ')[0]}
+          </div>`).join('')}
+      </td>`;
+    }).join('')+
+    '</tr></tbody></table>';
+  if(weekRequests.length===0){
+    el.innerHTML+='<div style="text-align:center;padding:16px 0;font-size:13px;color:var(--success);font-weight:600;">✓ No approved time off this week</div>';
+  }
+}
+
+function renderActivityFeed(reqs,sheets,openVr,incidents,pendingExp){
+  const el=document.getElementById('dash-activity-feed');if(!el)return;
+  const items=[];
+  // Pending time off
+  reqs.slice(0,3).forEach(r=>items.push({
+    icon:'⏳',color:'#f59e0b',
+    title:r.employee_name+' — '+r.request_type,
+    sub:r.start_date+(r.end_date&&r.end_date!==r.start_date?' to '+r.end_date:''),
+    action:()=>showAdmin('time-off'),badge:'Pending',badgeColor:'var(--warn)'
+  }));
+  // Pending timesheets
+  sheets.slice(0,2).forEach(s=>items.push({
+    icon:'🕐',color:'#3b82f6',
+    title:s.employee_name+' — Timesheet',
+    sub:'Week ending '+s.week_ending,
+    action:()=>showAdmin('timesheets'),badge:'Needs Review',badgeColor:'#3b82f6'
+  }));
+  // Open vehicle reports
+  if(openVr>0)items.push({
+    icon:'🚐',color:'var(--red)',
+    title:openVr+' open vehicle report'+(openVr>1?'s':''),
+    sub:'Requires attention',
+    action:()=>showAdmin('vehicle-records'),badge:'Open',badgeColor:'var(--red)'
+  });
+  // Open incidents
+  incidents.slice(0,1).forEach(i=>items.push({
+    icon:'🚨',color:'#ef4444',
+    title:i.employee_name+' — Incident Report',
+    sub:i.incident_date+' · '+(i.nature_of_incident||[]).slice(0,1).join(', '),
+    action:()=>showAdmin('incidents'),badge:'Needs Review',badgeColor:'var(--red)'
+  }));
+  // Pending expenses
+  if(pendingExp>0)items.push({
+    icon:'💰',color:'#10b981',
+    title:pendingExp+' expense'+(pendingExp>1?'s':'')+' pending approval',
+    sub:'Awaiting review',
+    action:()=>showAdmin('expenses'),badge:'Pending',badgeColor:'#10b981'
+  });
+  if(!items.length){el.innerHTML='<div style="text-align:center;padding:20px 0;color:var(--success);font-size:13px;font-weight:700;">✓ All clear — nothing needs attention!</div>';return;}
+  el.innerHTML=items.map(item=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f5f5f5;cursor:pointer;" onclick="(${item.action.toString()})()">
+      <div style="width:34px;height:34px;border-radius:8px;background:${item.color}22;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">${item.icon}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:700;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${item.title}</div>
+        <div style="font-size:11px;color:#888;margin-top:1px;">${item.sub}</div>
+      </div>
+      <span style="background:${item.badgeColor}22;color:${item.badgeColor};font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;white-space:nowrap;flex-shrink:0;">${item.badge}</span>
+    </div>`).join('');
+}
+
 function detectFlags(callouts){
   const groups={};
   callouts.forEach(c=>{const k=c.employee_name+'|'+c.county;if(!groups[k])groups[k]={name:c.employee_name,county:c.county,dates:[]};groups[k].dates.push(new Date(c.callout_date));});
