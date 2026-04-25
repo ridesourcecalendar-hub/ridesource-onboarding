@@ -3437,15 +3437,9 @@ function buildTimesheetRows(){
       <div class="ts-shift-row">
         <div><div class="ts-shift-label">Shift 1 Start</div><input type="time" id="ts-${day}-s1start" oninput="calcRowTotal('${day}')" onchange="calcRowTotal('${day}')"></div>
         <div><div class="ts-shift-label">Shift 1 End</div><input type="time" id="ts-${day}-s1end" oninput="calcRowTotal('${day}')" onchange="calcRowTotal('${day}')"></div>
-        <button class="ts-add-shift-btn" id="ts-${day}-add-shift" onclick="toggleShift2('${day}')">+ Split Shift</button>
+        <button class="ts-add-shift-btn" id="ts-${day}-add-shift-btn" onclick="addShift('${day}')">+ Add Shift</button>
       </div>
-      <div class="ts-shift2-row" id="ts-${day}-shift2" style="display:none;">
-        <div class="ts-shift-row">
-          <div><div class="ts-shift-label">Shift 2 Start</div><input type="time" id="ts-${day}-s2start" oninput="calcRowTotal('${day}')" onchange="calcRowTotal('${day}')"></div>
-          <div><div class="ts-shift-label">Shift 2 End</div><input type="time" id="ts-${day}-s2end" oninput="calcRowTotal('${day}')" onchange="calcRowTotal('${day}')"></div>
-          <button class="ts-remove-shift-btn" onclick="toggleShift2('${day}')">Remove</button>
-        </div>
-      </div>
+      <div id="ts-${day}-extra-shifts"></div>
       <div class="ts-missed-punch-row">
         <label><input type="checkbox" id="ts-${day}-missed" onchange="toggleMissedPunch('${day}')"> Missed TWE Punch</label>
         <div class="ts-missed-punch-details" id="ts-${day}-missed-details" style="display:none;">
@@ -3468,20 +3462,42 @@ function buildTimesheetRows(){
   loadTsDraft(weekEnding);
 }
 
-function toggleShift2(day){
-  const el=document.getElementById(`ts-${day}-shift2`);
-  const btn=document.getElementById(`ts-${day}-add-shift`);
-  const isVisible=el.style.display!=='none';
-  el.style.display=isVisible?'none':'block';
-  btn.textContent=isVisible?'+ Split Shift':'Hide Shift 2';
-  if(isVisible){
-    const s2s=document.getElementById(`ts-${day}-s2start`);
-    const s2e=document.getElementById(`ts-${day}-s2end`);
-    if(s2s)s2s.value='';if(s2e)s2e.value='';
-    calcRowTotal(day);
-  }
+function getShiftCount(day){
+  const container=document.getElementById(`ts-${day}-extra-shifts`);
+  return container?container.querySelectorAll('.ts-extra-shift').length:0;
+}
+
+function addShift(day){
+  const container=document.getElementById(`ts-${day}-extra-shifts`);
+  if(!container)return;
+  const count=container.querySelectorAll('.ts-extra-shift').length+2; // shift number
+  if(count>6){alert('Maximum of 6 shifts per day.');return;}
+  const shiftDiv=document.createElement('div');
+  shiftDiv.className='ts-extra-shift ts-shift2-row';
+  shiftDiv.id=`ts-${day}-shift-${count}`;
+  shiftDiv.innerHTML=`<div class="ts-shift-row">
+    <div><div class="ts-shift-label">Shift ${count} Start</div><input type="time" id="ts-${day}-s${count}start" oninput="calcRowTotal('${day}')" onchange="calcRowTotal('${day}')"></div>
+    <div><div class="ts-shift-label">Shift ${count} End</div><input type="time" id="ts-${day}-s${count}end" oninput="calcRowTotal('${day}')" onchange="calcRowTotal('${day}')"></div>
+    <button class="ts-remove-shift-btn" onclick="removeShift('${day}',${count})">✕ Remove</button>
+  </div>`;
+  container.appendChild(shiftDiv);
+  // Hide add button if at max
+  const addBtn=document.getElementById(`ts-${day}-add-shift-btn`);
+  if(addBtn)addBtn.style.display=count>=6?'none':'inline-block';
   tsAutoSave();
 }
+
+function removeShift(day,num){
+  const el=document.getElementById(`ts-${day}-shift-${num}`);
+  if(el)el.remove();
+  // Re-show add button
+  const addBtn=document.getElementById(`ts-${day}-add-shift-btn`);
+  if(addBtn)addBtn.style.display='inline-block';
+  calcRowTotal(day);
+  tsAutoSave();
+}
+
+function toggleShift2(day){addShift(day);}
 
 function toggleMissedPunch(day){
   const cb=document.getElementById(`ts-${day}-missed`);
@@ -3502,16 +3518,14 @@ function handleMissedTypeChange(day){
 }
 
 function calcRowTotal(day){
-  const s1s=document.getElementById(`ts-${day}-s1start`)?.value;
-  const s1e=document.getElementById(`ts-${day}-s1end`)?.value;
-  const s2s=document.getElementById(`ts-${day}-s2start`)?.value;
-  const s2e=document.getElementById(`ts-${day}-s2end`)?.value;
   function toMins(t){if(!t)return null;const[h,m]=t.split(':').map(Number);return h*60+m;}
   let total=0;
-  const s1start=toMins(s1s),s1end=toMins(s1e);
-  if(s1start!==null&&s1end!==null){let d=s1end-s1start;if(d<0)d+=24*60;total+=d;}
-  const s2start=toMins(s2s),s2end=toMins(s2e);
-  if(s2start!==null&&s2end!==null){let d=s2end-s2start;if(d<0)d+=24*60;total+=d;}
+  for(let i=1;i<=6;i++){
+    const s=document.getElementById(`ts-${day}-s${i}start`)?.value;
+    const e=document.getElementById(`ts-${day}-s${i}end`)?.value;
+    const sm=toMins(s),em=toMins(e);
+    if(sm!==null&&em!==null){let d=em-sm;if(d<0)d+=24*60;total+=d;}
+  }
   const hrs=total/60;
   const totalEl=document.getElementById(`ts-${day}-total`);
   if(totalEl)totalEl.textContent=hrs>0?hrs.toFixed(2)+' hrs':'—';
@@ -3535,10 +3549,12 @@ function getTsRowData(){
   const rows={};let hasHours=false;
   DAYS.forEach(day=>{
     const vehicle=document.getElementById(`ts-${day}-vehicle`)?.value||'';
-    const s1s=document.getElementById(`ts-${day}-s1start`)?.value||'';
-    const s1e=document.getElementById(`ts-${day}-s1end`)?.value||'';
-    const s2s=document.getElementById(`ts-${day}-s2start`)?.value||'';
-    const s2e=document.getElementById(`ts-${day}-s2end`)?.value||'';
+    const shifts={};
+    for(let i=1;i<=6;i++){
+      const s=document.getElementById(`ts-${day}-s${i}start`)?.value||'';
+      const e=document.getElementById(`ts-${day}-s${i}end`)?.value||'';
+      if(s||e){shifts[i]={s,e};hasHours=true;}
+    }
     const totalEl=document.getElementById(`ts-${day}-total`);
     const total=totalEl&&totalEl.textContent!=='—'?parseFloat(totalEl.textContent):0;
     const missed=document.getElementById(`ts-${day}-missed`)?.checked||false;
@@ -3546,8 +3562,10 @@ function getTsRowData(){
     const missedTime=document.getElementById(`ts-${day}-missed-time`)?.value||'';
     const missedTimeIn=document.getElementById(`ts-${day}-missed-time-in`)?.value||'';
     const missedTimeOut=document.getElementById(`ts-${day}-missed-time-out`)?.value||'';
-    if(s1s||s1e||s2s||s2e)hasHours=true;
-    rows[day]={vehicle,s1s,s1e,s2s,s2e,total,missed,missedType,missedTime,missedTimeIn,missedTimeOut};
+    // Legacy compat fields
+    const s1s=shifts[1]?.s||'';const s1e=shifts[1]?.e||'';
+    const s2s=shifts[2]?.s||'';const s2e=shifts[2]?.e||'';
+    rows[day]={vehicle,shifts,s1s,s1e,s2s,s2e,total,missed,missedType,missedTime,missedTimeIn,missedTimeOut};
   });
   return{rows,hasHours};
 }
@@ -3594,10 +3612,20 @@ async function loadTsDraft(weekEnding){
         const set=(id,val)=>{const el=document.getElementById(id);if(el){el.value=val||'';if(isLocked)el.disabled=true;}};
         set(`ts-${day}-vehicle`,d.vehicle);
         set(`ts-${day}-s1start`,d.s1s);set(`ts-${day}-s1end`,d.s1e);
-        if(d.s2s||d.s2e){
-          document.getElementById(`ts-${day}-shift2`).style.display='block';
-          document.getElementById(`ts-${day}-add-shift`).textContent='Hide Shift 2';
-          set(`ts-${day}-s2start`,d.s2s);set(`ts-${day}-s2end`,d.s2e);
+        // Restore extra shifts (2-6)
+        if(d.shifts){
+          Object.entries(d.shifts).forEach(([num,sh])=>{
+            const n=parseInt(num);
+            if(n>=2){
+              addShift(day);
+              set(`ts-${day}-s${n}start`,sh.s);
+              set(`ts-${day}-s${n}end`,sh.e);
+            }
+          });
+        } else if(d.s2s||d.s2e){
+          addShift(day);
+          set(`ts-${day}-s2start`,d.s2s);
+          set(`ts-${day}-s2end`,d.s2e);
         }
         if(d.missed){
           const cb=document.getElementById(`ts-${day}-missed`);
