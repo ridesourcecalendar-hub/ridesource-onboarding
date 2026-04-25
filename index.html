@@ -2206,8 +2206,39 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
           <div id="fm-tire-panel" style="display:none;">
             <!-- Current tires on vehicle -->
             <div class="card" style="margin-bottom:14px;">
-              <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:12px;">🚗 Currently Mounted</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                <div style="font-size:13px;font-weight:700;color:var(--navy);">🚗 Currently Mounted</div>
+                <button onclick="toggleMountTireForm()" style="font-size:11px;padding:4px 10px;border-radius:6px;border:1px solid var(--navy);background:#fff;color:var(--navy);cursor:pointer;font-weight:700;">+ Mount a Tire</button>
+              </div>
               <div id="tire-mounted-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;"></div>
+              <!-- Quick mount form -->
+              <div id="mount-tire-form" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
+                <div style="font-size:12px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">Mount a tire to this vehicle</div>
+                <div class="form-row">
+                  <div class="form-field"><label>Select from Inventory</label>
+                    <select id="mount-tire-select" style="width:100%;padding:9px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                      <option value="">— Select tire —</option>
+                    </select>
+                  </div>
+                  <div class="form-field"><label>Or enter Tire ID manually</label>
+                    <input type="text" id="mount-tire-manual" placeholder="e.g. TIRE-001" style="width:100%;padding:9px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-field"><label>Position *</label>
+                    <select id="mount-tire-position" style="width:100%;padding:9px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                      <option value="">— Select position —</option>
+                      <option>Front Left</option>
+                      <option>Front Right</option>
+                      <option>Rear Left</option>
+                      <option>Rear Right</option>
+                    </select>
+                  </div>
+                  <div class="form-field" style="display:flex;align-items:flex-end;">
+                    <button onclick="mountTireToVehicle()" class="btn btn-primary" style="width:100%;">🔩 Mount Tire</button>
+                  </div>
+                </div>
+              </div>
             </div>
             <!-- Log Changeover -->
             <div class="card" style="margin-bottom:14px;background:#f8f9fc;">
@@ -10526,6 +10557,65 @@ Additional instructions: ${instructions}`;
     loadFleetVehicles();
     alert('Oil change approved! Driver has been notified via in-app message.');
   }catch(e){alert('Error: '+e.message);}
+}
+
+// ═══════════════════════════════════════════════
+// MOUNT TIRE TO VEHICLE (from inside vehicle card)
+// ═══════════════════════════════════════════════
+function toggleMountTireForm(){
+  const form=document.getElementById('mount-tire-form');
+  if(!form)return;
+  const isOpen=form.style.display!=='none';
+  form.style.display=isOpen?'none':'block';
+  if(!isOpen){
+    // Populate available tires from inventory (not already mounted)
+    const sel=document.getElementById('mount-tire-select');
+    if(sel){
+      const available=allTiresCache.filter(t=>t.status!=='Mounted'&&t.status!=='Disposed');
+      sel.innerHTML='<option value="">— Select from inventory —</option>'+
+        available.map(t=>'<option value="'+t.tire_id+'">'+t.tire_id+(t.brand?' — '+t.brand:'')+(t.size?' '+t.size:'')+(t.tire_type?' ('+t.tire_type+')':'')+'</option>').join('');
+    }
+  }
+}
+
+async function mountTireToVehicle(){
+  if(!currentFleetVehicleId){alert('No vehicle selected.');return;}
+  const selectVal=document.getElementById('mount-tire-select')?.value;
+  const manualVal=document.getElementById('mount-tire-manual')?.value.trim();
+  const tireId=selectVal||manualVal;
+  const position=document.getElementById('mount-tire-position')?.value;
+  if(!tireId){alert('Please select a tire from inventory or enter a Tire ID.');return;}
+  if(!position){alert('Please select a position.');return;}
+  try{
+    // Check if tire already exists in DB
+    const{data:existing}=await db.from('fleet_tires').select('id').eq('tire_id',tireId).single();
+    if(existing){
+      // Update existing tire
+      await db.from('fleet_tires').update({
+        status:'Mounted',
+        vehicle_id:currentFleetVehicleId,
+        position
+      }).eq('tire_id',tireId);
+    } else {
+      // Create new tire record
+      await db.from('fleet_tires').insert([{
+        tire_id:tireId,
+        status:'Mounted',
+        vehicle_id:currentFleetVehicleId,
+        position,
+        added_by:adminName,
+        added_at:new Date().toISOString()
+      }]);
+    }
+    // Reset form and refresh
+    document.getElementById('mount-tire-select').value='';
+    document.getElementById('mount-tire-manual').value='';
+    document.getElementById('mount-tire-position').value='';
+    document.getElementById('mount-tire-form').style.display='none';
+    await loadFleetTires();
+    renderTireMounted();
+    showRealtimeToast('✅ Tire mounted to '+position+' on '+currentFleetVehicleId);
+  }catch(e){alert('Error mounting tire: '+e.message);}
 }
 </script>
 <!-- MODALS -->
