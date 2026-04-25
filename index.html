@@ -1662,15 +1662,53 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 
       <!-- TIMESHEETS ADMIN -->
       <div id="section-adm-timesheets" class="admin-section">
-        <div style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:4px;">🕐 Timesheet Review</div>
-        <p style="color:#888;font-size:13px;margin-bottom:14px;">Review employee submitted timesheets. Compare against TWE and approve.</p>
-        <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center;">
-          <button class="btn btn-secondary btn-sm" onclick="filterTimesheets('PENDING')" id="ts-filter-pending">⏳ Pending</button>
-          <button class="btn btn-secondary btn-sm" onclick="filterTimesheets('APPROVED')" id="ts-filter-approved">✅ Approved</button>
-          <button class="btn btn-secondary btn-sm" onclick="filterTimesheets('ALL')" id="ts-filter-all">All</button>
-          <button class="btn btn-primary btn-sm" onclick="exportTimesheets()" style="margin-left:auto;">⬇️ Export CSV</button>
+        <div style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:2px;">🕐 Timesheet Review</div>
+        <p style="color:#888;font-size:13px;margin-bottom:16px;">Review and approve employee timesheets. Compare against TWE records.</p>
+
+        <div style="display:grid;grid-template-columns:1fr 240px;gap:20px;align-items:start;">
+          <!-- LEFT: Table -->
+          <div>
+            <!-- Search + Export -->
+            <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center;">
+              <input type="text" id="ts-search" placeholder="🔍 Search by employee name..." oninput="renderTimesheetsTable()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;flex:1;min-width:160px;">
+              <select id="ts-week-filter" onchange="renderTimesheetsTable()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:#fff;">
+                <option value="">All Weeks</option>
+              </select>
+              <button class="btn btn-sm" style="background:#e8f4fd;color:#1565c0;" onclick="exportTimesheets()">⬇️ Export CSV</button>
+            </div>
+            <!-- Status tabs -->
+            <div style="display:flex;gap:4px;border-bottom:2px solid var(--border);margin-bottom:0;">
+              <button id="ts-tab-PENDING" onclick="setTsTab('PENDING')" style="padding:8px 16px;font-size:13px;font-weight:800;border:none;border-bottom:2px solid var(--navy);margin-bottom:-2px;cursor:pointer;background:none;color:var(--navy);">Pending <span id="ts-count-PENDING" style="font-size:11px;background:var(--red);color:#fff;padding:1px 6px;border-radius:8px;margin-left:4px;">0</span></button>
+              <button id="ts-tab-DRAFT" onclick="setTsTab('DRAFT')" style="padding:8px 16px;font-size:13px;font-weight:700;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;background:none;color:#888;">Draft <span id="ts-count-DRAFT" style="font-size:11px;background:#ddd;color:#555;padding:1px 6px;border-radius:8px;margin-left:4px;">0</span></button>
+              <button id="ts-tab-APPROVED" onclick="setTsTab('APPROVED')" style="padding:8px 16px;font-size:13px;font-weight:700;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;background:none;color:#888;">Approved <span id="ts-count-APPROVED" style="font-size:11px;background:#ddd;color:#555;padding:1px 6px;border-radius:8px;margin-left:4px;">0</span></button>
+              <button id="ts-tab-ALL" onclick="setTsTab('ALL')" style="padding:8px 16px;font-size:13px;font-weight:700;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;background:none;color:#888;margin-left:auto;">All</button>
+            </div>
+            <div id="timesheets-table" style="margin-top:0;">Loading...</div>
+          </div>
+
+          <!-- RIGHT: Quick Summary -->
+          <div class="card" style="position:sticky;top:80px;">
+            <div style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:16px;">Quick Summary</div>
+            <div style="display:flex;flex-direction:column;gap:0;">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);">
+                <span style="font-size:13px;color:#555;">Pending Review</span>
+                <span style="font-size:16px;font-weight:800;color:var(--red);" id="ts-qs-pending">0</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);">
+                <span style="font-size:13px;color:#555;">Approved This Week</span>
+                <span style="font-size:16px;font-weight:800;color:var(--navy);" id="ts-qs-approved">0</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);">
+                <span style="font-size:13px;color:#555;">Drafts In Progress</span>
+                <span style="font-size:16px;font-weight:800;color:#888;" id="ts-qs-drafts">0</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;">
+                <span style="font-size:13px;color:#555;">Missed Punches</span>
+                <span style="font-size:16px;font-weight:800;color:var(--warn);" id="ts-qs-missed">0</span>
+              </div>
+            </div>
+          </div>
         </div>
-        <div id="timesheets-table">Loading...</div>
       </div>
 
       <!-- VEHICLE RECORDS ADMIN -->
@@ -7394,51 +7432,130 @@ async function loadOnboarding(){
 // TIMESHEETS ADMIN
 let tsFilterStatus='PENDING';
 async function loadTimesheets(){
-  const {data}=await db.from('timesheets').select('*').order('submitted_at',{ascending:false});
-  allTimesheetsCache=data||[];
-  const pending=(data||[]).filter(t=>t.status==='PENDING').length;
-  document.getElementById('badge-timesheets').textContent=pending||'0';
+  try{
+    const {data}=await db.from('timesheets').select('*').order('submitted_at',{ascending:false});
+    allTimesheetsCache=data||[];
+    const pending=(data||[]).filter(t=>t.status==='PENDING').length;
+    const badge=document.getElementById('badge-timesheets');
+    if(badge)badge.textContent=pending||'0';
+    updateTsTabCounts();
+    renderTimesheetsTable();
+  }catch(e){console.log('Timesheets:',e);}
+}
+function filterTimesheets(status){setTsTab(status);}
+function setTsTab(tab){
+  tsFilterStatus=tab;
+  ['PENDING','DRAFT','APPROVED','ALL'].forEach(t=>{
+    const btn=document.getElementById('ts-tab-'+t);
+    if(btn){
+      btn.style.borderBottom=t===tab?'2px solid var(--navy)':'2px solid transparent';
+      btn.style.color=t===tab?'var(--navy)':'#888';
+      btn.style.fontWeight=t===tab?'800':'700';
+    }
+  });
   renderTimesheetsTable();
 }
-function filterTimesheets(status){
-  tsFilterStatus=status;
-  ['PENDING','APPROVED','ALL'].forEach(s=>{const btn=document.getElementById('ts-filter-'+s.toLowerCase());if(btn){btn.style.background='transparent';btn.style.color='';}});
-  const active=document.getElementById('ts-filter-'+status.toLowerCase());
-  if(active){active.style.background='var(--navy)';active.style.color='#fff';}
-  renderTimesheetsTable();
+
+function updateTsTabCounts(){
+  const counts={PENDING:0,DRAFT:0,APPROVED:0};
+  allTimesheetsCache.forEach(t=>{if(counts[t.status]!==undefined)counts[t.status]++;});
+  Object.entries(counts).forEach(([s,c])=>{const el=document.getElementById('ts-count-'+s);if(el)el.textContent=c;});
+  // Quick summary
+  const now=new Date();
+  const weekStart=new Date(now);weekStart.setDate(now.getDate()-now.getDay());
+  const pendingEl=document.getElementById('ts-qs-pending');if(pendingEl)pendingEl.textContent=counts.PENDING;
+  const approvedEl=document.getElementById('ts-qs-approved');if(approvedEl)approvedEl.textContent=allTimesheetsCache.filter(t=>t.status==='APPROVED'&&new Date(t.submitted_at)>=weekStart).length;
+  const draftsEl=document.getElementById('ts-qs-drafts');if(draftsEl)draftsEl.textContent=counts.DRAFT;
+  // Count missed punches
+  let missed=0;
+  allTimesheetsCache.filter(t=>t.status==='PENDING').forEach(t=>{
+    if(t.hours_data){try{const rows=JSON.parse(t.hours_data);Object.values(rows).forEach(d=>{if(d.missed)missed++;});}catch(e){}}
+  });
+  const missedEl=document.getElementById('ts-qs-missed');if(missedEl)missedEl.textContent=missed;
+  // Populate week filter
+  const weekSel=document.getElementById('ts-week-filter');
+  if(weekSel&&weekSel.options.length<=1){
+    const weeks=[...new Set(allTimesheetsCache.map(t=>t.week_ending).filter(Boolean))].sort().reverse();
+    weeks.forEach(w=>{const opt=document.createElement('option');opt.value=w;opt.textContent='Week ending '+w;weekSel.appendChild(opt);});
+  }
 }
+
 function renderTimesheetsTable(){
   const el=document.getElementById('timesheets-table');
   const isDemo=adminStaff?.role==='demo';
-  const filtered=tsFilterStatus==='ALL'?allTimesheetsCache:allTimesheetsCache.filter(t=>t.status===tsFilterStatus);
-  if(!filtered||filtered.length===0){el.innerHTML='<p style="color:#888;font-size:13px;padding:12px 0;">No timesheets found.</p>';return;}
-  el.innerHTML=filtered.map((t,idx)=>{
-    const submitted=new Date(t.submitted_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-    return '<div class="card" style="margin-bottom:8px;padding:0;overflow:hidden;">'+
-      '<div style="display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;" data-cid="ts-body-'+t.id+'" onclick="toggleCollapse(this.dataset.cid)">'+
-        '<div style="flex:1;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">'+
-          '<strong style="font-size:14px;color:var(--navy);">'+demoMask(t.employee_name,idx)+'</strong>'+
-          '<span style="font-size:12px;color:#888;">'+t.county+'</span>'+
-          '<span style="font-size:12px;color:#555;font-weight:600;">Week ending '+t.week_ending+'</span>'+
-          '<span class="badge badge-'+(t.status==='APPROVED'?'approved':'pending')+'">'+t.status+'</span>'+
-        '</div>'+
-        '<span style="font-size:11px;color:#aaa;flex-shrink:0;">▼ expand</span>'+
+  const search=(document.getElementById('ts-search')?.value||'').toLowerCase();
+  const weekFilter=document.getElementById('ts-week-filter')?.value||'';
+  let filtered=tsFilterStatus==='ALL'?allTimesheetsCache:allTimesheetsCache.filter(t=>t.status===tsFilterStatus);
+  if(search)filtered=filtered.filter(t=>(t.employee_name||'').toLowerCase().includes(search));
+  if(weekFilter)filtered=filtered.filter(t=>t.week_ending===weekFilter);
+  updateTsTabCounts();
+  if(!filtered||filtered.length===0){el.innerHTML='<div style="padding:20px 0;text-align:center;color:#888;font-size:13px;">No timesheets found.</div>';return;}
+  // Table header
+  const header='<div style="display:grid;grid-template-columns:36px 1fr 110px 90px 90px 110px;gap:8px;padding:8px 12px;background:var(--gray);border-radius:8px 8px 0 0;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-top:12px;">'+
+    '<div></div><div>Employee</div><div>Week Ending</div><div>Hours</div><div>Status</div><div></div></div>';
+  const rows=filtered.map((t,idx)=>{
+    const displayName=isDemo?'Employee '+(idx+1):t.employee_name;
+    const initials=isDemo?'E':getInitials(t.employee_name);
+    const avatarColor=getAvatarColor(t.employee_name);
+    const statusClass=t.status==='APPROVED'?'approved':t.status==='DRAFT'?'':'pending';
+    const statusLabel=t.status==='PENDING'?'SUBMITTED':t.status;
+    // Calculate total hours
+    let totalHrs=0;let hasMissed=false;
+    if(t.hours_data){try{const rows=JSON.parse(t.hours_data);Object.values(rows).forEach(d=>{if(d.total)totalHrs+=parseFloat(d.total)||0;if(d.missed)hasMissed=true;});}catch(e){}}
+    const isPending=t.status==='PENDING';
+    '<div data-tid="'+t.id+'" style="display:grid;grid-template-columns:36px 1fr 110px 90px 90px 110px;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border);align-items:center;font-size:13px;background:#fff;cursor:pointer;" onclick="toggleTsRow(this.dataset.tid,this)">'+ 
+      '<div style="width:32px;height:32px;border-radius:50%;background:'+avatarColor+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">'+initials+'</div>'+
+      '<div><div style="font-weight:700;color:var(--navy);">'+displayName+'</div><div style="font-size:11px;color:#888;">'+t.county+'</div></div>'+
+      '<div style="color:#555;font-size:12px;">'+t.week_ending+'</div>'+
+      '<div style="font-weight:700;color:var(--navy);">'+(totalHrs>0?totalHrs.toFixed(1)+'h':'—')+(hasMissed?' <span style="color:var(--warn);font-size:10px;" title="Has missed punches">⚠</span>':'')+'</div>'+
+      '<div><span class="badge badge-'+statusClass+'" style="font-size:10px;">'+statusLabel+'</span></div>'+
+      '<div style="display:flex;gap:4px;justify-content:flex-end;" onclick="event.stopPropagation()">'+
+        (isPending&&!isDemo?'<button style="width:28px;height:28px;border-radius:6px;border:1px solid #27AE60;background:#fff;color:#27AE60;cursor:pointer;font-size:14px;" data-tid="'+t.id+'" onclick="approveTimesheet(this.dataset.tid)" title="Approve">✓</button>':'')+ 
+        (!isDemo?'<button style="width:28px;height:28px;border-radius:6px;border:1px solid #fcc;background:#fff;color:var(--red);cursor:pointer;font-size:12px;" data-tid="'+t.id+'" onclick="deleteSingleTimesheet(this.dataset.tid)" title="Delete">🗑️</button>':'')+ 
       '</div>'+
-      '<div id="ts-body-'+t.id+'" style="display:none;border-top:1px solid var(--border);padding:14px 16px;background:#fafafa;">'+
-        '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:14px;">'+
-          '<div><div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.5px;">Mileage Note</div><div style="font-size:13px;margin-top:2px;">'+(isDemo?'—':t.mileage_note||'—')+'</div></div>'+
-          '<div><div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.5px;">Missed Punches / Notes</div><div style="font-size:13px;margin-top:2px;">'+(isDemo?'—':t.notes||'—')+'</div></div>'+
-          '<div><div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.5px;">Submitted</div><div style="font-size:13px;margin-top:2px;">'+submitted+'</div></div>'+
-        '</div>'+
-        (isDemo?'':'<div style="display:flex;gap:8px;flex-wrap:wrap;">'+
-          (t.status==='PENDING'?'<button class="btn btn-green btn-sm" onclick="approveTimesheet('+t.id+')">✓ Approve</button>':'')+
-          '<button class="btn btn-sm" style="background:#e8f4fd;color:#1565c0;" onclick="openTimesheetModal('+t.id+')">📋 View Full</button>'+
-          '<button class="btn btn-sm btn-red" onclick="deleteSingleTimesheet('+t.id+')">🗑️ Delete</button>'+
-        '</div>')+
-      '</div>'+
+    '</div>'+
+    '<div id="ts-detail-'+t.id+'" style="display:none;border-bottom:1px solid var(--border);background:#f7f9fc;padding:16px 12px;">'+
+      buildTsDetailView(t,isDemo)+
     '</div>';
   }).join('');
+  el.innerHTML=header+'<div style="border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;overflow:hidden;">'+rows+'</div>';
 }
+
+function buildTsDetailView(t,isDemo){
+  if(!t.hours_data)return'<p style="color:#888;font-size:13px;">No hours data.</p>';
+  let rows={};
+  try{rows=JSON.parse(t.hours_data);}catch(e){return'<p style="color:#888;font-size:13px;">Unable to parse timesheet data.</p>';}
+  const DAYS_ORDER=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+  const dayRows=DAYS_ORDER.map(day=>{
+    const d=rows[day];if(!d)return'';
+    let shiftLines='';
+    if(d.shifts&&Object.keys(d.shifts).length>0){
+      shiftLines=Object.entries(d.shifts).map(([n,s])=>`<span style="font-size:12px;color:#555;">Shift ${n}: ${s.s||'?'} — ${s.e||'?'}</span>`).join(' &nbsp;·&nbsp; ');
+    } else {
+      if(d.s1s||d.s1e)shiftLines+=`<span style="font-size:12px;color:#555;">Shift 1: ${d.s1s||'?'} — ${d.s1e||'?'}</span>`;
+      if(d.s2s||d.s2e)shiftLines+=` &nbsp;·&nbsp; <span style="font-size:12px;color:#555;">Shift 2: ${d.s2s||'?'} — ${d.s2e||'?'}</span>`;
+    }
+    if(!shiftLines)return'';
+    const missedBadge=d.missed?`<span style="background:#fff3cd;color:#856404;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;margin-left:8px;">⚠ ${d.missedType==='Missed Both'?'Missed Both':'Missed Punch'}</span>`:'';
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid #eee;">
+      <div><strong style="font-size:13px;color:var(--navy);min-width:90px;display:inline-block;">${day}</strong>${shiftLines}${missedBadge}${d.vehicle&&!isDemo?`<span style="font-size:11px;color:#aaa;margin-left:8px;">🚐 ${d.vehicle}</span>`:''}
+      ${d.missed&&d.missedType==='Missed Both'&&!isDemo?`<div style="font-size:11px;color:#856404;margin-top:3px;margin-left:94px;">Clock In: ${d.missedTimeIn||'?'} · Clock Out: ${d.missedTimeOut||'?'}</div>`:''}
+      ${d.missed&&d.missedType!=='Missed Both'&&!isDemo?`<div style="font-size:11px;color:#856404;margin-top:3px;margin-left:94px;">${d.missedType}: ${d.missedTime||'?'}</div>`:''}
+      </div>
+      <div style="font-size:13px;font-weight:700;color:var(--navy);white-space:nowrap;">${d.total>0?d.total.toFixed(2)+' hrs':'—'}</div>
+    </div>`;
+  }).filter(Boolean).join('');
+  return (dayRows||'<p style="color:#888;font-size:13px;">No hours recorded.</p>')+
+    (t.notes&&!isDemo?`<div style="margin-top:10px;padding-top:10px;border-top:1px solid #eee;font-size:12px;color:#666;"><strong>Notes:</strong> ${t.notes}</div>`:'');
+}
+
+function toggleTsRow(id,rowEl){
+  const detail=document.getElementById('ts-detail-'+id);
+  if(!detail)return;
+  const isOpen=detail.style.display!=='none';
+  detail.style.display=isOpen?'none':'block';
+}
+
 async function deleteSingleTimesheet(id){
   if(!confirm('Delete this timesheet? Make sure you have exported it first.'))return;
   try{await db.from('timesheets').delete().eq('id',id);loadTimesheets();}catch(e){alert('Error: '+e.message);}
