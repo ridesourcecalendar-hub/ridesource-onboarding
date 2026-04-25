@@ -1880,6 +1880,19 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
             </div>
           </div>
 
+          <!-- Vehicle Search + Filter -->
+          <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center;">
+            <input type="text" id="fleet-search" placeholder="🔍 Search by vehicle ID, make, model..." oninput="renderFleetVehicleGrid()" style="flex:1;min-width:180px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+            <select id="fleet-county-filter" onchange="renderFleetVehicleGrid()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:#fff;">
+              <option value="">All Counties</option>
+              <option>Androscoggin</option><option>Aroostook</option><option>Cumberland</option><option>Franklin</option><option>Hancock</option><option>Kennebec</option><option>Knox</option><option>Lincoln</option><option>Oxford</option><option>Penobscot</option><option>Piscataquis</option><option>Sagadahoc</option><option>Somerset</option><option>Waldo</option><option>Washington</option><option>York</option>
+            </select>
+            <select id="fleet-status-filter" onchange="renderFleetVehicleGrid()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:#fff;">
+              <option value="">All Statuses</option>
+              <option>Active</option><option>In Service</option><option>Out of Service</option><option>Awaiting Repair</option><option>Retired</option>
+            </select>
+            <span id="fleet-vehicle-count" style="font-size:12px;color:#888;white-space:nowrap;"></span>
+          </div>
           <!-- Vehicle Grid -->
           <div id="fleet-vehicle-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;">
             <p style="color:#888;font-size:13px;">Loading vehicles...</p>
@@ -4786,7 +4799,8 @@ function renderOilRequestsStrip(){
   const strip=document.getElementById('fleet-oil-requests-strip');
   if(!strip)return;
   const requests=allVehicleRecordsCache?allVehicleRecordsCache.filter(r=>
-    (r.issue_types||'').includes('Oil Change Request')&&r.status==='PENDING'
+    ((r.issue_types||'').includes('Oil Change Request')||(r.issue_types||'').includes('Oil Change'))
+    &&(r.status==='NEW'||r.status==='OPEN')
   ):[];
   if(!requests.length){strip.style.display='none';return;}
   strip.style.display='block';
@@ -4799,7 +4813,6 @@ function renderOilRequestsStrip(){
         '<span style="color:#888;margin-left:8px;font-size:12px;">'+new Date(r.submitted_at).toLocaleDateString('en-US',{month:'short',day:'numeric'})+'</span>'+
         (r.description?'<div style="font-size:12px;color:#666;margin-top:2px;">'+r.description.substring(0,80)+'</div>':'')+
       '</div>'+
-      '<button style="background:var(--navy);color:#fff;border:none;border-radius:6px;padding:5px 12px;font-size:12px;cursor:pointer;white-space:nowrap;" '+
       '<button data-vid="'+r.vehicle_id+'" onclick="openFleetVehicle(this.dataset.vid)" style="background:var(--navy);color:#fff;border:none;border-radius:6px;padding:5px 12px;font-size:12px;cursor:pointer;white-space:nowrap;">🔧 Open Vehicle</button>'+
     '</div>').join('')+
   '</div>';
@@ -4904,7 +4917,17 @@ function renderFleetVehicleGrid(){
     return;
   }
   const today=new Date();
-  el.innerHTML=allFleetVehiclesCache.map(v=>{
+  const search=(document.getElementById('fleet-search')?.value||'').toLowerCase();
+  const countyF=document.getElementById('fleet-county-filter')?.value||'';
+  const statusF=document.getElementById('fleet-status-filter')?.value||'';
+  let filteredVehicles=allFleetVehiclesCache;
+  if(search)filteredVehicles=filteredVehicles.filter(v=>(v.vehicle_id||'').toLowerCase().includes(search)||(v.make||'').toLowerCase().includes(search)||(v.model||'').toLowerCase().includes(search));
+  if(countyF)filteredVehicles=filteredVehicles.filter(v=>v.county===countyF);
+  if(statusF)filteredVehicles=filteredVehicles.filter(v=>v.status===statusF);
+  const countEl=document.getElementById('fleet-vehicle-count');
+  if(countEl)countEl.textContent=filteredVehicles.length+' of '+allFleetVehiclesCache.length+' vehicles';
+  if(!filteredVehicles.length){el.innerHTML='<p style="color:#888;font-size:13px;">No vehicles match your search.</p>';return;}
+  el.innerHTML=filteredVehicles.map(v=>{
     const maint=allFleetMaintenanceCache.filter(m=>m.vehicle_id===v.vehicle_id);
     const lastOil=maint.filter(m=>m.maintenance_type==='Oil Change').sort((a,b)=>new Date(b.service_date)-new Date(a.service_date))[0];
     const lastInspection=maint.filter(m=>m.maintenance_type==='Inspection').sort((a,b)=>new Date(b.service_date)-new Date(a.service_date))[0];
@@ -5584,21 +5607,23 @@ function handleTireStatusChange(){
   const mountedFields=document.getElementById('ti-mounted-fields');
   if(mountedFields)mountedFields.style.display=status==='Mounted'?'block':'none';
   if(status==='Mounted'){
-    const sel=document.getElementById('ti-vehicle');
-    if(sel){
-      const vehicles=allFleetVehiclesCache.filter(v=>v.status!=='Retired');
-      if(vehicles.length===0){
-        // Try loading vehicles first
-        loadFleetVehicles().then(()=>{
-          const v2=allFleetVehiclesCache.filter(v=>v.status!=='Retired');
-          sel.innerHTML='<option value="">— Select Vehicle —</option>'+
-            v2.map(v=>'<option value="'+v.vehicle_id+'">'+v.vehicle_id+(v.make?' ('+v.make+(v.model?' '+v.model:'')+')':'')+'</option>').join('');
-        });
-      } else {
-        sel.innerHTML='<option value="">— Select Vehicle —</option>'+
-          vehicles.map(v=>'<option value="'+v.vehicle_id+'">'+v.vehicle_id+(v.make?' ('+v.make+(v.model?' '+v.model:'')+')':'')+'</option>').join('');
-      }
-    }
+    populateTireVehicleDropdown();
+  }
+}
+
+async function populateTireVehicleDropdown(){
+  const sel=document.getElementById('ti-vehicle');
+  if(!sel)return;
+  // Always reload to ensure fresh data
+  if(!allFleetVehiclesCache||allFleetVehiclesCache.length===0){
+    await loadFleetVehicles();
+  }
+  const vehicles=allFleetVehiclesCache.filter(v=>v.status!=='Retired'&&v.status!=='Archived');
+  sel.innerHTML='<option value="">— Select Vehicle —</option>'+
+    vehicles.map(v=>'<option value="'+v.vehicle_id+'">'+v.vehicle_id+(v.make?' — '+v.make+(v.model?' '+v.model:'')+' ('+v.county+')':'')+'</option>').join('');
+  // If inside a vehicle modal, pre-select current vehicle
+  if(currentFleetVehicleId){
+    sel.value=currentFleetVehicleId;
   }
 }
 async function saveTire(){
@@ -7799,23 +7824,38 @@ function renderVehicleRecordsTable(){
         <td style="font-size:12px;max-width:160px;">${isDemo?'—':(r.description||'').substring(0,60)+((r.description||'').length>60?'...':'')}${hasAdminNotes&&!isDemo?'<br><span style="font-size:10px;color:#1565c0;">📝 Admin notes added</span>':''}</td>
         <td><span class="badge badge-${r.status==='RESOLVED'?'approved':r.status==='IN_PROGRESS'?'warning':'flag'}">${r.status}</span></td>
         <td style="white-space:nowrap;">
-          <button class="btn btn-primary btn-sm" onclick="openVehicleReportModal(${r.id})" style="margin-bottom:4px;">📋 Open</button><br>
-          ${r.vehicle_id&&allFleetVehiclesCache.some(v=>v.vehicle_id===r.vehicle_id)&&!isDemo?`<button class="btn btn-sm" style="background:#f0f4fb;color:var(--navy);font-size:10px;" onclick="showAdmin('fleet');setTimeout(()=>openFleetVehicle('${r.vehicle_id}'),400);">🔧 Fleet</button><br>`:''}${(r.issue_types||'').includes('Oil Change')&&r.status==='NEW'&&!isDemo?`<button class="btn btn-sm" style="background:#fff3cd;color:#856404;font-size:10px;border:1px solid #ffc107;" onclick="openOilChangeApproval('${r.id}',{employee_name:'${(r.employee_name||'').replace(/'/g,'')}',employee_email:'${r.employee_email||''}',county:'${r.county||''}',vehicle_id:'${r.vehicle_id||''}',submitted_at:'${r.submitted_at||''}'})">✅ Approve Oil Change</button><br>`:''}
-          ${(r.issue_types||'').includes('Oil Change')&&!isDemo?`<button class="btn btn-sm" style="background:#fef3e8;color:#e67e22;font-size:10px;" onclick="openFleetVehicle('${r.vehicle_id}')">🛢️ Open Vehicle</button><br>`:''}
-          <select onchange="updateVehicleStatus(${r.id},this.value)" style="padding:4px 8px;border:1px solid var(--border);border-radius:4px;font-size:11px;margin-top:2px;"><option ${r.status==='NEW'?'selected':''}>NEW</option><option ${r.status==='IN_PROGRESS'?'selected':''}>IN_PROGRESS</option><option ${r.status==='RESOLVED'?'selected':''}>RESOLVED</option></select><br>
-          <button class="btn btn-sm btn-red" onclick="deleteVehicleRecord(${r.id})" style="margin-top:4px;font-size:11px;">🗑️ Delete</button>
-        </td>
+          '<td style="white-space:nowrap;">'+
+          '<button class="btn btn-primary btn-sm" data-rid="'+r.id+'" onclick="openVehicleReportModal(parseInt(this.dataset.rid))" style="margin-bottom:4px;">📋 Open</button><br>'+
+          (r.vehicle_id&&allFleetVehiclesCache.some(v=>v.vehicle_id===r.vehicle_id)&&!isDemo?'<button class="btn btn-sm" style="background:#f0f4fb;color:var(--navy);font-size:10px;" data-vid="'+r.vehicle_id+'" onclick="showAdmin(\'fleet\');setTimeout(()=>openFleetVehicle(this.dataset.vid),400);">🔧 Fleet</button><br>':'')+
+          ((r.issue_types||'').includes('Oil Change')&&(r.status==='NEW'||r.status==='OPEN')&&!isDemo?'<button class="btn btn-sm" style="background:#fff3cd;color:#856404;font-size:10px;border:1px solid #ffc107;" data-rid="'+r.id+'" data-name="'+(r.employee_name||'').replace(/\'/g,'')+'" data-email="'+(r.employee_email||'')+'" data-county="'+(r.county||'')+'" data-vid="'+(r.vehicle_id||'')+'" data-ts="'+(r.submitted_at||'')+'" onclick="openOilChangeApproval(this.dataset.rid,{employee_name:this.dataset.name,employee_email:this.dataset.email,county:this.dataset.county,vehicle_id:this.dataset.vid,submitted_at:this.dataset.ts})">✅ Approve Oil Change</button><br>':'')+
+          '<select data-rid="'+r.id+'" onchange="updateVehicleStatus(this.dataset.rid,this.value)" style="padding:4px 8px;border:1px solid var(--border);border-radius:4px;font-size:11px;margin-top:2px;">'+
+          '<option value="NEW" '+(r.status==='NEW'?'selected':'')+'>Open</option>'+
+          '<option value="IN_PROGRESS" '+(r.status==='IN_PROGRESS'?'selected':'')+'>In Progress</option>'+
+          '<option value="RESOLVED" '+(r.status==='RESOLVED'?'selected':'')+'>Resolved</option>'+
+          '<option value="CLOSED" '+(r.status==='CLOSED'?'selected':'')+'>Closed</option>'+
+          '</select><br>'+
+          (!isDemo?'<button class="btn btn-sm btn-red" data-rid="'+r.id+'" onclick="deleteVehicleRecord(this.dataset.rid)" style="margin-top:4px;font-size:11px;">🗑️ Delete</button>':'')+
+          '</td>'+
       </tr>`;
     }).join('')+
     '</tbody></table></div><div style="margin-top:12px;"><button class="btn btn-sm" style="background:#e8f4fd;color:#1565c0;" onclick="exportVehicleRecords()">⬇️ Export CSV</button></div>';
 }
 async function deleteVehicleRecord(id){
   if(!confirm('Delete this vehicle record? This cannot be undone.'))return;
-  try{await db.from('vehicle_reports').delete().eq('id',id);loadVehicleRecords();}catch(e){alert('Error: '+e.message);}
+  try{
+    const{error}=await db.from('vehicle_reports').delete().eq('id',parseInt(id)||id);
+    if(error)throw error;
+    await loadVehicleRecords();
+    loadFleetVehicles();
+    showRealtimeToast('Record deleted.');
+  }catch(e){alert('Error deleting: '+e.message);}
 }
 async function updateVehicleStatus(id,status){
-  await db.from('vehicle_reports').update({status}).eq('id',id);
-  loadVehicleRecords();
+  try{
+    await db.from('vehicle_reports').update({status}).eq('id',id);
+    await loadVehicleRecords();
+    loadFleetVehicles(); // refresh fleet cards too
+  }catch(e){alert('Error updating status: '+e.message);}
 }
 function openVehicleReportModal(id){
   const r=allVehicleRecordsCache.find(x=>x.id===id);
