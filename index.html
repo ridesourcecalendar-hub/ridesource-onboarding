@@ -3716,11 +3716,53 @@ function resetTimesheet(){tsCurrentId=null;buildTimesheetRows();}
 async function loadMyTimesheets(){
   const el=document.getElementById('my-timesheets-list');if(!el)return;
   try{
-    const {data}=await db.from('timesheets').select('*').eq('employee_email',user.email).order('submitted_at',{ascending:false}).limit(10);
+    const{data}=await db.from('timesheets').select('*').eq('employee_email',user.email).order('submitted_at',{ascending:false}).limit(20);
     if(!data||data.length===0){el.innerHTML='<p style="color:#888;font-size:13px;">No timesheets submitted yet.</p>';return;}
-    el.innerHTML=data.map(t=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;"><div><strong>Week ending ${t.week_ending}</strong><br><span style="color:#888;font-size:12px;">Submitted ${new Date(t.submitted_at).toLocaleDateString()}</span></div><span class="badge badge-${t.status==='APPROVED'?'approved':t.status==='FLAGGED'?'flag':'pending'}">${t.status}</span></div>`).join('');
+    el.innerHTML=data.map(t=>{
+      const statusClass=t.status==='APPROVED'?'approved':t.status==='PENDING'?'pending':'';
+      const statusLabel=t.status==='PENDING'?'SUBMITTED':t.status;
+      const isApproved=t.status==='APPROVED';
+      const rows=t.hours_data?JSON.parse(t.hours_data):{};
+      // Build full day-by-day view
+      const dayRows=DAYS.map(day=>{
+        const d=rows[day];
+        if(!d)return'';
+        const hasHours=d.s1s||d.s1e||(d.shifts&&Object.keys(d.shifts).length>0);
+        if(!hasHours)return'';
+        let shiftLines='';
+        if(d.shifts&&Object.keys(d.shifts).length>0){
+          shiftLines=Object.entries(d.shifts).map(([n,s])=>`<div style="font-size:12px;color:#555;">Shift ${n}: ${s.s||'?'} — ${s.e||'?'}</div>`).join('');
+        } else {
+          if(d.s1s||d.s1e)shiftLines+=`<div style="font-size:12px;color:#555;">Shift 1: ${d.s1s||'?'} — ${d.s1e||'?'}</div>`;
+          if(d.s2s||d.s2e)shiftLines+=`<div style="font-size:12px;color:#555;">Shift 2: ${d.s2s||'?'} — ${d.s2e||'?'}</div>`;
+        }
+        const missedFlag=d.missed?`<span style="color:var(--warn);font-size:11px;margin-left:6px;">⚠ ${d.missedType==='Missed Both'?'Missed Both (In:'+d.missedTimeIn+' Out:'+d.missedTimeOut+')':d.missedType+' '+d.missedTime}</span>`:'';
+        return `<div style="display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0;border-bottom:1px solid #f0f0f0;">
+          <div><strong style="font-size:13px;">${day}</strong>${missedFlag}<div style="margin-top:2px;">${shiftLines}</div>${d.vehicle?`<div style="font-size:11px;color:#aaa;margin-top:2px;">🚐 ${d.vehicle}</div>`:''}</div>
+          <div style="font-size:13px;font-weight:700;color:var(--navy);white-space:nowrap;">${d.total>0?d.total.toFixed(2)+' hrs':'—'}</div>
+        </div>`;
+      }).filter(Boolean).join('');
+      return `<div style="border:1px solid var(--border);border-radius:10px;margin-bottom:10px;overflow:hidden;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#f7f9fc;cursor:pointer;" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+          <div>
+            <strong style="font-size:14px;color:var(--navy);">Week ending ${t.week_ending}</strong>
+            <div style="font-size:11px;color:#888;margin-top:2px;">Submitted ${new Date(t.submitted_at).toLocaleDateString()} ${isApproved?'· ✅ Approved':''}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span class="badge badge-${statusClass}">${statusLabel}</span>
+            <span style="color:#aaa;font-size:12px;">▼</span>
+          </div>
+        </div>
+        <div style="display:none;padding:14px 16px;">
+          ${dayRows||'<p style="color:#888;font-size:13px;">No hours recorded.</p>'}
+          ${t.notes?`<div style="margin-top:10px;padding-top:10px;border-top:1px solid #eee;font-size:12px;color:#666;"><strong>Notes:</strong> ${t.notes}</div>`:''}
+          ${isApproved?'<div style="margin-top:10px;font-size:11px;color:#27AE60;font-weight:700;">🔒 This timesheet has been approved and cannot be edited.</div>':''}
+        </div>
+      </div>`;
+    }).join('');
   }catch(e){el.innerHTML='<p style="color:#888;font-size:13px;">Unable to load timesheets.</p>';}
 }
+
 
 // ADMIN EXPENSE FUNCTIONS
 function toggleAdminExpenseForm(){
