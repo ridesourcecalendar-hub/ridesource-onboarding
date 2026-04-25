@@ -326,6 +326,26 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 .folder-card:hover{border-color:var(--navy);box-shadow:0 2px 8px rgba(0,0,0,.08);}
 .folder-card-name{font-size:16px;font-weight:800;color:var(--navy);margin-bottom:2px;}
 .folder-card-meta{font-size:12px;color:#888;}
+
+.ts-day-card{background:#f7f9fc;border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:10px;}
+.ts-day-card.ts-has-hours{border-color:#1B2A4A;background:#f0f4fb;}
+.ts-day-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.ts-day-name{font-size:14px;font-weight:800;color:var(--navy);}
+.ts-day-total{font-size:13px;font-weight:700;color:var(--navy);}
+.ts-vehicle-row{margin-bottom:8px;}
+.ts-vehicle-row input{width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;background:#fff;box-sizing:border-box;}
+.ts-vehicle-row input:focus{border-color:var(--navy);}
+.ts-shift-row{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end;margin-bottom:6px;}
+.ts-shift-label{font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;}
+.ts-shift-row input[type="time"]{width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;background:#fff;}
+.ts-shift-row input[type="time"]:focus{border-color:var(--navy);}
+.ts-add-shift-btn{font-size:11px;color:var(--navy);background:none;border:1px solid var(--border);border-radius:6px;padding:5px 10px;cursor:pointer;white-space:nowrap;}
+.ts-remove-shift-btn{font-size:11px;color:#888;background:none;border:1px solid #ddd;border-radius:6px;padding:5px 10px;cursor:pointer;white-space:nowrap;}
+.ts-shift2-row{margin-top:6px;}
+.ts-missed-punch-row{margin-top:8px;padding-top:8px;border-top:1px dashed var(--border);}
+.ts-missed-punch-row label{font-size:12px;color:#666;display:flex;align-items:center;gap:6px;cursor:pointer;}
+.ts-missed-punch-details{margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.ts-missed-punch-details select,.ts-missed-punch-details input{padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;outline:none;width:100%;box-sizing:border-box;}
 </style>
 </head>
 <body>
@@ -9166,27 +9186,7 @@ function printEmployeeIdSheet(name,startDate,supervisor,trainer,ids){
   .logo{font-size:22px;font-weight:900;color:#1B2A4A;margin-bottom:4px;}
   .logo span{color:#C0392B;}
   @media print{body{margin:20px;}}
-  
-.ts-day-card{background:#f7f9fc;border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:10px;}
-.ts-day-card.ts-has-hours{border-color:#1B2A4A;background:#f0f4fb;}
-.ts-day-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
-.ts-day-name{font-size:14px;font-weight:800;color:var(--navy);}
-.ts-day-total{font-size:13px;font-weight:700;color:var(--navy);}
-.ts-vehicle-row{margin-bottom:8px;}
-.ts-vehicle-row input{width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;background:#fff;box-sizing:border-box;}
-.ts-vehicle-row input:focus{border-color:var(--navy);}
-.ts-shift-row{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end;margin-bottom:6px;}
-.ts-shift-label{font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;}
-.ts-shift-row input[type="time"]{width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;background:#fff;}
-.ts-shift-row input[type="time"]:focus{border-color:var(--navy);}
-.ts-add-shift-btn{font-size:11px;color:var(--navy);background:none;border:1px solid var(--border);border-radius:6px;padding:5px 10px;cursor:pointer;white-space:nowrap;}
-.ts-remove-shift-btn{font-size:11px;color:#888;background:none;border:1px solid #ddd;border-radius:6px;padding:5px 10px;cursor:pointer;white-space:nowrap;}
-.ts-shift2-row{margin-top:6px;}
-.ts-missed-punch-row{margin-top:8px;padding-top:8px;border-top:1px dashed var(--border);}
-.ts-missed-punch-row label{font-size:12px;color:#666;display:flex;align-items:center;gap:6px;cursor:pointer;}
-.ts-missed-punch-details{margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-.ts-missed-punch-details select,.ts-missed-punch-details input{padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;outline:none;width:100%;box-sizing:border-box;}
-</style></head><body>
+  </style></head><body>
   <div class="logo">Ride<span>Source</span> Inc.</div>
   <div style="font-size:12px;color:#888;margin-bottom:16px;">CONFIDENTIAL — EMPLOYEE ID & ASSIGNMENT SHEET</div>
   <h1>${name}</h1>
