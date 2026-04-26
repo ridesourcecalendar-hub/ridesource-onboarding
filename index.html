@@ -8177,7 +8177,24 @@ function exportVehicleRecords(){
 }
 
 // CALENDAR
-const COUNTY_COLORS={Hancock:'#2980B9',Washington:'#C0392B',Somerset:'#E67E22',Waldo:'#F39C12',Knox:'#16A085',Androscoggin:'#E74C3C',Cumberland:'#1ABC9C',Franklin:'#95A5A6',Kennebec:'#8E44AD',Lincoln:'#EC407A',Oxford:'#7E57C2',Penobscot:'#2471A3',Piscataquis:'#1565C0',Sagadahoc:'#D84315',York:'#F57F17',Aroostook:'#27AE60'};
+const COUNTY_COLORS={
+  Hancock:'#0077B6',        // Ocean blue — distinct, strong
+  Washington:'#6A0572',     // Deep purple — previously red, now unique
+  Somerset:'#E67E22',       // Warm orange — kept, distinct from others
+  Waldo:'#F0A500',          // Golden amber — different from Somerset
+  Knox:'#00897B',           // Teal green — distinct from lime greens
+  Androscoggin:'#C2185B',   // Deep magenta/rose — previously red
+  Cumberland:'#00ACC1',     // Cyan — distinct from teal
+  Franklin:'#5C6BC0',       // Indigo — replaces grey
+  Kennebec:'#8E44AD',       // Purple — kept, distinct
+  Lincoln:'#D81B60',        // Hot pink — distinct from magenta
+  Oxford:'#4527A0',         // Deep violet — distinct from purple
+  Penobscot:'#1565C0',      // Royal blue — distinct from ocean blue
+  Piscataquis:'#00695C',    // Dark teal — distinct from cyan/teal
+  Sagadahoc:'#EF6C00',      // Burnt orange — replaces red-orange
+  York:'#558B2F',           // Olive green — distinct from teals
+  Aroostook:'#2E7D32'       // Forest green — kept greenish
+};
 async function renderCalendar(){
   const monthLabel=document.getElementById('cal-month-label');
   if(monthLabel)monthLabel.textContent=new Date(calYear,calMonth).toLocaleDateString('en-US',{month:'long',year:'numeric'});
