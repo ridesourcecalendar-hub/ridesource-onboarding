@@ -10292,7 +10292,7 @@ async function savePortalSettings(){
 
 async function loadPortalSettings(){
   try{
-    const{data}=await db.from('portal_settings').select('*').eq('id','main').single();
+    const{data}=await db.from('portal_settings').select('*').eq('id','main').maybeSingle();
     if(!data)return;
     const fields={
       'cfg-company-name':'company_name',
