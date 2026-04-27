@@ -379,7 +379,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
         <!-- Quick Sign In with Driver ID -->
         <div id="login-driver-id-section">
           <div style="display:flex;gap:10px;margin-bottom:8px;">
-            <input class="landing-field" id="login-driver-code" type="text" inputmode="numeric" maxlength="4" placeholder="Driver ID (4 digits)" autocomplete="off" style="margin-bottom:0;flex:1;letter-spacing:4px;font-size:20px;font-weight:700;text-align:center;" onkeydown="if(event.key==='Enter')quickSignIn()">
+            <input class="landing-field" id="login-driver-code" type="text" inputmode="numeric" maxlength="4" placeholder="4-digit ID" autocomplete="off" style="margin-bottom:0;flex:1;letter-spacing:4px;font-size:20px;font-weight:700;text-align:center;" onkeydown="if(event.key==='Enter')quickSignIn()">
             <input class="landing-field" id="login-driver-lastname" type="text" placeholder="Last Name" autocomplete="family-name" style="margin-bottom:0;flex:1;" onkeydown="if(event.key==='Enter')quickSignIn()">
           </div>
           <button class="landing-btn" onclick="quickSignIn()" style="margin-bottom:12px;">🔢 Quick Sign In →</button>
@@ -453,6 +453,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
         <div class="nav-item" onclick="showSection('timesheet')" id="nav-timesheet"><span class="nav-icon">🕐</span>Submit Timesheet</div>
         <div class="nav-item" onclick="showSection('vehicle')" id="nav-vehicle"><span class="nav-icon">🚐</span>Vehicle Report</div>
         <div class="nav-item" onclick="showSection('incident')" id="nav-incident"><span class="nav-icon">🚨</span>Incident Report</div>
+        <div class="nav-item" onclick="showSection('expenses')" id="nav-expenses"><span class="nav-icon">💰</span>Expenses</div>
         <div class="nav-item" onclick="showSection('memos-emp')" id="nav-memos-emp"><span class="nav-icon">📢</span>Memos &amp; Messages<span class="nav-badge" id="badge-emp-memos" style="background:var(--red);color:#fff;display:none;">!</span></div>
       </div>
     </div>
@@ -1787,6 +1788,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
                 <option value="">All Weeks</option>
               </select>
               <button class="btn btn-sm" style="background:#e8f4fd;color:#1565c0;" onclick="exportTimesheets()">⬇️ Export CSV</button>
+              <button class="btn btn-sm" style="background:#fdecea;color:var(--red);" onclick="clearOldPendingTimesheets()">🗑️ Clear Old Pending</button>
             </div>
             <!-- Status tabs -->
             <div style="display:flex;gap:4px;border-bottom:2px solid var(--border);margin-bottom:0;">
@@ -3270,7 +3272,8 @@ async function loadSignedPolicies(){
       pbtn.textContent='✓ Signed';pbtn.className='policy-btn policy-btn-done';
     });
     updateBadge();updateDashboard();
-    if(data.length===POLICIES.length)document.getElementById('all-signed-banner').style.display='block';
+    const uniqueSigned=new Set(data.map(r=>r.policy_id)).size;
+  if(uniqueSigned>=POLICIES.length)document.getElementById('all-signed-banner').style.display='block';
   }catch(e){console.error(e);}
 }
 function toggleCheck(el){
@@ -4124,7 +4127,7 @@ async function notifyCompletion(){
     }
   }catch(e){console.log('Profile auto-create:',e);}
   if(typeof emailjs==='undefined')return;
-  try{await emailjs.send(EMAILJS_SERVICE_ID,'timeoff_submission',{employee_name:user.name,employee_email:user.email,county:user.county,request_type:'ONBOARDING COMPLETE',start_date:new Date().toLocaleDateString(),end_date:'',time_detail:'All policies signed.',reason:user.name+' has completed all onboarding acknowledgments.',portal_url:PORTAL_URL,to_email:getSupervisorEmail(user.email)});}catch(e){console.log(e);}
+  // Removed: no longer sending blank time off email on onboarding complete
 }
 
 // ── MEMOS ──
@@ -7741,7 +7744,7 @@ async function loadOnboarding(){
   const cc=document.getElementById('onboard-count-complete');if(cc)cc.textContent=complete;
   const cp=document.getElementById('onboard-count-pending');if(cp)cp.textContent=pending;
   el.innerHTML='<div style="overflow-x:auto;"><table class="data-table"><thead><tr><th>Employee</th><th>County</th><th>Policies Signed</th><th>Handbook</th><th>Sup. Checklist</th></tr></thead><tbody>'+
-    allEmps.map((e,idx)=>`<tr><td><strong>${demoMask(e.name,idx)}</strong><br><span style="font-size:11px;color:#888;">${isDemo?'---':e.email}</span></td><td>${e.county}</td><td><span class="badge ${e.policies.length>=POLICIES.length?'badge-approved':'badge-warning'}">${e.policies.length}/${POLICIES.length}</span></td><td>${e.handbookSigned?'<span class="badge badge-approved">+ Signed</span>':'<span class="badge badge-warning">Pending</span>'}</td><td><span class="badge ${e.supPct===100?'badge-approved':e.supPct>0?'badge-warning':'badge-pending'}">${e.supPct}%</span></td></tr>`).join('')+
+    allEmps.map((e,idx)=>`<tr><td><strong>${demoMask(e.name,idx)}</strong><br><span style="font-size:11px;color:#888;">${isDemo?'---':e.email}</span></td><td>${e.county}</td><td><span class="badge ${new Set(e.policies.map(p=>p.policy_id)).size>=POLICIES.length?'badge-approved':'badge-warning'}">${Math.min(new Set(e.policies.map(p=>p.policy_id)).size,POLICIES.length)}/${POLICIES.length}</span></td><td>${e.handbookSigned?'<span class="badge badge-approved">+ Signed</span>':'<span class="badge badge-warning">Pending</span>'}</td><td><span class="badge ${e.supPct===100?'badge-approved':e.supPct>0?'badge-warning':'badge-pending'}">${e.supPct}%</span></td></tr>`).join('')+
     '</tbody></table></div>';
   const printReqs=allEmps.filter(e=>e.printRequested);
   if(printList)printList.innerHTML=printReqs.length===0?'No printed copy requests.':`<div>${printReqs.map((e,idx)=>`<div style="padding:6px 0;border-bottom:1px solid #e0e0e0;font-size:12px;"><strong>${demoMask(e.name,idx)}</strong>${isDemo?'':' ('+e.email+')'} - ${e.county}</div>`).join('')}</div>`;
@@ -8224,7 +8227,7 @@ async function saveVehicleReport(){
   const btn=document.getElementById('vrm-save-btn');
   btn.disabled=true;btn.textContent='Saving...';
   try{
-    await db.from('vehicle_reports').update({
+    const{error}=await db.from('vehicle_reports').update({
       vehicle_id:vehicleId,
       report_date:date,
       employee_name:reportedBy,
@@ -8232,10 +8235,13 @@ async function saveVehicleReport(){
       description,
       admin_extra:adminExtra,
       status:newStatus,
-      is_admin_report:true  // once admin touches it, it gets full admin fields
-    }).eq('id',id);
+      is_admin_report:true
+    }).eq('id',parseInt(id)||id);
+    if(error)throw error;
     closeModal('vehicle-report-modal');
-    loadVehicleRecords();
+    await loadVehicleRecords();
+    loadFleetVehicles();
+    showRealtimeToast('✅ Vehicle record saved');
   }catch(e){
     alert('Error saving: '+e.message);
     btn.disabled=false;btn.textContent='💾 Save Changes';
@@ -10208,9 +10214,19 @@ async function startVolunteerPortal(){
   errEl.style.display='none';
   if(!name||!email||!county){errEl.style.display='block';return;}
   // Check against ridesource_employees table (same as employee login)
+  // Check employee_profiles table (volunteers may not be in ridesource_employees)
   try{
-    const{data}=await db.from('ridesource_employees').select('*').ilike('email',email).limit(1);
-    if(!data||data.length===0){errEl.textContent='No volunteer account found. Contact your supervisor.';errEl.style.display='block';return;}
+    const{data}=await db.from('employee_profiles').select('employee_name,employee_email,county').ilike('employee_email',email).limit(1);
+    if(data&&data.length>0){
+      // Found in profiles — use that data
+      if(!county)county=data[0].county||county;
+    } else {
+      // Also check ridesource_employees table
+      const{data:data2}=await db.from('ridesource_employees').select('*').ilike('email',email).limit(1);
+      if(!data2||data2.length===0){
+        errEl.textContent='No account found with that email. Contact your supervisor.';errEl.style.display='block';return;
+      }
+    }
   }catch(e){console.log('Volunteer auth:',e);}
   volUser={name,email,county};
   document.getElementById('vol-display-name').textContent=name;
@@ -11439,6 +11455,18 @@ async function saveEditStaff(){
     await db.from('admin_staff').update({name,email,title,role}).eq('id',id);
     const msg=document.getElementById('esm-msg');
     if(msg){msg.style.display='inline';setTimeout(()=>{msg.style.display='none';closeModal('edit-staff-modal');loadStaffAccounts();},1500);}
+  }catch(e){alert('Error: '+e.message);}
+}
+
+async function clearOldPendingTimesheets(){
+  const cutoff=new Date();cutoff.setDate(cutoff.getDate()-60); // older than 60 days
+  const old=allTimesheetsCache.filter(t=>(t.status==='PENDING'||!t.status)&&new Date(t.submitted_at||t.created_at)<cutoff);
+  if(!old.length){alert('No old pending timesheets found (older than 60 days).');return;}
+  if(!confirm(`Delete ${old.length} pending timesheet(s) older than 60 days? This cannot be undone.`))return;
+  try{
+    for(const t of old){await db.from('timesheets').delete().eq('id',t.id);}
+    await loadTimesheets();
+    showRealtimeToast('✅ Cleared '+old.length+' old pending timesheet(s)');
   }catch(e){alert('Error: '+e.message);}
 }
 </script>
