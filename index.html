@@ -3197,6 +3197,11 @@ window.addEventListener('load',async function(){
         adminName=staff.role==='demo'?'Admin':staff.name;adminStaff=staff;
         document.getElementById('admin-display').textContent=staff.role==='demo'?'Admin':staff.name;
         document.getElementById('dash-admin-name').textContent=staff.role==='demo'?'Admin':staff.name.split(' ')[0];
+        // Always do fresh DB lookup to get current role (in case it was changed)
+        try{
+          const{data:freshStaff}=await db.from('admin_staff').select('role').eq('name',staff.name).single();
+          if(freshStaff?.role)staff.role=freshStaff.role;
+        }catch(e){}
         const badge=document.getElementById('admin-role-badge');
         if(badge)badge.textContent=staff.role==='admin'?'Admin':staff.role==='owner'?'Owner':staff.role==='ops_manager'?'Ops Mgr':staff.role==='hr'?'HR':staff.role==='demo'?'DEMO':staff.title.split(' ')[0];
         // Restore gear button visibility
