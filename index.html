@@ -11401,62 +11401,7 @@ async function saveVehicleCost(vehicleId){
 // ═══════════════════════════════════════════════
 // EDIT STAFF ACCOUNT
 // ═══════════════════════════════════════════════
-function openEditStaffModal(id,name,title,email,role){
-  const modal=document.getElementById('edit-staff-modal');
-  if(!modal){
-    // Create modal if it doesn't exist
-    const m=document.createElement('div');
-    m.className='modal-overlay';m.id='edit-staff-modal';
-    m.innerHTML=`<div class="modal" style="max-width:480px;">
-      <button class="modal-close" onclick="closeModal('edit-staff-modal')">✕</button>
-      <h3 style="color:var(--navy);margin-bottom:16px;">✏️ Edit Staff Account</h3>
-      <input type="hidden" id="esm-id">
-      <div class="form-row">
-        <div class="form-field"><label>Full Name *</label><input type="text" id="esm-name" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
-        <div class="form-field"><label>Email</label><input type="email" id="esm-email" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-field"><label>Title</label><input type="text" id="esm-title" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
-        <div class="form-field"><label>Role *</label>
-          <select id="esm-role" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
-            <option value="owner">Owner</option>
-            <option value="ops_manager">Ops Manager</option>
-            <option value="admin">Admin</option>
-            <option value="hr">HR</option>
-            <option value="supervisor">Supervisor</option>
-            <option value="demo">Demo</option>
-          </select>
-        </div>
-      </div>
-      <div style="display:flex;gap:10px;align-items:center;margin-top:8px;">
-        <button class="btn btn-primary" onclick="saveEditStaff()">💾 Save Changes</button>
-        <button class="btn btn-sm" style="background:#f0f0f0;color:#555;" onclick="closeModal('edit-staff-modal')">Cancel</button>
-        <span id="esm-msg" style="font-size:13px;color:var(--success);display:none;">✓ Saved!</span>
-      </div>
-    </div>`;
-    document.body.appendChild(m);
-  }
-  document.getElementById('esm-id').value=id;
-  document.getElementById('esm-name').value=name||'';
-  document.getElementById('esm-email').value=email||'';
-  document.getElementById('esm-title').value=title||'';
-  document.getElementById('esm-role').value=role||'supervisor';
-  document.getElementById('edit-staff-modal').classList.add('open');
-}
 
-async function saveEditStaff(){
-  const id=document.getElementById('esm-id').value;
-  const name=document.getElementById('esm-name').value.trim();
-  const email=document.getElementById('esm-email').value.trim();
-  const title=document.getElementById('esm-title').value.trim();
-  const role=document.getElementById('esm-role').value;
-  if(!name){alert('Name is required.');return;}
-  try{
-    await db.from('admin_staff').update({name,email,title,role}).eq('id',id);
-    const msg=document.getElementById('esm-msg');
-    if(msg){msg.style.display='inline';setTimeout(()=>{msg.style.display='none';closeModal('edit-staff-modal');loadStaffAccounts();},1500);}
-  }catch(e){alert('Error: '+e.message);}
-}
 
 async function clearOldPendingTimesheets(){
   const cutoff=new Date();cutoff.setDate(cutoff.getDate()-60); // older than 60 days
