@@ -2933,7 +2933,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
       </div>
 
 <!-- CONFIG PANEL (Admin only) -->
-      <div id="section-adm-config" class="admin-section">
+      <div id="section-adm-config" class="admin-section" style="display:none;">
         <div style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:2px;">⚙️ Portal Configuration</div>
         <p style="color:#888;font-size:13px;margin-bottom:20px;">Manage staff accounts, documents, and portal settings. Admin access only.</p>
 
@@ -3359,7 +3359,7 @@ function showAdmin(id){
   }
   if(id==='incidents')loadIncidents();
   if(id==='memos'){loadMemos();loadEmployeeMessages();setMemoMainTab('compose');}
-  if(id==='config'){setCfgTab('users');loadPortalSettings();}
+  if(id==='config'){try{setCfgTab('users');loadPortalSettings();}catch(e){console.error('Config panel error:',e);}}
   if(id==='analytics'){loadAnalytics();}
   if(id==='recognition'){renderRecogCalendar();}
   if(id==='fleet'){loadFleetVehicles();loadFleetMaintenance();loadFleetTires();loadFleetChangeovers();}
@@ -10200,15 +10200,17 @@ function checkReviewsForDashboard(){
 // ═══════════════════════════════════════════════
 
 function setCfgTab(tab){
-  ['users','portal','docs','security'].forEach(t=>{
-    const btn=document.getElementById('cfg-tab-'+t);
-    const panel=document.getElementById('cfg-panel-'+t);
-    if(btn){btn.style.borderBottom=t===tab?'2px solid var(--navy)':'2px solid transparent';btn.style.color=t===tab?'var(--navy)':'#888';btn.style.fontWeight=t===tab?'800':'700';}
-    if(panel)panel.style.display=t===tab?'block':'none';
-  });
-  if(tab==='users')loadStaffAccounts();
-  if(tab==='docs')loadCustomDocs();
-  if(tab==='security')loadLoginLog();
+  try{
+    ['users','portal','docs','security'].forEach(t=>{
+      const btn=document.getElementById('cfg-tab-'+t);
+      const panel=document.getElementById('cfg-panel-'+t);
+      if(btn){btn.style.borderBottom=t===tab?'2px solid var(--navy)':'2px solid transparent';btn.style.color=t===tab?'var(--navy)':'#888';btn.style.fontWeight=t===tab?'800':'700';}
+      if(panel)panel.style.display=t===tab?'block':'none';
+    });
+    if(tab==='users')loadStaffAccounts();
+    if(tab==='docs')loadCustomDocs();
+    if(tab==='security')loadLoginLog();
+  }catch(e){console.error('setCfgTab error:',e);}
 }
 
 // USER MANAGEMENT
