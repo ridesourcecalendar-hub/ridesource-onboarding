@@ -2895,7 +2895,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
                 <span style="font-size:16px;font-weight:800;color:var(--warn);" id="exp-qs-pending-amt">$0.00</span>
               </div>
               <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);">
-                <span style="font-size:13px;color:#555;">Unpaid to Finance</span>
+                <span style="font-size:13px;color:#555;">Unpaid</span>
                 <span style="font-size:16px;font-weight:800;color:var(--red);" id="exp-qs-unpaid">$0.00</span>
               </div>
               <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;">
@@ -4511,8 +4511,9 @@ function renderAdminMemoList(){
       '<div><span style="font-size:12px;font-weight:700;color:'+readColor+';">'+readCount+'/'+totalEmployees+'</span></div>'+
       '<div style="display:flex;gap:4px;align-items:center;">'+
         (ackCount!==null?'<span style="font-size:12px;color:#888;">'+ackCount+'/'+totalEmployees+'</span>':'<span style="font-size:11px;color:#aaa;">--</span>')+
-        (m.is_active?'<button onclick="archiveMemo('+m.id+')" style="width:24px;height:24px;border-radius:4px;border:1px solid #ddd;background:#fff;color:#888;cursor:pointer;font-size:10px;margin-left:4px;" title="Archive">▾</button>':'')+
-        '<button onclick="deleteMemo('+m.id+')" style="width:24px;height:24px;border-radius:4px;border:1px solid #fcc;background:#fff;color:var(--red);cursor:pointer;font-size:11px;" title="Delete">✕</button>'+
+        (m.is_active&&readCount<totalEmployees?'<button data-mid="'+m.id+'" onclick="sendMemoReminder(this.dataset.mid)" style="font-size:10px;padding:2px 6px;border-radius:4px;border:1px solid var(--warn);background:#fff;color:var(--warn);cursor:pointer;margin-left:4px;" title="Send reminder to unread">🔔 Remind</button>':'')+ 
+        (m.is_active?'<button data-mid="'+m.id+'" onclick="archiveMemo(this.dataset.mid)" style="width:24px;height:24px;border-radius:4px;border:1px solid #ddd;background:#fff;color:#888;cursor:pointer;font-size:10px;margin-left:4px;" title="Archive">▾</button>':'')+
+        '<button data-mid="'+m.id+'" onclick="deleteMemo(this.dataset.mid)" style="width:24px;height:24px;border-radius:4px;border:1px solid #fcc;background:#fff;color:var(--red);cursor:pointer;font-size:11px;" title="Delete">✕</button>'+
       '</div>'+
     '</div>';
   }).join('');
@@ -7692,6 +7693,18 @@ async function decideRequest(id,status){
   await db.from('time_off_requests').update({status,decided_at:new Date().toISOString(),decided_by:adminName}).eq('id',id);
   try{
     const req=allRequestsCache.find(r=>r.id===id);
+    // Always send in-app notification
+    if(req){
+      const msg=status==='APPROVED'?
+        `✅ Your time off request (${req.request_type} — ${req.start_date}${req.end_date&&req.end_date!==req.start_date?' to '+req.end_date:''}) has been APPROVED by ${adminName}.`:
+        `❌ Your time off request (${req.request_type} — ${req.start_date}) has been DENIED by ${adminName}. Please contact your supervisor if you have questions.`;
+      await db.from('employee_messages').insert([{
+        from_email:adminStaff?.email||'admin@ridesource',
+        from_name:adminName,to_email:req.employee_email,
+        from_admin:true,message:msg,body:msg,
+        is_read:false,sent_at:new Date().toISOString()
+      }]);
+    }
     if(req&&typeof emailjs!=='undefined'){
       await emailjs.send(EMAILJS_SERVICE_ID,'timeoff_decision',{
         employee_name:req.employee_name,
@@ -9280,11 +9293,27 @@ async function submitExpense(){
   }catch(e){alert('Unable to submit. Please try again. '+e.message);}
 }
 
+async function deleteExpenseRecord(id){
+  if(!confirm('Delete this expense record? This cannot be undone.'))return;
+  try{
+    await db.from('expense_submissions').delete().eq('id',id);
+    await loadExpenses();
+    showRealtimeToast('Expense deleted');
+  }catch(e){alert('Error: '+e.message);}
+}
+
 function resetExpenseForm(){
-  document.getElementById('exp-type').value='';
-  document.getElementById('exp-date').value='';
-  document.getElementById('exp-amount').value='';
-  document.getElementById('exp-vehicle').value='';
+  ['exp-type','exp-service','exp-date','exp-amount','exp-facility','exp-description'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value='';
+  });
+  const vSel=document.getElementById('exp-vehicle');if(vSel)vSel.value='';
+  const ptSel=document.getElementById('exp-payment-type');if(ptSel)ptSel.value='';
+  const pd=document.getElementById('exp-payment-detail');if(pd)pd.value='';
+  const pw=document.getElementById('exp-payment-detail-wrap');if(pw)pw.style.display='none';
+  const rc=document.getElementById('exp-reimbursement');if(rc)rc.checked=false;
+  const fi=document.getElementById('exp-receipt');if(fi)fi.value='';
+  document.getElementById('exp-submit-form').style.display='block';
+  document.getElementById('exp-success').style.display='none';
   document.getElementById('exp-description').value='';
   document.getElementById('exp-receipt').value='';
   document.getElementById('exp-success').style.display='none';
@@ -9349,6 +9378,7 @@ function setExpTab(tab){
 function renderExpensesTable(){
   const el=document.getElementById('expenses-table');if(!el)return;
   const isDemo=adminStaff?.role==='demo';
+  const isReadOnly=isDemo||adminStaff?.role==='owner'||adminStaff?.role==='ops_manager';
   const search=(document.getElementById('exp-search')?.value||'').toLowerCase();
   const typeFilter=document.getElementById('exp-type-filter')?.value||'';
   const paidFilter=document.getElementById('exp-paid-filter')?.value||'';
@@ -9436,12 +9466,24 @@ function renderExpensesTable(){
         :'')+
       '</div>'+
     '</div>'+
-    '<div id="exp-detail-'+e.id+'" style="display:none;padding:12px 16px 12px 56px;background:#f7f9fc;border-bottom:1px solid var(--border);font-size:13px;">'+
-      '<div style="color:#555;margin-bottom:6px;"><strong>Description:</strong> '+(e.description||'—')+'</div>'+
+    '<div id="exp-detail-'+e.id+'" style="display:none;padding:14px 16px 14px 56px;background:#f7f9fc;border-bottom:1px solid var(--border);font-size:13px;">'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">'+
+        (e.invoice_number?'<div><strong>Invoice #:</strong> '+e.invoice_number+'</div>':'')+
+        (e.facility?'<div><strong>Shop/Facility:</strong> '+e.facility+'</div>':'')+
+        (e.service_type?'<div><strong>Service:</strong> '+e.service_type+'</div>':'')+
+        (e.vehicle_id?'<div><strong>Vehicle:</strong> '+e.vehicle_id+'</div>':'')+
+        (e.payment_method?'<div><strong>Payment:</strong> '+e.payment_method+'</div>':'')+
+        (e.is_reimbursement?'<div><strong style="color:#1565c0;">☑️ Reimbursement Request</strong></div>':'')+
+      '</div>'+
+      (e.description?'<div style="color:#555;margin-bottom:6px;"><strong>Comments:</strong> '+e.description+'</div>':'')+
+      (e.receipt_url?'<div style="margin-bottom:6px;"><a href="'+e.receipt_url+'" target="_blank" style="color:#1565c0;font-size:12px;">📎 View Receipt / Invoice</a></div>':'')+
       (e.submitted_at?'<div style="font-size:12px;color:#888;">Submitted: '+new Date(e.submitted_at).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})+'</div>':'')+
       (e.decided_by?'<div style="font-size:12px;color:#888;">'+e.status+' by '+e.decided_by+(e.decided_at?' on '+new Date(e.decided_at).toLocaleDateString():'')+'</div>':'')+
       (e.paid_to_finance&&e.paid_date?'<div style="font-size:12px;color:#27AE60;">✅ Paid on '+new Date(e.paid_date).toLocaleDateString()+(e.paid_by?' by '+e.paid_by:'')+'</div>':'')+
       (e.sent_to_finance?'<div style="font-size:12px;color:#1565c0;">📤 Sent to Finance</div>':'')+
+      (!isReadOnly?'<div style="margin-top:8px;display:flex;gap:6px;">'+
+        '<button data-eid="'+e.id+'" onclick="deleteExpenseRecord(this.dataset.eid)" style="font-size:11px;padding:4px 10px;border-radius:4px;border:1px solid #fcc;background:#fff;color:var(--red);cursor:pointer;">🗑️ Delete</button>'+
+      '</div>':'')+
     '</div>';
   }).join('');
   el.innerHTML=header+'<div style="border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;overflow:hidden;">'+rows+'</div>';
@@ -11634,6 +11676,33 @@ async function loadMyExpenseHistory(){
       </div>`;
     }).join('');
   }catch(err){el.innerHTML='<p style="color:#888;font-size:13px;">Unable to load.</p>';}
+}
+
+// ═══════════════════════════════════════════════
+// MEMO SEND REMINDER
+// ═══════════════════════════════════════════════
+async function sendMemoReminder(memoId){
+  const memo=allMemosCache.find(m=>m.id===parseInt(memoId)||m.id===memoId);
+  if(!memo)return;
+  const readBy=new Set(memo.read_by||[]);
+  // Get all employees who haven't read it
+  const unread=allProfilesCache.filter(p=>p.employee_email&&!readBy.has(p.employee_email)&&p.employment_status!=='Separated');
+  if(!unread.length){alert('All employees have read this memo!');return;}
+  if(!confirm(`Send reminder to ${unread.length} employee(s) who haven't read "${memo.subject}"?`))return;
+  try{
+    const inserts=unread.map(p=>({
+      from_email:adminStaff?.email||'admin@ridesource',
+      from_name:adminName,
+      to_email:p.employee_email,
+      from_admin:true,
+      message:`📢 Reminder: Please read the memo "${memo.subject}". You can find it in your Memos & Messages section.`,
+      body:`📢 Reminder: Please read the memo "${memo.subject}".`,
+      is_read:false,
+      sent_at:new Date().toISOString()
+    }));
+    await db.from('employee_messages').insert(inserts);
+    showRealtimeToast(`✅ Reminder sent to ${unread.length} employee(s)`);
+  }catch(e){alert('Error sending reminders: '+e.message);}
 }
 </script>
 <!-- MODALS -->
