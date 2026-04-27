@@ -6832,7 +6832,7 @@ async function loadDashboard(){
   try{const r=await db.from('time_off_requests').select('*').in('status',['PENDING','PTO_PENDING']);reqs=r.data||[];}catch(e){}
   try{const r=await db.from('call_out_log').select('*').order('callout_date',{ascending:false}).limit(100);callouts=r.data||[];}catch(e){}
   try{const r=await db.from('policy_signatures').select('employee_email');sigs=r.data||[];}catch(e){}
-  try{const r=await db.from('timesheets').select('*').eq('status','PENDING');sheets=r.data||[];}catch(e){}
+  try{const r=await db.from('timesheets').select('*');const all=r.data||[];sheets=all.filter(t=>!t.status||t.status==='PENDING');}catch(e){}
   try{const r=await db.from('incident_reports').select('*').not('status','in','(Closed,Archived)').order('submitted_at',{ascending:false}).limit(5);incidents=r.data||[];}catch(e){}
 
   const unique=[...new Set(sigs.map(s=>s.employee_email))].length;
@@ -7698,8 +7698,9 @@ let tsFilterStatus='PENDING';
 async function loadTimesheets(){
   try{
     const {data}=await db.from('timesheets').select('*').order('submitted_at',{ascending:false});
-    allTimesheetsCache=data||[];
-    const pending=(data||[]).filter(t=>t.status==='PENDING').length;
+    // Normalise old-format submissions: null/empty status → PENDING
+    allTimesheetsCache=(data||[]).map(t=>({...t,status:t.status||'PENDING'}));
+    const pending=allTimesheetsCache.filter(t=>t.status==='PENDING').length;
     const badge=document.getElementById('badge-timesheets');
     if(badge)badge.textContent=pending||'0';
     updateTsTabCounts();
@@ -7722,7 +7723,7 @@ function setTsTab(tab){
 
 function updateTsTabCounts(){
   const counts={PENDING:0,DRAFT:0,APPROVED:0};
-  allTimesheetsCache.forEach(t=>{if(counts[t.status]!==undefined)counts[t.status]++;});
+  allTimesheetsCache.forEach(t=>{const s=t.status||'PENDING';if(counts[s]!==undefined)counts[s]++;});
   Object.entries(counts).forEach(([s,c])=>{const el=document.getElementById('ts-count-'+s);if(el)el.textContent=c;});
   // Quick summary
   const now=new Date();
@@ -7786,9 +7787,15 @@ function renderTimesheetsTable(){
 }
 
 function buildTsDetailView(t,isDemo){
-  if(!t.hours_data)return'<p style="color:#888;font-size:13px;">No hours data.</p>';
+  if(!t.hours_data){
+    // Old format — show raw data if available
+    return'<div style="padding:10px 0;font-size:13px;color:#888;">'+
+      (t.notes?'<div style="margin-bottom:8px;"><strong>Notes:</strong> '+t.notes+'</div>':'')+
+      '<div style="font-size:12px;color:#aaa;">This timesheet was submitted in an older format. Approve or delete as needed.</div>'+
+    '</div>';
+  }
   let rows={};
-  try{rows=JSON.parse(t.hours_data);}catch(e){return'<p style="color:#888;font-size:13px;">Unable to parse timesheet data.</p>';}
+  try{rows=JSON.parse(t.hours_data);}catch(e){return'<p style="color:#888;font-size:13px;">Unable to parse timesheet data — may be an older format submission.</p>';}
   const DAYS_ORDER=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
   const dayRows=DAYS_ORDER.map(day=>{
     const d=rows[day];if(!d)return'';
