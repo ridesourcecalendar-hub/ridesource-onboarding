@@ -11179,16 +11179,15 @@ async function saveStaffEdit(){
   if(!name||!role){errEl.textContent='Name and role are required.';errEl.style.display='inline';return;}
   if(!id){errEl.textContent='Error: no account ID found.';errEl.style.display='inline';return;}
   try{
-    // Try update by name as fallback in case ID type mismatches
-    const{data,error}=await db.from('admin_staff')
-      .update({name,title,email,role})
-      .eq('name',name)
-      .select();
-    if(error)throw error;
-    if(!data||data.length===0){
-      // Fallback: try by email
-      await db.from('admin_staff').update({name,title,email,role}).eq('email',email);
-    }
+    // Use RPC with SECURITY DEFINER to bypass RLS
+    const{error:rpcError}=await db.rpc('update_admin_staff',{
+      p_id:id,
+      p_name:name,
+      p_title:title||'',
+      p_email:email||'',
+      p_role:role
+    });
+    if(rpcError)throw rpcError;
     msgEl.textContent='✓ Saved!';
     msgEl.style.display='inline';
     setTimeout(()=>{
