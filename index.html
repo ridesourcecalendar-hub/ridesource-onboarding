@@ -374,7 +374,26 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
       </div>
       <div id="landing-employee">
         <div class="landing-title">Welcome!</div>
-        <div class="landing-desc">Complete your onboarding, review company policies, and manage your time off — all in one place.</div>
+        <div class="landing-desc">Sign in with your Driver ID or your name and email.</div>
+
+        <!-- Quick Sign In with Driver ID -->
+        <div id="login-driver-id-section">
+          <div style="display:flex;gap:10px;margin-bottom:8px;">
+            <input class="landing-field" id="login-driver-code" type="text" inputmode="numeric" maxlength="4" placeholder="Driver ID (4 digits)" autocomplete="off" style="margin-bottom:0;flex:1;letter-spacing:4px;font-size:20px;font-weight:700;text-align:center;" onkeydown="if(event.key==='Enter')quickSignIn()">
+            <input class="landing-field" id="login-driver-lastname" type="text" placeholder="Last Name" autocomplete="family-name" style="margin-bottom:0;flex:1;" onkeydown="if(event.key==='Enter')quickSignIn()">
+          </div>
+          <button class="landing-btn" onclick="quickSignIn()" style="margin-bottom:12px;">🔢 Quick Sign In →</button>
+          <div class="error-msg" id="login-driverid-error">Driver ID or last name not found. Please try again.</div>
+        </div>
+
+        <!-- Divider -->
+        <div style="display:flex;align-items:center;gap:10px;margin:4px 0 16px;">
+          <div style="flex:1;height:1px;background:var(--border);"></div>
+          <span style="font-size:12px;color:#aaa;font-weight:600;">or sign in with name & email</span>
+          <div style="flex:1;height:1px;background:var(--border);"></div>
+        </div>
+
+        <!-- Standard Sign In -->
         <input class="landing-field" id="login-name" type="text" placeholder="Your Full Name" autocomplete="name">
         <input class="landing-field" id="login-email" type="email" placeholder="Your Email Address" autocomplete="email">
         <select class="landing-field" id="login-county">
@@ -2100,11 +2119,6 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
             <button class="profile-tab" id="fmtab-repair" onclick="switchFleetMaintTab('repair')">🚨 Repairs</button>
             <button class="profile-tab" id="fmtab-inspection" onclick="switchFleetMaintTab('inspection')">📋 Inspections</button>
             <button class="profile-tab" id="fmtab-reports" onclick="switchFleetMaintTab('reports')" style="position:relative;">🚐 Driver Reports<span id="fmtab-reports-badge" style="display:none;position:absolute;top:2px;right:2px;background:var(--red);color:#fff;border-radius:50%;width:14px;height:14px;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;">!</span></button>
-            <button class="profile-tab" id="fmtab-costs" onclick="switchFleetMaintTab('costs')">💰 Cost Tracker</button>
-          </div>
-          <!-- COST TRACKER PANEL -->
-          <div id="fm-costs-panel" style="display:none;">
-            <div id="fm-costs-content"><p style="color:#888;font-size:13px;">Loading...</p></div>
           </div>
           <!-- OVERVIEW PANEL -->
           <div id="fm-overview-panel" style="display:block;">
@@ -5208,10 +5222,9 @@ function switchFleetMaintTab(tab){
   }
   currentFleetMaintTab=tab;
   const isOverview=tab==='overview';
-  const isCosts=tab==='costs';
   const isTires=tab==='tires';
   const isReports=tab==='reports';
-  ['overview','oil','tires','preventative','repair','inspection','reports','costs'].forEach(t=>{
+  ['overview','oil','tires','preventative','repair','inspection','reports'].forEach(t=>{
     document.getElementById('fmtab-'+t)?.classList.toggle('active',t===tab);
   });
   const genericForm=document.getElementById('fm-generic-form');
@@ -5219,10 +5232,8 @@ function switchFleetMaintTab(tab){
   const historyEl=document.getElementById('fleet-maint-history');
   const overviewPanel=document.getElementById('fm-overview-panel');
   if(overviewPanel)overviewPanel.style.display=isOverview?'block':'none';
-  const costsPanel=document.getElementById('fm-costs-panel');
-  if(costsPanel)costsPanel.style.display=isCosts?'block':'none';
-  if(genericForm)genericForm.style.display=(isTires||isReports||isOverview||isCosts)?'none':'block';
-  if(historyEl)historyEl.style.display=(isTires||isReports||isOverview||isCosts)?'none':'block';
+  if(genericForm)genericForm.style.display=(isTires||isReports||isOverview)?'none':'block';
+  if(historyEl)historyEl.style.display=(isTires||isReports||isOverview)?'none':'block';
   if(tirePanel)tirePanel.style.display=isTires?'block':'none';
   let reportsPanel=document.getElementById('fm-reports-panel');
   if(!reportsPanel){reportsPanel=document.createElement('div');reportsPanel.id='fm-reports-panel';if(historyEl)historyEl.parentNode.insertBefore(reportsPanel,historyEl.nextSibling);}
@@ -5235,7 +5246,6 @@ function switchFleetMaintTab(tab){
   const titleEl=document.getElementById('fm-form-title');
   if(titleEl&&titles[tab])titleEl.textContent=titles[tab];
   if(isOverview){renderFleetOverview(currentFleetVehicleId);}
-  else if(isCosts){renderFleetCostTracker(currentFleetVehicleId);}
   else if(tab==='repair')populateLinkedReports(currentFleetVehicleId);
   if(isTires){renderTireMounted();loadTireChangeoversHistory();}
   else if(isReports){loadFleetVehicleReports(currentFleetVehicleId);}
@@ -6425,6 +6435,7 @@ function openEditProfileModal(){
   document.getElementById('cpm-ec-phone').value=p.emergency_contact_phone||'';
   document.getElementById('cpm-ec-relation').value=p.emergency_contact_relation||'';
   document.getElementById('cpm-notes').value=p.notes||'';
+  const driverIdEl=document.getElementById('cpm-driver-id');if(driverIdEl)driverIdEl.value=p.driver_id||'';
   document.getElementById('cpm-status').value=p.employment_status||'Active';
   document.getElementById('cpm-supervisor').value=p.assigned_supervisor||'';
   document.getElementById('create-profile-modal-title').textContent='Edit Employee Profile';
@@ -6481,6 +6492,7 @@ async function saveProfile(){
     emergency_contact_phone:document.getElementById('cpm-ec-phone').value.trim(),
     emergency_contact_relation:document.getElementById('cpm-ec-relation').value.trim(),
     notes:document.getElementById('cpm-notes').value.trim(),
+    driver_id:document.getElementById('cpm-driver-id')?.value.trim()||null,
     updated_at:new Date().toISOString()
   };
   const btn=document.getElementById('cpm-save-btn');
@@ -6832,7 +6844,7 @@ async function loadDashboard(){
   try{const r=await db.from('time_off_requests').select('*').in('status',['PENDING','PTO_PENDING']);reqs=r.data||[];}catch(e){}
   try{const r=await db.from('call_out_log').select('*').order('callout_date',{ascending:false}).limit(100);callouts=r.data||[];}catch(e){}
   try{const r=await db.from('policy_signatures').select('employee_email');sigs=r.data||[];}catch(e){}
-  try{const r=await db.from('timesheets').select('*');const all=r.data||[];sheets=all.filter(t=>!t.status||t.status==='PENDING');}catch(e){}
+  try{const r=await db.from('timesheets').select('*').eq('status','PENDING');sheets=r.data||[];}catch(e){}
   try{const r=await db.from('incident_reports').select('*').not('status','in','(Closed,Archived)').order('submitted_at',{ascending:false}).limit(5);incidents=r.data||[];}catch(e){}
 
   const unique=[...new Set(sigs.map(s=>s.employee_email))].length;
@@ -7698,9 +7710,8 @@ let tsFilterStatus='PENDING';
 async function loadTimesheets(){
   try{
     const {data}=await db.from('timesheets').select('*').order('submitted_at',{ascending:false});
-    // Normalise old-format submissions: null/empty status → PENDING
-    allTimesheetsCache=(data||[]).map(t=>({...t,status:t.status||'PENDING'}));
-    const pending=allTimesheetsCache.filter(t=>t.status==='PENDING').length;
+    allTimesheetsCache=data||[];
+    const pending=(data||[]).filter(t=>t.status==='PENDING').length;
     const badge=document.getElementById('badge-timesheets');
     if(badge)badge.textContent=pending||'0';
     updateTsTabCounts();
@@ -7723,7 +7734,7 @@ function setTsTab(tab){
 
 function updateTsTabCounts(){
   const counts={PENDING:0,DRAFT:0,APPROVED:0};
-  allTimesheetsCache.forEach(t=>{const s=t.status||'PENDING';if(counts[s]!==undefined)counts[s]++;});
+  allTimesheetsCache.forEach(t=>{if(counts[t.status]!==undefined)counts[t.status]++;});
   Object.entries(counts).forEach(([s,c])=>{const el=document.getElementById('ts-count-'+s);if(el)el.textContent=c;});
   // Quick summary
   const now=new Date();
@@ -7787,15 +7798,9 @@ function renderTimesheetsTable(){
 }
 
 function buildTsDetailView(t,isDemo){
-  if(!t.hours_data){
-    // Old format — show raw data if available
-    return'<div style="padding:10px 0;font-size:13px;color:#888;">'+
-      (t.notes?'<div style="margin-bottom:8px;"><strong>Notes:</strong> '+t.notes+'</div>':'')+
-      '<div style="font-size:12px;color:#aaa;">This timesheet was submitted in an older format. Approve or delete as needed.</div>'+
-    '</div>';
-  }
+  if(!t.hours_data)return'<p style="color:#888;font-size:13px;">No hours data.</p>';
   let rows={};
-  try{rows=JSON.parse(t.hours_data);}catch(e){return'<p style="color:#888;font-size:13px;">Unable to parse timesheet data — may be an older format submission.</p>';}
+  try{rows=JSON.parse(t.hours_data);}catch(e){return'<p style="color:#888;font-size:13px;">Unable to parse timesheet data.</p>';}
   const DAYS_ORDER=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
   const dayRows=DAYS_ORDER.map(day=>{
     const d=rows[day];if(!d)return'';
@@ -11046,175 +11051,48 @@ function logRepairFromReport(reportId,issueType){
 }
 
 // ═══════════════════════════════════════════════
-// FLEET VEHICLE COST TRACKER
+// DRIVER ID QUICK SIGN IN
 // ═══════════════════════════════════════════════
-async function renderFleetCostTracker(vehicleId){
-  const el=document.getElementById('fm-costs-content');
-  if(!el||!vehicleId)return;
-  el.innerHTML='<p style="color:#888;font-size:13px;">Loading costs...</p>';
+async function quickSignIn(){
+  const code=(document.getElementById('login-driver-code')?.value||'').trim();
+  const lastName=(document.getElementById('login-driver-lastname')?.value||'').trim().toLowerCase();
+  const errEl=document.getElementById('login-driverid-error');
+  if(errEl)errEl.style.display='none';
 
-  const v=allFleetVehiclesCache.find(x=>x.vehicle_id===vehicleId);
-  const maint=allFleetMaintenanceCache.filter(m=>m.vehicle_id===vehicleId);
+  if(!code||!lastName){
+    if(errEl){errEl.textContent='Please enter both your Driver ID and last name.';errEl.style.display='block';}
+    return;
+  }
+  if(code.length!==4||!/^\d{4}$/.test(code)){
+    if(errEl){errEl.textContent='Driver ID must be exactly 4 digits.';errEl.style.display='block';}
+    return;
+  }
 
-  // Build cost entries from maintenance records
-  const costEntries=[];
-  maint.forEach(m=>{
-    if(m.cost&&parseFloat(m.cost)>0){
-      costEntries.push({
-        date:m.service_date,
-        type:m.maintenance_type,
-        description:m.notes||m.maintenance_type,
-        amount:parseFloat(m.cost),
-        vendor:m.vendor||'—',
-        id:m.id,
-        source:'maintenance'
-      });
-    }
-  });
-
-  // Also pull expenses tagged as Vehicle Repair for this vehicle
-  const vehExpenses=(allExpensesCache||[]).filter(e=>
-    e.expense_type==='Vehicle Repair'&&
-    (e.vehicle_id===vehicleId||(e.description||'').includes(vehicleId))&&
-    e.status==='APPROVED'
-  );
-  vehExpenses.forEach(e=>{
-    costEntries.push({
-      date:e.expense_date,
-      type:'Vehicle Repair (Expense)',
-      description:e.description||'Vehicle Repair',
-      amount:parseFloat(e.amount||0),
-      vendor:e.employee_name||'—',
-      id:e.id,
-      source:'expense'
-    });
-  });
-
-  // Sort by date descending
-  costEntries.sort((a,b)=>new Date(b.date)-new Date(a.date));
-
-  const totalCost=costEntries.reduce((s,c)=>s+c.amount,0);
-  const byType={};
-  costEntries.forEach(c=>{
-    if(!byType[c.type])byType[c.type]=0;
-    byType[c.type]+=c.amount;
-  });
-
-  // ── Log a cost form ──
-  const logForm=`
-    <div class="card" style="margin-bottom:16px;padding:14px 16px;">
-      <div style="font-size:13px;font-weight:800;color:var(--navy);margin-bottom:12px;cursor:pointer;" onclick="toggleCostForm()">
-        ➕ Log a Cost <span id="cost-form-toggle" style="font-size:11px;color:#888;">▼ expand</span>
-      </div>
-      <div id="cost-log-form" style="display:none;">
-        <div class="form-row">
-          <div class="form-field"><label>Cost Type *</label>
-            <select id="cost-type" style="width:100%;padding:9px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
-              <option value="">Select type...</option>
-              <option>Oil Change</option><option>Repair</option><option>Tire</option>
-              <option>Inspection</option><option>Preventative</option><option>Cleaning</option><option>Other</option>
-            </select>
-          </div>
-          <div class="form-field"><label>Date *</label>
-            <input type="date" id="cost-date" style="width:100%;padding:9px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-field"><label>Amount ($) *</label>
-            <input type="number" id="cost-amount" placeholder="0.00" step="0.01" min="0" style="width:100%;padding:9px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
-          </div>
-          <div class="form-field"><label>Vendor / Shop</label>
-            <input type="text" id="cost-vendor" placeholder="e.g. Prompto Ellsworth" style="width:100%;padding:9px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
-          </div>
-        </div>
-        <div class="form-field">
-          <label>Notes</label>
-          <input type="text" id="cost-notes" placeholder="Optional description..." style="width:100%;padding:9px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
-        </div>
-        <div style="display:flex;gap:8px;align-items:center;">
-          <button onclick="saveVehicleCost('${vehicleId}')" class="btn btn-primary">💾 Save Cost</button>
-          <span id="cost-save-msg" style="font-size:13px;color:var(--success);display:none;">✓ Saved!</span>
-        </div>
-      </div>
-    </div>`;
-
-  // ── Summary cards ──
-  const summaryHtml=`
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:20px;">
-      <div style="background:#f7f9fc;border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;">
-        <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Total Cost</div>
-        <div style="font-size:18px;font-weight:800;color:var(--navy);">$${totalCost.toFixed(2)}</div>
-      </div>
-      <div style="background:#f7f9fc;border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;">
-        <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Entries</div>
-        <div style="font-size:18px;font-weight:800;color:var(--navy);">${costEntries.length}</div>
-      </div>
-      ${Object.entries(byType).slice(0,3).map(([t,amt])=>`
-        <div style="background:#f7f9fc;border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;">
-          <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">${t}</div>
-          <div style="font-size:16px;font-weight:800;color:var(--navy);">$${amt.toFixed(2)}</div>
-        </div>`).join('')}
-    </div>`;
-
-  // ── Cost history table ──
-  const historyHtml=costEntries.length===0
-    ?'<p style="color:#888;font-size:13px;text-align:center;padding:20px 0;">No costs logged yet. Use the form above to add costs.</p>'
-    :'<div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Cost History</div>'+
-    '<div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;">'+
-    '<div style="display:grid;grid-template-columns:90px 110px 1fr 100px 80px;gap:8px;padding:8px 12px;background:var(--gray);font-size:11px;font-weight:700;color:#888;text-transform:uppercase;">'+
-      '<div>Date</div><div>Type</div><div>Description</div><div>Vendor</div><div style="text-align:right;">Amount</div></div>'+
-    costEntries.map(c=>`
-      <div style="display:grid;grid-template-columns:90px 110px 1fr 100px 80px;gap:8px;padding:10px 12px;border-top:1px solid var(--border);font-size:13px;align-items:center;">
-        <div style="color:#888;font-size:12px;">${c.date}</div>
-        <div><span style="background:#f0f4fb;color:var(--navy);font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;">${c.type}</span></div>
-        <div style="color:#555;">${c.description}</div>
-        <div style="color:#888;font-size:12px;">${c.vendor}</div>
-        <div style="font-weight:800;color:var(--navy);text-align:right;">$${c.amount.toFixed(2)}</div>
-      </div>`).join('')+
-    '</div>';
-
-  el.innerHTML=logForm+summaryHtml+historyHtml;
-}
-
-function toggleCostForm(){
-  const form=document.getElementById('cost-log-form');
-  const toggle=document.getElementById('cost-form-toggle');
-  if(!form)return;
-  const isOpen=form.style.display!=='none';
-  form.style.display=isOpen?'none':'block';
-  if(toggle)toggle.textContent=isOpen?'▼ expand':'▲ collapse';
-}
-
-async function saveVehicleCost(vehicleId){
-  const type=document.getElementById('cost-type')?.value;
-  const date=document.getElementById('cost-date')?.value;
-  const amount=document.getElementById('cost-amount')?.value;
-  const vendor=document.getElementById('cost-vendor')?.value||'';
-  const notes=document.getElementById('cost-notes')?.value||'';
-  if(!type||!date||!amount){alert('Please fill in type, date and amount.');return;}
   try{
-    // Save as a fleet maintenance entry with cost
-    await db.from('fleet_maintenance').insert([{
-      vehicle_id:vehicleId,
-      maintenance_type:type,
-      service_date:date,
-      cost:parseFloat(amount),
-      vendor,
-      notes,
-      performed_by:adminName,
-      created_at:new Date().toISOString()
-    }]);
-    // Clear form
-    ['cost-type','cost-date','cost-amount','cost-vendor','cost-notes'].forEach(id=>{
-      const el=document.getElementById(id);if(el)el.value='';
-    });
-    const msg=document.getElementById('cost-save-msg');
-    if(msg){msg.style.display='inline';setTimeout(()=>msg.style.display='none',2000);}
-    // Refresh maintenance cache + re-render
-    const{data}=await db.from('fleet_maintenance').select('*').order('service_date',{ascending:false});
-    allFleetMaintenanceCache=data||[];
-    renderFleetCostTracker(vehicleId);
-  }catch(e){alert('Error saving cost: '+e.message);}
+    // Look up employee by driver_id
+    const{data,error}=await db.from('employee_profiles')
+      .select('employee_name,employee_email,county,driver_id')
+      .eq('driver_id',code)
+      .single();
+
+    if(error||!data){
+      if(errEl){errEl.textContent='Driver ID not found. Please check your code or use name & email below.';errEl.style.display='block';}
+      return;
+    }
+
+    // Verify last name matches
+    const profileLastName=(data.employee_name||'').split(' ').pop().toLowerCase();
+    if(profileLastName!==lastName){
+      if(errEl){errEl.textContent='Last name does not match. Please try again.';errEl.style.display='block';}
+      return;
+    }
+
+    // Success — sign them in
+    startPortal({name:data.employee_name,email:data.employee_email,county:data.county});
+
+  }catch(e){
+    if(errEl){errEl.textContent='Something went wrong. Please use name & email below.';errEl.style.display='block';}
+  }
 }
 </script>
 <!-- MODALS -->
@@ -11507,6 +11385,7 @@ async function saveVehicleCost(vehicleId){
         </select>
       </div>
       <div class="form-field"><label>Position</label><input type="text" id="cpm-position" placeholder="e.g. Driver, Volunteer Driver"></div>
+      <div class="form-field"><label>🔢 Driver ID (Parascope Code)</label><input type="text" id="cpm-driver-id" placeholder="e.g. 1234" maxlength="4" inputmode="numeric" style="letter-spacing:4px;font-weight:700;"></div>
     </div>
     <div class="form-row">
       <div class="form-field"><label>Hire Date</label><input type="date" id="cpm-hire-date"></div>
