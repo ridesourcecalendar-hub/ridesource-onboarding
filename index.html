@@ -10013,7 +10013,7 @@ async function loadStaffAccounts(){
         <td><strong>${s.name}</strong></td>
         <td style="color:#888;">${s.title||'—'}</td>
         <td style="color:#888;font-size:12px;">${s.email||'—'}</td>
-        <td><span class="badge badge-${s.role==='admin'?'approved':s.role==='owner'?'approved':s.role==='hr'?'warning':'pending'}" style="font-size:10px;">${s.role.toUpperCase()}</span></td>
+        <td><span class="badge badge-${(s.role||'')==='admin'?'approved':(s.role||'')==='owner'?'approved':(s.role||'')==='hr'?'warning':'pending'}" style="font-size:10px;">${(s.role||'staff').toUpperCase()}</span></td>
         <td>
           <button data-id="${s.id}" data-name="${s.name}" data-title="${s.title||''}" data-email="${s.email||''}" data-role="${s.role}" onclick="openEditStaffModal(this.dataset.id,this.dataset.name,this.dataset.title,this.dataset.email,this.dataset.role)" style="font-size:11px;padding:4px 8px;border-radius:4px;border:1px solid var(--navy);background:#fff;cursor:pointer;color:var(--navy);margin-right:4px;">✏️ Edit</button>
           <button data-sid="${s.id}" data-sname="${s.name}" onclick="resetStaffPassword(this.dataset.sid,this.dataset.sname)" style="font-size:11px;padding:4px 8px;border-radius:4px;border:1px solid #ddd;background:#fff;cursor:pointer;color:#555;margin-right:4px;">🔑 Reset PW</button>
@@ -10021,7 +10021,7 @@ async function loadStaffAccounts(){
         </td>
       </tr>`).join('')+
     '</tbody></table></div>';
-  }catch(e){el.innerHTML='<p style="color:#888;font-size:13px;">Unable to load staff accounts.</p>';}
+  }catch(e){console.error('loadStaffAccounts error:',e);el.innerHTML='<p style="color:var(--red);font-size:13px;">Error: '+e.message+'</p>';}
 }
 
 async function addStaffAccount(){
