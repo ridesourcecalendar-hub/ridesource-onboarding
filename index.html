@@ -11178,10 +11178,14 @@ async function saveStaffEdit(){
   msgEl.style.display='none';errEl.style.display='none';
   if(!name||!role){errEl.textContent='Name and role are required.';errEl.style.display='inline';return;}
   try{
-    await db.from('admin_staff').update({name,title,email,role,updated_at:new Date().toISOString()}).eq('id',id);
+    const{error}=await db.from('admin_staff').update({name,title,email,role}).eq('id',id);
+    if(error)throw error;
     msgEl.style.display='inline';
-    setTimeout(()=>{msgEl.style.display='none';closeModal('edit-staff-modal');},1500);
-    loadStaffAccounts();
+    setTimeout(()=>{
+      msgEl.style.display='none';
+      closeModal('edit-staff-modal');
+      loadStaffAccounts(); // refresh AFTER modal closes so change is visible
+    },1500);
   }catch(e){errEl.textContent='Error: '+e.message;errEl.style.display='inline';}
 }
 
