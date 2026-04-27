@@ -4154,7 +4154,7 @@ async function loadDirectMessageEmployees(){
     return `<div onclick="openDirectThread('${e.employee_email}','${e.employee_name}')" style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);background:${currentDirectMsgEmployee===e.employee_email?'#f0f4fb':'#fafafa'};" id="direct-emp-${e.employee_email.replace('@','_').replace('.','_')}">
       <div style="width:32px;height:32px;border-radius:50%;background:${color};color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">${initials}</div>
       <div style="flex:1;min-width:0;">
-        <div style="font-size:13px;font-weight:700;color:var(--navy);">${e.employee_name.split(' ')[0]}</div>
+        <div style="font-size:13px;font-weight:700;color:var(--navy);">${e.employee_name}</div>
         <div style="font-size:11px;color:#aaa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">No messages yet</div>
       </div>
       ${unread>0?`<span style="background:var(--red);color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;">${unread}</span>`:''}
@@ -6917,7 +6917,7 @@ function renderWeekSchedule(requests){
       return`<td style="vertical-align:top;padding:8px 6px;min-height:60px;background:${isToday?'#f0f4fb':'transparent'};border-radius:6px;">
         ${dayReqs.length===0?'<span style="font-size:11px;color:#ddd;">—</span>':dayReqs.map(r=>`
           <div style="background:${typeColor[r.request_type]||'#6366f1'};color:#fff;border-radius:6px;padding:4px 8px;font-size:11px;font-weight:700;margin-bottom:4px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;" title="${r.employee_name} — ${r.request_type}">
-            ${r.employee_name.split(' ')[0]}
+            ${r.employee_name.split(' ')[0]+' '+(r.employee_name.split(' ')[1]?r.employee_name.split(' ')[1][0]+'.':'')}
           </div>`).join('')}
       </td>`;
     }).join('')+
@@ -8232,7 +8232,7 @@ async function renderCalendar(){
           if(t==='Mid-Day Appointment')return'appt';
           return'off';
         }
-        events[k].push({label:r.employee_name.split(' ')[0]+' ('+reqLabel(r.request_type)+')',color:COUNTY_COLORS[r.county]||'#555',id:r.id,type:'timeoff'});
+        events[k].push({label:(r.employee_name.split(' ')[0]+' '+(r.employee_name.split(' ')[1]?r.employee_name.split(' ')[1][0]+'.':'')).trim()+' ('+reqLabel(r.request_type)+')',color:COUNTY_COLORS[r.county]||'#555',id:r.id,type:'timeoff'});
       }
     }
   });
@@ -8240,7 +8240,7 @@ async function renderCalendar(){
     const d=new Date(c.callout_date+'T00:00:00');
     if(d.getMonth()===calMonth&&d.getFullYear()===calYear){
       const k=d.getDate();if(!events[k])events[k]=[];
-      events[k].push({label:c.employee_name.split(' ')[0]+' (CO)',color:'#27AE60',id:c.id,type:'callout'});
+      events[k].push({label:(c.employee_name.split(' ')[0]+' '+(c.employee_name.split(' ')[1]?c.employee_name.split(' ')[1][0]+'.':'')).trim()+' (CO)',color:'#27AE60',id:c.id,type:'callout'});
     }
   });
   const firstDay=new Date(calYear,calMonth,1).getDay();
