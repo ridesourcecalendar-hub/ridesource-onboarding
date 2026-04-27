@@ -8232,7 +8232,8 @@ async function renderCalendar(){
           if(t==='Mid-Day Appointment')return'appt';
           return'off';
         }
-        events[k].push({label:(r.employee_name.split(' ')[0]+' '+(r.employee_name.split(' ')[1]?r.employee_name.split(' ')[1][0]+'.':'')).trim()+' ('+reqLabel(r.request_type)+')',color:COUNTY_COLORS[r.county]||'#555',id:r.id,type:'timeoff'});
+        const empCounty=r.county||(allProfilesCache.find(p=>p.employee_name===r.employee_name)||{}).county||'';
+        events[k].push({label:(r.employee_name.split(' ')[0]+' '+(r.employee_name.split(' ')[1]?r.employee_name.split(' ')[1][0]+'.':'')).trim()+' ('+reqLabel(r.request_type)+')',color:COUNTY_COLORS[empCounty]||'#607D8B',id:r.id,type:'timeoff'});
       }
     }
   });
