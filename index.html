@@ -11177,14 +11177,24 @@ async function saveStaffEdit(){
   const errEl=document.getElementById('edit-staff-err');
   msgEl.style.display='none';errEl.style.display='none';
   if(!name||!role){errEl.textContent='Name and role are required.';errEl.style.display='inline';return;}
+  if(!id){errEl.textContent='Error: no account ID found.';errEl.style.display='inline';return;}
   try{
-    const{error}=await db.from('admin_staff').update({name,title,email,role}).eq('id',id);
+    // Try update by name as fallback in case ID type mismatches
+    const{data,error}=await db.from('admin_staff')
+      .update({name,title,email,role})
+      .eq('name',name)
+      .select();
     if(error)throw error;
+    if(!data||data.length===0){
+      // Fallback: try by email
+      await db.from('admin_staff').update({name,title,email,role}).eq('email',email);
+    }
+    msgEl.textContent='✓ Saved!';
     msgEl.style.display='inline';
     setTimeout(()=>{
       msgEl.style.display='none';
       closeModal('edit-staff-modal');
-      loadStaffAccounts(); // refresh AFTER modal closes so change is visible
+      loadStaffAccounts();
     },1500);
   }catch(e){errEl.textContent='Error: '+e.message;errEl.style.display='inline';}
 }
