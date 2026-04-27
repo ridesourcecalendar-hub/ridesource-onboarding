@@ -3229,7 +3229,7 @@ function showAdmin(id){
   document.querySelectorAll('.admin-section').forEach(el=>el.style.display='none');
   document.querySelectorAll('#screen-admin .nav-item').forEach(el=>el.classList.remove('active'));
   document.getElementById('section-adm-'+id).style.display='block';
-  document.getElementById('nav-adm-'+id).classList.add('active');
+  document.getElementById('nav-adm-'+id)?.classList.add('active');
   if(id==='employee-folders'){
     // Always return to list view, never re-open a detail view
     document.getElementById('emp-folder-detail-view').style.display='none';
@@ -6403,8 +6403,8 @@ async function loadProfilePolicies(email,name){
   if(!email){el.innerHTML='<p style="color:#888;font-size:13px;padding:20px 0;">No email on file — cannot look up policy signatures.</p>';return;}
   try{
     const {data}=await db.from('policy_signatures').select('*').eq('employee_email',email).order('signed_at',{ascending:true});
-    const handbookData=await db.from('handbook_signatures').select('*').eq('employee_email',email).limit(1);
-    const hbSig=handbookData?.data?.[0];
+    let hbSig=null;
+    try{const handbookData=await db.from('handbook_signatures').select('*').eq('employee_email',email).limit(1);hbSig=handbookData?.data?.[0];}catch(e){}
     const signedIds=new Set((data||[]).map(r=>r.policy_id));
     const signedCount=Math.min(signedIds.size,POLICIES.length);
     const total=POLICIES.length;
