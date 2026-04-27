@@ -1181,6 +1181,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
       <div style="padding:0 8px;">
         <div class="sidebar-label">Overview</div>
         <div class="nav-item active" onclick="showAdmin('dashboard')" id="nav-adm-dashboard"><span class="nav-icon">📊</span>Dashboard</div>
+        <div class="nav-item" onclick="showAdmin('analytics')" id="nav-adm-analytics"><span class="nav-icon">📈</span>Analytics</div>
 
         <div class="sidebar-label">👥 People</div>
         <div class="nav-item" data-sec="employee-folders" onclick="showAdmin(this.dataset.sec)" id="nav-adm-employee-folders"><span class="nav-icon">🗂️</span>Employee Profiles</div>
@@ -2786,6 +2787,51 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
         </div>
       </div>
 
+
+      <!-- ANALYTICS SECTION -->
+      <div id="section-adm-analytics" class="admin-section">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+          <div>
+            <div style="font-size:22px;font-weight:800;color:var(--navy);">📈 Analytics</div>
+            <p style="color:#888;font-size:13px;margin-top:2px;">Trends and patterns across your team, fleet, and operations.</p>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <select id="analytics-range" onchange="loadAnalytics()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:#fff;">
+              <option value="30">Last 30 days</option>
+              <option value="60">Last 60 days</option>
+              <option value="90" selected>Last 90 days</option>
+              <option value="180">Last 6 months</option>
+              <option value="365">Last 12 months</option>
+            </select>
+            <button onclick="loadAnalytics()" style="background:var(--navy);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;">🔄 Refresh</button>
+          </div>
+        </div>
+
+        <!-- Section 1: Workforce -->
+        <div class="card" style="margin-bottom:16px;padding:20px;">
+          <div style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:16px;">👥 Workforce Overview</div>
+          <div id="analytics-workforce"><p style="color:#888;font-size:13px;">Loading...</p></div>
+        </div>
+
+        <!-- Section 2: Fleet Health -->
+        <div class="card" style="margin-bottom:16px;padding:20px;">
+          <div style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:16px;">🚐 Fleet Health</div>
+          <div id="analytics-fleet"><p style="color:#888;font-size:13px;">Loading...</p></div>
+        </div>
+
+        <!-- Section 3: Attendance -->
+        <div class="card" style="margin-bottom:16px;padding:20px;">
+          <div style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:16px;">📅 Attendance & Call-Outs</div>
+          <div id="analytics-attendance"><p style="color:#888;font-size:13px;">Loading...</p></div>
+        </div>
+
+        <!-- Section 4: Financial -->
+        <div class="card" style="margin-bottom:16px;padding:20px;">
+          <div style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:16px;">💰 Financial</div>
+          <div id="analytics-financial"><p style="color:#888;font-size:13px;">Loading...</p></div>
+        </div>
+      </div>
+
       <!-- CONFIG PANEL (Admin only) -->
       <div id="section-adm-config" class="admin-section">
         <div style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:2px;">⚙️ Portal Configuration</div>
@@ -3201,6 +3247,7 @@ function showAdmin(id){
   if(id==='incidents')loadIncidents();
   if(id==='memos'){loadMemos();loadEmployeeMessages();setMemoMainTab('compose');}
   if(id==='config'){setCfgTab('users');loadPortalSettings();}
+  if(id==='analytics'){loadAnalytics();}
   if(id==='recognition'){renderRecogCalendar();}
   if(id==='fleet'){loadFleetVehicles();loadFleetMaintenance();loadFleetTires();loadFleetChangeovers();}
   // Keep profile cache fresh when navigating to sections that use it for filtering
@@ -11093,6 +11140,296 @@ async function quickSignIn(){
   }catch(e){
     if(errEl){errEl.textContent='Something went wrong. Please use name & email below.';errEl.style.display='block';}
   }
+}
+
+// ═══════════════════════════════════════════════
+// ANALYTICS DASHBOARD
+// ═══════════════════════════════════════════════
+
+function analyticsBar(value, max, color, label, sublabel){
+  const pct=max>0?Math.min(100,Math.round((value/max)*100)):0;
+  return `<div style="margin-bottom:10px;">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px;">
+      <span style="font-size:13px;font-weight:600;color:var(--navy);">${label}</span>
+      <span style="font-size:12px;color:#888;">${sublabel}</span>
+    </div>
+    <div style="height:10px;background:#f0f0f0;border-radius:10px;overflow:hidden;">
+      <div style="height:100%;width:${pct}%;background:${color};border-radius:10px;transition:width .5s;"></div>
+    </div>
+  </div>`;
+}
+
+function analyticsMiniBar(label, value, max, color){
+  const pct=max>0?Math.min(100,Math.round((value/max)*100)):0;
+  return `<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid #f5f5f5;">
+    <div style="width:120px;font-size:12px;color:#555;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${label}</div>
+    <div style="flex:1;height:8px;background:#f0f0f0;border-radius:6px;overflow:hidden;">
+      <div style="height:100%;width:${pct}%;background:${color};border-radius:6px;"></div>
+    </div>
+    <div style="width:30px;font-size:12px;font-weight:700;color:var(--navy);text-align:right;">${value}</div>
+  </div>`;
+}
+
+function analyticsStat(label, value, sub, color){
+  return `<div style="background:#f7f9fc;border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center;">
+    <div style="font-size:24px;font-weight:900;color:${color||'var(--navy)'};">${value}</div>
+    <div style="font-size:12px;font-weight:700;color:var(--navy);margin-top:2px;">${label}</div>
+    ${sub?`<div style="font-size:11px;color:#888;margin-top:2px;">${sub}</div>`:''}
+  </div>`;
+}
+
+async function loadAnalytics(){
+  const days=parseInt(document.getElementById('analytics-range')?.value||'90');
+  const since=new Date(Date.now()-days*24*60*60*1000).toISOString().split('T')[0];
+
+  renderAnalyticsWorkforce();
+  renderAnalyticsFleet();
+  renderAnalyticsAttendance(since, days);
+  renderAnalyticsFinancial(since);
+}
+
+// ── WORKFORCE ──
+function renderAnalyticsWorkforce(){
+  const el=document.getElementById('analytics-workforce');if(!el)return;
+  const profiles=allProfilesCache||[];
+  const active=profiles.filter(p=>p.employment_status==='Active'||!p.employment_status);
+  const separated=profiles.filter(p=>p.employment_status==='Separated');
+  const seasonal=profiles.filter(p=>p.employment_status==='Seasonal');
+  const total=profiles.length;
+
+  // Employment type breakdown
+  const byType={};
+  active.forEach(p=>{
+    const t=p.employment_type||p.position?.includes('FT')?'Full Time':p.position?.includes('PT')?'Part Time':'Other';
+    const key=p.position?.includes('FT')?'Full Time':p.position?.includes('PT')?'Part Time':p.position?.includes('Volunteer')?'Volunteer':'Other';
+    byType[key]=(byType[key]||0)+1;
+  });
+
+  // By county
+  const byCounty={};
+  active.forEach(p=>{if(p.county)byCounty[p.county]=(byCounty[p.county]||0)+1;});
+  const maxCounty=Math.max(...Object.values(byCounty),1);
+  const sortedCounties=Object.entries(byCounty).sort((a,b)=>b[1]-a[1]);
+
+  // New hires this month vs last
+  const now=new Date();
+  const thisMonthStart=new Date(now.getFullYear(),now.getMonth(),1).toISOString().split('T')[0];
+  const lastMonthStart=new Date(now.getFullYear(),now.getMonth()-1,1).toISOString().split('T')[0];
+  const thisMonthHires=profiles.filter(p=>p.hire_date>=thisMonthStart).length;
+  const lastMonthHires=profiles.filter(p=>p.hire_date>=lastMonthStart&&p.hire_date<thisMonthStart).length;
+  const hireTrend=thisMonthHires>lastMonthHires?'↑':'↓';
+  const hireTrendColor=thisMonthHires>=lastMonthHires?'var(--success)':'var(--warn)';
+
+  el.innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:20px;">
+      ${analyticsStat('Active Employees',active.length,'currently employed','var(--navy)')}
+      ${analyticsStat('Seasonal',seasonal.length,'current season','#f59e0b')}
+      ${analyticsStat('Separated',separated.length,'total on record','#888')}
+      ${analyticsStat('New This Month',thisMonthHires,`<span style="color:${hireTrendColor}">${hireTrend} ${lastMonthHires} last month</span>`,hireTrendColor)}
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">Headcount by County</div>
+        ${sortedCounties.map(([c,n])=>analyticsMiniBar(c,n,maxCounty,COUNTY_COLORS[c]||'var(--navy)')).join('')}
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">Employment Type</div>
+        ${Object.entries(byType).sort((a,b)=>b[1]-a[1]).map(([t,n])=>analyticsBar(n,active.length,
+          t==='Full Time'?'#0077B6':t==='Part Time'?'#00897B':t==='Volunteer'?'#8E44AD':'#888',
+          t, n+' ('+Math.round(n/active.length*100)+'%)'
+        )).join('')}
+      </div>
+    </div>`;
+}
+
+// ── FLEET HEALTH ──
+function renderAnalyticsFleet(){
+  const el=document.getElementById('analytics-fleet');if(!el)return;
+  const vehicles=allFleetVehiclesCache||[];
+  const maint=allFleetMaintenanceCache||[];
+  const reports=allVehicleRecordsCache||[];
+
+  const active=vehicles.filter(v=>v.status!=='Retired'&&v.status!=='Archived');
+  const openReports=reports.filter(r=>r.status==='NEW'||r.status==='OPEN'||!r.status);
+
+  // Cost per vehicle
+  const costByVehicle={};
+  maint.forEach(m=>{if(m.cost&&parseFloat(m.cost)>0){costByVehicle[m.vehicle_id]=(costByVehicle[m.vehicle_id]||0)+parseFloat(m.cost);}});
+  const topCostVehicles=Object.entries(costByVehicle).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const maxCost=topCostVehicles[0]?.[1]||1;
+
+  // Oil change status
+  const oilOverdue=active.filter(v=>{
+    const lastOil=maint.filter(m=>m.vehicle_id===v.vehicle_id&&m.maintenance_type==='Oil Change').sort((a,b)=>new Date(b.service_date)-new Date(a.service_date))[0];
+    if(!lastOil?.next_due_date)return false;
+    return new Date(lastOil.next_due_date)<new Date();
+  }).length;
+  const oilDueSoon=active.filter(v=>{
+    const lastOil=maint.filter(m=>m.vehicle_id===v.vehicle_id&&m.maintenance_type==='Oil Change').sort((a,b)=>new Date(b.service_date)-new Date(a.service_date))[0];
+    if(!lastOil?.next_due_date)return false;
+    const diff=(new Date(lastOil.next_due_date)-new Date())/(1000*60*60*24);
+    return diff>=0&&diff<=14;
+  }).length;
+
+  // Most common repair types
+  const repairTypes={};
+  maint.filter(m=>m.maintenance_type).forEach(m=>{repairTypes[m.maintenance_type]=(repairTypes[m.maintenance_type]||0)+1;});
+  const topRepairs=Object.entries(repairTypes).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const maxRepair=topRepairs[0]?.[1]||1;
+
+  el.innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:20px;">
+      ${analyticsStat('Active Vehicles',active.length,'in fleet','var(--navy)')}
+      ${analyticsStat('Open Reports',openReports.length,'need attention',openReports.length>0?'var(--red)':'var(--success)')}
+      ${analyticsStat('Oil Overdue',oilOverdue,'past due date',oilOverdue>0?'var(--red)':'var(--success)')}
+      ${analyticsStat('Due Soon',oilDueSoon,'within 14 days',oilDueSoon>0?'var(--warn)':'var(--success)')}
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">Top Maintenance Costs by Vehicle</div>
+        ${topCostVehicles.length?topCostVehicles.map(([vid,cost])=>analyticsMiniBar(vid,'$'+cost.toFixed(0),maxCost,'#E67E22')).join(''):'<p style="color:#888;font-size:13px;">No cost data yet. Add costs in vehicle Cost Tracker tabs.</p>'}
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">Most Common Service Types</div>
+        ${topRepairs.map(([t,n])=>analyticsBar(n,maxRepair,'#00897B',t,n+' records')).join('')}
+      </div>
+    </div>`;
+}
+
+// ── ATTENDANCE ──
+function renderAnalyticsAttendance(since, days){
+  const el=document.getElementById('analytics-attendance');if(!el)return;
+  const allCallouts=allCallOutsCache||[];
+  const recent=allCallouts.filter(c=>c.callout_date>=since);
+
+  // Top call-out employees
+  const byEmployee={};
+  recent.forEach(c=>{byEmployee[c.employee_name]=(byEmployee[c.employee_name]||0)+1;});
+  const topEmployees=Object.entries(byEmployee).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const maxEmp=topEmployees[0]?.[1]||1;
+
+  // By day of week
+  const byDay={0:0,1:0,2:0,3:0,4:0,5:0,6:0};
+  const dayNames=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  recent.forEach(c=>{if(c.callout_date){const d=new Date(c.callout_date+'T12:00:00').getDay();byDay[d]++;}});
+  const maxDay=Math.max(...Object.values(byDay),1);
+
+  // By county
+  const byCounty={};
+  recent.forEach(c=>{if(c.county)byCounty[c.county]=(byCounty[c.county]||0)+1;});
+  const maxCounty=Math.max(...Object.values(byCounty),1);
+
+  // Monthly trend (last 6 months)
+  const monthlyTotals={};
+  allCallouts.forEach(c=>{
+    if(!c.callout_date)return;
+    const m=c.callout_date.substring(0,7);
+    monthlyTotals[m]=(monthlyTotals[m]||0)+1;
+  });
+  const last6=Object.entries(monthlyTotals).sort((a,b)=>a[0]>b[0]?1:-1).slice(-6);
+  const maxMonth=Math.max(...last6.map(x=>x[1]),1);
+
+  el.innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:20px;">
+      ${analyticsStat('Total Call-Outs',recent.length,'in selected period','var(--navy)')}
+      ${analyticsStat('Avg per Month',days>0?Math.round(recent.length/(days/30)*10)/10:'—','based on period','#888')}
+      ${analyticsStat('Employees Affected',[...new Set(recent.map(c=>c.employee_name))].length,'unique employees','var(--warn)')}
+      ${analyticsStat('Most Active Day',dayNames[parseInt(Object.entries(byDay).sort((a,b)=>b[1]-a[1])[0][0])],'highest call-outs','var(--red)')}
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">Top Call-Out Employees (${days} days)</div>
+        ${topEmployees.length?topEmployees.map(([name,n])=>analyticsMiniBar(name,n,maxEmp,n>=5?'var(--red)':n>=3?'var(--warn)':'#00897B')).join(''):'<p style="color:var(--success);font-size:13px;">✓ No call-outs in this period!</p>'}
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">Call-Outs by Day of Week</div>
+        ${dayNames.map((d,i)=>analyticsBar(byDay[i],maxDay,i===0||i===6?'#888':'#3c78d8',d,byDay[i]+' call-outs')).join('')}
+      </div>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">Monthly Trend (Last 6 Months)</div>
+      <div style="display:flex;gap:8px;align-items:flex-end;height:80px;">
+        ${last6.map(([month,count])=>{
+          const pct=Math.round((count/maxMonth)*100);
+          const label=month.substring(5)+'/'+month.substring(2,4);
+          return`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;">
+            <div style="font-size:10px;font-weight:700;color:var(--navy);">${count}</div>
+            <div style="width:100%;background:#3c78d8;border-radius:4px 4px 0 0;height:${pct}%;min-height:4px;"></div>
+            <div style="font-size:9px;color:#888;">${label}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+}
+
+// ── FINANCIAL ──
+function renderAnalyticsFinancial(since){
+  const el=document.getElementById('analytics-financial');if(!el)return;
+  const expenses=allExpensesCache||[];
+  const recent=expenses.filter(e=>e.status==='APPROVED'&&e.expense_date>=since);
+
+  const total=recent.reduce((s,e)=>s+parseFloat(e.amount||0),0);
+  const unpaid=expenses.filter(e=>e.status==='APPROVED'&&!e.paid_to_finance&&!e.sent_to_finance);
+  const unpaidAmt=unpaid.reduce((s,e)=>s+parseFloat(e.amount||0),0);
+  const pending=expenses.filter(e=>e.status==='PENDING');
+  const pendingAmt=pending.reduce((s,e)=>s+parseFloat(e.amount||0),0);
+
+  // By type
+  const byType={};
+  recent.forEach(e=>{byType[e.expense_type]=(byType[e.expense_type]||0)+parseFloat(e.amount||0);});
+  const topTypes=Object.entries(byType).sort((a,b)=>b[1]-a[1]);
+  const maxType=topTypes[0]?.[1]||1;
+
+  // By county
+  const byCounty={};
+  recent.forEach(e=>{if(e.county)byCounty[e.county]=(byCounty[e.county]||0)+parseFloat(e.amount||0);});
+  const topCounties=Object.entries(byCounty).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const maxCounty=topCounties[0]?.[1]||1;
+
+  // Aging: how long have unpaid expenses been sitting?
+  const now=new Date();
+  const aging={under7:0,under30:0,over30:0};
+  unpaid.forEach(e=>{
+    const days=Math.floor((now-new Date(e.submitted_at||e.expense_date))/(1000*60*60*24));
+    if(days<7)aging.under7++;
+    else if(days<30)aging.under30++;
+    else aging.over30++;
+  });
+
+  el.innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:20px;">
+      ${analyticsStat('Total Approved','$'+total.toFixed(2),'in selected period','var(--navy)')}
+      ${analyticsStat('Pending Review','$'+pendingAmt.toFixed(2),pending.length+' submissions','var(--warn)')}
+      ${analyticsStat('Unpaid to Finance','$'+unpaidAmt.toFixed(2),unpaid.length+' expenses',unpaidAmt>0?'var(--red)':'var(--success)')}
+      ${analyticsStat('Avg per Expense',recent.length?'$'+(total/recent.length).toFixed(2):'—',recent.length+' expenses','#888')}
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">Spend by Category</div>
+        ${topTypes.length?topTypes.map(([t,amt])=>analyticsBar(amt,maxType,'#E67E22',t,'$'+amt.toFixed(2))).join(''):'<p style="color:#888;font-size:13px;">No approved expenses yet.</p>'}
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">Spend by County</div>
+        ${topCounties.length?topCounties.map(([c,amt])=>analyticsMiniBar(c,'$'+amt.toFixed(0),maxCounty,COUNTY_COLORS[c]||'var(--navy)')).join(''):'<p style="color:#888;font-size:13px;">No data yet.</p>'}
+      </div>
+    </div>
+    ${unpaid.length?`<div>
+      <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Unpaid Expense Aging</div>
+      <div style="display:flex;gap:10px;">
+        <div style="flex:1;background:#d4edda;border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-size:18px;font-weight:800;color:#155724;">${aging.under7}</div>
+          <div style="font-size:11px;color:#155724;">Under 7 days</div>
+        </div>
+        <div style="flex:1;background:#fff3cd;border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-size:18px;font-weight:800;color:#856404;">${aging.under30}</div>
+          <div style="font-size:11px;color:#856404;">7–30 days</div>
+        </div>
+        <div style="flex:1;background:#fdecea;border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-size:18px;font-weight:800;color:var(--red);">${aging.over30}</div>
+          <div style="font-size:11px;color:var(--red);">Over 30 days</div>
+        </div>
+      </div>
+    </div>`:''}`;
 }
 </script>
 <!-- MODALS -->
