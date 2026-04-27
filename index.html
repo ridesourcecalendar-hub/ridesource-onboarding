@@ -875,33 +875,90 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
       <!-- EXPENSES SECTION -->
       <div id="section-expenses" class="portal-section">
         <div class="card-title" style="font-size:22px;color:var(--navy);margin-bottom:4px;">💰 Expenses & Reimbursements</div>
-        <p style="color:#888;font-size:14px;margin-bottom:24px;">Submit tolls, parking fees, or work-related expenses for reimbursement. Your supervisor will review and approve.</p>
+        <p style="color:#888;font-size:14px;margin-bottom:24px;">Submit work-related expenses for reimbursement. Your supervisor will review and approve.</p>
 
         <!-- SUBMIT CARD -->
         <div class="card" style="margin-bottom:20px;">
           <div style="font-size:16px;font-weight:800;color:var(--navy);margin-bottom:4px;">📤 Submit an Expense</div>
-          <div class="card-sub" style="margin-bottom:16px;">Fill in the details below. Attach a receipt photo if you have one.</div>
+          <div class="card-sub" style="margin-bottom:16px;">Fill in the details below. Attach your receipt.</div>
           <div id="exp-submit-form">
+            <!-- Row 1: Expense Type + Service -->
             <div class="form-row">
               <div class="form-field"><label>Expense Type *</label>
                 <select id="exp-type" style="width:100%;padding:11px 14px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
                   <option value="">Select type...</option>
-                  <option>Toll</option>
-                  <option>Parking</option>
-                  <option>Reimbursement</option>
+                  <option>Preventative Maintenance</option>
+                  <option>Repair</option>
+                  <option>Vehicle Supplies</option>
+                  <option>Office Supplies</option>
+                  <option>Stock</option>
+                  <option>Tow Charge</option>
+                  <option>Fuel</option>
+                  <option>Other</option>
                 </select>
               </div>
-              <div class="form-field"><label>Date *</label><input type="date" id="exp-date" style="width:100%;padding:11px 14px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+              <div class="form-field"><label>Service / Item *</label>
+                <select id="exp-service" style="width:100%;padding:11px 14px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                  <option value="">Select service...</option>
+                  <option>Oil Change</option>
+                  <option>Wipers</option>
+                  <option>Windshield</option>
+                  <option>Tires</option>
+                  <option>Fluids</option>
+                  <option>Repair</option>
+                  <option>Inspection</option>
+                  <option>Supplies</option>
+                  <option>Tow Charge</option>
+                  <option>Fuel</option>
+                  <option>Parking Charge</option>
+                  <option>Other</option>
+                </select>
+              </div>
             </div>
+            <!-- Row 2: Date + Facility/Shop -->
             <div class="form-row">
-              <div class="form-field"><label>Amount ($) *</label><input type="number" id="exp-amount" placeholder="0.00" step="0.01" min="0" style="width:100%;padding:11px 14px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
-              <div class="form-field"><label>Vehicle ID (if applicable)</label><input type="text" id="exp-vehicle" placeholder="e.g. RS-01" style="width:100%;padding:11px 14px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+              <div class="form-field"><label>Date *</label><input type="date" id="exp-date" style="width:100%;padding:11px 14px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+              <div class="form-field"><label>Facility / Shop</label><input type="text" id="exp-facility" placeholder="e.g. Prompto Ellsworth, Home Depot" style="width:100%;padding:11px 14px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
             </div>
-            <div class="form-field"><label>Description *</label>
-              <textarea id="exp-description" placeholder="Briefly describe the expense — e.g. Toll on I-95 northbound, Bangor to Ellsworth, passenger transport..." style="width:100%;min-height:70px;padding:11px 14px;border:2px solid var(--border);border-radius:8px;font-size:13px;font-family:Arial,sans-serif;outline:none;resize:vertical;margin-top:4px;"></textarea>
+            <!-- Row 3: Amount + Vehicle -->
+            <div class="form-row">
+              <div class="form-field"><label>Total Cost *</label><input type="number" id="exp-amount" placeholder="0.00" step="0.01" min="0" style="width:100%;padding:11px 14px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+              <div class="form-field"><label>Vehicle / Asset (optional)</label>
+                <select id="exp-vehicle" style="width:100%;padding:11px 14px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                  <option value="">— Not vehicle related —</option>
+                </select>
+              </div>
             </div>
-            <div class="form-field"><label>Receipt Photo (optional)</label>
+            <!-- Payment Type -->
+            <div class="form-row">
+              <div class="form-field"><label>Payment Method</label>
+                <select id="exp-payment-type" onchange="handlePaymentTypeChange()" style="width:100%;padding:11px 14px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                  <option value="">Select payment method...</option>
+                  <option>Charge Account</option>
+                  <option>Cash</option>
+                  <option>Credit Card</option>
+                  <option>Check</option>
+                  <option>Paid by Employee</option>
+                </select>
+              </div>
+              <div class="form-field" id="exp-payment-detail-wrap" style="display:none;">
+                <label id="exp-payment-detail-label">Card Last 4 Digits</label>
+                <input type="text" id="exp-payment-detail" placeholder="" maxlength="10" style="width:100%;padding:11px 14px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+              </div>
+            </div>
+            <!-- Reimbursement checkbox -->
+            <div style="background:#f0f8ff;border-radius:8px;padding:12px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;">
+              <input type="checkbox" id="exp-reimbursement" style="width:18px;height:18px;cursor:pointer;accent-color:var(--navy);">
+              <label for="exp-reimbursement" style="font-size:13px;font-weight:700;color:var(--navy);cursor:pointer;">☑️ This is a Reimbursement Request <span style="font-weight:400;color:#888;">(I paid out of pocket)</span></label>
+            </div>
+            <!-- Comments -->
+            <div class="form-field"><label>Comments</label>
+              <textarea id="exp-description" placeholder="Any additional details — e.g. Toll on I-95 northbound, Bangor to Ellsworth..." style="width:100%;min-height:60px;padding:11px 14px;border:2px solid var(--border);border-radius:8px;font-size:13px;font-family:Arial,sans-serif;outline:none;resize:vertical;margin-top:4px;"></textarea>
+            </div>
+            <!-- Receipt -->
+            <div class="form-field"><label>Receipt / Invoice *</label>
               <input type="file" id="exp-receipt" accept="image/*,.pdf" style="width:100%;padding:8px;border:2px solid var(--border);border-radius:8px;font-size:13px;">
+              <div style="font-size:11px;color:#888;margin-top:4px;">📎 Upload photo or PDF of receipt</div>
             </div>
             <button class="btn-primary" onclick="submitExpense()" style="margin-top:8px;">💰 Submit Expense</button>
           </div>
@@ -2700,36 +2757,93 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
         <div class="card" style="margin-bottom:16px;">
           <div class="card-title" style="font-size:14px;cursor:pointer;" onclick="toggleAdminExpenseForm()">➕ Submit Expense on Behalf of Employee <span id="admin-exp-toggle" style="font-size:12px;color:#888;">▼ expand</span></div>
           <div id="admin-exp-form" style="display:none;margin-top:16px;">
-            <div class="form-row">
-              <div class="form-field"><label>Employee Name *</label><input type="text" id="adm-exp-employee" placeholder="Full name..." style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
-              <div class="form-field"><label>Employee Email *</label><input type="text" id="adm-exp-email" placeholder="email@ridesourcemaine.com" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
-            </div>
+          <div id="admin-exp-form" style="display:none;margin-top:16px;">
+            <!-- Row 1: Expense Type + Service -->
             <div class="form-row">
               <div class="form-field"><label>Expense Type *</label>
                 <select id="adm-exp-type" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
                   <option value="">Select type...</option>
-                  <option>Toll</option><option>Parking</option><option>Reimbursement</option>
-                  <option>Vehicle Repair</option><option>Training</option><option>Certification</option><option>Fuel</option><option>Supplies</option><option>Other</option>
+                  <option>Preventative Maintenance</option><option>Repair</option>
+                  <option>Vehicle Supplies</option><option>Office Supplies</option>
+                  <option>Stock</option><option>Tow Charge</option><option>Fuel</option>
+                  <option>Training</option><option>Certification</option><option>Other</option>
                 </select>
               </div>
-              <div class="form-field"><label>Date *</label><input type="date" id="adm-exp-date" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+              <div class="form-field"><label>Service / Item</label>
+                <select id="adm-exp-service" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                  <option value="">Select service...</option>
+                  <option>Oil Change</option><option>Wipers</option><option>Windshield</option>
+                  <option>Tires</option><option>Fluids</option><option>Repair</option>
+                  <option>Inspection</option><option>Supplies</option><option>Tow Charge</option>
+                  <option>Fuel</option><option>Parking Charge</option><option>Other</option>
+                </select>
+              </div>
             </div>
+            <!-- Row 2: Date + Facility -->
             <div class="form-row">
-              <div class="form-field"><label>Amount ($) *</label><input type="number" id="adm-exp-amount" placeholder="0.00" step="0.01" min="0" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+              <div class="form-field"><label>Date *</label><input type="date" id="adm-exp-date" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+              <div class="form-field"><label>Facility / Shop</label><input type="text" id="adm-exp-facility" placeholder="e.g. Prompto Ellsworth, Home Depot" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+            </div>
+            <!-- Row 3: Amount + Invoice -->
+            <div class="form-row">
+              <div class="form-field"><label>Total Cost *</label><input type="number" id="adm-exp-amount" placeholder="0.00" step="0.01" min="0" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+              <div class="form-field"><label>Invoice Number</label><input type="text" id="adm-exp-invoice" placeholder="e.g. 2031602756925" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+            </div>
+            <!-- Row 4: Vehicle + Employee -->
+            <div class="form-row">
+              <div class="form-field"><label>Vehicle / Asset (optional)</label>
+                <select id="adm-exp-vehicle" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                  <option value="">— Not vehicle related —</option>
+                </select>
+              </div>
+              <div class="form-field"><label>Employee (optional)</label>
+                <input type="text" id="adm-exp-employee" placeholder="Leave blank if not driver-related" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+              </div>
+            </div>
+            <!-- Row 5: Email + County -->
+            <div class="form-row">
+              <div class="form-field"><label>Employee Email</label><input type="text" id="adm-exp-email" placeholder="email@ridesourcemaine.com" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
               <div class="form-field"><label>County</label>
                 <select id="adm-exp-county" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
                   <option value="">Select county...</option>
-                  <option>Hancock</option><option>Washington</option><option>Waldo</option><option>Knox</option><option>Oxford</option><option>Androscoggin</option><option>Cumberland</option><option>Franklin</option><option>Kennebec</option><option>Lincoln</option><option>Penobscot</option><option>Somerset</option>
+                  <option>Hancock</option><option>Washington</option><option>Waldo</option><option>Knox</option>
+                  <option>Oxford</option><option>Androscoggin</option><option>Cumberland</option><option>Franklin</option>
+                  <option>Kennebec</option><option>Lincoln</option><option>Penobscot</option><option>Somerset</option>
+                  <option>Aroostook</option><option>Piscataquis</option><option>Sagadahoc</option><option>York</option>
                 </select>
               </div>
             </div>
-            <div class="form-field"><label>Description *</label><textarea id="adm-exp-description" placeholder="Brief description of the expense..." style="width:100%;min-height:60px;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;font-family:Arial,sans-serif;outline:none;resize:vertical;"></textarea></div>
+            <!-- Payment Type -->
+            <div class="form-row">
+              <div class="form-field"><label>Payment Method</label>
+                <select id="adm-exp-payment-type" onchange="handleAdminPaymentTypeChange()" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                  <option value="">Select payment method...</option>
+                  <option>Charge Account</option><option>Cash</option>
+                  <option>Credit Card</option><option>Check</option><option>Paid by Employee</option>
+                </select>
+              </div>
+              <div class="form-field" id="adm-exp-payment-detail-wrap" style="display:none;">
+                <label id="adm-exp-payment-detail-label">Card Last 4 / Check #</label>
+                <input type="text" id="adm-exp-payment-detail" placeholder="" maxlength="10" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+              </div>
+            </div>
+            <!-- Reimbursement + Paid checkboxes -->
+            <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px;">
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:700;color:var(--navy);background:#f0f8ff;padding:10px 14px;border-radius:8px;">
+                <input type="checkbox" id="adm-exp-reimbursement" style="width:16px;height:16px;accent-color:var(--navy);"> Reimbursement Request
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:700;color:#27AE60;background:#f0faf4;padding:10px 14px;border-radius:8px;">
+                <input type="checkbox" id="adm-exp-paid" style="width:16px;height:16px;accent-color:#27AE60;"> Mark as Paid
+              </label>
+            </div>
+            <!-- Comments + Receipt -->
+            <div class="form-field"><label>Comments</label><textarea id="adm-exp-description" placeholder="Additional details..." style="width:100%;min-height:60px;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;font-family:Arial,sans-serif;outline:none;resize:vertical;"></textarea></div>
+            <div class="form-field"><label>Receipt / Invoice</label><input type="file" id="adm-exp-receipt" accept="image/*,.pdf" style="width:100%;padding:8px;border:2px solid var(--border);border-radius:8px;font-size:13px;"></div>
             <div style="display:flex;gap:10px;align-items:center;">
-              <button class="btn btn-primary" onclick="submitAdminExpense()">Submit Expense</button>
+              <button class="btn btn-primary" onclick="submitAdminExpense()">💾 Submit Expense</button>
               <span id="adm-exp-msg" style="font-size:13px;color:var(--success);display:none;">✓ Expense submitted!</span>
             </div>
           </div>
-        </div>
 
         <div style="display:grid;grid-template-columns:1fr 260px;gap:20px;align-items:start;">
           <!-- LEFT: Table -->
@@ -2738,9 +2852,10 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
               <input type="text" id="exp-search" placeholder="Search by employee name..." oninput="renderExpensesTable()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;flex:1;min-width:160px;">
               <select id="exp-type-filter" onchange="renderExpensesTable()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:#fff;">
                 <option value="">All Types</option>
-                <option>Toll</option><option>Parking</option><option>Reimbursement</option>
-                <option>Vehicle Repair</option><option>Training</option><option>Certification</option>
-                <option>Fuel</option><option>Supplies</option><option>Other</option>
+                <option>Preventative Maintenance</option><option>Repair</option>
+                <option>Vehicle Supplies</option><option>Office Supplies</option><option>Stock</option>
+                <option>Tow Charge</option><option>Fuel</option><option>Training</option>
+                <option>Certification</option><option>Other</option>
               </select>
               <select id="exp-paid-filter" onchange="renderExpensesTable()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:#fff;">
                 <option value="">All Payment Status</option>
@@ -3224,6 +3339,7 @@ function showSection(id){
   if(id==='timesheet'){tsCurrentId=null;buildTimesheetRows();}
   if(id==='vehicle')loadMyVehicleReports();
   if(id==='incident'){buildIncidentForm();loadMyIncidents();}
+  if(id==='expenses'){populateExpenseVehicleDropdowns();loadMyExpenseHistory();}
 }
 function showAdmin(id){
   document.querySelectorAll('.admin-section').forEach(el=>el.style.display='none');
@@ -3984,23 +4100,53 @@ async function submitAdminExpense(){
   const name=document.getElementById('adm-exp-employee').value.trim();
   const email=document.getElementById('adm-exp-email').value.trim();
   const type=document.getElementById('adm-exp-type').value;
+  const service=document.getElementById('adm-exp-service')?.value||'';
   const date=document.getElementById('adm-exp-date').value;
   const amount=document.getElementById('adm-exp-amount').value;
-  const description=document.getElementById('adm-exp-description').value.trim();
+  const facility=document.getElementById('adm-exp-facility')?.value.trim()||'';
+  const invoice=document.getElementById('adm-exp-invoice')?.value.trim()||'';
+  const vehicle=document.getElementById('adm-exp-vehicle')?.value||'';
   const county=document.getElementById('adm-exp-county').value;
-  if(!name||!email||!type||!date||!amount||!description){alert('Please fill in all required fields.');return;}
+  const paymentType=document.getElementById('adm-exp-payment-type')?.value||'';
+  const paymentDetail=document.getElementById('adm-exp-payment-detail')?.value.trim()||'';
+  const isReimbursement=document.getElementById('adm-exp-reimbursement')?.checked||false;
+  const isPaid=document.getElementById('adm-exp-paid')?.checked||false;
+  const description=document.getElementById('adm-exp-description').value.trim();
+  if(!type||!date||!amount){alert('Please fill in Expense Type, Date and Amount.');return;}
+  const paymentStr=paymentType+(paymentDetail?' - '+paymentDetail:'');
+  let receiptUrl=null;
+  const fileInput=document.getElementById('adm-exp-receipt');
+  if(fileInput?.files?.length){
+    try{
+      const file=fileInput.files[0];
+      const fileName='expenses/admin-'+Date.now()+'-'+file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+      const{data:up,error:ue}=await db.storage.from('ridesource-uploads').upload(fileName,file);
+      if(!ue&&up){const{data:u}=db.storage.from('ridesource-uploads').getPublicUrl(fileName);receiptUrl=u?.publicUrl||null;}
+    }catch(e){console.log('Receipt upload:',e);}
+  }
   try{
     await db.from('expense_submissions').insert([{
-      employee_name:name,employee_email:email,county,
-      expense_type:type,expense_date:date,
-      amount:parseFloat(amount),description,
+      employee_name:name||'—',employee_email:email||'admin@ridesource',county,
+      expense_type:type,service_type:service,expense_date:date,
+      amount:parseFloat(amount),facility,invoice_number:invoice,
+      vehicle_id:vehicle||null,payment_method:paymentStr,
+      is_reimbursement:isReimbursement,description,receipt_url:receiptUrl,
       status:'APPROVED',decided_by:adminName,
-      decided_at:new Date().toISOString(),
-      submitted_at:new Date().toISOString()
+      paid_to_finance:isPaid,paid_date:isPaid?new Date().toISOString():null,
+      paid_by:isPaid?adminName:null,
+      decided_at:new Date().toISOString(),submitted_at:new Date().toISOString()
     }]);
-    ['adm-exp-employee','adm-exp-email','adm-exp-date','adm-exp-amount','adm-exp-description'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-    document.getElementById('adm-exp-type').value='';
-    document.getElementById('adm-exp-county').value='';
+    // Clear form
+    ['adm-exp-employee','adm-exp-email','adm-exp-date','adm-exp-amount',
+     'adm-exp-description','adm-exp-facility','adm-exp-invoice','adm-exp-payment-detail'].forEach(id=>{
+      const el=document.getElementById(id);if(el)el.value='';
+    });
+    ['adm-exp-type','adm-exp-service','adm-exp-county','adm-exp-vehicle','adm-exp-payment-type'].forEach(id=>{
+      const el=document.getElementById(id);if(el)el.value='';
+    });
+    const cb1=document.getElementById('adm-exp-reimbursement');if(cb1)cb1.checked=false;
+    const cb2=document.getElementById('adm-exp-paid');if(cb2)cb2.checked=false;
+    const wrap=document.getElementById('adm-exp-payment-detail-wrap');if(wrap)wrap.style.display='none';
     const msg=document.getElementById('adm-exp-msg');msg.style.display='inline';setTimeout(()=>msg.style.display='none',3000);
     loadExpenses();
   }catch(e){alert('Error submitting expense: '+e.message);}
@@ -9080,42 +9226,58 @@ async function buildDocx(templateId){
 let allExpensesCache=[];
 let currentExpTab='PENDING';
 
+function handlePaymentTypeChange(){
+  const type=document.getElementById('exp-payment-type')?.value;
+  const wrap=document.getElementById('exp-payment-detail-wrap');
+  const label=document.getElementById('exp-payment-detail-label');
+  if(!wrap)return;
+  wrap.style.display=(type==='Credit Card'||type==='Check')?'block':'none';
+  if(label)label.textContent=type==='Credit Card'?'Last 4 Digits':'Check Number';
+}
+function handleAdminPaymentTypeChange(){
+  const type=document.getElementById('adm-exp-payment-type')?.value;
+  const wrap=document.getElementById('adm-exp-payment-detail-wrap');
+  const label=document.getElementById('adm-exp-payment-detail-label');
+  if(!wrap)return;
+  wrap.style.display=(type==='Credit Card'||type==='Check')?'block':'none';
+  if(label)label.textContent=type==='Credit Card'?'Last 4 Digits':'Check Number';
+}
 async function submitExpense(){
   const type=document.getElementById('exp-type').value;
+  const service=document.getElementById('exp-service')?.value||'';
   const date=document.getElementById('exp-date').value;
   const amount=document.getElementById('exp-amount').value;
+  const facility=document.getElementById('exp-facility')?.value.trim()||'';
+  const vehicle=document.getElementById('exp-vehicle')?.value||'';
+  const paymentType=document.getElementById('exp-payment-type')?.value||'';
+  const paymentDetail=document.getElementById('exp-payment-detail')?.value.trim()||'';
+  const isReimbursement=document.getElementById('exp-reimbursement')?.checked||false;
   const description=document.getElementById('exp-description').value.trim();
-  if(!type||!date||!amount||!description){alert('Please fill in all required fields.');return;}
+  if(!type||!date||!amount){alert('Please fill in Expense Type, Date and Amount.');return;}
   let receiptUrl=null;
   const fileInput=document.getElementById('exp-receipt');
   if(fileInput?.files?.length){
     try{
       const file=fileInput.files[0];
-      const fileName='expenses/'+user.email+'-'+Date.now()+'-'+file.name;
-      const {data:uploadData,error:uploadError}=await db.storage.from('ridesource-uploads').upload(fileName,file);
-      if(!uploadError&&uploadData){
-        const {data:urlData}=db.storage.from('ridesource-uploads').getPublicUrl(fileName);
-        receiptUrl=urlData?.publicUrl||null;
-      }
-    }catch(e){console.log('Receipt upload failed:',e);}
+      const fileName='expenses/'+user.email+'-'+Date.now()+'-'+file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+      const{data:up,error:ue}=await db.storage.from('ridesource-uploads').upload(fileName,file);
+      if(!ue&&up){const{data:u}=db.storage.from('ridesource-uploads').getPublicUrl(fileName);receiptUrl=u?.publicUrl||null;}
+    }catch(e){console.log('Receipt upload:',e);}
   }
+  // Build payment string
+  const paymentStr=paymentType+(paymentDetail?' - '+paymentDetail:'');
   try{
     await db.from('expense_submissions').insert([{
-      employee_name:user.name,
-      employee_email:user.email,
-      county:user.county,
-      expense_type:type,
-      expense_date:date,
-      amount:parseFloat(amount),
-      description,
-      receipt_url:receiptUrl,
-      status:'PENDING',
-      submitted_at:new Date().toISOString()
+      employee_name:user.name,employee_email:user.email,county:user.county,
+      expense_type:type,service_type:service,expense_date:date,
+      amount:parseFloat(amount),facility:facility,vehicle_id:vehicle||null,
+      payment_method:paymentStr,is_reimbursement:isReimbursement,
+      description,receipt_url:receiptUrl,
+      status:'PENDING',submitted_at:new Date().toISOString()
     }]);
     document.getElementById('exp-submit-form').style.display='none';
     document.getElementById('exp-success').style.display='block';
   }catch(e){alert('Unable to submit. Please try again. '+e.message);}
-
 }
 
 function resetExpenseForm(){
@@ -11426,6 +11588,52 @@ async function clearOldPendingTimesheets(){
     await loadTimesheets();
     showRealtimeToast('✅ Cleared '+old.length+' old pending timesheet(s)');
   }catch(e){alert('Error: '+e.message);}
+}
+
+// ═══════════════════════════════════════════════
+// EXPENSE HELPERS
+// ═══════════════════════════════════════════════
+function populateExpenseVehicleDropdowns(){
+  const vehicles=allFleetVehiclesCache.filter(v=>v.status!=='Archived'&&v.status!=='Retired');
+  ['exp-vehicle','adm-exp-vehicle'].forEach(selId=>{
+    const sel=document.getElementById(selId);
+    if(!sel)return;
+    if(sel.options.length>1)return; // already populated
+    vehicles.forEach(v=>{
+      const o=document.createElement('option');
+      o.value=v.vehicle_id;
+      o.textContent=v.vehicle_id+(v.make?' — '+v.make+(v.model?' '+v.model:'')+'('+v.county+')':'');
+      sel.appendChild(o);
+    });
+  });
+}
+
+async function loadMyExpenseHistory(){
+  const el=document.getElementById('exp-history-list');if(!el||!user)return;
+  try{
+    const{data}=await db.from('expense_submissions').select('*')
+      .eq('employee_email',user.email).order('submitted_at',{ascending:false}).limit(20);
+    if(!data||!data.length){el.innerHTML='<p style="color:#888;font-size:13px;">No expenses submitted yet.</p>';return;}
+    el.innerHTML=data.map(e=>{
+      const statusClass=e.status==='APPROVED'?'approved':e.status==='DENIED'?'denied':'pending';
+      const payInfo=e.payment_method?`<span style="font-size:11px;color:#888;"> · ${e.payment_method}</span>`:'';
+      const reimb=e.is_reimbursement?'<span style="background:#e8f4fd;color:#1565c0;font-size:10px;font-weight:700;padding:1px 6px;border-radius:6px;margin-left:4px;">Reimbursement</span>':'';
+      return`<div style="border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--navy);">${e.expense_type}${e.service_type?' — '+e.service_type:''}${reimb}</div>
+            <div style="font-size:12px;color:#888;margin-top:2px;">${e.expense_date}${e.facility?' · '+e.facility:''}${payInfo}</div>
+            ${e.description?`<div style="font-size:12px;color:#555;margin-top:4px;">${e.description}</div>`:''}
+            ${e.receipt_url?`<div style="margin-top:6px;"><a href="${e.receipt_url}" target="_blank" style="font-size:11px;color:#1565c0;">📎 View Receipt</a></div>`:''}
+          </div>
+          <div style="text-align:right;flex-shrink:0;">
+            <div style="font-size:15px;font-weight:800;color:var(--navy);">$${parseFloat(e.amount).toFixed(2)}</div>
+            <span class="badge badge-${statusClass}" style="font-size:10px;">${e.status}</span>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }catch(err){el.innerHTML='<p style="color:#888;font-size:13px;">Unable to load.</p>';}
 }
 </script>
 <!-- MODALS -->
