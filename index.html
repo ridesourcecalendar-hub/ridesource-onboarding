@@ -3249,6 +3249,8 @@ window.addEventListener('load',async function(){
         // Restore gear button visibility
         const gearBtn=document.getElementById('admin-config-btn');
         if(gearBtn)gearBtn.style.display=staff.role==='admin'?'block':'none';
+        // Give CSS time to settle before any section shows
+        await new Promise(r=>setTimeout(r,200));
         const analyticsNav=document.getElementById('nav-adm-analytics');
         if(analyticsNav)analyticsNav.style.display=['admin','owner','ops_manager'].includes(staff.role)?'flex':'none';
         document.getElementById('screen-landing').classList.remove('active');
@@ -3403,8 +3405,8 @@ function showAdmin(id){
   }
   if(id==='incidents')loadIncidents();
   if(id==='memos'){loadMemos();loadEmployeeMessages();setMemoMainTab('compose');}
-  if(id==='config'){try{setCfgTab('users');loadPortalSettings();}catch(e){console.error('Config panel error:',e);}}
-  if(id==='analytics'){loadAnalytics();}
+  if(id==='config'){setTimeout(()=>{try{setCfgTab('users');loadPortalSettings();}catch(e){console.error('Config error:',e);}},100);}
+  if(id==='analytics'){setTimeout(()=>loadAnalytics(),500);}
   if(id==='recognition'){renderRecogCalendar();}
   if(id==='fleet'){loadFleetVehicles();loadFleetMaintenance();loadFleetTires();loadFleetChangeovers();}
   // Keep profile cache fresh when navigating to sections that use it for filtering
