@@ -7806,17 +7806,19 @@ async function decideRequest(id,status){
         is_read:false,sent_at:new Date().toISOString()
       }]);
     }
-    if(req&&typeof emailjs!=='undefined'){
-      await emailjs.send(EMAILJS_SERVICE_ID,'timeoff_decision',{
-        employee_name:req.employee_name,
-        employee_email:req.employee_email,
-        request_type:req.request_type,
-        status:status==='APPROVED'?'Approved ✅':'Denied ✗',
-        start_date:req.start_date,
-        end_date:req.end_date||req.start_date,
-        decided_by:adminName,
-        to_email:req.employee_email
-      });
+    // Open mailto email to notify employee
+    if(req&&req.employee_email){
+      const isApproved=status==='APPROVED';
+      const subject=encodeURIComponent((isApproved?'✅ Time Off Approved':'❌ Time Off Request Update')+' — '+req.request_type);
+      const dateRange=req.start_date+(req.end_date&&req.end_date!==req.start_date?' to '+req.end_date:'');
+      const body=encodeURIComponent(
+        'Hi '+req.employee_name+',\n\n'+
+        (isApproved
+          ?'Your time off request has been APPROVED.\n\nDetails:\n- Type: '+req.request_type+'\n- Dates: '+dateRange+'\n- Approved by: '+adminName
+          :'Your time off request has been DENIED.\n\nDetails:\n- Type: '+req.request_type+'\n- Dates: '+dateRange+'\n- Reviewed by: '+adminName+'\n\nPlease contact your supervisor if you have questions.'
+        )+'\n\nThis notification was sent from the RideSource Staff Portal.\n\nThank you,\n'+adminName
+      );
+      window.open('mailto:'+req.employee_email+'?subject='+subject+'&body='+body);
     }
   }catch(e){console.log('Email notification error:',e);}
   loadRequests();loadDashboard();renderCalendar();
