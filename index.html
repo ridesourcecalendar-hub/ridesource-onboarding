@@ -3158,7 +3158,7 @@ function getSupervisorEmail(employeeEmail){
   }
   return SUPERVISOR_EMAIL; // fallback to Tiffany
 }
-const PORTAL_URL='https://ridesource-staff.vercel.app';
+const PORTAL_URL='https://ridesource.app';
 const PORTAL_STAFF=[]; // Staff loaded from Supabase — no credentials stored in code
 const ADMIN_PASSWORD=''; // Legacy — no longer used
 if(typeof supabase==='undefined'){console.error('Supabase failed to load');alert('Portal failed to load. Please refresh the page.');}
@@ -6738,7 +6738,7 @@ function generateOnboardingPacket(){
   const pkgStartDate=document.getElementById('pkg-start-date').value;
   const hireDate=pkgStartDate?new Date(pkgStartDate+'T00:00:00').toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}):(p.hire_date?new Date(p.hire_date+'T00:00:00').toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}):'[Start Date]');
   const position=p.position||'Driver';
-  const PORTAL_URL_LINK='https://ridesource-staff.vercel.app';
+  const PORTAL_URL_LINK='https://ridesource.app';
   const GITHUB_BASE='https://github.com/ridesourcecalendar-hub/ridesource-onboarding/raw/main/';
 
   const html=`<!DOCTYPE html>
@@ -11628,14 +11628,14 @@ async function saveVehicleCost(vehicleId){
 
 
 async function clearOldPendingTimesheets(){
-  const cutoff=new Date();cutoff.setDate(cutoff.getDate()-60); // older than 60 days
-  const old=allTimesheetsCache.filter(t=>(t.status==='PENDING'||!t.status)&&new Date(t.submitted_at||t.created_at)<cutoff);
-  if(!old.length){alert('No old pending timesheets found (older than 60 days).');return;}
-  if(!confirm(`Delete ${old.length} pending timesheet(s) older than 60 days? This cannot be undone.`))return;
+  // Include ALL pending/null status timesheets — old format may have no date at all
+  const pending=allTimesheetsCache.filter(t=>t.status==='PENDING'||!t.status);
+  if(!pending.length){alert('No pending timesheets found.');return;}
+  if(!confirm(`Delete ALL ${pending.length} pending timesheet(s)? This includes old format submissions. This cannot be undone.`))return;
   try{
-    for(const t of old){await db.from('timesheets').delete().eq('id',t.id);}
+    for(const t of pending){await db.from('timesheets').delete().eq('id',t.id);}
     await loadTimesheets();
-    showRealtimeToast('✅ Cleared '+old.length+' old pending timesheet(s)');
+    showRealtimeToast('✅ Cleared '+pending.length+' pending timesheet(s)');
   }catch(e){alert('Error: '+e.message);}
 }
 
