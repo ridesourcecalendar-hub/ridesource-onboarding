@@ -3368,7 +3368,9 @@ function showSection(id){
 function showAdmin(id){
   document.querySelectorAll('.admin-section').forEach(el=>el.style.display='none');
   document.querySelectorAll('#screen-admin .nav-item').forEach(el=>el.classList.remove('active'));
-  document.getElementById('section-adm-'+id).style.display='block';
+  const secEl=document.getElementById('section-adm-'+id);
+  if(secEl)secEl.style.display='block';
+  else{console.error('Missing section: section-adm-'+id);return;}
   document.getElementById('nav-adm-'+id)?.classList.add('active');
   if(id==='employee-folders'){
     // Always return to list view, never re-open a detail view
