@@ -43,7 +43,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 .landing-btn{width:100%;padding:14px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;transition:background .2s;}
 .landing-btn:hover{background:#0f1f3d;}
 .error-msg{background:#fdecea;border:1px solid #f5c6c2;border-radius:6px;padding:10px 14px;color:var(--red);font-size:13px;margin-top:8px;display:none;}
-.screen{display:none;width:100%;}.screen.active{display:block;width:100%;min-height:100vh;}
+.screen{display:none;}.screen.active{display:block;}
 .header{background:var(--navy);padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:64px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.3);}
 .header-logo{display:flex;flex-direction:column;justify-content:center;}
 .header-logo-text{font-size:20px;font-weight:900;color:#fff;letter-spacing:-.5px;line-height:1.1;}
@@ -55,7 +55,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 .header-user strong{color:#fff;}
 .btn-logout{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px;}
 .btn-logout:hover{background:rgba(255,255,255,.2);}
-.portal-layout{display:flex;min-height:calc(100vh - 64px);width:100%;}
+.portal-layout{display:flex;min-height:calc(100vh - 64px);}
 .sidebar{width:240px;background:#fff;border-right:1px solid var(--border);padding:24px 0;flex-shrink:0;position:sticky;top:64px;height:calc(100vh - 64px);overflow-y:auto;}
 .sidebar-label{font-size:10px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;padding:8px 16px 4px;}
 .nav-item{display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;font-size:13px;color:#555;font-weight:500;transition:all .15s;margin:1px 8px;border-radius:8px;}
@@ -353,14 +353,6 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 .ts-missed-punch-row label{font-size:12px;color:#666;display:flex;align-items:center;gap:6px;cursor:pointer;}
 .ts-missed-punch-details{margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:8px;}
 .ts-missed-punch-details select,.ts-missed-punch-details input{padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;outline:none;width:100%;box-sizing:border-box;}
-<style>
-/* Force admin screen full width - override any inheritance issues */
-#screen-admin { display:none; width:100% !important; }
-#screen-admin.active { display:block !important; width:100% !important; }
-#screen-admin .portal-layout { display:flex !important; width:100% !important; flex-direction:row !important; }
-#screen-admin .sidebar { flex-shrink:0 !important; width:240px !important; }
-#screen-admin .main-content { flex:1 !important; min-width:0 !important; overflow-y:auto !important; padding:32px; }
-@media(max-width:768px){ #screen-admin .main-content { padding:12px 14px 90px; } }
 </style>
 </head>
 <body>
@@ -1228,7 +1220,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 
 
 <!-- ADMIN PORTAL -->
-<div id="screen-admin" class="screen" style="width:100%;box-sizing:border-box;">
+<div id="screen-admin" class="screen">
   <div class="header">
     <div class="header-logo" onclick="showAdmin('dashboard')" style="cursor:pointer;" title="Home">
       <div class="header-logo-text">Ride<span>Source</span></div>
@@ -2371,15 +2363,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
               <div class="form-field"><label>Notes / Advisory Items</label><textarea id="fm-insp-notes" style="min-height:60px;" placeholder="Any advisory items, failures, or follow-up needed..."></textarea></div>
             </div>
 
-            <div class="form-row" style="margin-top:12px;">
-              <div class="form-field"><label>Driver / Performed By (optional)</label>
-                <input type="text" id="fm-driver" placeholder="Driver or technician name" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
-              </div>
-              <div class="form-field"><label>Receipt / Invoice</label>
-                <input type="file" id="fm-receipt-upload" accept="image/*,.pdf" style="width:100%;padding:8px;border:2px solid var(--border);border-radius:8px;font-size:13px;">
-              </div>
-            </div>
-            <div style="display:flex;gap:10px;align-items:center;margin-top:8px;">
+            <div style="display:flex;gap:10px;align-items:center;margin-top:12px;">
               <button class="btn btn-primary" onclick="saveFleetMaintEntry()">Log Entry</button>
               <span id="fm-msg" style="font-size:13px;color:var(--success);display:none;">✓ Logged!</span>
             </div>
@@ -2389,92 +2373,44 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 
           <!-- TIRE MANAGEMENT PANEL (shown only when tires tab active) -->
           <div id="fm-tire-panel" style="display:none;">
-
-            <!-- Seasonal Changeover -->
+            <!-- Current tires on vehicle -->
             <div class="card" style="margin-bottom:14px;">
-              <div style="font-size:14px;font-weight:800;color:var(--navy);margin-bottom:4px;">🔄 Seasonal Tire Changeover</div>
-              <div style="font-size:12px;color:#888;margin-bottom:16px;">Log a summer↔winter changeover. Simple and quick.</div>
-              <div class="form-row">
-                <div class="form-field"><label>Date *</label>
-                  <input type="date" id="tc-date" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+              <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:12px;">🚗 Currently Mounted</div>
+              <div id="tire-mounted-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;"></div>
+            </div>
+            <!-- Log Changeover -->
+            <div class="card" style="margin-bottom:14px;background:#f8f9fc;">
+              <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:12px;cursor:pointer;" onclick="toggleTireChangeover()">🔄 Log Seasonal Changeover <span id="tire-changeover-toggle" style="font-size:12px;color:#888;">▼ expand</span></div>
+              <div id="tire-changeover-form" style="display:none;">
+                <div class="form-row">
+                  <div class="form-field"><label>Date *</label><input type="date" id="tc-date"></div>
+                  <div class="form-field"><label>Season</label>
+                    <select id="tc-season" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                      <option value="">— Select —</option>
+                      <option>Winter (Studded)</option>
+                      <option>Winter (Non-Studded)</option>
+                      <option>Summer / All-Season</option>
+                    </select>
+                  </div>
                 </div>
-                <div class="form-field"><label>Changeover Type *</label>
-                  <select id="tc-season" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
-                    <option value="">— Select —</option>
-                    <option>Summer → Winter (Studded)</option>
-                    <option>Summer → Winter (Non-Studded)</option>
-                    <option>Winter → Summer / All-Season</option>
-                  </select>
+                <div class="form-field"><label>Shop / Location</label><input type="text" id="tc-shop" placeholder="e.g. Sullivan Tire, Ellsworth ME"></div>
+                <div style="font-size:12px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin:12px 0 8px;">Tires Removed</div>
+                <div id="tc-removed-list" style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px;"></div>
+                <div style="font-size:12px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Tires Installed</div>
+                <div id="tc-installed-list" style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px;"></div>
+                <div style="font-size:12px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Tires Disposed (at shop)</div>
+                <div id="tc-disposed-list" style="margin-bottom:12px;"></div>
+                <div class="form-field"><label>Notes</label><textarea id="tc-notes" style="min-height:60px;"></textarea></div>
+                <div style="display:flex;gap:10px;align-items:center;margin-top:8px;">
+                  <button class="btn btn-primary" onclick="saveChangeover()">Log Changeover</button>
+                  <span id="tc-msg" style="font-size:13px;color:var(--success);display:none;">✓ Changeover logged!</span>
                 </div>
-              </div>
-              <div class="form-row">
-                <div class="form-field"><label>Shop / Location</label>
-                  <input type="text" id="tc-shop" placeholder="e.g. Sullivan Tire, Ellsworth ME" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
-                </div>
-                <div class="form-field"><label>Cost ($)</label>
-                  <input type="number" id="tc-cost" placeholder="0.00" step="0.01" min="0" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
-                </div>
-              </div>
-              <div class="form-field"><label>Tire Size (optional)</label>
-                <input type="text" id="tc-tire-size" placeholder="e.g. 225/65R17" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
-              </div>
-              <div class="form-field"><label>Notes</label>
-                <textarea id="tc-notes" placeholder="Any additional notes..." style="width:100%;min-height:60px;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;font-family:Arial,sans-serif;outline:none;resize:vertical;"></textarea>
-              </div>
-              <div class="form-field"><label>Receipt / Invoice</label>
-                <input type="file" id="tc-receipt" accept="image/*,.pdf" style="width:100%;padding:8px;border:2px solid var(--border);border-radius:8px;font-size:13px;">
-              </div>
-              <div style="display:flex;gap:10px;align-items:center;margin-top:8px;">
-                <button class="btn btn-primary" onclick="saveChangeover()">✅ Log Changeover</button>
-                <span id="tc-msg" style="font-size:13px;color:var(--success);display:none;">✓ Changeover logged!</span>
               </div>
             </div>
-
-            <!-- Tire Repair -->
-            <div class="card" style="margin-bottom:14px;">
-              <div style="font-size:14px;font-weight:800;color:var(--navy);margin-bottom:4px;">🔧 Tire Repair</div>
-              <div style="font-size:12px;color:#888;margin-bottom:16px;">Log a flat tire, patch, or replacement.</div>
-              <div class="form-row">
-                <div class="form-field"><label>Date *</label>
-                  <input type="date" id="tr-date" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
-                </div>
-                <div class="form-field"><label>Repair Type *</label>
-                  <select id="tr-type" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
-                    <option value="">— Select —</option>
-                    <option>Flat Tire</option>
-                    <option>Patch / Plug</option>
-                    <option>Tire Replacement</option>
-                    <option>Tire Rotation</option>
-                    <option>Other</option>
-                  </select>
-                </div>
-              </div>
-              <div class="form-row">
-                <div class="form-field"><label>Shop / Location</label>
-                  <input type="text" id="tr-shop" placeholder="e.g. Sullivan Tire" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
-                </div>
-                <div class="form-field"><label>Cost ($)</label>
-                  <input type="number" id="tr-cost" placeholder="0.00" step="0.01" min="0" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
-                </div>
-              </div>
-              <div class="form-field"><label>Notes</label>
-                <textarea id="tr-notes" placeholder="e.g. FL tire had nail, replaced with new" style="width:100%;min-height:50px;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;font-family:Arial,sans-serif;outline:none;resize:vertical;"></textarea>
-              </div>
-              <div class="form-field"><label>Receipt / Invoice</label>
-                <input type="file" id="tr-receipt" accept="image/*,.pdf" style="width:100%;padding:8px;border:2px solid var(--border);border-radius:8px;font-size:13px;">
-              </div>
-              <div style="display:flex;gap:10px;align-items:center;margin-top:8px;">
-                <button class="btn btn-primary" onclick="saveTireRepair()">✅ Log Tire Repair</button>
-                <span id="tr-msg" style="font-size:13px;color:var(--success);display:none;">✓ Repair logged!</span>
-              </div>
-            </div>
-
-            <!-- Tire History -->
-            <div class="card">
-              <div style="font-size:14px;font-weight:800;color:var(--navy);margin-bottom:12px;">📋 Tire History</div>
-              <div id="tire-changeover-history"><p style="color:#888;font-size:13px;">Loading...</p></div>
-            </div>
+            <!-- Changeover History -->
+            <div id="tire-changeover-history"><p style="color:#888;font-size:13px;">Loading...</p></div>
           </div>
+        </div>
       </div>
 
       <!-- INCIDENT LOG (ADMIN) -->
@@ -3005,12 +2941,12 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
         <div class="card" style="margin-bottom:16px;padding:20px;"><div style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:16px;">💰 Financial</div><div id="analytics-financial"><p style="color:#888;font-size:13px;">Loading...</p></div></div>
       </div>
 
-
     </div><!-- end main-content -->
   </div>
 
+
 <!-- CONFIG PANEL (Admin only) -->
-      <div id="section-adm-config" class="admin-section" style="display:none;width:100%;min-height:400px;box-sizing:border-box;">
+      <div id="section-adm-config" class="admin-section" style="display:none;">
         <div style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:2px;">⚙️ Portal Configuration</div>
         <p style="color:#888;font-size:13px;margin-bottom:20px;">Manage staff accounts, documents, and portal settings. Admin access only.</p>
 
@@ -3265,14 +3201,12 @@ window.addEventListener('load',async function(){
     let s=sessionStorage.getItem('rs_session');
     if(!s)s=localStorage.getItem('rs_session');
     if(!s){sessionStorage.removeItem('rs_session');localStorage.removeItem('rs_session');return;}
-    if(!s){sessionStorage.removeItem('rs_session');localStorage.removeItem('rs_session');return;}
-    let sess;try{sess=JSON.parse(s);}catch(e){sessionStorage.removeItem('rs_session');localStorage.removeItem('rs_session');return;}
+    // Check session age — expire after 8 hours
     const age=sess.ts?Date.now()-sess.ts:Infinity;
     if(age>8*60*60*1000){sessionStorage.removeItem('rs_session');localStorage.removeItem('rs_session');return;}
     if(sess.type==='employee'&&sess.name&&sess.email&&sess.county){
       startPortal({name:sess.name,email:sess.email,county:sess.county});
       document.body.classList.add('portal-active');
-      document.getElementById('mobile-bottom-nav').style.display='flex';
     } else if(sess.type==='admin'&&sess.name){
       // Look up staff record from Supabase — no local credentials stored
       const {data:staffData}=await db.from('admin_staff').select('name,title,email,role').eq('name',sess.name).single();
@@ -3338,7 +3272,6 @@ function startPortal(opts){
   document.getElementById('screen-landing').classList.remove('active');
   document.getElementById('screen-portal').classList.add('active');
   document.body.classList.add('portal-active');
-  document.getElementById('mobile-bottom-nav').style.display='flex';
   showSection('dashboard');
   showMobileNav();
   loadSavedState();buildTraining();buildHandbook();buildPolicies();updateDashboard();loadSignedPolicies();setTimeout(()=>{loadEmpMemoHistory();},1200);
@@ -3436,9 +3369,7 @@ function showSection(id){
 function showAdmin(id){
   document.querySelectorAll('.admin-section').forEach(el=>el.style.display='none');
   document.querySelectorAll('#screen-admin .nav-item').forEach(el=>el.classList.remove('active'));
-  const secEl=document.getElementById('section-adm-'+id);
-  if(secEl)secEl.style.display='block';
-  else{console.error('Missing section: section-adm-'+id);return;}
+  document.getElementById('section-adm-'+id).style.display='block';
   document.getElementById('nav-adm-'+id)?.classList.add('active');
   if(id==='employee-folders'){
     // Always return to list view, never re-open a detail view
@@ -3448,16 +3379,7 @@ function showAdmin(id){
   }
   if(id==='incidents')loadIncidents();
   if(id==='memos'){loadMemos();loadEmployeeMessages();setMemoMainTab('compose');}
-  if(id==='config'){
-    // Force section visible first
-    const cfgSec=document.getElementById('section-adm-config');
-    if(cfgSec){cfgSec.style.display='block';cfgSec.style.visibility='visible';cfgSec.style.opacity='1';}
-    // Then load data
-    setTimeout(()=>{
-      try{setCfgTab('users');}catch(e){console.error('setCfgTab error:',e);}
-      try{loadPortalSettings();}catch(e){console.error('loadPortalSettings error:',e);}
-    },50);
-  }
+  if(id==='config'){try{setCfgTab('users');loadPortalSettings();}catch(e){console.error('Config panel error:',e);}}
   if(id==='analytics'){loadAnalytics();}
   if(id==='recognition'){renderRecogCalendar();}
   if(id==='fleet'){loadFleetVehicles();loadFleetMaintenance();loadFleetTires();loadFleetChangeovers();}
@@ -5702,24 +5624,10 @@ async function saveFleetMaintEntry(){
     document.getElementById('fm-insp-result').value='';
   }
 
-  // Handle receipt upload
-  const receiptInput=document.getElementById('fm-receipt-upload');
-  if(receiptInput?.files?.length){
-    try{
-      const file=receiptInput.files[0];
-      const fname='maintenance/'+currentFleetVehicleId+'-'+currentFleetMaintTab+'-'+Date.now()+'-'+file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
-      const{data:up,error:ue}=await db.storage.from('ridesource-uploads').upload(fname,file);
-      if(!ue&&up){
-        const{data:u}=db.storage.from('ridesource-uploads').getPublicUrl(fname);
-        if(u?.publicUrl)entry.notes=(entry.notes||'')+'\nReceipt: '+u.publicUrl;
-      }
-    }catch(e){console.log('Receipt upload:',e);}
-  }
   try{
     const {error}=await db.from('fleet_maintenance').insert([entry]);
     if(error)throw error;
     clearIds.forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-    if(receiptInput)receiptInput.value='';
     const msg=document.getElementById('fm-msg');msg.style.display='inline';setTimeout(()=>msg.style.display='none',2000);
     await loadFleetMaintenance();
     loadFleetMaintHistory();
@@ -5839,157 +5747,194 @@ function toggleTireAddForm(){
   else{f.style.display='none';icon.textContent='▼ expand';}
 }
 
-function toggleTireChangeover(){} // legacy - no longer needed
+function toggleTireChangeover(){
+  const f=document.getElementById('tire-changeover-form');
+  const icon=document.getElementById('tire-changeover-toggle');
+  if(!f)return;
+  if(f.style.display==='none'){
+    f.style.display='block';icon.textContent='▲ collapse';
+    populateChangeoverLists();
+  } else {f.style.display='none';icon.textContent='▼ expand';}
+}
+
+function populateChangeoverLists(){
+  if(!currentFleetVehicleId)return;
+  const positions=['Front Left','Front Right','Rear Left','Rear Right'];
+  const mounted=allTiresCache.filter(t=>t.vehicle_id===currentFleetVehicleId&&t.status==='Mounted');
+  const stored=allTiresCache.filter(t=>t.status==='In Storage');
+
+  // Removed (currently mounted tires with checkbox)
+  const removedEl=document.getElementById('tc-removed-list');
+  if(removedEl){
+    if(!mounted.length){
+      removedEl.innerHTML='<p style="color:#aaa;font-size:12px;grid-column:span 2;">No tires currently mounted on this vehicle.</p>';
+    } else {
+      removedEl.innerHTML=mounted.map(t=>
+        '<label style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:12px;cursor:pointer;background:#fff;">'+
+          '<input type="checkbox" class="tc-remove-cb" data-tid="'+t.id+'" data-tname="'+t.tire_id+'" style="accent-color:var(--navy);">'+
+          '<span><strong>'+t.tire_id+'</strong><br>'+
+          (t.position||'')+(t.brand?' · '+t.brand:'')+(t.tire_type?' · '+t.tire_type:'')+'</span>'+
+        '</label>'
+      ).join('');
+    }
+  }
+
+  // Installed (storage tires with select per position)
+  const installedEl=document.getElementById('tc-installed-list');
+  if(installedEl){
+    if(!stored.length){
+      installedEl.innerHTML='<p style="color:#aaa;font-size:12px;grid-column:span 2;">No tires in storage to install. Add tires to inventory first.</p>';
+    } else {
+      installedEl.innerHTML=positions.map(pos=>
+        '<div style="display:flex;flex-direction:column;gap:4px;">'+
+          '<label style="font-size:11px;font-weight:700;color:#888;">'+pos+'</label>'+
+          '<select class="tc-install-sel" data-pos="'+pos+'" style="padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:12px;outline:none;">'+
+            '<option value="">— None —</option>'+
+            stored.map(t=>'<option value="'+t.id+'|'+t.tire_id+'">'+t.tire_id+(t.brand?' ('+t.brand+')':'')+(t.tire_type?' '+t.tire_type:'')+'</option>').join('')+
+          '</select>'+
+        '</div>'
+      ).join('');
+    }
+  }
+
+  // Disposed (checkboxes from mounted tires)
+  const disposedEl=document.getElementById('tc-disposed-list');
+  if(disposedEl){
+    if(!mounted.length){
+      disposedEl.innerHTML='<p style="color:#aaa;font-size:12px;">No mounted tires to mark as disposed.</p>';
+    } else {
+      disposedEl.innerHTML=mounted.map(t=>
+        '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">'+
+          '<label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;">'+
+            '<input type="checkbox" class="tc-dispose-cb" data-tid="'+t.id+'" data-tname="'+t.tire_id+'" style="accent-color:var(--red);">'+
+            '<strong>'+t.tire_id+'</strong>'+(t.brand?' · '+t.brand:'')+'</label>'+
+          '<input type="text" class="tc-dispose-reason" data-tid="'+t.id+'" placeholder="Reason (worn, damaged...)" style="flex:1;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;outline:none;">'+
+        '</div>'
+      ).join('');
+    }
+  }
+}
 
 async function saveChangeover(){
-  const date=document.getElementById('tc-date')?.value;
-  const season=document.getElementById('tc-season')?.value;
-  const shop=document.getElementById('tc-shop')?.value||'';
-  const cost=document.getElementById('tc-cost')?.value||'0';
-  const tireSize=document.getElementById('tc-tire-size')?.value||'';
-  const notes=document.getElementById('tc-notes')?.value||'';
-  if(!date||!season){alert('Please enter date and changeover type.');return;}
+  const date=document.getElementById('tc-date').value;
+  if(!date){alert('Changeover date is required.');return;}
+  const season=document.getElementById('tc-season').value;
+  const shop=document.getElementById('tc-shop').value.trim();
+  const notes=document.getElementById('tc-notes').value.trim();
 
-  let receiptUrl=null;
-  const fi=document.getElementById('tc-receipt');
-  if(fi?.files?.length){
-    try{
-      const file=fi.files[0];
-      const fname='tires/'+currentFleetVehicleId+'-changeover-'+Date.now()+'-'+file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
-      const{data:up,error:ue}=await db.storage.from('ridesource-uploads').upload(fname,file);
-      if(!ue&&up){const{data:u}=db.storage.from('ridesource-uploads').getPublicUrl(fname);receiptUrl=u?.publicUrl||null;}
-    }catch(e){console.log('Receipt upload:',e);}
-  }
-
-  try{
-    // Save to fleet_maintenance as a Tire Changeover record
-    await db.from('fleet_maintenance').insert([{
-      vehicle_id:currentFleetVehicleId,
-      maintenance_type:'Tire Changeover',
-      service_date:date,
-      cost:parseFloat(cost)||0,
-      vendor:shop,
-      notes:(season+(tireSize?' | Size: '+tireSize:'')+(notes?' | '+notes:'')+
-            (receiptUrl?' | Receipt: '+receiptUrl:'')),
-      performed_by:adminName,
-      created_at:new Date().toISOString()
-    }]);
-    // Clear form
-    ['tc-date','tc-cost','tc-shop','tc-tire-size','tc-notes'].forEach(id=>{
-      const el=document.getElementById(id);if(el)el.value='';
-    });
-    const sel=document.getElementById('tc-season');if(sel)sel.value='';
-    const fi2=document.getElementById('tc-receipt');if(fi2)fi2.value='';
-    const msg=document.getElementById('tc-msg');
-    if(msg){msg.style.display='inline';setTimeout(()=>msg.style.display='none',2500);}
-    // Refresh cache and history
-    const{data}=await db.from('fleet_maintenance').select('*').order('service_date',{ascending:false});
-    allFleetMaintenanceCache=data||[];
-    loadTireChangeoversHistory();
-    // Also add to cost tracker
-    showRealtimeToast('✅ Tire changeover logged!');
-  }catch(e){alert('Error saving: '+e.message);}
-}
-
-async function saveTireRepair(){
-  const date=document.getElementById('tr-date')?.value;
-  const type=document.getElementById('tr-type')?.value;
-  const shop=document.getElementById('tr-shop')?.value||'';
-  const cost=document.getElementById('tr-cost')?.value||'0';
-  const notes=document.getElementById('tr-notes')?.value||'';
-  if(!date||!type){alert('Please enter date and repair type.');return;}
-
-  let receiptUrl=null;
-  const fi=document.getElementById('tr-receipt');
-  if(fi?.files?.length){
-    try{
-      const file=fi.files[0];
-      const fname='tires/'+currentFleetVehicleId+'-repair-'+Date.now()+'-'+file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
-      const{data:up,error:ue}=await db.storage.from('ridesource-uploads').upload(fname,file);
-      if(!ue&&up){const{data:u}=db.storage.from('ridesource-uploads').getPublicUrl(fname);receiptUrl=u?.publicUrl||null;}
-    }catch(e){console.log('Receipt upload:',e);}
-  }
+  // Collect removed tires
+  const removed=[...document.querySelectorAll('.tc-remove-cb:checked')].map(cb=>({id:parseInt(cb.dataset.tid),tire_id:cb.dataset.tname}));
+  // Collect installed tires
+  const installed=[...document.querySelectorAll('.tc-install-sel')].filter(s=>s.value).map(s=>{
+    const [id,tireId]=s.value.split('|');
+    return {id:parseInt(id),tire_id:tireId,position:s.dataset.pos};
+  });
+  // Collect disposed tires
+  const disposed=[...document.querySelectorAll('.tc-dispose-cb:checked')].map(cb=>({
+    id:parseInt(cb.dataset.tid),
+    tire_id:cb.dataset.tname,
+    reason:document.querySelector('.tc-dispose-reason[data-tid="'+cb.dataset.tid+'"]')?.value.trim()||''
+  }));
 
   try{
-    await db.from('fleet_maintenance').insert([{
+    // Log the changeover record
+    await db.from('fleet_tire_changeovers').insert([{
       vehicle_id:currentFleetVehicleId,
-      maintenance_type:'Tire Repair',
-      service_date:date,
-      cost:parseFloat(cost)||0,
-      vendor:shop,
-      notes:(type+(notes?' — '+notes:'')+(receiptUrl?' | Receipt: '+receiptUrl:'')),
-      performed_by:adminName,
-      created_at:new Date().toISOString()
+      changeover_date:date,
+      season,
+      shop_name:shop||null,
+      tires_removed:removed.length?removed:null,
+      tires_installed:installed.length?installed:null,
+      tires_disposed:disposed.length?disposed:null,
+      notes:notes||null,
+      logged_by:adminName,
+      logged_at:new Date().toISOString()
     }]);
-    ['tr-date','tr-cost','tr-shop','tr-notes'].forEach(id=>{
-      const el=document.getElementById(id);if(el)el.value='';
-    });
-    const sel=document.getElementById('tr-type');if(sel)sel.value='';
-    const fi2=document.getElementById('tr-receipt');if(fi2)fi2.value='';
-    const msg=document.getElementById('tr-msg');
-    if(msg){msg.style.display='inline';setTimeout(()=>msg.style.display='none',2500);}
-    const{data}=await db.from('fleet_maintenance').select('*').order('service_date',{ascending:false});
-    allFleetMaintenanceCache=data||[];
+
+    // Update removed tires → In Storage
+    for(const t of removed){
+      if(!disposed.find(d=>d.id===t.id)){
+        await db.from('fleet_tires').update({status:'In Storage',vehicle_id:null,position:null}).eq('id',t.id);
+      }
+    }
+    // Update installed tires → Mounted
+    for(const t of installed){
+      await db.from('fleet_tires').update({status:'Mounted',vehicle_id:currentFleetVehicleId,position:t.position}).eq('id',t.id);
+    }
+    // Update disposed tires → Disposed
+    for(const t of disposed){
+      await db.from('fleet_tires').update({status:'Disposed',disposed_date:date,disposed_reason:t.reason||null,disposed_by:shop||null}).eq('id',t.id);
+    }
+
+    // Reset form
+    document.getElementById('tc-date').value='';
+    document.getElementById('tc-season').value='';
+    document.getElementById('tc-shop').value='';
+    document.getElementById('tc-notes').value='';
+    document.getElementById('tire-changeover-form').style.display='none';
+    document.getElementById('tire-changeover-toggle').textContent='▼ expand';
+    const msg=document.getElementById('tc-msg');msg.style.display='inline';setTimeout(()=>msg.style.display='none',3000);
+
+    await loadFleetTires();
+    await loadFleetChangeovers();
+    renderTireMounted();
     loadTireChangeoversHistory();
-    showRealtimeToast('✅ Tire repair logged!');
-  }catch(e){alert('Error saving: '+e.message);}
+    renderTireInventory();
+  }catch(e){alert('Error logging changeover: '+e.message);}
 }
 
-function renderTireMounted(){} // legacy - no longer needed
+function renderTireMounted(){
+  const el=document.getElementById('tire-mounted-grid');
+  if(!el||!currentFleetVehicleId)return;
+  const mounted=allTiresCache.filter(t=>t.vehicle_id===currentFleetVehicleId&&t.status==='Mounted');
+  const positions=['Front Left','Front Right','Rear Left','Rear Right'];
+  el.innerHTML=positions.map(pos=>{
+    const t=mounted.find(x=>x.position===pos);
+    return '<div style="border:1px solid var(--border);border-radius:8px;padding:10px 12px;background:'+(t?'#f0faf4':'#fafafa')+';">'+
+      '<div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">'+pos+'</div>'+
+      (t
+        ?'<div style="font-size:13px;font-weight:700;color:var(--navy);">'+t.tire_id+'</div>'+
+          '<div style="font-size:11px;color:#888;">'+(t.brand||'')+(t.brand&&t.tire_type?' · ':'')+( t.tire_type||'')+'</div>'+
+          (t.size?'<div style="font-size:11px;color:#aaa;">'+t.size+'</div>':'')
+        :'<div style="font-size:12px;color:#aaa;font-style:italic;">No tire recorded</div>'
+      )+
+    '</div>';
+  }).join('');
+}
 
 function loadTireChangeoversHistory(){
   const el=document.getElementById('tire-changeover-history');
   if(!el||!currentFleetVehicleId)return;
-
-  // Pull from fleet_maintenance — both Tire Changeover and Tire Repair
-  const records=allFleetMaintenanceCache.filter(m=>
-    m.vehicle_id===currentFleetVehicleId&&
-    (m.maintenance_type==='Tire Changeover'||m.maintenance_type==='Tire Repair')
-  ).sort((a,b)=>new Date(b.service_date)-new Date(a.service_date));
-
-  if(!records.length){
-    el.innerHTML='<p style="color:#888;font-size:13px;padding:16px 0;text-align:center;">No tire records yet.</p>';
-    return;
-  }
-
-  const typeColor={'Tire Changeover':'#e8f5e9','Tire Repair':'#fff3e0'};
-  const typeIcon={'Tire Changeover':'🔄','Tire Repair':'🔧'};
-
-  el.innerHTML=records.map(r=>{
-    const dt=new Date(r.service_date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-    const receiptMatch=(r.notes||'').match(/Receipt: (https?:\/\/\S+)/);
-    const receiptUrl=receiptMatch?receiptMatch[1]:null;
-    const notesClean=(r.notes||'').replace(/\| Receipt: https?:\/\/\S+/,'').trim();
-    return `<div style="border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px;background:${typeColor[r.maintenance_type]||'#fafafa'};">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
-        <div style="flex:1;">
-          <div style="font-size:13px;font-weight:700;color:var(--navy);">${typeIcon[r.maintenance_type]||'🔧'} ${r.maintenance_type} — ${dt}</div>
-          ${r.vendor?`<div style="font-size:12px;color:#888;margin-top:2px;">📍 ${r.vendor}</div>`:''}
-          ${notesClean?`<div style="font-size:12px;color:#555;margin-top:4px;">${notesClean}</div>`:''}
-          ${receiptUrl?`<div style="margin-top:6px;"><a href="${receiptUrl}" target="_blank" style="font-size:12px;color:#1565c0;">📎 View Receipt</a></div>`:''}
-        </div>
-        <div style="text-align:right;flex-shrink:0;">
-          ${r.cost?`<div style="font-size:14px;font-weight:800;color:var(--navy);">$${parseFloat(r.cost).toFixed(2)}</div>`:''}
-          <button data-mid="${r.id}" onclick="deleteTireRecord(this.dataset.mid)" style="margin-top:4px;font-size:10px;padding:2px 8px;border-radius:4px;border:1px solid #fcc;background:#fff;color:var(--red);cursor:pointer;">🗑️</button>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-async function deleteTireRecord(id){
-  if(!confirm('Delete this tire record?'))return;
-  try{
-    await db.from('fleet_maintenance').delete().eq('id',id);
-    const{data}=await db.from('fleet_maintenance').select('*').order('service_date',{ascending:false});
-    allFleetMaintenanceCache=data||[];
-    loadTireChangeoversHistory();
-    showRealtimeToast('Record deleted');
-  }catch(e){alert('Error: '+e.message);}
+  const records=allChangeoverCache.filter(c=>c.vehicle_id===currentFleetVehicleId);
+  if(!records.length){el.innerHTML='<p style="color:#888;font-size:13px;padding:16px 0;">No changeovers recorded yet.</p>';return;}
+  el.innerHTML='<div style="font-size:12px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Changeover History</div>'+
+    records.map(c=>{
+      const dt=new Date(c.changeover_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+      const removed=(c.tires_removed||[]).map(t=>t.tire_id).join(', ')||'—';
+      const installed=(c.tires_installed||[]).map(t=>t.tire_id+(t.position?' ('+t.position+')':'')).join(', ')||'—';
+      const disposed=(c.tires_disposed||[]).map(t=>t.tire_id+(t.reason?' — '+t.reason:'')).join(', ')||'None';
+      return '<div style="border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:8px;background:#fafafa;">'+
+        '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px;">'+
+          '<div>'+
+            '<div style="font-size:14px;font-weight:700;color:var(--navy);">'+dt+(c.season?' — '+c.season:'')+'</div>'+
+            (c.shop_name?'<div style="font-size:12px;color:#888;">'+c.shop_name+'</div>':'')+
+          '</div>'+
+          '<button class="btn btn-sm btn-red" data-cid="'+c.id+'" onclick="deleteChangeover(this.dataset.cid)">🗑️</button>'+
+        '</div>'+
+        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:12px;">'+
+          '<div><div style="font-weight:700;color:#555;margin-bottom:3px;">Removed</div><div style="color:#666;">'+removed+'</div></div>'+
+          '<div><div style="font-weight:700;color:#555;margin-bottom:3px;">Installed</div><div style="color:#666;">'+installed+'</div></div>'+
+          '<div><div style="font-weight:700;color:var(--red);margin-bottom:3px;">Disposed</div><div style="color:#666;">'+disposed+'</div></div>'+
+        '</div>'+
+        (c.notes?'<div style="font-size:12px;color:#888;margin-top:8px;">'+c.notes+'</div>':'')+
+      '</div>';
+    }).join('');
 }
 
 async function deleteChangeover(id){
-  deleteTireRecord(id); // legacy alias
+  if(!confirm('Delete this changeover record?'))return;
+  try{await db.from('fleet_tire_changeovers').delete().eq('id',id);await loadFleetChangeovers();loadTireChangeoversHistory();}
+  catch(e){alert('Error: '+e.message);}
 }
 
 function handleTireStatusChange(){
@@ -6875,14 +6820,6 @@ function generateOnboardingPacket(){
     .no-print{display:none;}
     .page{padding:32px 40px;}
   }
-<style>
-/* Force admin screen full width - override any inheritance issues */
-#screen-admin { display:none; width:100% !important; }
-#screen-admin.active { display:block !important; width:100% !important; }
-#screen-admin .portal-layout { display:flex !important; width:100% !important; flex-direction:row !important; }
-#screen-admin .sidebar { flex-shrink:0 !important; width:240px !important; }
-#screen-admin .main-content { flex:1 !important; min-width:0 !important; overflow-y:auto !important; padding:32px; }
-@media(max-width:768px){ #screen-admin .main-content { padding:12px 14px 90px; } }
 </style>
 </head><body>
 
