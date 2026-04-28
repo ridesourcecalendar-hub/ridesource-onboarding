@@ -3113,29 +3113,6 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
   </div><!-- end portal-layout -->
 
 </div><!-- end screen-admin -->
-<!-- MOBILE BOTTOM NAV (employee portal only) -->
-<div id="mobile-bottom-nav" style="display:none;">
-  <button onclick="showSection('dashboard');closeMobileMenu()" style="flex:1;padding:8px 4px;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:#888;font-weight:600;">
-    <span style="font-size:20px;">🏠</span>Home
-  </button>
-  <button onclick="showSection('timeoff');closeMobileMenu()" style="flex:1;padding:8px 4px;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:#888;font-weight:600;">
-    <span style="font-size:20px;">📅</span>Time Off
-  </button>
-  <button onclick="showSection('timesheet');closeMobileMenu()" style="flex:1;padding:8px 4px;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:#888;font-weight:600;">
-    <span style="font-size:20px;">🕐</span>Timesheet
-  </button>
-  <button onclick="showSection('memos-emp');closeMobileMenu()" style="flex:1;padding:8px 4px;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:#888;font-weight:600;position:relative;">
-    <span style="font-size:20px;">📢</span>Memos
-    <span id="mobile-memo-badge" style="display:none;position:absolute;top:4px;right:12px;background:var(--red);color:#fff;border-radius:50%;width:14px;height:14px;font-size:9px;font-weight:700;line-height:14px;text-align:center;">!</span>
-  </button>
-  <button onclick="toggleMobileMenu()" style="flex:1;padding:8px 4px;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:#888;font-weight:600;">
-    <span style="font-size:20px;">☰</span>More
-  </button>
-</div>
-
-<!-- MOBILE FULL MENU PANEL -->
-<div id="mobile-menu-panel" style="display:none;position:fixed;bottom:56px;left:0;right:0;background:#fff;border-top:1px solid var(--border);z-index:199;box-shadow:0 -4px 20px rgba(0,0,0,0.1);padding:12px;max-height:70vh;overflow-y:auto;">
-  <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;padding:0 4px;">Documents</div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
     <button onclick="showSection('training');closeMobileMenu()" style="padding:12px 8px;background:var(--light);border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:600;color:var(--navy);cursor:pointer;text-align:left;">📋 Training Guide</button>
     <button onclick="showSection('handbook');closeMobileMenu()" style="padding:12px 8px;background:var(--light);border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:600;color:var(--navy);cursor:pointer;text-align:left;">📖 Handbook</button>
@@ -12710,5 +12687,30 @@ async function saveTireRepair(){
   </div>
 </div>
 
+
+
+<!-- MOBILE BOTTOM NAV (employee portal only) -->
+<div id="mobile-bottom-nav" style="display:none;">
+  <button onclick="showSection('dashboard');closeMobileMenu()" style="flex:1;padding:8px 4px;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:#888;font-weight:600;">
+    <span style="font-size:20px;">🏠</span>Home
+  </button>
+  <button onclick="showSection('timeoff');closeMobileMenu()" style="flex:1;padding:8px 4px;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:#888;font-weight:600;">
+    <span style="font-size:20px;">📅</span>Time Off
+  </button>
+  <button onclick="showSection('timesheet');closeMobileMenu()" style="flex:1;padding:8px 4px;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:#888;font-weight:600;">
+    <span style="font-size:20px;">🕐</span>Timesheet
+  </button>
+  <button onclick="showSection('memos-emp');closeMobileMenu()" style="flex:1;padding:8px 4px;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:#888;font-weight:600;position:relative;">
+    <span style="font-size:20px;">📢</span>Memos
+    <span id="mobile-memo-badge" style="display:none;position:absolute;top:4px;right:12px;background:var(--red);color:#fff;border-radius:50%;width:14px;height:14px;font-size:9px;font-weight:700;line-height:14px;text-align:center;">!</span>
+  </button>
+  <button onclick="toggleMobileMenu()" style="flex:1;padding:8px 4px;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:#888;font-weight:600;">
+    <span style="font-size:20px;">☰</span>More
+  </button>
+</div>
+
+<!-- MOBILE FULL MENU PANEL -->
+<div id="mobile-menu-panel" style="display:none;position:fixed;bottom:56px;left:0;right:0;background:#fff;border-top:1px solid var(--border);z-index:199;box-shadow:0 -4px 20px rgba(0,0,0,0.1);padding:12px;max-height:70vh;overflow-y:auto;">
+  <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;padding:0 4px;">Documents</div>
 </body>
 </html>
