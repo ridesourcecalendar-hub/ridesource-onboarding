@@ -353,6 +353,14 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 .ts-missed-punch-row label{font-size:12px;color:#666;display:flex;align-items:center;gap:6px;cursor:pointer;}
 .ts-missed-punch-details{margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:8px;}
 .ts-missed-punch-details select,.ts-missed-punch-details input{padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;outline:none;width:100%;box-sizing:border-box;}
+<style>
+/* Force admin screen full width - override any inheritance issues */
+#screen-admin { display:none; width:100% !important; }
+#screen-admin.active { display:block !important; width:100% !important; }
+#screen-admin .portal-layout { display:flex !important; width:100% !important; flex-direction:row !important; }
+#screen-admin .sidebar { flex-shrink:0 !important; width:240px !important; }
+#screen-admin .main-content { flex:1 !important; min-width:0 !important; overflow-y:auto !important; padding:32px; }
+@media(max-width:768px){ #screen-admin .main-content { padding:12px 14px 90px; } }
 </style>
 </head>
 <body>
@@ -6866,6 +6874,14 @@ function generateOnboardingPacket(){
     .no-print{display:none;}
     .page{padding:32px 40px;}
   }
+<style>
+/* Force admin screen full width - override any inheritance issues */
+#screen-admin { display:none; width:100% !important; }
+#screen-admin.active { display:block !important; width:100% !important; }
+#screen-admin .portal-layout { display:flex !important; width:100% !important; flex-direction:row !important; }
+#screen-admin .sidebar { flex-shrink:0 !important; width:240px !important; }
+#screen-admin .main-content { flex:1 !important; min-width:0 !important; overflow-y:auto !important; padding:32px; }
+@media(max-width:768px){ #screen-admin .main-content { padding:12px 14px 90px; } }
 </style>
 </head><body>
 
