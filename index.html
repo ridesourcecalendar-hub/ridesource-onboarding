@@ -3339,6 +3339,9 @@ async function adminLogin(){
   sessionStorage.setItem('rs_session',sess2);localStorage.setItem('rs_session',sess2);
   document.getElementById('screen-landing').classList.remove('active');
   document.getElementById('screen-admin').classList.add('active');
+  // Hide mobile nav on admin portal
+  const mobileNav=document.getElementById('mobile-bottom-nav');
+  if(mobileNav)mobileNav.style.display='none';
   buildMgrGuide();buildHbRef();
   loadEmployeeFolders(); // pre-load profile cache so supervisor filters work immediately
   loadDashboard();loadRequests();loadCallOuts();loadFlags();loadOnboarding();renderCalendar();
