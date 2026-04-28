@@ -3200,11 +3200,13 @@ window.addEventListener('load',async function(){
     let s=sessionStorage.getItem('rs_session');
     if(!s)s=localStorage.getItem('rs_session');
     if(!s){sessionStorage.removeItem('rs_session');localStorage.removeItem('rs_session');return;}
-    // Check session age — expire after 8 hours
+    if(!s){sessionStorage.removeItem('rs_session');localStorage.removeItem('rs_session');return;}
+    let sess;try{sess=JSON.parse(s);}catch(e){sessionStorage.removeItem('rs_session');localStorage.removeItem('rs_session');return;}
     const age=sess.ts?Date.now()-sess.ts:Infinity;
     if(age>8*60*60*1000){sessionStorage.removeItem('rs_session');localStorage.removeItem('rs_session');return;}
     if(sess.type==='employee'&&sess.name&&sess.email&&sess.county){
-      startPortal({name:sess.name,email:sess.email,county:sess.county});
+      user={name:sess.name,email:sess.email,county:sess.county};
+      startPortal(sess.name,sess.email,sess.county);
       document.body.classList.add('portal-active');
     } else if(sess.type==='admin'&&sess.name){
       // Look up staff record from Supabase — no local credentials stored
