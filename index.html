@@ -5532,8 +5532,12 @@ async function loadFleetMaintHistory(){
             (isOverdue?'<span style="background:var(--warn);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:8px;">OVERDUE</span>':'')+
           '</div>'+
         '</div>'+
-        '<div style="display:flex;gap:6px;margin-top:10px;">'+
-          '<button class="btn btn-sm btn-red" onclick="deleteFleetMaintEntry('+m.id+')">🗑️ Delete</button>'+
+        '<div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;">'+
+          '<button class="btn btn-sm" style="background:#f0f4fb;color:var(--navy);" data-mid="'+m.id+'" onclick="openEditFleetMaint(this.dataset.mid)">✏️ Edit</button>'+
+          '<label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:11px;font-weight:700;color:'+(m.paid?'#27AE60':'#888')+';">'+
+            '<input type="checkbox" '+(m.paid?'checked':'')+' data-mid="'+m.id+'" onchange="toggleFleetMaintPaid(this)" style="cursor:pointer;accent-color:#27AE60;"> Paid</label>'+
+          (m.receipt_url?'<a href="'+m.receipt_url+'" target="_blank" class="btn btn-sm" style="background:#f0faf4;color:#27AE60;">📎 Receipt</a>':'')+
+          '<button class="btn btn-sm btn-red" data-mid="'+m.id+'" onclick="deleteFleetMaintEntry(this.dataset.mid)">🗑️ Delete</button>'+
           (m.linked_report_id?'<button class="btn btn-sm" style="background:#e8f4fd;color:#1565c0;" onclick="openVehicleReportModal('+m.linked_report_id+')">📋 View Report</button>':'')+
         '</div>'+
       '</div>';
@@ -9481,8 +9485,8 @@ function renderExpensesTable(){
     'Fuel':'#92400e','Supplies':'var(--navy)','Other':'#555'
   };
 
-  const header='<div style="display:grid;grid-template-columns:36px 1fr 80px 100px 70px 120px 90px;gap:8px;padding:8px 12px;background:var(--gray);border-radius:8px 8px 0 0;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-top:12px;">'+
-    '<div></div><div>Employee</div><div>Date</div><div>Type</div><div>Amount</div><div>Payment Status</div><div>Actions</div></div>';
+  const header='<div style="display:grid;grid-template-columns:36px 1fr 75px 90px 100px 60px 100px 90px;gap:6px;padding:8px 12px;background:var(--gray);border-radius:8px 8px 0 0;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-top:12px;">'+
+    '<div></div><div>Employee</div><div>Date</div><div>Type</div><div>Service/Facility</div><div>Amt</div><div>Payment</div><div>Actions</div></div>';
 
   const rows=filtered.map((e,idx)=>{
     const displayName=isDemo?'Employee '+(idx+1):e.employee_name;
@@ -9510,11 +9514,12 @@ function renderExpensesTable(){
       paymentHtml='<span class="badge badge-'+statusClass+'" style="font-size:10px;">'+e.status+'</span>';
     }
 
-    return '<div data-eid="'+e.id+'" style="display:grid;grid-template-columns:36px 1fr 80px 100px 70px 120px 90px;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border);align-items:center;font-size:13px;background:#fff;cursor:pointer;" onclick="toggleExpenseRow(this.dataset.eid,this)">'+
+    return '<div data-eid="'+e.id+'" style="display:grid;grid-template-columns:36px 1fr 75px 90px 100px 60px 100px 90px;gap:6px;padding:10px 12px;border-bottom:1px solid var(--border);align-items:center;font-size:13px;background:#fff;cursor:pointer;" onclick="toggleExpenseRow(this.dataset.eid,this)">'+
       '<div style="width:32px;height:32px;border-radius:50%;background:'+countyColor+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">'+initials+'</div>'+
       '<div><div style="font-weight:700;color:var(--navy);">'+displayName+'</div><div style="font-size:11px;color:#888;">'+e.county+'</div></div>'+
       '<div style="color:#555;font-size:12px;">'+e.expense_date+'</div>'+
       '<div><span style="background:'+tc+';color:'+tt+';font-size:11px;font-weight:700;padding:2px 8px;border-radius:8px;white-space:nowrap;">'+e.expense_type+'</span></div>'+
+      '<div style="font-size:11px;color:#555;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+(e.service_type||e.facility||'—')+'</div>'+
       '<div style="font-weight:800;color:var(--navy);">$'+parseFloat(e.amount).toFixed(2)+'</div>'+
       '<div onclick="event.stopPropagation()">'+paymentHtml+'</div>'+
       '<div style="display:flex;gap:4px;justify-content:flex-end;" onclick="event.stopPropagation()">'+
@@ -12168,6 +12173,70 @@ async function saveTireRepair(){
     showRealtimeToast('✅ Tire repair logged!');
   }catch(e){alert('Error: '+e.message);}
 }
+
+// ═══════════════════════════════════════════════
+// FLEET MAINTENANCE EDIT + PAID
+// ═══════════════════════════════════════════════
+function openEditFleetMaint(id){
+  const m=allFleetMaintenanceCache.find(x=>x.id===parseInt(id)||x.id===id);
+  if(!m){alert('Record not found.');return;}
+  document.getElementById('efm-id').value=m.id;
+  document.getElementById('efm-date').value=m.service_date||'';
+  document.getElementById('efm-mileage').value=m.mileage||'';
+  document.getElementById('efm-shop').value=m.shop_name||m.vendor||'';
+  document.getElementById('efm-cost').value=m.cost||'';
+  document.getElementById('efm-next-date').value=m.next_due_date||'';
+  document.getElementById('efm-next-mileage').value=m.next_due_mileage||'';
+  document.getElementById('efm-notes').value=m.notes||'';
+  document.getElementById('efm-payment').value=m.payment_method||'';
+  document.getElementById('efm-msg').style.display='none';
+  document.getElementById('edit-fleet-maint-modal').classList.add('open');
+}
+
+async function saveEditFleetMaint(){
+  const id=document.getElementById('efm-id').value;
+  const date=document.getElementById('efm-date').value;
+  const mileage=document.getElementById('efm-mileage').value;
+  const shop=document.getElementById('efm-shop').value.trim();
+  const cost=document.getElementById('efm-cost').value;
+  const nextDate=document.getElementById('efm-next-date').value;
+  const nextMileage=document.getElementById('efm-next-mileage').value;
+  const notes=document.getElementById('efm-notes').value.trim();
+  const payment=document.getElementById('efm-payment').value;
+  if(!date){alert('Date is required.');return;}
+  try{
+    const{error}=await db.from('fleet_maintenance').update({
+      service_date:date,
+      mileage:mileage?parseInt(mileage):null,
+      shop_name:shop||null,
+      vendor:shop||null,
+      cost:cost?parseFloat(cost):null,
+      next_due_date:nextDate||null,
+      next_due_mileage:nextMileage?parseInt(nextMileage):null,
+      notes:notes||null,
+      payment_method:payment||null,
+      paid:!!payment
+    }).eq('id',id);
+    if(error)throw error;
+    const msg=document.getElementById('efm-msg');
+    if(msg){msg.style.display='inline';setTimeout(()=>{msg.style.display='none';closeModal('edit-fleet-maint-modal');},1500);}
+    const{data}=await db.from('fleet_maintenance').select('*').order('service_date',{ascending:false});
+    allFleetMaintenanceCache=data||[];
+    loadFleetMaintHistory();
+  }catch(e){alert('Error: '+e.message);}
+}
+
+async function toggleFleetMaintPaid(checkbox){
+  const id=checkbox.dataset.mid;
+  const paid=checkbox.checked;
+  try{
+    await db.from('fleet_maintenance').update({paid,payment_method:paid?'Charge Account':null}).eq('id',id);
+    const{data}=await db.from('fleet_maintenance').select('*').order('service_date',{ascending:false});
+    allFleetMaintenanceCache=data||[];
+    loadFleetMaintHistory();
+    showRealtimeToast(paid?'✅ Marked as paid':'Marked as unpaid');
+  }catch(e){alert('Error: '+e.message);}
+}
 </script>
 <!-- MODALS -->
 <div class="modal-overlay" id="policy-modal">
@@ -12716,5 +12785,39 @@ async function saveTireRepair(){
 <!-- MOBILE FULL MENU PANEL -->
 <div id="mobile-menu-panel" style="display:none;position:fixed;bottom:56px;left:0;right:0;background:#fff;border-top:1px solid var(--border);z-index:199;box-shadow:0 -4px 20px rgba(0,0,0,0.1);padding:12px;max-height:70vh;overflow-y:auto;">
   <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;padding:0 4px;">Documents</div>
+
+<!-- EDIT FLEET MAINTENANCE MODAL -->
+<div class="modal-overlay" id="edit-fleet-maint-modal">
+  <div class="modal" style="max-width:520px;">
+    <button class="modal-close" onclick="closeModal('edit-fleet-maint-modal')">✕</button>
+    <h3 style="color:var(--navy);margin-bottom:16px;">✏️ Edit Maintenance Entry</h3>
+    <input type="hidden" id="efm-id">
+    <div class="form-row">
+      <div class="form-field"><label>Date *</label><input type="date" id="efm-date" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+      <div class="form-field"><label>Mileage</label><input type="number" id="efm-mileage" placeholder="e.g. 87500" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-field"><label>Shop / Vendor</label><input type="text" id="efm-shop" placeholder="e.g. Prompto Ellsworth" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+      <div class="form-field"><label>Cost ($)</label><input type="number" id="efm-cost" placeholder="0.00" step="0.01" min="0" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-field"><label>Next Due Date</label><input type="date" id="efm-next-date" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+      <div class="form-field"><label>Next Due Mileage</label><input type="number" id="efm-next-mileage" placeholder="e.g. 90000" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+    </div>
+    <div class="form-field"><label>Notes</label><textarea id="efm-notes" style="width:100%;min-height:70px;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;font-family:Arial,sans-serif;outline:none;resize:vertical;"></textarea></div>
+    <div class="form-field"><label>Payment Method</label>
+      <select id="efm-payment" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+        <option value="">— Not paid yet —</option>
+        <option>Charge Account</option><option>Cash</option>
+        <option>Credit Card</option><option>Check</option><option>Paid by Employee</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;margin-top:8px;">
+      <button class="btn btn-primary" onclick="saveEditFleetMaint()">💾 Save Changes</button>
+      <button class="btn btn-sm" style="background:#f0f0f0;color:#555;" onclick="closeModal('edit-fleet-maint-modal')">Cancel</button>
+      <span id="efm-msg" style="font-size:13px;color:var(--success);display:none;">✓ Saved!</span>
+    </div>
+  </div>
+</div>
 </body>
 </html>
