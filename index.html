@@ -11325,8 +11325,8 @@ async function renderFleetOverview(vehicleId){
         <div style="font-size:12px;font-weight:800;color:${oilColor};">${oilStatus}</div>
       </div>
       <div style="background:#f7f9fc;border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;cursor:pointer;" onclick="switchFleetMaintTab('tires')">
-        <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Tires Mounted</div>
-        <div style="font-size:13px;font-weight:800;color:var(--navy);">${mounted}/4</div>
+        <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Last Changeover</div>
+        <div style="font-size:12px;font-weight:800;color:var(--navy);">${(()=>{const co=allFleetMaintenanceCache.filter(m=>m.vehicle_id===v.vehicle_id&&m.maintenance_type==='Tire Changeover').sort((a,b)=>new Date(b.service_date)-new Date(a.service_date))[0];return co?new Date(co.service_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'No record';})()}</div>
       </div>
       <div style="background:#f7f9fc;border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;cursor:pointer;" onclick="switchFleetMaintTab('inspection')">
         <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Last Inspection</div>
