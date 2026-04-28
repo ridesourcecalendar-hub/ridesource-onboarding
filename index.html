@@ -5088,11 +5088,9 @@ function renderRecogCalendar(){
 function showMobileNav(){
   const nav=document.getElementById('mobile-bottom-nav');
   if(nav){
-    if(window.innerWidth<=768){
-      nav.style.cssText='display:flex!important;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e5e7eb;z-index:200;padding:0;box-shadow:0 -2px 12px rgba(0,0,0,0.08);';
-    } else {
-      nav.style.display='none';
-    }
+    // Remove inline styles and let CSS media queries handle visibility
+    nav.style.cssText='';
+    document.body.classList.add('portal-active');
   }
   const panel=document.getElementById('mobile-menu-panel');
   if(panel)panel.style.display='none';
