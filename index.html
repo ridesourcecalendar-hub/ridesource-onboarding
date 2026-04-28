@@ -1652,6 +1652,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
             <button class="profile-tab" id="ptab-timeoff" onclick="switchProfileTab('timeoff')">📅 Time Off</button>
             <button class="profile-tab" id="ptab-memos" onclick="switchProfileTab('memos')">📢 Memos</button>
             <button class="profile-tab" id="ptab-availability" onclick="switchProfileTab('availability')">📅 Availability</button>
+            <button class="profile-tab" id="ptab-equipment" onclick="switchProfileTab('equipment')">🔧 Equipment</button>
             <button class="profile-tab" id="ptab-sup-checklist" onclick="switchProfileTab('sup-checklist')">✅ Sup. Checklist</button>
           </div>
 
@@ -1736,6 +1737,9 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
           </div>
 
           <!-- AVAILABILITY PANEL -->
+          <div class="profile-tab-panel" id="ppanel-equipment">
+            <div id="pdata-equipment"><p style="color:#888;font-size:13px;">Loading...</p></div>
+          </div>
           <div class="profile-tab-panel" id="ppanel-availability">
             <div id="pdata-availability"><p style="color:#888;font-size:13px;">Loading...</p></div>
           </div>
@@ -2180,6 +2184,11 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
             <button class="profile-tab" id="fmtab-inspection" onclick="switchFleetMaintTab('inspection')">📋 Inspections</button>
             <button class="profile-tab" id="fmtab-reports" onclick="switchFleetMaintTab('reports')" style="position:relative;">🚐 Driver Reports<span id="fmtab-reports-badge" style="display:none;position:absolute;top:2px;right:2px;background:var(--red);color:#fff;border-radius:50%;width:14px;height:14px;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;">!</span></button>
             <button class="profile-tab" id="fmtab-costs" onclick="switchFleetMaintTab('costs')">💰 Cost Tracker</button>
+            <button class="profile-tab" id="fmtab-towing" onclick="switchFleetMaintTab('towing')">🚛 Towing</button>
+          </div>
+          <!-- TOWING PANEL -->
+          <div id="fm-towing-panel" style="display:none;">
+            <div id="fm-towing-content"><p style="color:#888;font-size:13px;">Loading...</p></div>
           </div>
           <!-- COST TRACKER PANEL -->
           <div id="fm-costs-panel" style="display:none;"><div id="fm-costs-content"><p style="color:#888;font-size:13px;">Loading...</p></div></div>
@@ -2942,6 +2951,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
           <button id="cfg-tab-users" onclick="setCfgTab('users')" style="padding:10px 18px;font-size:13px;font-weight:800;border:none;border-bottom:2px solid var(--navy);margin-bottom:-2px;cursor:pointer;background:none;color:var(--navy);">👥 User Management</button>
           <button id="cfg-tab-portal" onclick="setCfgTab('portal')" style="padding:10px 18px;font-size:13px;font-weight:700;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;background:none;color:#888;">🏢 Portal Settings</button>
           <button id="cfg-tab-docs" onclick="setCfgTab('docs')" style="padding:10px 18px;font-size:13px;font-weight:700;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;background:none;color:#888;">📄 Documents</button>
+          <button id="cfg-tab-tools" onclick="setCfgTab('tools')" style="padding:8px 16px;border:none;background:none;font-size:13px;font-weight:700;color:#888;cursor:pointer;border-bottom:2px solid transparent;">🔤 Tools</button>
           <button id="cfg-tab-security" onclick="setCfgTab('security')" style="padding:10px 18px;font-size:13px;font-weight:700;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;background:none;color:#888;">🔒 Security</button>
         </div>
 
@@ -3042,6 +3052,13 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
         </div>
 
         <!-- SECURITY TAB -->
+        <!-- TOOLS PANEL -->
+        <div id="cfg-panel-tools" style="display:none;">
+          <div style="font-size:14px;font-weight:800;color:var(--navy);margin-bottom:12px;">🔤 Name Capitalization Fix</div>
+          <p style="font-size:13px;color:#888;margin-bottom:12px;">Find and fix employee names that are misspelled or incorrectly capitalized.</p>
+          <button class="btn btn-primary" onclick="loadNameFixTool()" style="margin-bottom:12px;">🔍 Scan Employee Names</button>
+          <div id="name-fix-list"></div>
+        </div>
         <div id="cfg-panel-security" style="display:none;">
           <div class="card" style="margin-bottom:16px;">
             <div style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:4px;">🔑 Change Password</div>
@@ -3180,12 +3197,12 @@ let allRequestsCache=[],allTimesheetsCache=[],allVehicleRecordsCache=[];
 // Only restores sessions less than 8 hours old
 window.addEventListener('load',async function(){
   try{
-    const s=sessionStorage.getItem('rs_session');
-    if(!s){sessionStorage.removeItem('rs_session');return;}
-    const sess=JSON.parse(s);
+    let s=sessionStorage.getItem('rs_session');
+    if(!s)s=localStorage.getItem('rs_session');
+    if(!s){sessionStorage.removeItem('rs_session');localStorage.removeItem('rs_session');return;}
     // Check session age — expire after 8 hours
     const age=sess.ts?Date.now()-sess.ts:Infinity;
-    if(age>8*60*60*1000){sessionStorage.removeItem('rs_session');return;}
+    if(age>8*60*60*1000){sessionStorage.removeItem('rs_session');localStorage.removeItem('rs_session');return;}
     if(sess.type==='employee'&&sess.name&&sess.email&&sess.county){
       startPortal({name:sess.name,email:sess.email,county:sess.county});
       document.body.classList.add('portal-active');
@@ -3217,7 +3234,7 @@ window.addEventListener('load',async function(){
         loadTimesheets();loadVehicleRecords();loadIncidents();loadMemos();loadEmployeeMessages();loadFleetVehicles();loadFleetMaintenance();loadFleetTires();loadFleetChangeovers();loadExpenses();
       }
     }
-  }catch(e){sessionStorage.removeItem('rs_session');}
+  }catch(e){sessionStorage.removeItem('rs_session');localStorage.removeItem('rs_session');}
 });
 
 // LANDING
@@ -3248,7 +3265,8 @@ function startPortal(opts){
   trainingComplete=false;handbookComplete=false;handbookSigChoice=null;
   currentReqType=null;selectedIssueTypes=[];selectedFile=null;
   user={name,email,county};
-  sessionStorage.setItem('rs_session',JSON.stringify({type:'employee',name,email,county,ts:Date.now()}));
+  const esess=JSON.stringify({type:'employee',name,email,county,ts:Date.now()});
+  sessionStorage.setItem('rs_session',esess);localStorage.setItem('rs_session',esess);
   document.getElementById('display-name').textContent=name;
   document.getElementById('screen-landing').classList.remove('active');
   document.getElementById('screen-portal').classList.add('active');
@@ -3272,7 +3290,7 @@ function logout(){
   clearIds.forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='<p style="color:#888;font-size:13px;">Loading...</p>';});
   const empMemosWrap=document.getElementById('emp-memos-wrap');if(empMemosWrap)empMemosWrap.style.display='none';
   const badge=document.getElementById('badge-emp-memos');if(badge)badge.style.display='none';
-  sessionStorage.removeItem('rs_session');
+  sessionStorage.removeItem('rs_session');localStorage.removeItem('rs_session');
   hideMobileNav();
   document.getElementById('screen-portal').classList.remove('active');
   document.body.classList.remove('portal-active');
@@ -3309,7 +3327,8 @@ async function adminLogin(){
   // Show analytics only for admin/owner/ops_manager
   const analyticsNavEl=document.getElementById('nav-adm-analytics');
   if(analyticsNavEl)analyticsNavEl.style.display=['admin','owner','ops_manager'].includes(staff.role)?'flex':'none';
-  sessionStorage.setItem('rs_session',JSON.stringify({type:'admin',name:staff.name,role:staff.role,ts:Date.now()}));
+  const sess2=JSON.stringify({type:'admin',name:staff.name,role:staff.role,ts:Date.now()});
+  sessionStorage.setItem('rs_session',sess2);localStorage.setItem('rs_session',sess2);
   document.getElementById('screen-landing').classList.remove('active');
   document.getElementById('screen-admin').classList.add('active');
   buildMgrGuide();buildHbRef();
@@ -3319,7 +3338,7 @@ async function adminLogin(){
   setupRealtimeSubscriptions();
 }
 function adminLogout(){
-  sessionStorage.removeItem('rs_session');
+  sessionStorage.removeItem('rs_session');localStorage.removeItem('rs_session');
   document.getElementById('screen-admin').classList.remove('active');
   document.getElementById('screen-landing').classList.add('active');
   document.getElementById('admin-pass').value='';
@@ -3684,6 +3703,18 @@ async function submitTimeOff(){
   if(currentReqType==='Use PTO Hours'&&!ptoHours){alert('Please enter the number of PTO hours.');return;}
   const timeDetail=ptoHours?`${ptoHours} PTO hours`:(time2?`${time1} – ${time2}`:time1);
   const status=currentReqType==='Use PTO Hours'?'PTO_PENDING':'PENDING';
+  // ── Duplicate detection ──
+  try{
+    const{data:existing}=await db.from('time_off_requests')
+      .select('id,start_date,end_date,status,request_type')
+      .eq('employee_email',user.email)
+      .neq('status','DENIED')
+      .lte('start_date',date2).gte('end_date',date1);
+    if(existing&&existing.length>0){
+      const dup=existing[0];
+      if(!confirm(`⚠️ You already have a ${dup.status} ${dup.request_type} request for ${dup.start_date}${dup.end_date&&dup.end_date!==dup.start_date?' – '+dup.end_date:''}. Submit anyway?`))return;
+    }
+  }catch(e){console.log('Dup check:',e);}
   try{
     await db.from('time_off_requests').insert([{employee_name:user.name,employee_email:user.email,county:user.county,request_type:currentReqType,start_date:date1,end_date:date2,time_detail:timeDetail,reason,status,submitted_at:new Date().toISOString()}]);
     if(typeof emailjs!=='undefined'){await emailjs.send(EMAILJS_SERVICE_ID,'template_26w7bfc',{employee_name:user.name,employee_email:user.email,county:user.county,request_type:currentReqType,start_date:date1,end_date:date2,time_detail:timeDetail,reason,portal_url:PORTAL_URL,to_email:getSupervisorEmail(user.email)});}
@@ -5415,9 +5446,10 @@ function switchFleetMaintTab(tab){
   currentFleetMaintTab=tab;
   const isOverview=tab==='overview';
   const isCosts=tab==='costs';
+  const isTowing=tab==='towing';
   const isTires=tab==='tires';
   const isReports=tab==='reports';
-  ['overview','oil','tires','preventative','repair','inspection','reports','costs'].forEach(t=>{
+  ['overview','oil','tires','preventative','repair','inspection','reports','costs','towing'].forEach(t=>{
     document.getElementById('fmtab-'+t)?.classList.toggle('active',t===tab);
   });
   const genericForm=document.getElementById('fm-generic-form');
@@ -5427,8 +5459,10 @@ function switchFleetMaintTab(tab){
   if(overviewPanel)overviewPanel.style.display=isOverview?'block':'none';
   const costsPanel=document.getElementById('fm-costs-panel');
   if(costsPanel)costsPanel.style.display=isCosts?'block':'none';
-  if(genericForm)genericForm.style.display=(isTires||isReports||isOverview||isCosts)?'none':'block';
-  if(historyEl)historyEl.style.display=(isTires||isReports||isOverview||isCosts)?'none':'block';
+  const towingPanel=document.getElementById('fm-towing-panel');
+  if(towingPanel)towingPanel.style.display=isTowing?'block':'none';
+  if(genericForm)genericForm.style.display=(isTires||isReports||isOverview||isCosts||isTowing)?'none':'block';
+  if(historyEl)historyEl.style.display=(isTires||isReports||isOverview||isCosts||isTowing)?'none':'block';
   if(tirePanel)tirePanel.style.display=isTires?'block':'none';
   let reportsPanel=document.getElementById('fm-reports-panel');
   if(!reportsPanel){reportsPanel=document.createElement('div');reportsPanel.id='fm-reports-panel';if(historyEl)historyEl.parentNode.insertBefore(reportsPanel,historyEl.nextSibling);}
@@ -5442,6 +5476,7 @@ function switchFleetMaintTab(tab){
   if(titleEl&&titles[tab])titleEl.textContent=titles[tab];
   if(isOverview){renderFleetOverview(currentFleetVehicleId);}
   else if(isCosts){renderFleetCostTracker(currentFleetVehicleId);}
+  else if(isTowing){renderFleetTowing(currentFleetVehicleId);}
   else if(tab==='repair')populateLinkedReports(currentFleetVehicleId);
   if(isTires){renderTireMounted();loadTireChangeoversHistory();}
   else if(isReports){loadFleetVehicleReports(currentFleetVehicleId);}
@@ -6456,6 +6491,7 @@ function switchProfileTab(tab){
   if(tab==='performance'){switchPerfCard('reviews');loadProfileWarnings(p.employee_name,p.county);}
   if(tab==='memos')loadProfileMemos(p.employee_name,p.employee_email);
   if(tab==='availability')loadProfileAvailability(currentProfileEmployee);
+  if(tab==='equipment')loadProfileEquipment();
   if(tab==='sup-checklist')loadSupChecklist(currentProfileId);
 }
 function _switchProfileTabOriginal(tab){
@@ -10201,7 +10237,7 @@ function checkReviewsForDashboard(){
 
 function setCfgTab(tab){
   try{
-    ['users','portal','docs','security'].forEach(t=>{
+    ['users','portal','docs','tools','security'].forEach(t=>{
       const btn=document.getElementById('cfg-tab-'+t);
       const panel=document.getElementById('cfg-panel-'+t);
       if(btn){btn.style.borderBottom=t===tab?'2px solid var(--navy)':'2px solid transparent';btn.style.color=t===tab?'var(--navy)':'#888';btn.style.fontWeight=t===tab?'800':'700';}
@@ -10209,6 +10245,7 @@ function setCfgTab(tab){
     });
     if(tab==='users')loadStaffAccounts();
     if(tab==='docs')loadCustomDocs();
+    if(tab==='tools')loadNameFixTool();
     if(tab==='security')loadLoginLog();
   }catch(e){console.error('setCfgTab error:',e);}
 }
@@ -10833,49 +10870,78 @@ async function loadProfileAvailability(p){
     const{data}=await db.from('employee_profiles').select('availability_data').eq('id',currentProfileId).single();
     if(data?.availability_data)saved=JSON.parse(data.availability_data);
   }catch(e){}
-
   const isDemo=adminStaff?.role==='demo';
-  let html=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-    <div>
-      <div style="font-size:14px;font-weight:800;color:var(--navy);">Driver Availability</div>
-      <div style="font-size:12px;color:#888;margin-top:2px;">Check all times this driver is available. Changes save automatically.</div>
+  const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  el.innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+      <div>
+        <div style="font-size:14px;font-weight:800;color:var(--navy);">Driver Availability</div>
+        <div style="font-size:12px;color:#888;margin-top:2px;">Set working days and hours. Changes save automatically.</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button onclick="exportAvailabilityCSV()" style="font-size:11px;padding:6px 12px;border-radius:6px;border:1px solid var(--navy);background:#fff;cursor:pointer;color:var(--navy);">⬇️ Export All CSV</button>
+        <button onclick="clearAvailability('${currentProfileId}')" style="font-size:11px;padding:6px 12px;border-radius:6px;border:1px solid #ddd;background:#fff;cursor:pointer;color:#888;">Clear All</button>
+      </div>
     </div>
-    <button onclick="clearAvailability('${currentProfileId}')" style="font-size:11px;padding:4px 10px;border-radius:6px;border:1px solid #ddd;background:#fff;cursor:pointer;color:#888;">Clear All</button>
-  </div>
-  <div style="overflow-x:auto;">
-  <table style="width:100%;border-collapse:collapse;font-size:13px;">
-    <thead>
-      <tr style="background:var(--navy);color:#fff;">
-        <th style="padding:10px 12px;text-align:left;border-radius:8px 0 0 0;white-space:nowrap;">Time Slot</th>
-        ${AVAIL_DAYS.map((d,i)=>`<th style="padding:10px 8px;text-align:center;${i===6?'border-radius:0 8px 0 0':''};">${d.substring(0,3)}</th>`).join('')}
-      </tr>
-    </thead>
-    <tbody>
-      ${AVAIL_TIMES.map((time,ti)=>`
-        <tr style="background:${ti%2===0?'#fafafa':'#fff'};">
-          <td style="padding:10px 12px;font-weight:600;color:var(--navy);white-space:nowrap;border-bottom:1px solid #eee;">${time}</td>
-          ${AVAIL_DAYS.map(day=>{
-            const key=day+'::'+time;
-            const checked=saved[key]||false;
-            return `<td style="text-align:center;border-bottom:1px solid #eee;padding:8px;">
-              <input type="checkbox" data-profile="${currentProfileId}" data-key="${key}" ${checked?'checked':''} ${isDemo?'disabled':''}
-              onchange="saveAvailabilityItem(this)"
-              style="width:18px;height:18px;cursor:pointer;accent-color:var(--navy);">
-            </td>`;
-          }).join('')}
-        </tr>`).join('')}
-    </tbody>
-  </table>
-  </div>
-  <div id="avail-save-indicator" style="font-size:12px;color:#888;margin-top:8px;text-align:right;"></div>`;
+    <!-- Start/End Time -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+      <div class="form-field"><label>Typical Start Time</label>
+        <input type="time" id="avail-start-time" value="${saved.start_time||''}" ${isDemo?'disabled':''}
+          onchange="saveAvailabilityTime('start_time',this.value)"
+          style="width:100%;padding:9px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+      </div>
+      <div class="form-field"><label>Typical End Time</label>
+        <input type="time" id="avail-end-time" value="${saved.end_time||''}" ${isDemo?'disabled':''}
+          onchange="saveAvailabilityTime('end_time',this.value)"
+          style="width:100%;padding:9px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+      </div>
+    </div>
+    <!-- Days Available -->
+    <div style="font-size:12px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Available Days</div>
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:16px;">
+      ${days.map(day=>{
+        const checked=saved[day]||false;
+        return`<label style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:8px 4px;border:2px solid ${checked?'var(--navy)':'var(--border)'};border-radius:8px;background:${checked?'#f0f4fb':'#fff'};transition:all .15s;">
+          <span style="font-size:11px;font-weight:700;color:${checked?'var(--navy)':'#888'};">${day.substring(0,3).toUpperCase()}</span>
+          <input type="checkbox" data-profile="${currentProfileId}" data-key="${day}" ${checked?'checked':''} ${isDemo?'disabled':''}
+            onchange="saveAvailabilityItem(this)"
+            style="width:16px;height:16px;cursor:pointer;accent-color:var(--navy);">
+        </label>`;
+      }).join('')}
+    </div>
+    <!-- Comments -->
+    <div class="form-field"><label>Comments / Notes</label>
+      <textarea id="avail-comments" placeholder="e.g. End early if starting late, available for backup runs..." ${isDemo?'disabled':''}
+        onchange="saveAvailabilityTime('comments',this.value)"
+        style="width:100%;min-height:60px;padding:9px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px;font-family:Arial,sans-serif;outline:none;resize:vertical;">${saved.comments||''}</textarea>
+    </div>
+    <div id="avail-save-indicator" style="font-size:12px;color:#888;margin-top:8px;text-align:right;"></div>
+  `;
+}
 
-  el.innerHTML=html;
+async function saveAvailabilityTime(key,value){
+  const ind=document.getElementById('avail-save-indicator');
+  if(ind)ind.textContent='Saving...';
+  try{
+    const{data}=await db.from('employee_profiles').select('availability_data').eq('id',currentProfileId).single();
+    const current=data?.availability_data?JSON.parse(data.availability_data):{};
+    current[key]=value;
+    await db.from('employee_profiles').update({availability_data:JSON.stringify(current)}).eq('id',currentProfileId);
+    if(ind){ind.textContent='✓ Saved';setTimeout(()=>ind.textContent='',2000);}
+  }catch(e){if(ind)ind.textContent='Save failed';}
 }
 
 async function saveAvailabilityItem(checkbox){
   const profileId=checkbox.dataset.profile;
   const key=checkbox.dataset.key;
   const checked=checkbox.checked;
+  // Update visual styling
+  const label=checkbox.closest('label');
+  if(label){
+    label.style.borderColor=checked?'var(--navy)':'var(--border)';
+    label.style.background=checked?'#f0f4fb':'#fff';
+    label.querySelector('span').style.color=checked?'var(--navy)':'#888';
+  }
   const ind=document.getElementById('avail-save-indicator');
   if(ind)ind.textContent='Saving...';
   try{
@@ -10894,6 +10960,7 @@ async function clearAvailability(profileId){
     const p=currentProfileEmployee;if(p)loadProfileAvailability(p);
   }catch(e){alert('Error: '+e.message);}
 }
+
 
 // ═══════════════════════════════════════════════
 // DIGITAL REVIEW FORMS
@@ -11710,6 +11777,342 @@ async function sendMemoReminder(memoId){
     await db.from('employee_messages').insert(inserts);
     showRealtimeToast(`✅ Reminder sent to ${unread.length} employee(s)`);
   }catch(e){alert('Error sending reminders: '+e.message);}
+}
+
+// ═══════════════════════════════════════════════
+// NAME CAPITALIZATION FIX TOOL
+// ═══════════════════════════════════════════════
+async function loadNameFixTool(){
+  const el=document.getElementById('name-fix-list');
+  if(!el)return;
+  el.innerHTML='<p style="color:#888;font-size:13px;">Scanning...</p>';
+  try{
+    const{data}=await db.from('employee_profiles').select('id,employee_name').order('employee_name');
+    if(!data||!data.length){el.innerHTML='<p style="color:#888;font-size:13px;">No employees found.</p>';return;}
+    
+    function toProperCase(str){
+      return str.replace(/\w\S*/g,t=>t.charAt(0).toUpperCase()+t.substr(1).toLowerCase());
+    }
+    
+    const issues=data.filter(p=>{
+      const proper=toProperCase(p.employee_name);
+      return proper!==p.employee_name;
+    });
+    
+    if(!issues.length){
+      el.innerHTML='<div style="color:var(--success);font-size:13px;padding:12px;background:#f0faf4;border-radius:8px;">✅ All names look correctly capitalized!</div>';
+      return;
+    }
+    
+    el.innerHTML='<div style="font-size:13px;color:#888;margin-bottom:8px;">Found '+issues.length+' name(s) that may need fixing:</div>'+
+    issues.map(p=>{
+      const suggested=toProperCase(p.employee_name);
+      return`<div style="display:flex;align-items:center;gap:10px;padding:10px;border:1px solid var(--border);border-radius:8px;margin-bottom:6px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:200px;">
+          <div style="font-size:12px;color:#888;">Current:</div>
+          <div style="font-size:13px;font-weight:700;color:var(--red);">${p.employee_name}</div>
+        </div>
+        <div style="color:#888;">→</div>
+        <div style="flex:1;min-width:200px;">
+          <div style="font-size:12px;color:#888;">Suggested fix:</div>
+          <input type="text" value="${suggested}" id="namefx-${p.id}" style="width:100%;padding:6px 10px;border:2px solid var(--border);border-radius:6px;font-size:13px;outline:none;">
+        </div>
+        <button data-pid="${p.id}" onclick="applyNameFix(this.dataset.pid)" class="btn btn-sm" style="background:#f0faf4;color:var(--success);border-color:var(--success);">✓ Fix</button>
+      </div>`;
+    }).join('')+
+    '<button onclick="fixAllNames()" class="btn btn-primary" style="margin-top:12px;">✅ Fix All Names</button>';
+  }catch(e){el.innerHTML='<p style="color:var(--red);font-size:13px;">Error: '+e.message+'</p>';}
+}
+
+async function applyNameFix(profileId){
+  const input=document.getElementById('namefx-'+profileId);
+  if(!input)return;
+  const newName=input.value.trim();
+  if(!newName)return;
+  try{
+    await db.from('employee_profiles').update({employee_name:newName}).eq('id',profileId);
+    input.closest('div[style]').style.opacity='0.4';
+    showRealtimeToast('✅ Name updated: '+newName);
+    await loadEmployeeFolders();
+  }catch(e){alert('Error: '+e.message);}
+}
+
+async function fixAllNames(){
+  const inputs=document.querySelectorAll('[id^="namefx-"]');
+  if(!inputs.length)return;
+  if(!confirm(`Fix all ${inputs.length} name(s)?`))return;
+  try{
+    for(const input of inputs){
+      const id=input.id.replace('namefx-','');
+      const newName=input.value.trim();
+      if(newName)await db.from('employee_profiles').update({employee_name:newName}).eq('id',id);
+    }
+    showRealtimeToast('✅ All names fixed!');
+    await loadEmployeeFolders();
+    loadNameFixTool();
+  }catch(e){alert('Error: '+e.message);}
+}
+
+// ═══════════════════════════════════════════════
+// AVAILABILITY: START/END TIME + CSV EXPORT
+// ═══════════════════════════════════════════════
+async function exportAvailabilityCSV(){
+  try{
+    const{data}=await db.from('employee_profiles')
+      .select('employee_name,county,availability_data,position')
+      .order('employee_name');
+    if(!data||!data.length){alert('No employee data found.');return;}
+    
+    const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const headers=['Employee Name','County','Position','Start Time','End Time',...days,'Comments'];
+    const rows=data.map(p=>{
+      let avail={};
+      try{avail=JSON.parse(p.availability_data||'{}');}catch(e){}
+      const dayChecks=days.map(d=>avail[d]?'✓':'');
+      return[
+        p.employee_name||'',
+        p.county||'',
+        p.position||'',
+        avail.start_time||'',
+        avail.end_time||'',
+        ...dayChecks,
+        avail.comments||''
+      ];
+    });
+    
+    const csv=[headers,...rows].map(r=>r.map(c=>'"'+(c||'').replace(/"/g,'""')+'"').join(',')).join('\n');
+    const blob=new Blob([csv],{type:'text/csv'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.download='RideSource_Driver_Availability.csv';
+    document.body.appendChild(a);a.click();
+    document.body.removeChild(a);URL.revokeObjectURL(url);
+    showRealtimeToast('✅ Availability exported!');
+  }catch(e){alert('Error exporting: '+e.message);}
+}
+
+// ═══════════════════════════════════════════════
+// FLEET TOWING TAB
+// ═══════════════════════════════════════════════
+async function renderFleetTowing(vehicleId){
+  const el=document.getElementById('fm-towing-content');
+  if(!el||!vehicleId)return;
+  el.innerHTML='<p style="color:#888;font-size:13px;">Loading...</p>';
+
+  let records=[];
+  try{
+    const{data}=await db.from('fleet_maintenance')
+      .select('*').eq('vehicle_id',vehicleId)
+      .eq('maintenance_type','Tow Charge')
+      .order('service_date',{ascending:false});
+    records=data||[];
+  }catch(e){}
+
+  const totalCost=records.reduce((s,r)=>s+parseFloat(r.cost||0),0);
+
+  el.innerHTML=`
+    <div class="card" style="margin-bottom:16px;padding:14px 16px;">
+      <div style="font-size:13px;font-weight:800;color:var(--navy);margin-bottom:12px;cursor:pointer;" onclick="toggleTowForm()">
+        ➕ Log a Tow Charge <span id="tow-form-toggle" style="font-size:11px;color:#888;">▼ expand</span>
+      </div>
+      <div id="tow-log-form" style="display:none;">
+        <div class="form-row">
+          <div class="form-field"><label>Date *</label><input type="date" id="tow-date" style="width:100%;padding:9px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+          <div class="form-field"><label>Tow Company</label><input type="text" id="tow-vendor" placeholder="e.g. Dave's Towing" style="width:100%;padding:9px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-field"><label>Amount ($)</label><input type="number" id="tow-cost" placeholder="0.00" step="0.01" min="0" style="width:100%;padding:9px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+          <div class="form-field"><label>Driver</label><input type="text" id="tow-driver" placeholder="Driver name (optional)" style="width:100%;padding:9px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+        </div>
+        <div class="form-field"><label>From → To Location</label><input type="text" id="tow-notes" placeholder="e.g. Rte 1 Harrington → Ellsworth Garage" style="width:100%;padding:9px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+        <div class="form-field"><label>Receipt / Invoice</label><input type="file" id="tow-receipt" accept="image/*,.pdf" style="width:100%;padding:8px;border:2px solid var(--border);border-radius:8px;font-size:13px;"></div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button onclick="saveTowRecord('${vehicleId}')" class="btn btn-primary">💾 Save Tow Record</button>
+          <span id="tow-save-msg" style="font-size:13px;color:var(--success);display:none;">✓ Saved!</span>
+        </div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:20px;">
+      <div style="background:#f7f9fc;border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;">
+        <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Total Tow Cost</div>
+        <div style="font-size:18px;font-weight:800;color:var(--navy);">$${totalCost.toFixed(2)}</div>
+      </div>
+      <div style="background:#f7f9fc;border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;">
+        <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Tow Incidents</div>
+        <div style="font-size:18px;font-weight:800;color:var(--navy);">${records.length}</div>
+      </div>
+    </div>
+    ${records.length?
+      '<div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;">'+
+      '<div style="display:grid;grid-template-columns:90px 1fr 120px 80px 60px;gap:8px;padding:8px 12px;background:var(--gray);font-size:11px;font-weight:700;color:#888;text-transform:uppercase;">'+
+        '<div>Date</div><div>Route / Notes</div><div>Company</div><div>Driver</div><div style="text-align:right;">Cost</div></div>'+
+      records.map(r=>`<div style="display:grid;grid-template-columns:90px 1fr 120px 80px 60px;gap:8px;padding:10px 12px;border-top:1px solid var(--border);font-size:13px;align-items:center;">
+        <div style="color:#888;font-size:12px;">${r.service_date}</div>
+        <div style="color:#555;">${r.notes||'—'}</div>
+        <div style="color:#888;font-size:12px;">${r.vendor||'—'}</div>
+        <div style="color:#888;font-size:12px;">${r.performed_by||'—'}</div>
+        <div style="font-weight:800;color:var(--navy);text-align:right;">$${parseFloat(r.cost||0).toFixed(2)}</div>
+      </div>`).join('')+'</div>'
+      :'<p style="color:#888;font-size:13px;text-align:center;padding:20px 0;">No tow records yet.</p>'}`;
+}
+
+function toggleTowForm(){
+  const form=document.getElementById('tow-log-form');
+  const toggle=document.getElementById('tow-form-toggle');
+  if(!form)return;
+  const isOpen=form.style.display!=='none';
+  form.style.display=isOpen?'none':'block';
+  if(toggle)toggle.textContent=isOpen?'▼ expand':'▲ collapse';
+}
+
+async function saveTowRecord(vehicleId){
+  const date=document.getElementById('tow-date')?.value;
+  const vendor=document.getElementById('tow-vendor')?.value||'';
+  const cost=document.getElementById('tow-cost')?.value||'0';
+  const driver=document.getElementById('tow-driver')?.value||'';
+  const notes=document.getElementById('tow-notes')?.value||'';
+  if(!date){alert('Please enter a date.');return;}
+
+  let receiptUrl=null;
+  const fi=document.getElementById('tow-receipt');
+  if(fi?.files?.length){
+    try{
+      const file=fi.files[0];
+      const fname='towing/'+vehicleId+'-'+Date.now()+'-'+file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+      const{data:up,error:ue}=await db.storage.from('ridesource-uploads').upload(fname,file);
+      if(!ue&&up){const{data:u}=db.storage.from('ridesource-uploads').getPublicUrl(fname);receiptUrl=u?.publicUrl||null;}
+    }catch(e){console.log('Receipt upload:',e);}
+  }
+
+  try{
+    await db.from('fleet_maintenance').insert([{
+      vehicle_id:vehicleId,maintenance_type:'Tow Charge',
+      service_date:date,cost:parseFloat(cost),vendor,
+      notes:notes+(receiptUrl?'\nReceipt: '+receiptUrl:''),
+      performed_by:driver||adminName,
+      created_at:new Date().toISOString()
+    }]);
+    ['tow-date','tow-vendor','tow-cost','tow-driver','tow-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    const msg=document.getElementById('tow-save-msg');
+    if(msg){msg.style.display='inline';setTimeout(()=>msg.style.display='none',2000);}
+    const{data}=await db.from('fleet_maintenance').select('*').order('service_date',{ascending:false});
+    allFleetMaintenanceCache=data||[];
+    renderFleetTowing(vehicleId);
+  }catch(e){alert('Error: '+e.message);}
+}
+
+// ═══════════════════════════════════════════════
+// EMPLOYEE EQUIPMENT TAB
+// ═══════════════════════════════════════════════
+async function loadProfileEquipment(){
+  const el=document.getElementById('pdata-equipment');if(!el)return;
+  let saved={items:[]};
+  try{
+    const{data}=await db.from('employee_profiles').select('equipment_data').eq('id',currentProfileId).single();
+    if(data?.equipment_data)saved=JSON.parse(data.equipment_data);
+  }catch(e){}
+
+  const EQUIPMENT_TYPES=['Phone','Tablet','Laptop','Key Fob','Uniform','Badge','Vest','First Aid Kit',
+    'EZ-Pass','Booster Pack','Jumper Cables','Fire Extinguisher','Other'];
+
+  const items=saved.items||[];
+
+  el.innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div>
+        <div style="font-size:14px;font-weight:800;color:var(--navy);">Equipment & Issued Items</div>
+        <div style="font-size:12px;color:#888;margin-top:2px;">Track all equipment issued to this employee.</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button onclick="printEquipment()" style="font-size:11px;padding:6px 12px;border-radius:6px;border:1px solid var(--navy);background:#fff;cursor:pointer;color:var(--navy);">🖨️ Print</button>
+        <button onclick="addEquipmentRow()" class="btn btn-primary" style="font-size:11px;padding:6px 12px;">➕ Add Item</button>
+      </div>
+    </div>
+    <div id="equipment-list">
+      ${items.length?items.map((item,i)=>equipmentRow(item,i)).join('')
+        :'<p style="color:#888;font-size:13px;text-align:center;padding:20px 0;">No equipment assigned yet. Click ➕ Add Item to get started.</p>'}
+    </div>`;
+}
+
+function equipmentRow(item,i){
+  return`<div id="equip-row-${i}" style="display:grid;grid-template-columns:1fr 1fr 100px 80px 30px;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);">
+    <input type="text" value="${item.name||''}" placeholder="Item description" data-idx="${i}" data-field="name"
+      onchange="updateEquipmentItem(this)"
+      style="padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;">
+    <input type="text" value="${item.serial||''}" placeholder="Serial / Asset #" data-idx="${i}" data-field="serial"
+      onchange="updateEquipmentItem(this)"
+      style="padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;">
+    <input type="date" value="${item.issued_date||''}" data-idx="${i}" data-field="issued_date"
+      onchange="updateEquipmentItem(this)"
+      style="padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;outline:none;">
+    <select data-idx="${i}" data-field="status" onchange="updateEquipmentItem(this)"
+      style="padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;outline:none;">
+      <option value="Issued" ${item.status==='Issued'?'selected':''}>Issued</option>
+      <option value="Returned" ${item.status==='Returned'?'selected':''}>Returned</option>
+      <option value="Lost" ${item.status==='Lost'?'selected':''}>Lost</option>
+    </select>
+    <button data-idx="${i}" onclick="removeEquipmentItem(this.dataset.idx)"
+      style="width:28px;height:28px;border-radius:6px;border:1px solid #fcc;background:#fff;color:var(--red);cursor:pointer;font-size:12px;">✕</button>
+  </div>`;
+}
+
+async function addEquipmentRow(){
+  let saved={items:[]};
+  try{
+    const{data}=await db.from('employee_profiles').select('equipment_data').eq('id',currentProfileId).single();
+    if(data?.equipment_data)saved=JSON.parse(data.equipment_data);
+  }catch(e){}
+  saved.items.push({name:'',serial:'',issued_date:new Date().toISOString().split('T')[0],status:'Issued'});
+  await db.from('employee_profiles').update({equipment_data:JSON.stringify(saved)}).eq('id',currentProfileId);
+  loadProfileEquipment();
+}
+
+async function updateEquipmentItem(input){
+  const idx=parseInt(input.dataset.idx);
+  const field=input.dataset.field;
+  let saved={items:[]};
+  try{
+    const{data}=await db.from('employee_profiles').select('equipment_data').eq('id',currentProfileId).single();
+    if(data?.equipment_data)saved=JSON.parse(data.equipment_data);
+  }catch(e){}
+  if(!saved.items[idx])saved.items[idx]={};
+  saved.items[idx][field]=input.value;
+  await db.from('employee_profiles').update({equipment_data:JSON.stringify(saved)}).eq('id',currentProfileId);
+  showRealtimeToast('✓ Saved');
+}
+
+async function removeEquipmentItem(idx){
+  if(!confirm('Remove this equipment item?'))return;
+  let saved={items:[]};
+  try{
+    const{data}=await db.from('employee_profiles').select('equipment_data').eq('id',currentProfileId).single();
+    if(data?.equipment_data)saved=JSON.parse(data.equipment_data);
+  }catch(e){}
+  saved.items.splice(parseInt(idx),1);
+  await db.from('employee_profiles').update({equipment_data:JSON.stringify(saved)}).eq('id',currentProfileId);
+  loadProfileEquipment();
+}
+
+function printEquipment(){
+  const emp=currentProfileEmployee;
+  const el=document.getElementById('pdata-equipment');
+  if(!el)return;
+  const win=window.open('','_blank');
+  win.document.write('<html><head><title>Equipment — '+(emp?.employee_name||'')+'</title>');
+  win.document.write('<style>body{font-family:Arial,sans-serif;padding:20px;}table{width:100%;border-collapse:collapse;}th,td{border:1px solid #ddd;padding:8px;text-align:left;}th{background:#1B2A4A;color:#fff;}</style></head><body>');
+  win.document.write('<h2>RideSource Inc. — Equipment Record</h2>');
+  win.document.write('<p><strong>Employee:</strong> '+(emp?.employee_name||'')+'</p>');
+  win.document.write('<p><strong>Date Printed:</strong> '+new Date().toLocaleDateString()+'</p>');
+  win.document.write('<table><tr><th>Item</th><th>Serial / Asset #</th><th>Issued Date</th><th>Status</th></tr>');
+  const rows=el.querySelectorAll('[id^="equip-row-"]');
+  rows.forEach(row=>{
+    const inputs=row.querySelectorAll('input,select');
+    const vals=Array.from(inputs).map(i=>i.value||'—');
+    win.document.write('<tr>'+vals.map(v=>'<td>'+v+'</td>').join('')+'</tr>');
+  });
+  win.document.write('</table><br><p>Employee Signature: ___________________________ Date: ___________</p>');
+  win.document.write('</body></html>');
+  win.document.close();win.print();
 }
 </script>
 <!-- MODALS -->
