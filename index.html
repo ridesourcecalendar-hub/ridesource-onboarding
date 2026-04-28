@@ -1220,7 +1220,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 
 
 <!-- ADMIN PORTAL -->
-<div id="screen-admin" class="screen">
+<div id="screen-admin" class="screen" style="width:100%;box-sizing:border-box;">
   <div class="header">
     <div class="header-logo" onclick="showAdmin('dashboard')" style="cursor:pointer;" title="Home">
       <div class="header-logo-text">Ride<span>Source</span></div>
@@ -2998,7 +2998,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
       </div>
 
 <!-- CONFIG PANEL (Admin only) -->
-      <div id="section-adm-config" class="admin-section" style="display:none;">
+      <div id="section-adm-config" class="admin-section" style="display:none;width:100%;min-height:400px;box-sizing:border-box;">
         <div style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:2px;">⚙️ Portal Configuration</div>
         <p style="color:#888;font-size:13px;margin-bottom:20px;">Manage staff accounts, documents, and portal settings. Admin access only.</p>
 
@@ -3261,9 +3261,9 @@ window.addEventListener('load',async function(){
     const age=sess.ts?Date.now()-sess.ts:Infinity;
     if(age>8*60*60*1000){sessionStorage.removeItem('rs_session');localStorage.removeItem('rs_session');return;}
     if(sess.type==='employee'&&sess.name&&sess.email&&sess.county){
-      user={name:sess.name,email:sess.email,county:sess.county};
-      startPortal(sess.name,sess.email,sess.county);
+      startPortal({name:sess.name,email:sess.email,county:sess.county});
       document.body.classList.add('portal-active');
+      document.getElementById('mobile-bottom-nav').style.display='flex';
     } else if(sess.type==='admin'&&sess.name){
       // Look up staff record from Supabase — no local credentials stored
       const {data:staffData}=await db.from('admin_staff').select('name,title,email,role').eq('name',sess.name).single();
@@ -3329,6 +3329,7 @@ function startPortal(opts){
   document.getElementById('screen-landing').classList.remove('active');
   document.getElementById('screen-portal').classList.add('active');
   document.body.classList.add('portal-active');
+  document.getElementById('mobile-bottom-nav').style.display='flex';
   showSection('dashboard');
   showMobileNav();
   loadSavedState();buildTraining();buildHandbook();buildPolicies();updateDashboard();loadSignedPolicies();setTimeout(()=>{loadEmpMemoHistory();},1200);
