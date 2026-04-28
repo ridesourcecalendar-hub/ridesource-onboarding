@@ -11426,30 +11426,126 @@ async function renderFleetOverview(vehicleId){
 }
 
 function logRepairFromReport(reportId,issueType){
-  // Switch to repair tab and pre-fill from report
-  switchFleetMaintTab('repair');
-  // Pre-fill issue type
-  const issueSelect=document.getElementById('fm-rep-issue-type');
-  if(issueSelect){
-    // Find best matching issue
-    const opts=[...issueSelect.options].map(o=>o.value);
-    const match=opts.find(o=>issueType.toLowerCase().includes(o.toLowerCase()))||'Other';
-    issueSelect.value=match;
-    if(match)handleRepairIssueChange();
+  // Find the full report from cache
+  const report=allVehicleRecordsCache.find(r=>r.id===reportId||r.id===parseInt(reportId));
+  if(!report){alert('Report not found.');return;}
+
+  // Open the log-from-report modal
+  const modal=document.getElementById('log-from-report-modal');
+  if(!modal){console.error('Modal not found');return;}
+
+  // Pre-fill all fields from report
+  document.getElementById('lfr-report-id').value=reportId;
+  document.getElementById('lfr-vehicle-id').value=report.vehicle_id||'';
+  document.getElementById('lfr-date').value=new Date().toISOString().split('T')[0];
+  document.getElementById('lfr-driver').value=report.employee_name||'';
+  document.getElementById('lfr-issue').value=Array.isArray(JSON.parse(report.issue_types||'[]'))?JSON.parse(report.issue_types||'[]').join(', '):(report.issue_types||issueType||'');
+  document.getElementById('lfr-description').value=report.description||'';
+  document.getElementById('lfr-shop').value='';
+  document.getElementById('lfr-cost').value='';
+
+  // Show receipt from driver if available
+  const receiptPreview=document.getElementById('lfr-receipt-preview');
+  if(receiptPreview){
+    const receiptUrl=report.receipt_url||report.photo_url||null;
+    receiptPreview.innerHTML=receiptUrl
+      ?'<div style="margin-top:8px;"><a href="'+receiptUrl+'" target="_blank" style="color:#1565c0;font-size:12px;font-weight:700;">📎 View Driver Receipt / Photo</a></div>'
+      :'<div style="font-size:12px;color:#aaa;margin-top:4px;">No receipt submitted by driver</div>';
   }
-  // Pre-select linked report
-  const linkSel=document.getElementById('fm-linked-report');
-  if(linkSel){
-    // Small delay to let populateLinkedReports run
-    setTimeout(()=>{
-      linkSel.value=reportId;
-    },300);
-  }
-  // Auto-update report to In Progress
+
+  modal.classList.add('open');
+
+  // Mark report as In Progress
   db.from('vehicle_reports').update({status:'IN_PROGRESS'}).eq('id',reportId).then(()=>{
     allVehicleRecordsCache=allVehicleRecordsCache.map(r=>r.id===reportId||r.id===parseInt(reportId)?{...r,status:'IN_PROGRESS'}:r);
-    showRealtimeToast('Report marked In Progress — fill in repair details below');
   }).catch(e=>console.log(e));
+}
+
+async function saveLogFromReport(){
+  const reportId=document.getElementById('lfr-report-id').value;
+  const vehicleId=document.getElementById('lfr-vehicle-id').value;
+  const date=document.getElementById('lfr-date').value;
+  const driver=document.getElementById('lfr-driver').value.trim();
+  const shop=document.getElementById('lfr-shop').value.trim();
+  const cost=document.getElementById('lfr-cost').value;
+  const notes=document.getElementById('lfr-description').value.trim();
+  const payment=document.getElementById('lfr-payment').value;
+  const createExpense=document.getElementById('lfr-create-expense').checked;
+  const resolveReport=document.getElementById('lfr-resolve-report').checked;
+
+  if(!date){alert('Please enter a date.');return;}
+
+  try{
+    // Upload new receipt if provided
+    let receiptUrl=null;
+    const fi=document.getElementById('lfr-receipt-upload');
+    if(fi?.files?.length){
+      const file=fi.files[0];
+      const fname='repairs/'+vehicleId+'-'+Date.now()+'-'+file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+      const{data:up,error:ue}=await db.storage.from('ridesource-uploads').upload(fname,file);
+      if(!ue&&up){const{data:u}=db.storage.from('ridesource-uploads').getPublicUrl(fname);receiptUrl=u?.publicUrl||null;}
+    }
+
+    // Also check for existing driver receipt
+    const report=allVehicleRecordsCache.find(r=>r.id===parseInt(reportId)||r.id===reportId);
+    const existingReceipt=report?.receipt_url||report?.photo_url||null;
+    const finalReceipt=receiptUrl||existingReceipt;
+
+    // Save to fleet_maintenance as Repair
+    await db.from('fleet_maintenance').insert([{
+      vehicle_id:vehicleId,
+      maintenance_type:'Repair',
+      service_date:date,
+      shop_name:shop||null,
+      vendor:shop||null,
+      cost:cost?parseFloat(cost):null,
+      notes:notes||null,
+      performed_by:driver||adminName,
+      payment_method:payment||null,
+      paid:!!payment,
+      receipt_url:finalReceipt,
+      linked_report_id:reportId,
+      logged_by:adminName,
+      logged_at:new Date().toISOString()
+    }]);
+
+    // Optionally create expense entry
+    if(createExpense&&cost){
+      const report2=allVehicleRecordsCache.find(r=>r.id===parseInt(reportId)||r.id===reportId);
+      await db.from('expense_submissions').insert([{
+        employee_name:driver||'—',
+        employee_email:report2?.employee_email||'admin@ridesource',
+        county:report2?.county||'',
+        expense_type:'Repair',
+        service_type:'Repair',
+        expense_category:'vehicle',
+        expense_date:date,
+        amount:parseFloat(cost),
+        facility:shop||null,
+        vehicle_id:vehicleId,
+        payment_method:payment||null,
+        description:notes||'Vehicle repair — '+vehicleId,
+        receipt_url:finalReceipt,
+        status:'APPROVED',
+        decided_by:adminName,
+        decided_at:new Date().toISOString(),
+        submitted_at:new Date().toISOString()
+      }]);
+    }
+
+    // Resolve the report
+    if(resolveReport){
+      await db.from('vehicle_reports').update({status:'RESOLVED',resolved_by:adminName,resolved_at:new Date().toISOString()}).eq('id',reportId);
+    }
+
+    // Refresh caches
+    const{data:maintData}=await db.from('fleet_maintenance').select('*').order('service_date',{ascending:false});
+    allFleetMaintenanceCache=maintData||[];
+    await loadVehicleRecords();
+
+    closeModal('log-from-report-modal');
+    showRealtimeToast('✅ Repair logged'+(createExpense?' + expense created':'')+(resolveReport?' + report resolved':''));
+  }catch(e){alert('Error: '+e.message);}
 }
 
 // ═══════════════════════════════════════════════
@@ -12896,6 +12992,65 @@ function handleAdminExpCategory(){
       <button class="btn btn-primary" onclick="saveEditFleetMaint()">💾 Save Changes</button>
       <button class="btn btn-sm" style="background:#f0f0f0;color:#555;" onclick="closeModal('edit-fleet-maint-modal')">Cancel</button>
       <span id="efm-msg" style="font-size:13px;color:var(--success);display:none;">✓ Saved!</span>
+    </div>
+  </div>
+</div>
+
+<!-- LOG REPAIR FROM REPORT MODAL -->
+<div class="modal-overlay" id="log-from-report-modal">
+  <div class="modal" style="max-width:560px;">
+    <button class="modal-close" onclick="closeModal('log-from-report-modal')">✕</button>
+    <h3 style="color:var(--navy);margin-bottom:4px;">🔧 Log Repair from Driver Report</h3>
+    <p style="font-size:13px;color:#888;margin-bottom:16px;">Pre-filled from driver's report. Add shop and cost details to complete.</p>
+    <input type="hidden" id="lfr-report-id">
+
+    <!-- Driver report info -->
+    <div style="background:#f0f4fb;border-radius:8px;padding:12px;margin-bottom:16px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div><div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;margin-bottom:2px;">Vehicle</div>
+          <input type="text" id="lfr-vehicle-id" readonly style="width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-weight:700;background:#fff;outline:none;"></div>
+        <div><div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;margin-bottom:2px;">Driver</div>
+          <input type="text" id="lfr-driver" style="width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:#fff;outline:none;"></div>
+      </div>
+      <div style="margin-top:8px;"><div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;margin-bottom:2px;">Issue / Description</div>
+        <input type="text" id="lfr-issue" style="width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:#fff;outline:none;margin-bottom:6px;">
+        <textarea id="lfr-description" style="width:100%;min-height:50px;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:Arial,sans-serif;background:#fff;outline:none;resize:vertical;"></textarea>
+      </div>
+      <div id="lfr-receipt-preview"></div>
+    </div>
+
+    <!-- Admin fills in -->
+    <div class="form-row">
+      <div class="form-field"><label>Date *</label><input type="date" id="lfr-date" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+      <div class="form-field"><label>Shop / Vendor</label><input type="text" id="lfr-shop" placeholder="e.g. Prompto Ellsworth" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-field"><label>Cost ($)</label><input type="number" id="lfr-cost" placeholder="0.00" step="0.01" min="0" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+      <div class="form-field"><label>Payment Method</label>
+        <select id="lfr-payment" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+          <option value="">— Not paid yet —</option>
+          <option>Charge Account</option><option>Cash</option>
+          <option>Credit Card</option><option>Check</option><option>Paid by Employee</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-field"><label>Upload Receipt (replaces driver's if provided)</label>
+      <input type="file" id="lfr-receipt-upload" accept="image/*,.pdf" style="width:100%;padding:8px;border:2px solid var(--border);border-radius:8px;font-size:13px;">
+    </div>
+
+    <!-- Options -->
+    <div style="background:#f7f9fc;border-radius:8px;padding:12px;margin-bottom:16px;display:flex;flex-direction:column;gap:8px;">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:700;color:var(--navy);">
+        <input type="checkbox" id="lfr-create-expense" checked style="width:16px;height:16px;accent-color:var(--navy);"> Also create expense entry in Finance
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:700;color:#27AE60;">
+        <input type="checkbox" id="lfr-resolve-report" checked style="width:16px;height:16px;accent-color:#27AE60;"> Mark vehicle report as Resolved
+      </label>
+    </div>
+
+    <div style="display:flex;gap:10px;align-items:center;">
+      <button class="btn btn-primary" onclick="saveLogFromReport()">💾 Log Repair</button>
+      <button class="btn btn-sm" style="background:#f0f0f0;color:#555;" onclick="closeModal('log-from-report-modal')">Cancel</button>
     </div>
   </div>
 </div>
