@@ -2408,6 +2408,30 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
               </div>
             </div>
             <!-- Changeover History -->
+            <!-- Tire Repair -->
+            <div class="card" style="margin-bottom:14px;margin-top:14px;">
+              <div style="font-size:14px;font-weight:800;color:var(--navy);margin-bottom:4px;">🔧 Tire Repair</div>
+              <div style="font-size:12px;color:#888;margin-bottom:12px;">Log a flat tire, patch, or replacement.</div>
+              <div class="form-row">
+                <div class="form-field"><label>Date *</label><input type="date" id="tr-date" style="width:100%;padding:9px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+                <div class="form-field"><label>Repair Type *</label>
+                  <select id="tr-type" style="width:100%;padding:9px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                    <option value="">— Select —</option>
+                    <option>Flat Tire</option><option>Patch / Plug</option><option>Tire Replacement</option><option>Tire Rotation</option><option>Other</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-field"><label>Shop</label><input type="text" id="tr-shop" placeholder="e.g. Sullivan Tire" style="width:100%;padding:9px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+                <div class="form-field"><label>Cost ($)</label><input type="number" id="tr-cost" placeholder="0.00" step="0.01" style="width:100%;padding:9px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+              </div>
+              <div class="form-field"><label>Notes</label><textarea id="tr-notes" style="width:100%;min-height:50px;padding:9px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px;font-family:Arial,sans-serif;outline:none;resize:vertical;"></textarea></div>
+              <div class="form-field"><label>Receipt</label><input type="file" id="tr-receipt" accept="image/*,.pdf" style="width:100%;padding:8px;border:2px solid var(--border);border-radius:8px;font-size:13px;"></div>
+              <div style="display:flex;gap:10px;align-items:center;margin-top:8px;">
+                <button class="btn btn-primary" onclick="saveTireRepair()">✅ Log Tire Repair</button>
+                <span id="tr-msg" style="font-size:13px;color:var(--success);display:none;">✓ Saved!</span>
+              </div>
+            </div>
             <div id="tire-changeover-history"><p style="color:#888;font-size:13px;">Loading...</p></div>
           </div>
         </div>
@@ -3325,7 +3349,7 @@ async function adminLogin(){
   // Show gear icon only for admin role
   const gearBtn=document.getElementById('admin-config-btn');
   if(gearBtn)gearBtn.style.display=staff.role==='admin'?'block':'none';
-  // Show analytics only for admin/owner/ops_manager
+  // Show analytics for admin/owner/ops_manager
   const analyticsNavEl=document.getElementById('nav-adm-analytics');
   if(analyticsNavEl)analyticsNavEl.style.display=['admin','owner','ops_manager'].includes(staff.role)?'flex':'none';
   const sess2=JSON.stringify({type:'admin',name:staff.name,role:staff.role,ts:Date.now()});
@@ -12114,6 +12138,41 @@ function printEquipment(){
   win.document.write('</table><br><p>Employee Signature: ___________________________ Date: ___________</p>');
   win.document.write('</body></html>');
   win.document.close();win.print();
+}
+
+async function saveTireRepair(){
+  const date=document.getElementById('tr-date')?.value;
+  const type=document.getElementById('tr-type')?.value;
+  const shop=document.getElementById('tr-shop')?.value||'';
+  const cost=document.getElementById('tr-cost')?.value||'0';
+  const notes=document.getElementById('tr-notes')?.value||'';
+  if(!date||!type){alert('Please enter date and repair type.');return;}
+  let receiptUrl=null;
+  const fi=document.getElementById('tr-receipt');
+  if(fi?.files?.length){
+    try{
+      const file=fi.files[0];
+      const fname='tires/'+currentFleetVehicleId+'-repair-'+Date.now()+'-'+file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+      const{data:up,error:ue}=await db.storage.from('ridesource-uploads').upload(fname,file);
+      if(!ue&&up){const{data:u}=db.storage.from('ridesource-uploads').getPublicUrl(fname);receiptUrl=u?.publicUrl||null;}
+    }catch(e){console.log('Receipt:',e);}
+  }
+  try{
+    await db.from('fleet_maintenance').insert([{
+      vehicle_id:currentFleetVehicleId,maintenance_type:'Tire Repair',
+      service_date:date,cost:parseFloat(cost)||0,vendor:shop,
+      notes:(type+(notes?' — '+notes:'')+(receiptUrl?' | Receipt: '+receiptUrl:'')),
+      performed_by:adminName,created_at:new Date().toISOString()
+    }]);
+    ['tr-date','tr-cost','tr-shop','tr-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    const sel=document.getElementById('tr-type');if(sel)sel.value='';
+    const msg=document.getElementById('tr-msg');
+    if(msg){msg.style.display='inline';setTimeout(()=>msg.style.display='none',2500);}
+    const{data}=await db.from('fleet_maintenance').select('*').order('service_date',{ascending:false});
+    allFleetMaintenanceCache=data||[];
+    loadTireChangeoversHistory();
+    showRealtimeToast('✅ Tire repair logged!');
+  }catch(e){alert('Error: '+e.message);}
 }
 </script>
 <!-- MODALS -->
