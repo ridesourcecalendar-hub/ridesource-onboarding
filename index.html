@@ -405,7 +405,27 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
       </div>
       <div id="landing-volunteer" style="display:none;">
         <div class="landing-title">Volunteer Portal</div>
-        <div class="landing-desc">Access your policy sign-offs, memos, and incident reporting.</div>
+        <div class="landing-desc">Sign in with your Driver ID or your name and email.</div>
+
+        <!-- Quick Sign In with Driver ID -->
+        <div style="display:flex;gap:10px;margin-bottom:8px;">
+          <input class="landing-field" id="vol-driver-code" type="text" inputmode="numeric" maxlength="4"
+            placeholder="4-digit ID" autocomplete="off"
+            style="margin-bottom:0;flex:1;letter-spacing:4px;font-size:20px;font-weight:700;text-align:center;"
+            onkeydown="if(event.key==='Enter')volQuickSignIn()">
+          <input class="landing-field" id="vol-driver-lastname" type="text" placeholder="Last Name"
+            style="margin-bottom:0;flex:1;" onkeydown="if(event.key==='Enter')volQuickSignIn()">
+        </div>
+        <button class="landing-btn" style="background:#2e7d4f;margin-bottom:12px;" onclick="volQuickSignIn()">🔢 Quick Sign In →</button>
+        <div class="error-msg" id="vol-driverid-error" style="display:none;">Driver ID or last name not found.</div>
+
+        <!-- Divider -->
+        <div style="display:flex;align-items:center;gap:10px;margin:4px 0 16px;">
+          <div style="flex:1;height:1px;background:var(--border);"></div>
+          <span style="font-size:12px;color:#aaa;font-weight:600;">or sign in with name & email</span>
+          <div style="flex:1;height:1px;background:var(--border);"></div>
+        </div>
+
         <input class="landing-field" id="vol-login-name" type="text" placeholder="Your Full Name" autocomplete="name">
         <input class="landing-field" id="vol-login-email" type="email" placeholder="Your Email Address" autocomplete="email">
         <select class="landing-field" id="vol-login-county">
@@ -12412,6 +12432,42 @@ function handleAdminExpCategory(){
       label.style.background=c===cat?'#f0f4fb':'#fff';
     }
   });
+}
+
+async function volQuickSignIn(){
+  const code=(document.getElementById('vol-driver-code')?.value||'').trim();
+  const lastName=(document.getElementById('vol-driver-lastname')?.value||'').trim().toLowerCase();
+  const errEl=document.getElementById('vol-driverid-error');
+  if(errEl)errEl.style.display='none';
+  if(!code||!lastName){
+    if(errEl){errEl.textContent='Please enter both your Driver ID and last name.';errEl.style.display='block';}
+    return;
+  }
+  if(!/^\d{4}$/.test(code)){
+    if(errEl){errEl.textContent='Driver ID must be exactly 4 digits.';errEl.style.display='block';}
+    return;
+  }
+  try{
+    const{data,error}=await db.from('employee_profiles')
+      .select('employee_name,employee_email,county,driver_id')
+      .eq('driver_id',code).single();
+    if(error||!data){
+      if(errEl){errEl.textContent='Driver ID not found. Please try name & email below.';errEl.style.display='block';}
+      return;
+    }
+    const profileLastName=(data.employee_name||'').split(' ').pop().toLowerCase();
+    if(profileLastName!==lastName){
+      if(errEl){errEl.textContent='Last name does not match. Please try again.';errEl.style.display='block';}
+      return;
+    }
+    // Pre-fill the standard form and submit
+    document.getElementById('vol-login-name').value=data.employee_name;
+    document.getElementById('vol-login-email').value=data.employee_email;
+    document.getElementById('vol-login-county').value=data.county||'';
+    startVolunteerPortal();
+  }catch(e){
+    if(errEl){errEl.textContent='Something went wrong. Please use name & email below.';errEl.style.display='block';}
+  }
 }
 </script>
 <!-- MODALS -->
