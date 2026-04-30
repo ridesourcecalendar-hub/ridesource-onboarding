@@ -1290,6 +1290,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 
         <div class="sidebar-label">🚐 Fleet & Operations</div>
         <div class="nav-item" onclick="showAdmin('fleet')" id="nav-adm-fleet"><span class="nav-icon">🔧</span>Fleet Maintenance<span class="nav-badge" id="badge-fleet" style="background:var(--red);display:none;">!</span></div>
+        <div class="nav-item" onclick="showAdmin('assets')" id="nav-adm-assets"><span class="nav-icon">📦</span>Asset Management</div>
         <div class="nav-item" onclick="showAdmin('vehicle-records')" id="nav-adm-vehicle-records"><span class="nav-icon">🚐</span>Vehicle Records</div>
         <div class="nav-item" onclick="showAdmin('incidents')" id="nav-adm-incidents"><span class="nav-icon">🚨</span>Incident Log<span class="nav-badge" id="badge-incidents" style="background:var(--red);">0</span></div>
 
@@ -2398,6 +2399,17 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
               <div class="form-field"><label>Notes / Advisory Items</label><textarea id="fm-insp-notes" style="min-height:60px;" placeholder="Any advisory items, failures, or follow-up needed..."></textarea></div>
             </div>
 
+            <div class="form-row" style="margin-top:8px;">
+              <div class="form-field"><label>Driver / Performed By</label>
+                <input type="text" id="fm-driver" placeholder="Driver or technician name" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+              </div>
+              <div class="form-field"><label>Invoice Number</label>
+                <input type="text" id="fm-invoice" placeholder="e.g. INV-2026-0042" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+              </div>
+            </div>
+            <div class="form-field"><label>Receipt / Invoice Upload</label>
+              <input type="file" id="fm-receipt-upload" accept="image/*,.pdf" style="width:100%;padding:8px;border:2px solid var(--border);border-radius:8px;font-size:13px;">
+            </div>
             <div style="display:flex;gap:10px;align-items:center;margin-top:12px;">
               <button class="btn btn-primary" onclick="saveFleetMaintEntry()">Log Entry</button>
               <span id="fm-msg" style="font-size:13px;color:var(--success);display:none;">✓ Logged!</span>
@@ -2462,6 +2474,9 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
               </div>
               <div class="form-field"><label>Notes</label><textarea id="tr-notes" style="width:100%;min-height:50px;padding:9px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px;font-family:Arial,sans-serif;outline:none;resize:vertical;"></textarea></div>
               <div class="form-field"><label>Receipt</label><input type="file" id="tr-receipt" accept="image/*,.pdf" style="width:100%;padding:8px;border:2px solid var(--border);border-radius:8px;font-size:13px;"></div>
+              <div class="form-field"><label>Invoice Number</label>
+                <input type="text" id="tr-invoice" placeholder="e.g. INV-2026-0042" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+              </div>
               <div style="display:flex;gap:10px;align-items:center;margin-top:8px;">
                 <button class="btn btn-primary" onclick="saveTireRepair()">✅ Log Tire Repair</button>
                 <span id="tr-msg" style="font-size:13px;color:var(--success);display:none;">✓ Saved!</span>
@@ -3027,6 +3042,143 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 
 
 
+      <!-- ASSET MANAGEMENT SECTION -->
+      <div id="section-adm-assets" class="admin-section" style="width:100%;box-sizing:border-box;">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
+          <div>
+            <div style="font-size:22px;font-weight:800;color:var(--navy);">📦 Asset Management</div>
+            <p style="color:#888;font-size:13px;margin-top:2px;">Track all company-owned equipment, devices, and accessories.</p>
+          </div>
+          <button class="btn btn-primary" onclick="openAddAssetModal()">➕ Add Asset</button>
+        </div>
+
+        <!-- Filters + View Toggle -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center;">
+          <input type="text" id="asset-search" placeholder="🔍 Search assets..." onInput="renderAssets()"
+            style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;min-width:200px;">
+          <select id="asset-type-filter" onchange="renderAssets()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:#fff;">
+            <option value="">All Types</option>
+            <option>Smartphone</option><option>Tablet</option><option>Laptop</option>
+            <option>EZ-Pass</option><option>Key Fob</option><option>Door Key</option>
+            <option>Booster Pack</option><option>Jumper Cables</option><option>First Aid Kit</option>
+            <option>Fire Extinguisher</option><option>Uniform</option><option>Badge</option>
+            <option>Vest</option><option>Vehicle</option><option>Other</option>
+          </select>
+          <select id="asset-status-filter" onchange="renderAssets()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:#fff;">
+            <option value="">All Status</option>
+            <option>Available</option><option>In Use</option><option>In Repair</option>
+            <option>Lost</option><option>Retired</option>
+          </select>
+          <select id="asset-assigned-filter" onchange="renderAssets()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:#fff;">
+            <option value="">All Assets</option>
+            <option value="assigned">Assigned</option>
+            <option value="unassigned">Unassigned</option>
+          </select>
+          <div style="margin-left:auto;display:flex;gap:4px;">
+            <button id="asset-view-gallery" onclick="setAssetView('gallery')"
+              style="padding:7px 12px;border:1px solid var(--navy);background:var(--navy);color:#fff;border-radius:6px;font-size:12px;cursor:pointer;">⊞ Gallery</button>
+            <button id="asset-view-list" onclick="setAssetView('list')"
+              style="padding:7px 12px;border:1px solid var(--border);background:#fff;color:#555;border-radius:6px;font-size:12px;cursor:pointer;">☰ List</button>
+          </div>
+        </div>
+
+        <!-- Asset Count -->
+        <div id="asset-count" style="font-size:12px;color:#888;margin-bottom:12px;"></div>
+
+        <!-- Asset Grid / List -->
+        <div id="asset-container"><p style="color:#888;font-size:13px;">Loading assets...</p></div>
+      </div>
+
+      <!-- ADD / EDIT ASSET MODAL -->
+      <div class="modal-overlay" id="add-asset-modal">
+        <div class="modal" style="max-width:600px;">
+          <button class="modal-close" onclick="closeModal('add-asset-modal')">✕</button>
+          <h3 id="asset-modal-title" style="color:var(--navy);margin-bottom:16px;">➕ Add New Asset</h3>
+          <input type="hidden" id="asset-edit-id">
+
+          <!-- Photo upload preview -->
+          <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;">
+            <div id="asset-photo-preview" style="width:80px;height:80px;border-radius:8px;border:2px dashed var(--border);background:#f7f9fc;display:flex;align-items:center;justify-content:center;font-size:28px;overflow:hidden;">📦</div>
+            <div>
+              <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:4px;">Asset Photo</div>
+              <input type="file" id="asset-photo-input" accept="image/*" onchange="previewAssetPhoto(this)"
+                style="font-size:12px;">
+              <div style="font-size:11px;color:#aaa;margin-top:2px;">JPG, PNG — recommended 400×400px</div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-field"><label>Asset Tag / ID *</label>
+              <input type="text" id="asset-tag" placeholder="e.g. 207-595-3659" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+            </div>
+            <div class="form-field"><label>Asset Type *</label>
+              <select id="asset-type" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                <option value="">— Select —</option>
+                <option>Smartphone</option><option>Tablet</option><option>Laptop</option>
+                <option>EZ-Pass</option><option>Key Fob</option><option>Door Key</option>
+                <option>Booster Pack</option><option>Jumper Cables</option><option>First Aid Kit</option>
+                <option>Fire Extinguisher</option><option>Uniform</option><option>Badge</option>
+                <option>Vest</option><option>Vehicle</option><option>Other</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field"><label>Manufacturer</label>
+              <input type="text" id="asset-manufacturer" placeholder="e.g. Samsung, Chrysler" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+            </div>
+            <div class="form-field"><label>Model</label>
+              <input type="text" id="asset-model" placeholder="e.g. Galaxy A15 5G" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field"><label>Serial Number</label>
+              <input type="text" id="asset-serial" placeholder="e.g. R58T301ABCD" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+            </div>
+            <div class="form-field"><label>Color</label>
+              <input type="text" id="asset-color" placeholder="e.g. Black, Navy Blue" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field"><label>Status *</label>
+              <select id="asset-status" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                <option>Available</option><option>In Use</option><option>In Repair</option>
+                <option>Lost</option><option>Retired</option>
+              </select>
+            </div>
+            <div class="form-field"><label>Location</label>
+              <input type="text" id="asset-location" placeholder="e.g. Ellsworth Office, Norway Office" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field"><label>Assigned To (Employee)</label>
+              <select id="asset-assigned-to" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                <option value="">— Unassigned —</option>
+              </select>
+            </div>
+            <div class="form-field"><label>Purchase Date</label>
+              <input type="date" id="asset-purchase-date" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field"><label>Purchase Cost ($)</label>
+              <input type="number" id="asset-cost" placeholder="0.00" step="0.01" min="0" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+            </div>
+            <div class="form-field"><label>Current Owner / Custodian</label>
+              <input type="text" id="asset-owner" placeholder="e.g. Tiffany G, Norway Office" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+            </div>
+          </div>
+          <div class="form-field"><label>Condition Notes</label>
+            <textarea id="asset-condition" placeholder="Any damage, wear, or condition notes..." style="width:100%;min-height:60px;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;font-family:Arial,sans-serif;outline:none;resize:vertical;"></textarea>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;margin-top:12px;">
+            <button class="btn btn-primary" onclick="saveAsset()">💾 Save Asset</button>
+            <button class="btn btn-sm" style="background:#f0f0f0;color:#555;" onclick="closeModal('add-asset-modal')">Cancel</button>
+            <span id="asset-save-msg" style="font-size:13px;color:var(--success);display:none;">✓ Saved!</span>
+          </div>
+        </div>
+      </div>
+
+
 <!-- CONFIG PANEL (Admin only) -->
       <div id="section-adm-config" class="admin-section" style="display:none;">
         <div style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:2px;">⚙️ Portal Configuration</div>
@@ -3446,6 +3598,7 @@ function showAdmin(id){
   }
   if(id==='incidents')loadIncidents();
   if(id==='memos'){loadMemos();loadEmployeeMessages();setMemoMainTab('compose');}
+  if(id==='assets'){loadAssets();}
   if(id==='config'){setTimeout(()=>{try{setCfgTab('users');loadPortalSettings();}catch(e){console.error('Config error:',e);}},100);}
   if(id==='analytics'){setTimeout(()=>loadAnalytics(),500);}
   if(id==='recognition'){renderRecogCalendar();}
@@ -8409,7 +8562,13 @@ function renderVehicleRecordsTable(){
 }
 async function deleteVehicleRecord(id){
   if(!confirm('Delete this vehicle record? This cannot be undone.'))return;
-  try{await db.from('vehicle_reports').delete().eq('id',id);loadVehicleRecords();}catch(e){alert('Error: '+e.message);}
+  try{
+    const{error}=await db.from('vehicle_reports').delete().eq('id',parseInt(id)||id);
+    if(error)throw error;
+    allVehicleRecordsCache=allVehicleRecordsCache.filter(r=>r.id!==id&&r.id!==parseInt(id));
+    await loadVehicleRecords();
+    showRealtimeToast('Record deleted');
+  }catch(e){alert('Error deleting: '+e.message);}
 }
 async function updateVehicleStatus(id,status){
   await db.from('vehicle_reports').update({status}).eq('id',id);
@@ -12108,6 +12267,7 @@ async function renderFleetTowing(vehicleId){
         </div>
         <div class="form-field"><label>From → To Location</label><input type="text" id="tow-notes" placeholder="e.g. Rte 1 Harrington → Ellsworth Garage" style="width:100%;padding:9px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
         <div class="form-field"><label>Receipt / Invoice</label><input type="file" id="tow-receipt" accept="image/*,.pdf" style="width:100%;padding:8px;border:2px solid var(--border);border-radius:8px;font-size:13px;"></div>
+        <div class="form-field"><label>Invoice Number</label><input type="text" id="tow-invoice" placeholder="e.g. INV-2026-0042" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
         <div style="display:flex;gap:8px;align-items:center;">
           <button onclick="saveTowRecord('${vehicleId}')" class="btn btn-primary">💾 Save Tow Record</button>
           <span id="tow-save-msg" style="font-size:13px;color:var(--success);display:none;">✓ Saved!</span>
@@ -12315,13 +12475,15 @@ async function saveTireRepair(){
     }catch(e){console.log('Receipt:',e);}
   }
   try{
+    const trInvoice=document.getElementById('tr-invoice')?.value||'';
     await db.from('fleet_maintenance').insert([{
       vehicle_id:currentFleetVehicleId,maintenance_type:'Tire Repair',
       service_date:date,cost:parseFloat(cost)||0,vendor:shop,
-      notes:(type+(notes?' — '+notes:'')+(receiptUrl?' | Receipt: '+receiptUrl:'')),
+      notes:(type+(notes?' — '+notes:'')+(trInvoice?' | Invoice: '+trInvoice:'')+(receiptUrl?' | Receipt: '+receiptUrl:'')),
+      invoice_number:trInvoice||null,
       performed_by:adminName,created_at:new Date().toISOString()
     }]);
-    ['tr-date','tr-cost','tr-shop','tr-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    ['tr-date','tr-cost','tr-shop','tr-notes','tr-invoice'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
     const sel=document.getElementById('tr-type');if(sel)sel.value='';
     const msg=document.getElementById('tr-msg');
     if(msg){msg.style.display='inline';setTimeout(()=>msg.style.display='none',2500);}
@@ -12468,6 +12630,271 @@ async function volQuickSignIn(){
   }catch(e){
     if(errEl){errEl.textContent='Something went wrong. Please use name & email below.';errEl.style.display='block';}
   }
+}
+
+// ═══════════════════════════════════════════════
+// ASSET MANAGEMENT
+// ═══════════════════════════════════════════════
+let allAssetsCache=[];
+let currentAssetView='gallery';
+
+async function loadAssets(){
+  try{
+    const{data,error}=await db.from('company_assets').select('*').order('asset_tag');
+    if(error)throw error;
+    allAssetsCache=data||[];
+    renderAssets();
+  }catch(e){
+    const el=document.getElementById('asset-container');
+    if(el)el.innerHTML='<p style="color:#888;font-size:13px;">Unable to load assets. Run Supabase setup SQL first.</p>';
+  }
+}
+
+function setAssetView(view){
+  currentAssetView=view;
+  const gBtn=document.getElementById('asset-view-gallery');
+  const lBtn=document.getElementById('asset-view-list');
+  if(gBtn){gBtn.style.background=view==='gallery'?'var(--navy)':'#fff';gBtn.style.color=view==='gallery'?'#fff':'#555';gBtn.style.borderColor=view==='gallery'?'var(--navy)':'var(--border)';}
+  if(lBtn){lBtn.style.background=view==='list'?'var(--navy)':'#fff';lBtn.style.color=view==='list'?'#fff':'#555';lBtn.style.borderColor=view==='list'?'var(--navy)':'var(--border)';}
+  renderAssets();
+}
+
+function renderAssets(){
+  const el=document.getElementById('asset-container');
+  const countEl=document.getElementById('asset-count');
+  if(!el)return;
+
+  const search=(document.getElementById('asset-search')?.value||'').toLowerCase();
+  const typeF=document.getElementById('asset-type-filter')?.value||'';
+  const statusF=document.getElementById('asset-status-filter')?.value||'';
+  const assignedF=document.getElementById('asset-assigned-filter')?.value||'';
+
+  let filtered=allAssetsCache;
+  if(search)filtered=filtered.filter(a=>
+    (a.asset_tag||'').toLowerCase().includes(search)||
+    (a.model||'').toLowerCase().includes(search)||
+    (a.manufacturer||'').toLowerCase().includes(search)||
+    (a.serial_number||'').toLowerCase().includes(search)||
+    (a.assigned_to_name||'').toLowerCase().includes(search)
+  );
+  if(typeF)filtered=filtered.filter(a=>a.asset_type===typeF);
+  if(statusF)filtered=filtered.filter(a=>a.status===statusF);
+  if(assignedF==='assigned')filtered=filtered.filter(a=>a.assigned_to_name);
+  if(assignedF==='unassigned')filtered=filtered.filter(a=>!a.assigned_to_name);
+
+  if(countEl)countEl.textContent=filtered.length+' of '+allAssetsCache.length+' assets';
+
+  if(!filtered.length){
+    el.innerHTML='<div style="text-align:center;padding:40px 0;color:#aaa;font-size:14px;">No assets found. Click ➕ Add Asset to get started!</div>';
+    return;
+  }
+
+  const statusColor={
+    'Available':'#27AE60','In Use':'#1565c0','In Repair':'#E67E22',
+    'Lost':'#c0392b','Retired':'#888'
+  };
+  const statusBg={
+    'Available':'#f0faf4','In Use':'#e8f4fd','In Repair':'#fff3e0',
+    'Lost':'#fdf0f0','Retired':'#f5f5f5'
+  };
+
+  if(currentAssetView==='gallery'){
+    el.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;">'+
+      filtered.map(a=>{
+        const sc=statusColor[a.status]||'#888';
+        const sb=statusBg[a.status]||'#f5f5f5';
+        const photoHtml=a.photo_url
+          ?`<img src="${a.photo_url}" style="width:100%;height:120px;object-fit:contain;background:#f7f9fc;border-radius:6px 6px 0 0;">`
+          :`<div style="width:100%;height:120px;background:#f0f4fb;border-radius:6px 6px 0 0;display:flex;align-items:center;justify-content:center;font-size:40px;">${assetTypeIcon(a.asset_type)}</div>`;
+        return`<div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;cursor:pointer;background:#fff;" onclick="openEditAssetModal('${a.id}')">
+          ${photoHtml}
+          <div style="padding:10px 12px;">
+            <div style="font-size:11px;font-weight:700;color:#888;margin-bottom:2px;">Asset tag</div>
+            <div style="font-size:13px;font-weight:800;color:var(--navy);">${a.asset_tag||'—'}</div>
+            ${a.model?`<div style="font-size:12px;color:#555;margin-top:2px;">${a.model}</div>`:''}
+            <div style="font-size:11px;font-weight:700;color:#888;margin-top:6px;margin-bottom:2px;">Asset type</div>
+            <div style="font-size:12px;color:#555;">${a.asset_type||'—'}</div>
+            <div style="margin-top:8px;">
+              <span style="background:${sb};color:${sc};font-size:10px;font-weight:700;padding:2px 8px;border-radius:8px;">${a.status||'—'}</span>
+            </div>
+            ${a.manufacturer?`<div style="font-size:11px;color:#aaa;margin-top:4px;">${a.manufacturer}</div>`:''}
+            ${a.assigned_to_name?`<div style="font-size:11px;color:#1565c0;margin-top:4px;font-weight:700;">👤 ${a.assigned_to_name}</div>`:''}
+          </div>
+        </div>`;
+      }).join('')+'</div>';
+  } else {
+    // List view
+    el.innerHTML='<div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;">'+
+      '<div style="display:grid;grid-template-columns:50px 1fr 100px 120px 130px 100px 80px;gap:8px;padding:8px 12px;background:var(--gray);font-size:11px;font-weight:700;color:#888;text-transform:uppercase;">'+
+        '<div></div><div>Asset</div><div>Type</div><div>Serial #</div><div>Assigned To</div><div>Location</div><div>Status</div>'+
+      '</div>'+
+      filtered.map(a=>{
+        const sc=statusColor[a.status]||'#888';
+        const sb=statusBg[a.status]||'#f5f5f5';
+        const photoHtml=a.photo_url
+          ?`<img src="${a.photo_url}" style="width:38px;height:38px;object-fit:contain;border-radius:6px;background:#f7f9fc;">`
+          :`<div style="width:38px;height:38px;border-radius:6px;background:#f0f4fb;display:flex;align-items:center;justify-content:center;font-size:20px;">${assetTypeIcon(a.asset_type)}</div>`;
+        return`<div style="display:grid;grid-template-columns:50px 1fr 100px 120px 130px 100px 80px;gap:8px;padding:10px 12px;border-top:1px solid var(--border);align-items:center;cursor:pointer;background:#fff;" onclick="openEditAssetModal('${a.id}')">
+          <div>${photoHtml}</div>
+          <div><div style="font-weight:700;font-size:13px;color:var(--navy);">${a.asset_tag||'—'}</div><div style="font-size:11px;color:#888;">${a.model||a.manufacturer||''}</div></div>
+          <div style="font-size:12px;color:#555;">${a.asset_type||'—'}</div>
+          <div style="font-size:11px;color:#888;word-break:break-all;">${a.serial_number||'—'}</div>
+          <div style="font-size:12px;color:${a.assigned_to_name?'#1565c0':'#aaa'};">${a.assigned_to_name||'Unassigned'}</div>
+          <div style="font-size:12px;color:#555;">${a.location||'—'}</div>
+          <div><span style="background:${sb};color:${sc};font-size:10px;font-weight:700;padding:2px 8px;border-radius:8px;">${a.status||'—'}</span></div>
+        </div>`;
+      }).join('')+'</div>';
+  }
+}
+
+function assetTypeIcon(type){
+  const icons={
+    'Smartphone':'📱','Tablet':'📱','Laptop':'💻','EZ-Pass':'🛣️',
+    'Key Fob':'🔑','Door Key':'🗝️','Booster Pack':'🔋','Jumper Cables':'⚡',
+    'First Aid Kit':'🩺','Fire Extinguisher':'🧯','Uniform':'👕',
+    'Badge':'🪪','Vest':'🦺','Vehicle':'🚐','Other':'📦'
+  };
+  return icons[type]||'📦';
+}
+
+function openAddAssetModal(){
+  document.getElementById('asset-modal-title').textContent='➕ Add New Asset';
+  document.getElementById('asset-edit-id').value='';
+  ['asset-tag','asset-manufacturer','asset-model','asset-serial','asset-color',
+   'asset-location','asset-owner','asset-condition'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value='';
+  });
+  document.getElementById('asset-type').value='';
+  document.getElementById('asset-status').value='Available';
+  document.getElementById('asset-assigned-to').value='';
+  document.getElementById('asset-purchase-date').value='';
+  document.getElementById('asset-cost').value='';
+  document.getElementById('asset-photo-preview').innerHTML='📦';
+  document.getElementById('asset-photo-input').value='';
+  document.getElementById('asset-save-msg').style.display='none';
+  // Populate employee dropdown
+  populateAssetEmployeeDropdown();
+  document.getElementById('add-asset-modal').classList.add('open');
+}
+
+function openEditAssetModal(id){
+  const a=allAssetsCache.find(x=>x.id===id||x.id===parseInt(id));
+  if(!a)return;
+  document.getElementById('asset-modal-title').textContent='✏️ Edit Asset';
+  document.getElementById('asset-edit-id').value=a.id;
+  document.getElementById('asset-tag').value=a.asset_tag||'';
+  document.getElementById('asset-type').value=a.asset_type||'';
+  document.getElementById('asset-manufacturer').value=a.manufacturer||'';
+  document.getElementById('asset-model').value=a.model||'';
+  document.getElementById('asset-serial').value=a.serial_number||'';
+  document.getElementById('asset-color').value=a.color||'';
+  document.getElementById('asset-status').value=a.status||'Available';
+  document.getElementById('asset-location').value=a.location||'';
+  document.getElementById('asset-owner').value=a.current_owner||'';
+  document.getElementById('asset-condition').value=a.condition_notes||'';
+  document.getElementById('asset-purchase-date').value=a.purchase_date||'';
+  document.getElementById('asset-cost').value=a.purchase_cost||'';
+  document.getElementById('asset-save-msg').style.display='none';
+  // Photo preview
+  const preview=document.getElementById('asset-photo-preview');
+  if(a.photo_url){
+    preview.innerHTML=`<img src="${a.photo_url}" style="width:100%;height:100%;object-fit:contain;">`;
+  } else {
+    preview.innerHTML=assetTypeIcon(a.asset_type)||'📦';
+  }
+  populateAssetEmployeeDropdown(a.assigned_to_name);
+  document.getElementById('add-asset-modal').classList.add('open');
+}
+
+function populateAssetEmployeeDropdown(selectedName=''){
+  const sel=document.getElementById('asset-assigned-to');
+  if(!sel)return;
+  sel.innerHTML='<option value="">— Unassigned —</option>';
+  const employees=allProfilesCache||[];
+  employees.sort((a,b)=>(a.employee_name||'').localeCompare(b.employee_name||''));
+  employees.forEach(e=>{
+    const opt=document.createElement('option');
+    opt.value=e.employee_name;
+    opt.textContent=e.employee_name+(e.county?' ('+e.county+')':'');
+    if(e.employee_name===selectedName)opt.selected=true;
+    sel.appendChild(opt);
+  });
+}
+
+function previewAssetPhoto(input){
+  if(!input.files?.length)return;
+  const file=input.files[0];
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const preview=document.getElementById('asset-photo-preview');
+    if(preview)preview.innerHTML=`<img src="${e.target.result}" style="width:100%;height:100%;object-fit:contain;border-radius:6px;">`;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function saveAsset(){
+  const editId=document.getElementById('asset-edit-id').value;
+  const tag=document.getElementById('asset-tag').value.trim();
+  const type=document.getElementById('asset-type').value;
+  if(!tag||!type){alert('Asset tag and type are required.');return;}
+
+  let photoUrl=null;
+  // Check if existing asset has photo
+  if(editId){
+    const existing=allAssetsCache.find(a=>a.id===editId||a.id===parseInt(editId));
+    photoUrl=existing?.photo_url||null;
+  }
+  // Upload new photo if provided
+  const photoInput=document.getElementById('asset-photo-input');
+  if(photoInput?.files?.length){
+    try{
+      const file=photoInput.files[0];
+      const fname='assets/'+Date.now()+'-'+file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+      const{data:up,error:ue}=await db.storage.from('ridesource-uploads').upload(fname,file);
+      if(!ue&&up){const{data:u}=db.storage.from('ridesource-uploads').getPublicUrl(fname);photoUrl=u?.publicUrl||null;}
+    }catch(e){console.log('Photo upload:',e);}
+  }
+
+  const record={
+    asset_tag:tag,
+    asset_type:type,
+    manufacturer:document.getElementById('asset-manufacturer').value.trim()||null,
+    model:document.getElementById('asset-model').value.trim()||null,
+    serial_number:document.getElementById('asset-serial').value.trim()||null,
+    color:document.getElementById('asset-color').value.trim()||null,
+    status:document.getElementById('asset-status').value||'Available',
+    location:document.getElementById('asset-location').value.trim()||null,
+    current_owner:document.getElementById('asset-owner').value.trim()||null,
+    assigned_to_name:document.getElementById('asset-assigned-to').value||null,
+    condition_notes:document.getElementById('asset-condition').value.trim()||null,
+    purchase_date:document.getElementById('asset-purchase-date').value||null,
+    purchase_cost:parseFloat(document.getElementById('asset-cost').value)||null,
+    photo_url:photoUrl,
+    updated_at:new Date().toISOString()
+  };
+
+  try{
+    if(editId){
+      await db.from('company_assets').update(record).eq('id',editId);
+    } else {
+      record.created_by=adminName;
+      record.created_at=new Date().toISOString();
+      await db.from('company_assets').insert([record]);
+    }
+    const msg=document.getElementById('asset-save-msg');
+    if(msg){msg.style.display='inline';setTimeout(()=>{msg.style.display='none';closeModal('add-asset-modal');},1200);}
+    await loadAssets();
+  }catch(e){alert('Error saving: '+e.message);}
+}
+
+async function deleteAsset(id){
+  if(!confirm('Delete this asset? This cannot be undone.'))return;
+  try{
+    await db.from('company_assets').delete().eq('id',id);
+    closeModal('add-asset-modal');
+    await loadAssets();
+    showRealtimeToast('Asset deleted');
+  }catch(e){alert('Error: '+e.message);}
 }
 </script>
 <!-- MODALS -->
