@@ -2548,9 +2548,30 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
                 <div id="tc-installed-list" style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px;"></div>
                 <div style="font-size:12px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Tires Disposed (at shop)</div>
                 <div id="tc-disposed-list" style="margin-bottom:12px;"></div>
-                <div class="form-field"><label>Notes</label><textarea id="tc-notes" style="min-height:60px;"></textarea></div>
+                <div class="form-field"><label>Notes</label><textarea id="tc-notes" style="min-height:50px;width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;font-family:Arial,sans-serif;outline:none;resize:vertical;"></textarea></div>
+
+                <!-- Invoice + Repair Link -->
+                <div style="background:#f0f4fb;border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:10px;">
+                  <div style="font-size:12px;font-weight:800;color:var(--navy);margin-bottom:8px;">🔗 Link to Repair (if additional work was done)</div>
+                  <div class="form-row">
+                    <div class="form-field"><label>Invoice Number</label>
+                      <input type="text" id="tc-invoice" placeholder="e.g. INV-2026-0042"
+                        style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;"
+                        oninput="checkChangeoverInvoiceMatch()">
+                    </div>
+                    <div class="form-field"><label>Match Status</label>
+                      <div id="tc-invoice-match" style="padding:9px 12px;border-radius:6px;font-size:12px;color:#888;background:#f7f9fc;border:1px solid var(--border);">
+                        Enter invoice # to check for matching repair
+                      </div>
+                    </div>
+                  </div>
+                  <div style="font-size:11px;color:#888;margin-top:4px;">
+                    If the shop did repairs during the same visit, enter the invoice number here to link the changeover and repair records together.
+                  </div>
+                </div>
+
                 <div style="display:flex;gap:10px;align-items:center;margin-top:8px;">
-                  <button class="btn btn-primary" onclick="saveChangeover()">Log Changeover</button>
+                  <button class="btn btn-primary" onclick="saveChangeover()">✅ Log Changeover</button>
                   <span id="tc-msg" style="font-size:13px;color:var(--success);display:none;">✓ Changeover logged!</span>
                 </div>
               </div>
@@ -13262,6 +13283,39 @@ function resetOilForm(){
   });
   const totalEl=document.getElementById('fm-oil-total');
   if(totalEl)totalEl.textContent='$0.00';
+}
+
+// ═══════════════════════════════════════════════
+// TIRE CHANGEOVER — INVOICE LINKING
+// ═══════════════════════════════════════════════
+function checkChangeoverInvoiceMatch(){
+  const invoice=(document.getElementById('tc-invoice')?.value||'').trim();
+  const matchEl=document.getElementById('tc-invoice-match');
+  if(!matchEl)return;
+  if(!invoice){
+    matchEl.textContent='Enter invoice # to check for matching repair';
+    matchEl.style.color='#888';
+    matchEl.style.background='#f7f9fc';
+    return;
+  }
+  // Search fleet_maintenance cache for matching invoice
+  const matches=allFleetMaintenanceCache.filter(m=>
+    m.vehicle_id===currentFleetVehicleId&&
+    m.invoice_number&&
+    m.invoice_number.toLowerCase()===invoice.toLowerCase()
+  );
+  if(matches.length){
+    const types=matches.map(m=>m.maintenance_type).join(', ');
+    matchEl.innerHTML='✅ Match found: <strong>'+types+'</strong> — will be linked';
+    matchEl.style.color='#27AE60';
+    matchEl.style.background='#f0faf4';
+    matchEl.style.border='1px solid #27AE60';
+  } else {
+    matchEl.textContent='No matching repair found for this invoice — changeover will save independently';
+    matchEl.style.color='#856404';
+    matchEl.style.background='#fff3cd';
+    matchEl.style.border='1px solid #ffc107';
+  }
 }
 </script>
 <!-- MODALS -->
