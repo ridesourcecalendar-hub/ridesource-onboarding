@@ -2239,24 +2239,103 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
             <!-- OIL CHANGE FORM -->
             <div id="fm-form-oil">
               <div class="form-row">
-                <div class="form-field"><label>Service Date *</label><input type="date" id="fm-date" onchange="autoCalcNextOilDate()"></div>
-                <div class="form-field"><label>Mileage at Service</label><input type="number" id="fm-mileage" placeholder="e.g. 45230" oninput="autoCalcNextOilMileage()"></div>
+                <div class="form-field"><label>Service Date *</label><input type="date" id="fm-date" onchange="autoCalcNextOilDate()" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+                <div class="form-field"><label>Mileage at Service</label><input type="number" id="fm-mileage" placeholder="e.g. 45230" oninput="autoCalcNextOilMileage()" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
               </div>
               <div class="form-row">
-                <div class="form-field">
-                  <label>Next Due Date <span style="font-size:11px;color:#888;">(auto-calculated)</span></label>
-                  <input type="date" id="fm-next-date">
-                </div>
-                <div class="form-field">
-                  <label>Next Due Mileage <span style="font-size:11px;color:#888;">(auto-calculated)</span></label>
-                  <input type="number" id="fm-next-mileage" placeholder="e.g. 50230">
-                </div>
+                <div class="form-field"><label>Next Due Date <span style="font-size:11px;color:#888;">(auto)</span></label><input type="date" id="fm-next-date" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+                <div class="form-field"><label>Next Due Mileage <span style="font-size:11px;color:#888;">(auto)</span></label><input type="number" id="fm-next-mileage" placeholder="e.g. 50230" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
               </div>
               <div class="form-row">
-                <div class="form-field"><label>Shop / Location</label><input type="text" id="fm-shop" placeholder="e.g. Napa Auto, Ellsworth ME"></div>
-                <div class="form-field"><label>Cost</label><input type="number" id="fm-cost" placeholder="e.g. 89.95" step="0.01"></div>
+                <div class="form-field"><label>Shop / Location</label><input type="text" id="fm-shop" placeholder="e.g. Prompto, Ellsworth ME" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+                <div class="form-field"><label>Invoice Number</label><input type="text" id="fm-oil-invoice" placeholder="e.g. INV-2026-0042" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
               </div>
-              <div class="form-field"><label>Notes</label><textarea id="fm-notes" style="min-height:60px;" placeholder="Any details about this service..."></textarea></div>
+
+              <!-- Oil Details -->
+              <div style="background:#f7f9fc;border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:10px;">
+                <div style="font-size:12px;font-weight:800;color:var(--navy);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;">🛢️ Oil Details</div>
+                <div class="form-row">
+                  <div class="form-field"><label>Oil Type</label>
+                    <select id="fm-oil-type" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;">
+                      <option value="">— Select —</option>
+                      <option>0W-20 Full Synthetic</option>
+                      <option>0W-20 Synthetic Blend</option>
+                      <option>5W-20 Full Synthetic</option>
+                      <option>5W-20 Synthetic Blend</option>
+                      <option>5W-30 Full Synthetic</option>
+                      <option>5W-30 Synthetic Blend</option>
+                      <option>5W-30 Conventional</option>
+                      <option>10W-30 Conventional</option>
+                      <option>Other</option>
+                    </select>
+                  </div>
+                  <div class="form-field"><label>Oil Brand</label>
+                    <input type="text" id="fm-oil-brand" placeholder="e.g. Mobil 1, Valvoline, Pennzoil" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;">
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-field"><label>Qty (qts)</label>
+                    <input type="number" id="fm-oil-qty" placeholder="e.g. 5" step="0.5" min="0" oninput="calcOilTotal()" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;">
+                  </div>
+                  <div class="form-field"><label>Price per Qt ($)</label>
+                    <input type="number" id="fm-oil-price-per" placeholder="0.00" step="0.01" min="0" oninput="calcOilTotal()" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Additional Items -->
+              <div style="background:#f7f9fc;border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:10px;">
+                <div style="font-size:12px;font-weight:800;color:var(--navy);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;">🔧 Additional Items</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                  <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:#fff;">
+                    <input type="checkbox" id="fm-oil-filter" style="cursor:pointer;accent-color:var(--navy);"> Oil Filter</label>
+                  <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:#fff;">
+                    <input type="checkbox" id="fm-air-filter"> Air Filter</label>
+                  <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:#fff;">
+                    <input type="checkbox" id="fm-cabin-filter"> Cabin Air Filter</label>
+                  <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:#fff;">
+                    <input type="checkbox" id="fm-wipers"> Windshield Wipers</label>
+                  <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:#fff;">
+                    <input type="checkbox" id="fm-antifreeze"> Antifreeze / Coolant</label>
+                  <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:#fff;">
+                    <input type="checkbox" id="fm-wiper-fluid"> Wiper Fluid</label>
+                  <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:#fff;">
+                    <input type="checkbox" id="fm-trans-fluid"> Transmission Fluid</label>
+                  <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:#fff;">
+                    <input type="checkbox" id="fm-brake-fluid"> Brake Fluid</label>
+                </div>
+                <div class="form-field" style="margin-top:8px;"><label>Other Items / Notes</label>
+                  <input type="text" id="fm-oil-other-items" placeholder="e.g. Tire rotation, belt check..." style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;">
+                </div>
+              </div>
+
+              <!-- Cost Breakdown -->
+              <div style="background:#f7f9fc;border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:10px;">
+                <div style="font-size:12px;font-weight:800;color:var(--navy);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;">💰 Cost Breakdown</div>
+                <div class="form-row">
+                  <div class="form-field"><label style="font-size:11px;">Oil Cost ($) <span style="color:#888;font-weight:400;">(auto)</span></label>
+                    <input type="number" id="fm-oil-cost-calc" placeholder="0.00" step="0.01" readonly style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;background:#f0f4fb;"></div>
+                  <div class="form-field"><label style="font-size:11px;">Labor ($)</label>
+                    <input type="number" id="fm-oil-labor" placeholder="0.00" step="0.01" min="0" oninput="calcOilTotal()" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;"></div>
+                </div>
+                <div class="form-row">
+                  <div class="form-field"><label style="font-size:11px;">Parts / Filters ($)</label>
+                    <input type="number" id="fm-oil-parts-cost" placeholder="0.00" step="0.01" min="0" oninput="calcOilTotal()" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;"></div>
+                  <div class="form-field"><label style="font-size:11px;">Tax ($)</label>
+                    <input type="number" id="fm-oil-tax" placeholder="0.00" step="0.01" min="0" oninput="calcOilTotal()" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;"></div>
+                </div>
+                <div class="form-row">
+                  <div class="form-field"><label style="font-size:11px;">Discount (-$)</label>
+                    <input type="number" id="fm-oil-discount" placeholder="0.00" step="0.01" min="0" oninput="calcOilTotal()" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;"></div>
+                  <div class="form-field" style="display:flex;flex-direction:column;justify-content:flex-end;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:#fff;border:2px solid var(--navy);border-radius:6px;">
+                      <span style="font-size:12px;font-weight:700;color:var(--navy);">Total</span>
+                      <span id="fm-oil-total" style="font-size:16px;font-weight:900;color:var(--navy);">$0.00</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-field"><label>Notes</label><textarea id="fm-notes" style="width:100%;min-height:50px;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;font-family:Arial,sans-serif;outline:none;resize:vertical;" placeholder="Any additional details..."></textarea></div>
             </div>
 
             <!-- PREVENTATIVE FORM -->
@@ -5829,6 +5908,19 @@ async function saveFleetMaintEntry(){
     entry.shop_name=document.getElementById('fm-shop').value.trim()||null;
     entry.cost=parseFloat(document.getElementById('fm-cost').value)||null;
     entry.notes=document.getElementById('fm-notes').value.trim()||null;
+    // Capture oil change extras
+    const oilType=document.getElementById('fm-oil-type')?.value||'';
+    const oilBrand=document.getElementById('fm-oil-brand')?.value||'';
+    const oilQty=document.getElementById('fm-oil-qty')?.value||'';
+    const oilExtras=getOilChangeExtras();
+    const oilInvoice=document.getElementById('fm-oil-invoice')?.value.trim()||'';
+    let oilNotes='';
+    if(oilType)oilNotes+='Oil: '+oilType+(oilBrand?' ('+oilBrand+')':'')+(oilQty?' — '+oilQty+' qts':'');
+    if(oilExtras.length)oilNotes+=(oilNotes?'\n':'')+'Extras: '+oilExtras.join(', ');
+    if(document.getElementById('fm-notes')?.value.trim())oilNotes+=(oilNotes?'\n':'')+document.getElementById('fm-notes').value.trim();
+    entry.notes=oilNotes||null;
+    entry.invoice_number=oilInvoice||null;
+    resetOilForm();
     clearIds=['fm-date','fm-mileage','fm-next-date','fm-next-mileage','fm-shop','fm-cost','fm-notes'];
 
   } else if(tab==='preventative'){
@@ -13048,6 +13140,57 @@ function getRepairFormData(){
     if(desc)parts.push(desc+(qty!='1'?' x'+qty:'')+(price?' @ $'+price:''));
   });
   return{issues,parts};
+}
+
+// ═══════════════════════════════════════════════
+// OIL CHANGE FORM — COST CALCULATOR
+// ═══════════════════════════════════════════════
+function calcOilTotal(){
+  const qty=parseFloat(document.getElementById('fm-oil-qty')?.value)||0;
+  const pricePer=parseFloat(document.getElementById('fm-oil-price-per')?.value)||0;
+  const oilCost=qty*pricePer;
+  const oilCostEl=document.getElementById('fm-oil-cost-calc');
+  if(oilCostEl)oilCostEl.value=oilCost>0?oilCost.toFixed(2):'';
+
+  const labor=parseFloat(document.getElementById('fm-oil-labor')?.value)||0;
+  const parts=parseFloat(document.getElementById('fm-oil-parts-cost')?.value)||0;
+  const tax=parseFloat(document.getElementById('fm-oil-tax')?.value)||0;
+  const discount=parseFloat(document.getElementById('fm-oil-discount')?.value)||0;
+  const total=Math.max(0,oilCost+labor+parts+tax-discount);
+  const totalEl=document.getElementById('fm-oil-total');
+  if(totalEl)totalEl.textContent='$'+total.toFixed(2);
+  // Also update fm-cost for save function
+  const costEl=document.getElementById('fm-cost');
+  if(costEl)costEl.value=total>0?total.toFixed(2):'';
+}
+
+function getOilChangeExtras(){
+  const checkboxes=[
+    {id:'fm-oil-filter',label:'Oil Filter'},
+    {id:'fm-air-filter',label:'Air Filter'},
+    {id:'fm-cabin-filter',label:'Cabin Air Filter'},
+    {id:'fm-wipers',label:'Windshield Wipers'},
+    {id:'fm-antifreeze',label:'Antifreeze/Coolant'},
+    {id:'fm-wiper-fluid',label:'Wiper Fluid'},
+    {id:'fm-trans-fluid',label:'Transmission Fluid'},
+    {id:'fm-brake-fluid',label:'Brake Fluid'},
+  ];
+  const checked=checkboxes.filter(c=>document.getElementById(c.id)?.checked).map(c=>c.label);
+  const other=document.getElementById('fm-oil-other-items')?.value.trim()||'';
+  if(other)checked.push(other);
+  return checked;
+}
+
+function resetOilForm(){
+  ['fm-oil-type','fm-oil-brand','fm-oil-qty','fm-oil-price-per','fm-oil-cost-calc',
+   'fm-oil-labor','fm-oil-parts-cost','fm-oil-tax','fm-oil-discount','fm-oil-other-items',
+   'fm-oil-invoice'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['fm-oil-filter','fm-air-filter','fm-cabin-filter','fm-wipers',
+   'fm-antifreeze','fm-wiper-fluid','fm-trans-fluid','fm-brake-fluid'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.checked=false;
+  });
+  const totalEl=document.getElementById('fm-oil-total');
+  if(totalEl)totalEl.textContent='$0.00';
 }
 </script>
 <!-- MODALS -->
