@@ -2151,10 +2151,34 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
                   </div>
                 </div>
               </div>
-              <div class="form-field"><label>Notes</label><textarea id="ti-notes" style="min-height:50px;"></textarea></div>
-              <div style="display:flex;gap:10px;align-items:center;margin-top:8px;">
+              <div class="form-field"><label>Notes</label><textarea id="ti-notes" style="min-height:50px;width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;font-family:Arial,sans-serif;outline:none;resize:vertical;"></textarea></div>
+
+              <!-- Bulk Add -->
+              <div style="background:#f0f4fb;border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:10px;">
+                <div style="font-size:12px;font-weight:800;color:var(--navy);margin-bottom:8px;">📦 Bulk Add (same tire, multiple units)</div>
+                <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <label style="font-size:13px;font-weight:600;color:var(--navy);white-space:nowrap;">Quantity:</label>
+                    <input type="number" id="ti-qty" value="1" min="1" max="50"
+                      style="width:70px;padding:8px 10px;border:2px solid var(--border);border-radius:6px;font-size:14px;font-weight:700;text-align:center;outline:none;">
+                  </div>
+                  <div style="font-size:12px;color:#888;">IDs will be auto-numbered: T-001, T-002... (or use your prefix + number)</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;margin-top:10px;">
+                  <div style="font-size:12px;font-weight:600;color:#555;">ID Prefix:</div>
+                  <input type="text" id="ti-id-prefix" placeholder="e.g. T, RS, ELW" value="T"
+                    style="width:80px;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;">
+                  <div style="font-size:12px;color:#888;">Starting #:</div>
+                  <input type="number" id="ti-id-start" placeholder="1" value="1" min="1"
+                    style="width:70px;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;text-align:center;">
+                  <div id="ti-bulk-preview" style="font-size:11px;color:#1565c0;font-weight:700;"></div>
+                </div>
+              </div>
+
+              <div style="display:flex;gap:10px;align-items:center;margin-top:8px;flex-wrap:wrap;">
                 <button class="btn btn-primary" onclick="saveTire()">Add Tire</button>
-                <span id="ti-msg" style="font-size:13px;color:var(--success);display:none;">✓ Tire added!</span>
+                <button class="btn btn-primary" style="background:#2e7d4f;" onclick="saveTireBulk()">📦 Bulk Add</button>
+                <span id="ti-msg" style="font-size:13px;color:var(--success);display:none;">✓ Tire(s) added!</span>
               </div>
             </div>
           </div>
@@ -6351,6 +6375,53 @@ async function saveTire(){
     await loadFleetTires();
     renderTireInventory();
   }catch(e){alert('Error: '+e.message);}
+}
+
+async function saveTireBulk(){
+  const qty=parseInt(document.getElementById('ti-qty')?.value)||1;
+  const prefix=(document.getElementById('ti-id-prefix')?.value.trim()||'T');
+  const startNum=parseInt(document.getElementById('ti-id-start')?.value)||1;
+  if(qty<1||qty>50){alert('Quantity must be between 1 and 50.');return;}
+  const brand=document.getElementById('ti-brand').value.trim()||null;
+  const size=document.getElementById('ti-size').value.trim()||null;
+  const tireType=document.getElementById('ti-type').value||null;
+  const status=document.getElementById('ti-status').value;
+  const storage=document.getElementById('ti-storage').value.trim()||null;
+  const notes=document.getElementById('ti-notes').value.trim()||null;
+  const vehicleId=status==='Mounted'?document.getElementById('ti-vehicle')?.value||null:null;
+  const position=status==='Mounted'?document.getElementById('ti-position')?.value||null:null;
+
+  const records=[];
+  for(let i=0;i<qty;i++){
+    const num=startNum+i;
+    const tireId=prefix+'-'+String(num).padStart(3,'0');
+    records.push({
+      tire_id:tireId,brand,size,tire_type:tireType,status,
+      vehicle_id:vehicleId,position,storage_location:storage,notes,
+      added_by:adminName,added_at:new Date().toISOString()
+    });
+  }
+
+  if(!confirm('Add '+qty+' tires ('+(records[0].tire_id)+' to '+(records[records.length-1].tire_id)+')? This cannot be undone.'))return;
+
+  try{
+    // Insert in batches of 10
+    for(let i=0;i<records.length;i+=10){
+      await db.from('fleet_tires').insert(records.slice(i,i+10));
+    }
+    ['ti-id','ti-brand','ti-size','ti-notes','ti-storage'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    document.getElementById('ti-type').value='';
+    document.getElementById('ti-status').value='In Storage';
+    document.getElementById('ti-mounted-fields').style.display='none';
+    document.getElementById('ti-qty').value='1';
+    const msg=document.getElementById('ti-msg');
+    msg.textContent='✓ '+qty+' tires added!';
+    msg.style.display='inline';
+    setTimeout(()=>{msg.style.display='none';msg.textContent='✓ Tire(s) added!';},3000);
+    await loadFleetTires();
+    renderTireInventory();
+    showRealtimeToast('✅ '+qty+' tires added to inventory!');
+  }catch(e){alert('Error adding tires: '+e.message);}
 }
 
 function renderTireInventory(){
