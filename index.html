@@ -6199,7 +6199,10 @@ function renderFleetMasterLog(){
         (m.shop_name?'<span style="font-size:12px;color:#888;">'+m.shop_name+'</span>':'')+
         (m.cost?'<span style="font-size:12px;font-weight:700;color:var(--navy);">$'+parseFloat(m.cost).toFixed(2)+'</span>':'')+
         (isOverdue?'<span style="background:var(--warn);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:8px;">OVERDUE</span>':'')+
-        '<button class="btn btn-sm btn-red" style="margin-left:auto;" data-mid="'+m.id+'" onclick="deleteFleetMaintEntry(this.dataset.mid)">🗑️</button>'+
+        '<div style="display:flex;gap:6px;margin-left:auto;">'+
+        '<button class="btn btn-sm" style="background:#e8f0fe;color:#1565c0;border:1px solid #bbdefb;" data-mid="'+m.id+'" onclick="openEditFleetMaint(this.dataset.mid)">✏️</button>'+
+        '<button class="btn btn-sm btn-red" data-mid="'+m.id+'" onclick="deleteFleetMaintEntry(this.dataset.mid)">🗑️</button>'+
+        '</div>'+
       '</div>'+
       (m.notes?'<div style="font-size:12px;color:#666;margin-top:8px;">'+m.notes+'</div>':'')+
     '</div>';
@@ -8199,7 +8202,7 @@ function renderRequestsTable(){
     el.innerHTML='<div style="padding:20px;text-align:center;color:#888;">'+(msgs[statusFilter]||'No requests found.')+'</div>';
     return;
   }
-  const header='<div style="display:grid;grid-template-columns:36px 1fr 100px 120px 100px 120px;gap:8px;padding:8px 12px;background:var(--gray);border-radius:8px 8px 0 0;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-top:12px;"><div></div><div>Employee</div><div>Type</div><div>Dates</div><div>Status</div><div>Actions</div></div>';
+  const header='<div style="display:grid;grid-template-columns:36px 1fr 110px 140px 90px 160px;gap:8px;padding:8px 12px;background:var(--gray);border-radius:8px 8px 0 0;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-top:12px;"><div></div><div>Employee</div><div>Type</div><div>Dates / Time</div><div>Status</div><div>Actions</div></div>';
   let html='';
   filtered.forEach(function(r,idx){
     const displayName=isDemo?'Employee '+(idx+1):(r.employee_name||'Unknown');
@@ -8207,16 +8210,21 @@ function renderRequestsTable(){
     const avatarColor=getAvatarColor(r.employee_name);
     const statusClass=r.status==='APPROVED'?'approved':r.status==='DENIED'?'denied':'pending';
     const dateRange=r.start_date+(r.end_date&&r.end_date!==r.start_date?' – '+r.end_date:'');
-    html+='<div style="display:grid;grid-template-columns:36px 1fr 100px 120px 100px 120px;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border);align-items:center;font-size:13px;background:#fff;">';
+    const timeDetail=r.time_detail?'<div style="font-size:11px;color:#e67e22;font-weight:600;margin-top:2px;">⏰ '+r.time_detail+'</div>':'';
+    html+='<div style="display:grid;grid-template-columns:36px 1fr 110px 140px 90px 160px;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border);align-items:center;font-size:13px;background:#fff;">';
     html+='<div style="width:32px;height:32px;border-radius:50%;background:'+avatarColor+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;">'+initials+'</div>';
-    html+='<div><div style="font-weight:700;color:var(--navy);">'+displayName+'</div><div style="font-size:11px;color:#888;">'+(r.county||'')+'</div></div>';
+    html+='<div><div style="font-weight:700;color:var(--navy);">'+displayName+'</div><div style="font-size:11px;color:#888;">'+(r.county||'')+'</div>'+(r.reason?'<div style="font-size:11px;color:#888;margin-top:1px;">'+r.reason.substring(0,40)+(r.reason.length>40?'…':'')+'</div>':'')+'</div>';
     html+='<div style="font-size:12px;color:#555;">'+(r.request_type||'—')+'</div>';
-    html+='<div style="font-size:12px;color:#555;">'+dateRange+'</div>';
+    html+='<div style="font-size:12px;color:#555;">'+dateRange+timeDetail+'</div>';
     html+='<div><span class="badge badge-'+statusClass+'" style="font-size:10px;">'+r.status+'</span></div>';
-    html+='<div style="display:flex;gap:4px;">';
+    html+='<div style="display:flex;gap:4px;flex-wrap:wrap;">';
     if(r.status==='PENDING'&&!isDemo){
-      html+='<button style="padding:4px 8px;border-radius:5px;border:1px solid #27AE60;background:#fff;color:#27AE60;cursor:pointer;font-size:11px;" data-rid="'+r.id+'" onclick="decideRequest(this.dataset.rid,&quot;APPROVED&quot;)">✓ Approve</button>';
-      html+='<button style="padding:4px 8px;border-radius:5px;border:1px solid var(--red);background:#fff;color:var(--red);cursor:pointer;font-size:11px;" data-rid="'+r.id+'" onclick="decideRequest(this.dataset.rid,&quot;DENIED&quot;)">✕ Deny</button>';
+      html+='<button style="padding:4px 8px;border-radius:5px;border:1px solid #27AE60;background:#fff;color:#27AE60;cursor:pointer;font-size:11px;" data-rid="'+r.id+'" onclick="decideRequest(this.dataset.rid,&quot;APPROVED&quot;)">✓</button>';
+      html+='<button style="padding:4px 8px;border-radius:5px;border:1px solid var(--red);background:#fff;color:var(--red);cursor:pointer;font-size:11px;" data-rid="'+r.id+'" onclick="decideRequest(this.dataset.rid,&quot;DENIED&quot;)">✕</button>';
+    }
+    if(!isDemo){
+      html+='<button style="padding:4px 8px;border-radius:5px;border:1px solid var(--border);background:#f0f4fb;color:var(--navy);cursor:pointer;font-size:11px;" data-rid="'+r.id+'" onclick="openEditRequest(this.dataset.rid)">✏️</button>';
+      html+='<button style="padding:4px 8px;border-radius:5px;border:1px solid #fcc;background:#fff;color:var(--red);cursor:pointer;font-size:11px;" data-rid="'+r.id+'" onclick="quickDeleteRequest(this.dataset.rid)">🗑️</button>';
     }
     html+='</div></div>';
   });
@@ -8303,6 +8311,11 @@ async function deleteAdminRequest(){
   if(!confirm('Permanently delete this request?'))return;
   await db.from('time_off_requests').delete().eq('id',id);
   closeModal('edit-request-modal');loadRequests();loadDashboard();
+}
+async function quickDeleteRequest(id){
+  if(!confirm('Permanently delete this time off request? This cannot be undone.'))return;
+  await db.from('time_off_requests').delete().eq('id',id);
+  loadRequests();loadDashboard();renderCalendar();
 }
 
 // CALL-OUT LOG
@@ -9081,9 +9094,9 @@ function calEventClick(e,type,id,label){
 async function deleteCalEvent(type,id){
   document.getElementById('cal-event-popup')?.remove();
   if(type==='timeoff'){
-    if(!confirm('Remove this time off from the calendar? This will revert the request to Pending.'))return;
+    if(!confirm('Remove this time off from the calendar and delete the request? This cannot be undone.'))return;
     try{
-      await db.from('time_off_requests').update({status:'PENDING',decided_at:null,decided_by:null}).eq('id',id);
+      await db.from('time_off_requests').delete().eq('id',id);
       renderCalendar();loadRequests();loadDashboard();
     }catch(e){alert('Error: '+e.message);}
   } else {
@@ -14037,6 +14050,29 @@ function toggleMemoExpand(id){
 <!-- MOBILE FULL MENU PANEL -->
 <div id="mobile-menu-panel" style="display:none;position:fixed;bottom:56px;left:0;right:0;background:#fff;border-top:1px solid var(--border);z-index:199;box-shadow:0 -4px 20px rgba(0,0,0,0.1);padding:12px;max-height:70vh;overflow-y:auto;">
   <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;padding:0 4px;">Documents</div>
+  <button onclick="showSection('downloads');closeMobileMenu()" style="display:flex;align-items:center;gap:12px;width:100%;padding:12px;background:none;border:none;border-bottom:1px solid var(--border);cursor:pointer;text-align:left;">
+    <span style="font-size:20px;">📥</span><span style="font-size:14px;font-weight:600;color:var(--navy);">Downloads</span>
+  </button>
+  <button onclick="showSection('training');closeMobileMenu()" style="display:flex;align-items:center;gap:12px;width:100%;padding:12px;background:none;border:none;border-bottom:1px solid var(--border);cursor:pointer;text-align:left;">
+    <span style="font-size:20px;">📋</span><span style="font-size:14px;font-weight:600;color:var(--navy);">Driver Training Guide</span>
+  </button>
+  <button onclick="showSection('handbook');closeMobileMenu()" style="display:flex;align-items:center;gap:12px;width:100%;padding:12px;background:none;border:none;border-bottom:1px solid var(--border);cursor:pointer;text-align:left;">
+    <span style="font-size:20px;">📖</span><span style="font-size:14px;font-weight:600;color:var(--navy);">Employee Handbook</span>
+  </button>
+  <button onclick="showSection('policies');closeMobileMenu()" style="display:flex;align-items:center;gap:12px;width:100%;padding:12px;background:none;border:none;border-bottom:1px solid var(--border);cursor:pointer;text-align:left;">
+    <span style="font-size:20px;">✍️</span><span style="font-size:14px;font-weight:600;color:var(--navy);">Policy Sign-Offs</span>
+  </button>
+  <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin:12px 0 8px;padding:0 4px;">Other</div>
+  <button onclick="showSection('vehicle');closeMobileMenu()" style="display:flex;align-items:center;gap:12px;width:100%;padding:12px;background:none;border:none;border-bottom:1px solid var(--border);cursor:pointer;text-align:left;">
+    <span style="font-size:20px;">🚐</span><span style="font-size:14px;font-weight:600;color:var(--navy);">Vehicle Report</span>
+  </button>
+  <button onclick="showSection('incident');closeMobileMenu()" style="display:flex;align-items:center;gap:12px;width:100%;padding:12px;background:none;border:none;border-bottom:1px solid var(--border);cursor:pointer;text-align:left;">
+    <span style="font-size:20px;">🚨</span><span style="font-size:14px;font-weight:600;color:var(--navy);">Incident Report</span>
+  </button>
+  <button onclick="showSection('expenses');closeMobileMenu()" style="display:flex;align-items:center;gap:12px;width:100%;padding:12px;background:none;border:none;cursor:pointer;text-align:left;">
+    <span style="font-size:20px;">💰</span><span style="font-size:14px;font-weight:600;color:var(--navy);">Expenses</span>
+  </button>
+</div>
 
 <!-- EDIT FLEET MAINTENANCE MODAL -->
 <div class="modal-overlay" id="edit-fleet-maint-modal">
