@@ -1310,7 +1310,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
         <div class="sidebar-label">🚐 Fleet & Operations</div>
         <div class="nav-item" onclick="showAdmin('fleet')" id="nav-adm-fleet"><span class="nav-icon">🔧</span>Fleet Maintenance<span class="nav-badge" id="badge-fleet" style="background:var(--red);display:none;">!</span></div>
         <div class="nav-item" onclick="showAdmin('assets')" id="nav-adm-assets"><span class="nav-icon">📦</span>Asset Management</div>
-        <div class="nav-item" onclick="showAdmin('vehicle-records')" id="nav-adm-vehicle-records"><span class="nav-icon">🚐</span>Vehicle Records</div>
+        <div class="nav-item" onclick="showAdmin('vehicle-records')" id="nav-adm-vehicle-records"><span class="nav-icon">🚐</span>Vehicle Reports</div>
         <div class="nav-item" onclick="showAdmin('incidents')" id="nav-adm-incidents"><span class="nav-icon">🚨</span>Incident Log<span class="nav-badge" id="badge-incidents" style="background:var(--red);">0</span></div>
 
         <div class="sidebar-label">💰 Finance</div>
@@ -1943,7 +1943,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 
       <!-- VEHICLE RECORDS ADMIN -->
       <div id="section-adm-vehicle-records" class="admin-section">
-        <div style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:4px;">🚐 Vehicle Records</div>
+        <div style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:4px;">🚐 Vehicle Reports</div>
         <p style="color:#888;font-size:13px;margin-bottom:16px;">All vehicle reports from drivers and admin. Filter, update status, or create a new admin report below.</p>
 
         <!-- Status tabs -->
@@ -7536,7 +7536,7 @@ const MGR_SECTIONS=[
   {title:'Sec 2: Pre-Employment',content:`<h1>Section 2: Pre-Employment Process</h1><h2>Interview &amp; Same-Day Screening</h2><ol><li>Conduct the interview using the Interview Questions Form in HR Templates</li><li>Have applicant sign Authorization Form for Background Check and MVR</li><li>Take a color photocopy of the applicant's driver's license</li><li>Complete the Driver Information Form</li><li>Call WorkHealth or Concentra for same-day Fit for Duty Exam and Pre-Employment Drug Screening</li></ol><h2>Four Required Clearances</h2><table><tr><td><strong>Background Check</strong></td><td>Must come back clear before proceeding</td></tr><tr><td><strong>Motor Vehicle Record (MVR)</strong></td><td>Must meet RideSource driving standards</td></tr><tr><td><strong>Fit for Duty Exam</strong></td><td>Medical clearance required</td></tr><tr><td><strong>Pre-Employment Drug Screen</strong></td><td>Must return negative result</td></tr></table><div class="callout"><strong>⚠ Do not send a Welcome Aboard Letter until ALL FOUR clearances are confirmed.</strong></div>`},
   {title:'Sec 3: Time Off',content:`<h1>Section 3: Time Off Request System</h1><p>Employees submit time off requests through the Staff Portal. Once submitted, requests appear in your Admin Portal under Time Off Requests.</p><h2>Approval Process</h2><ol><li>Employee submits request through the Staff Portal</li><li>You receive an email notification with the request details</li><li>Log into Admin Portal → Time Off Requests → Pending tab</li><li>Click Approve or Deny</li><li>Approved time off automatically appears on the Team Calendar</li><li>Enter time off in CTS manually</li></ol><h2>PTO Requests</h2><p>PTO requests appear under the PTO tab. Review and approve the same way as regular time off requests.</p><h2>Editing or Deleting Requests</h2><p>Admin can edit or delete any time off request using the edit button in the All tab. Pending requests can be cancelled by the employee or deleted by admin. Approved or denied requests can only be modified by admin.</p>`},
   {title:'Sec 4: Timesheets',content:`<h1>Section 4: Timesheet Review</h1><p>Employees submit weekly timesheets every Friday through the Staff Portal. Review these in the Admin Portal under Timesheets.</p><h2>Review Process</h2><ol><li>Navigate to Admin Portal → Timesheets → Pending</li><li>Compare submitted hours against TWE clock-in records</li><li>Click Approve for accurate timesheets</li><li>Flag discrepancies and follow up with the driver directly</li><li>At end of pay period: click Export CSV to download all timesheets for payroll</li><li>Archive locally and delete from portal to manage Supabase storage</li></ol><div class="callout"><strong>Maine Law Requirement</strong>Retain payroll records for a minimum of 3 years. Always export and save locally before deleting from the portal.</div>`},
-  {title:'Sec 5: Vehicle',content:`<h1>Section 5: Vehicle Records</h1><p>Drivers submit vehicle reports through the Staff Portal. All submissions appear in Admin Portal → Vehicle Records.</p><h2>What Drivers Can Submit</h2><ul><li>Damage reports with photos</li><li>Mechanical issues</li><li>Oil change receipts</li><li>Repair receipts</li><li>Windshield or glass damage</li><li>Tire issues and more</li></ul><p>Review reports promptly. Mileage information submitted in timesheets also feeds into vehicle maintenance awareness. Use the Export CSV button to save records before archiving.</p>`},
+  {title:'Sec 5: Vehicle',content:`<h1>Section 5: Vehicle Reports</h1><p>Drivers submit vehicle reports through the Staff Portal. All submissions appear in Admin Portal → Vehicle Reports.</p><h2>What Drivers Can Submit</h2><ul><li>Damage reports with photos</li><li>Mechanical issues</li><li>Oil change receipts</li><li>Repair receipts</li><li>Windshield or glass damage</li><li>Tire issues and more</li></ul><p>Review reports promptly. Mileage information submitted in timesheets also feeds into vehicle maintenance awareness. Use the Export CSV button to save records before archiving.</p>`},
   {title:'Sec 6: Call-Outs',content:`<h1>Section 6: Call-Out Log &amp; Attendance</h1><p>When an employee calls out, log it in Admin Portal → Call-Out Log. This data automatically powers the Attendance Warning Generator.</p><h2>Attendance Thresholds</h2><table><tr><td><strong>1–3 call-outs</strong></td><td>Verbal coaching with written follow-up</td></tr><tr><td><strong>4–6 call-outs</strong></td><td>Formal meeting; PIP and final written warning</td></tr><tr><td><strong>More than 6</strong></td><td>Review for termination; consider protected leave exceptions</td></tr></table>`},
   {title:'Sec 7: Quick Ref',content:`<h1>Section 7: Quick Reference</h1><table><tr><td><strong>Staff Portal URL</strong></td><td>https://ridesource-staff.vercel.app</td></tr><tr><td><strong>HR Contact</strong></td><td>tiffanyb@ridesourcemaine.com | 207-812-5357</td></tr></table>`}
 ];
@@ -8024,6 +8024,8 @@ function showRealtimeToast(msg){
 }
 
 async function adminRefreshAll(){
+  // Force full reload from DB
+  showRealtimeToast('🔄 Refreshing all data...');
   const btn=document.getElementById('admin-refresh-btn');
   if(btn){btn.textContent='🔄 Refreshing...';btn.disabled=true;}
   try{
@@ -11677,7 +11679,7 @@ Appointment: ${new Date(apptDate+'T12:00').toLocaleDateString('en-US',{weekday:'
 No appointment needed — walk-ins welcome.`;
   message+=`
 
-Remember: Please upload your receipt in the Vehicle Records section when complete.`;
+Remember: Please upload your receipt in the Vehicle Reports section when complete.`;
   if(instructions)message+=`
 
 Additional instructions: ${instructions}`;
@@ -11859,15 +11861,23 @@ async function renderFleetOverview(vehicleId){
 
     <!-- Recent maintenance history -->
     <div>
-      <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Recent Maintenance (Last 5)</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;">Recent Maintenance (Last 5)</div>
+        <button onclick="showAllMaintenance()" style="font-size:11px;padding:3px 10px;border-radius:6px;border:1px solid var(--border);background:#f0f4fb;color:var(--navy);cursor:pointer;">View All →</button>
+      </div>
       ${maint.length===0?'<p style="color:#888;font-size:13px;">No maintenance logged yet.</p>':
         maint.sort((a,b)=>new Date(b.service_date)-new Date(a.service_date)).slice(0,5).map(m=>`
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f5f5f5;font-size:13px;">
-          <div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f5f5f5;font-size:13px;gap:8px;">
+          <div style="flex:1;min-width:0;">
             <span style="font-weight:700;color:var(--navy);">${m.maintenance_type}</span>
-            ${m.notes?`<span style="color:#888;font-size:12px;margin-left:8px;">${m.notes.substring(0,40)}</span>`:''}
+            ${m.notes?`<span style="color:#888;font-size:12px;margin-left:8px;">${m.notes.substring(0,50)}</span>`:''}
+            ${m.cost?`<span style="font-size:12px;font-weight:700;color:var(--navy);margin-left:8px;">$${parseFloat(m.cost).toFixed(2)}</span>`:''}
           </div>
-          <div style="color:#888;font-size:12px;white-space:nowrap;">${fmtDate(m.service_date)}</div>
+          <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+            <div style="color:#888;font-size:12px;white-space:nowrap;">${fmtDate(m.service_date)}</div>
+            <button data-mid="${m.id}" onclick="openEditFleetMaint(this.dataset.mid)" style="font-size:10px;padding:2px 7px;border-radius:4px;border:1px solid var(--border);background:#f0f4fb;color:var(--navy);cursor:pointer;">✏️</button>
+            <button data-mid="${m.id}" onclick="if(confirm('Delete this ${m.maintenance_type} record?'))deleteFleetMaintEntry(this.dataset.mid)" style="font-size:10px;padding:2px 7px;border-radius:4px;border:1px solid #fcc;background:#fff;color:var(--red);cursor:pointer;">🗑️</button>
+          </div>
         </div>`).join('')}
     </div>
   `;
@@ -13362,6 +13372,88 @@ function checkChangeoverInvoiceMatch(){
     matchEl.style.border='1px solid #ffc107';
   }
 }
+
+// ═══════════════════════════════════════════════
+// FULL MAINTENANCE LOG MODAL
+// ═══════════════════════════════════════════════
+function showAllMaintenance(){
+  const modal=document.getElementById('all-maint-modal');
+  if(!modal)return;
+  const title=document.getElementById('all-maint-title');
+  if(title)title.textContent='All Maintenance — '+currentFleetVehicleId;
+  renderAllMaintenance();
+  modal.classList.add('open');
+}
+
+function renderAllMaintenance(){
+  const el=document.getElementById('all-maint-list');
+  if(!el)return;
+  const search=(document.getElementById('all-maint-search')?.value||'').toLowerCase();
+  const typeF=document.getElementById('all-maint-type-filter')?.value||'';
+  
+  let records=allFleetMaintenanceCache.filter(m=>m.vehicle_id===currentFleetVehicleId);
+  if(typeF)records=records.filter(m=>m.maintenance_type===typeF);
+  if(search)records=records.filter(m=>
+    (m.maintenance_type||'').toLowerCase().includes(search)||
+    (m.notes||'').toLowerCase().includes(search)||
+    (m.shop_name||'').toLowerCase().includes(search)||
+    (m.invoice_number||'').toLowerCase().includes(search)
+  );
+  records=records.sort((a,b)=>new Date(b.service_date)-new Date(a.service_date));
+
+  if(!records.length){
+    el.innerHTML='<p style="color:#888;font-size:13px;padding:20px 0;text-align:center;">No records found.</p>';
+    return;
+  }
+
+  const typeColor={
+    'Oil Change':'#fff8e1','Repair':'#fdecea','Tire Changeover':'#e8f5e9',
+    'Tire Repair':'#e8f5e9','Preventative':'#e8f4fd','Inspection':'#f3e5f5',
+    'Tow Charge':'#fce4ec'
+  };
+
+  el.innerHTML=records.map(m=>{
+    const dt=fmtDate(m.service_date);
+    const notesClean=(m.notes||'').replace(/\| Receipt: https?:\/\/\S+/,'').trim();
+    const receiptMatch=(m.notes||'').match(/Receipt: (https?:\/\/\S+)/);
+    const receiptUrl=m.receipt_url||( receiptMatch?receiptMatch[1]:null);
+    return `<div style="border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px;background:${typeColor[m.maintenance_type]||'#fafafa'};">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
+        <div style="flex:1;">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span style="font-size:13px;font-weight:800;color:var(--navy);">${m.maintenance_type}</span>
+            <span style="font-size:12px;color:#888;">${dt}</span>
+            ${m.invoice_number?`<span style="font-size:11px;background:#f0f4fb;color:var(--navy);padding:1px 7px;border-radius:6px;">Invoice: ${m.invoice_number}</span>`:''}
+            ${m.paid?'<span style="font-size:11px;background:#e8f5e9;color:#27AE60;padding:1px 7px;border-radius:6px;">✓ Paid</span>':''}
+          </div>
+          ${m.shop_name?`<div style="font-size:12px;color:#888;margin-top:2px;">📍 ${m.shop_name}</div>`:''}
+          ${notesClean?`<div style="font-size:12px;color:#555;margin-top:4px;white-space:pre-wrap;">${notesClean.substring(0,150)}</div>`:''}
+          ${receiptUrl?`<a href="${receiptUrl}" target="_blank" style="font-size:11px;color:#1565c0;font-weight:700;display:inline-block;margin-top:4px;">📎 View Receipt</a>`:''}
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          ${m.cost?`<div style="font-size:14px;font-weight:900;color:var(--navy);">$${parseFloat(m.cost).toFixed(2)}</div>`:''}
+          <div style="display:flex;gap:4px;margin-top:6px;justify-content:flex-end;">
+            <button data-mid="${m.id}" onclick="openEditFleetMaint(this.dataset.mid)" style="font-size:11px;padding:3px 8px;border-radius:5px;border:1px solid var(--border);background:#f0f4fb;color:var(--navy);cursor:pointer;">✏️ Edit</button>
+            <button data-mid="${m.id}" onclick="deleteFromAllMaint(this.dataset.mid)" style="font-size:11px;padding:3px 8px;border-radius:5px;border:1px solid #fcc;background:#fff;color:var(--red);cursor:pointer;">🗑️</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function deleteFromAllMaint(id){
+  if(!confirm('Delete this maintenance record? This cannot be undone.'))return;
+  try{
+    const{error}=await db.from('fleet_maintenance').delete().eq('id',id);
+    if(error)throw error;
+    allFleetMaintenanceCache=allFleetMaintenanceCache.filter(m=>m.id!==id&&m.id!==parseInt(id));
+    renderAllMaintenance();
+    loadFleetMaintHistory();
+    renderFleetVehicleGrid();
+    showRealtimeToast('Record deleted');
+  }catch(e){alert('Error: '+e.message);}
+}
 </script>
 <!-- MODALS -->
 <div class="modal-overlay" id="policy-modal">
@@ -14000,6 +14092,28 @@ function checkChangeoverInvoiceMatch(){
     <div style="display:flex;gap:10px;align-items:center;">
       <button class="btn btn-primary" onclick="saveLogFromReport()">💾 Log Repair</button>
       <button class="btn btn-sm" style="background:#f0f0f0;color:#555;" onclick="closeModal('log-from-report-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ALL MAINTENANCE LOG MODAL -->
+<div class="modal-overlay" id="all-maint-modal">
+  <div class="modal" style="max-width:700px;max-height:85vh;display:flex;flex-direction:column;">
+    <button class="modal-close" onclick="closeModal('all-maint-modal')">✕</button>
+    <h3 id="all-maint-title" style="color:var(--navy);margin-bottom:12px;">All Maintenance</h3>
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+      <input type="text" id="all-maint-search" placeholder="🔍 Search..." oninput="renderAllMaintenance()"
+        style="flex:1;min-width:140px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+      <select id="all-maint-type-filter" onchange="renderAllMaintenance()"
+        style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:#fff;">
+        <option value="">All Types</option>
+        <option>Oil Change</option><option>Repair</option><option>Tire Changeover</option>
+        <option>Tire Repair</option><option>Preventative</option><option>Inspection</option>
+        <option>Tow Charge</option>
+      </select>
+    </div>
+    <div id="all-maint-list" style="overflow-y:auto;flex:1;">
+      <p style="color:#888;font-size:13px;">Loading...</p>
     </div>
   </div>
 </div>
