@@ -8568,7 +8568,7 @@ function renderTimesheetsTable(){
     const statusLabel=t.status==='PENDING'?'SUBMITTED':t.status;
     // Calculate total hours
     let totalHrs=0;let hasMissed=false;
-    if(t.hours_data){try{const rows=JSON.parse(t.hours_data);Object.values(rows).forEach(d=>{if(d.total)totalHrs+=parseFloat(d.total)||0;if(d.missed)hasMissed=true;});}catch(e){}}
+    if(t.hours_data){try{const hrsData=JSON.parse(t.hours_data);Object.values(hrsData).forEach(d=>{if(d.total)totalHrs+=parseFloat(d.total)||0;if(d.missed)hasMissed=true;});}catch(e){}}
     const isPending=t.status==='PENDING';
     return '<div data-tid="'+t.id+'" style="display:grid;grid-template-columns:36px 1fr 110px 90px 90px 110px;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border);align-items:center;font-size:13px;background:#fff;cursor:pointer;" onclick="toggleTsRow(this.dataset.tid,this)">'+ 
       '<div style="width:32px;height:32px;border-radius:50%;background:'+avatarColor+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">'+initials+'</div>'+
