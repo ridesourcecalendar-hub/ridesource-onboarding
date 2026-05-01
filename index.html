@@ -8188,68 +8188,41 @@ function getAvatarColor(name){
 }
 function renderRequestsTable(){
   const el=document.getElementById('requests-table');
+  if(!el)return;
   const isDemo=adminStaff?.role==='demo';
-  const searchTerm=(document.getElementById('req-search')?.value||'').toLowerCase().trim();
-  const supFilter=(document.getElementById('req-supervisor-filter')?.value||'');
-  // Auto-filter by supervisor role
-  const isSupervisor=adminStaff?.role==='supervisor';
-  let filtered=allRequestsCache;
-  if(currentReqTab==='PENDING')filtered=allRequestsCache.filter(r=>r.status==='PENDING'||r.status==='PTO_PENDING');
-  else if(currentReqTab==='APPROVED')filtered=allRequestsCache.filter(r=>r.status==='APPROVED');
-  else if(currentReqTab==='DENIED')filtered=allRequestsCache.filter(r=>r.status==='DENIED');
-  else if(currentReqTab==='PTO')filtered=allRequestsCache.filter(r=>r.status==='PTO_PENDING'||r.request_type==='Use PTO Hours');
-  if(searchTerm)filtered=filtered.filter(r=>(r.employee_name||'').toLowerCase().includes(searchTerm));
-  if(supFilter){
-    const empEmails=new Set(allProfilesCache.filter(p=>p.assigned_supervisor===supFilter).map(p=>p.employee_email).filter(Boolean));
-    filtered=filtered.filter(r=>empEmails.has(r.employee_email));
-  } else if(isSupervisor&&adminStaff?.name){
-    // Supervisors only see their assigned drivers by default
-    const empEmails=new Set(allProfilesCache.filter(p=>p.assigned_supervisor===adminStaff.name).map(p=>p.employee_email).filter(Boolean));
-    if(empEmails.size>0)filtered=filtered.filter(r=>empEmails.has(r.employee_email));
+  const statusFilter=document.getElementById('req-status-filter')?.value||'ALL';
+  const search=(document.getElementById('req-search')?.value||'').toLowerCase();
+  let filtered=statusFilter==='ALL'?allRequestsCache:allRequestsCache.filter(r=>r.status===statusFilter);
+  if(search)filtered=filtered.filter(r=>(r.employee_name||'').toLowerCase().includes(search)||(r.request_type||'').toLowerCase().includes(search));
+  const msgs={PENDING:'No pending requests.',APPROVED:'No approved requests.',DENIED:'No denied requests.',ALL:'No requests found.'};
+  if(!filtered.length){
+    el.innerHTML='<div style="padding:20px;text-align:center;color:#888;">'+(msgs[statusFilter]||'No requests found.')+'</div>';
+    return;
   }
-  // Update quick summary
-  const now=new Date();
-  const monthStart=new Date(now.getFullYear(),now.getMonth(),1);
-  const next7=new Date(now);next7.setDate(now.getDate()+7);
-  document.getElementById('qs-pending').textContent=allRequestsCache.filter(r=>r.status==='PENDING'||r.status==='PTO_PENDING').length;
-  document.getElementById('qs-approved').textContent=allRequestsCache.filter(r=>r.status==='APPROVED'&&new Date(r.decided_at||r.submitted_at)>=monthStart).length;
-  document.getElementById('qs-denied').textContent=allRequestsCache.filter(r=>r.status==='DENIED'&&new Date(r.decided_at||r.submitted_at)>=monthStart).length;
-  document.getElementById('qs-upcoming').textContent=allRequestsCache.filter(r=>r.status==='APPROVED'&&new Date(r.start_date)>=now&&new Date(r.start_date)<=next7).length;
-  document.getElementById('qs-pto').textContent=allRequestsCache.filter(r=>r.status==='PTO_PENDING').length;
-  if(!filtered||filtered.length===0){
-    const labels={PENDING:'No pending requests.',APPROVED:'No approved requests yet.',DENIED:'No denied requests yet.',PTO:'No PTO requests yet.',ALL:'No requests found.'};
-    el.innerHTML='<div style="padding:20px 0;text-align:center;color:#888;font-size:13px;">'+(labels[currentReqTab]||'No requests found.')+'</div>';return;
-  }
-  // Table header
-  const header='<div style="display:grid;grid-template-columns:36px 1fr 110px 120px 120px 100px 80px;gap:8px;padding:8px 12px;background:var(--gray);border-radius:8px 8px 0 0;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-top:12px;">'+
-    '<div></div><div>Employee</div><div>Dates</div><div>Type</div><div>Detail</div><div>Status</div><div></div></div>';
-  const rows=filtered.map((r,idx)=>{
-    const displayName=isDemo?'Employee '+(idx+1):r.employee_name;
-    const initials=isDemo?'E':getInitials(r.employee_name);
+  const header='<div style="display:grid;grid-template-columns:36px 1fr 100px 120px 100px 120px;gap:8px;padding:8px 12px;background:var(--gray);border-radius:8px 8px 0 0;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-top:12px;"><div></div><div>Employee</div><div>Type</div><div>Dates</div><div>Status</div><div>Actions</div></div>';
+  let html='';
+  filtered.forEach(function(r,idx){
+    const displayName=isDemo?'Employee '+(idx+1):(r.employee_name||'Unknown');
+    const initials=getInitials(r.employee_name);
     const avatarColor=getAvatarColor(r.employee_name);
-    const badgeClass=r.status==='PTO_PENDING'?'pto_pending':r.status.toLowerCase();
-    const badgeLabel=r.status==='PTO_PENDING'?'PTO':r.status;
-    const isPending=r.status==='PENDING'||r.status==='PTO_PENDING';
-    const dates=r.start_date+(r.end_date&&r.end_date!==r.start_date?' – '+r.end_date:'');
-    const reason=isDemo?'—':r.reason||'—';
-    return '<div style="display:grid;grid-template-columns:36px 1fr 110px 120px 120px 100px 80px;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border);align-items:center;font-size:13px;background:#fff;">'+
-      '<div style="width:32px;height:32px;border-radius:50%;background:'+avatarColor+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">'+initials+'</div>'+
-      '<div><div style="font-weight:700;color:var(--navy);">'+displayName+'</div><div style="font-size:11px;color:#888;margin-top:1px;">'+r.county+'</div></div>'+
-      '<div style="color:#555;">'+dates+'</div>'+
-      '<div style="color:#555;">'+r.request_type+'</div>'+
-      '<div style="color:#888;font-size:12px;">'+(r.time_detail||reason||'—')+'</div>'+
-      '<div><span class="badge badge-'+badgeClass+'" style="font-size:10px;">'+badgeLabel+'</span></div>'+
-      '<div style="display:flex;gap:4px;justify-content:flex-end;">'+
-        (isPending&&!isDemo?
-          '<button style="width:28px;height:28px;border-radius:6px;border:1px solid #27AE60;background:#fff;color:#27AE60;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;" data-rid="'+r.id+'" data-status="APPROVED" onclick="decideRequest(this.dataset.rid,this.dataset.status)" title="Approve">✓</button>'+
-          '<button style="width:28px;height:28px;border-radius:6px;border:1px solid var(--red);background:#fff;color:var(--red);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;" data-rid="'+r.id+'" data-status="DENIED" onclick="decideRequest(this.dataset.rid,this.dataset.status)" title="Deny">✗</button>'
-        :'')+
-        (!isDemo?'<button style="width:28px;height:28px;border-radius:6px;border:1px solid #ddd;background:#fff;color:#888;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;" onclick="openEditRequest('+r.id+')" title="Edit">✏️</button>':'')
-      +'</div>'+
-    '</div>';
+    const statusClass=r.status==='APPROVED'?'approved':r.status==='DENIED'?'denied':'pending';
+    const dateRange=r.start_date+(r.end_date&&r.end_date!==r.start_date?' – '+r.end_date:'');
+    html+='<div style="display:grid;grid-template-columns:36px 1fr 100px 120px 100px 120px;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border);align-items:center;font-size:13px;background:#fff;">';
+    html+='<div style="width:32px;height:32px;border-radius:50%;background:'+avatarColor+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;">'+initials+'</div>';
+    html+='<div><div style="font-weight:700;color:var(--navy);">'+displayName+'</div><div style="font-size:11px;color:#888;">'+(r.county||'')+'</div></div>';
+    html+='<div style="font-size:12px;color:#555;">'+(r.request_type||'—')+'</div>';
+    html+='<div style="font-size:12px;color:#555;">'+dateRange+'</div>';
+    html+='<div><span class="badge badge-'+statusClass+'" style="font-size:10px;">'+r.status+'</span></div>';
+    html+='<div style="display:flex;gap:4px;">';
+    if(r.status==='PENDING'&&!isDemo){
+      html+='<button style="padding:4px 8px;border-radius:5px;border:1px solid #27AE60;background:#fff;color:#27AE60;cursor:pointer;font-size:11px;" data-rid="'+r.id+'" onclick="decideRequest(this.dataset.rid,&quot;APPROVED&quot;)">✓ Approve</button>';
+      html+='<button style="padding:4px 8px;border-radius:5px;border:1px solid var(--red);background:#fff;color:var(--red);cursor:pointer;font-size:11px;" data-rid="'+r.id+'" onclick="decideRequest(this.dataset.rid,&quot;DENIED&quot;)">✕ Deny</button>';
+    }
+    html+='</div></div>';
   });
-  el.innerHTML=header+'<div style="border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;overflow:hidden;">'+rows.join('')+'</div>';
+  el.innerHTML=header+'<div style="border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;overflow:hidden;">'+html+'</div>';
 }
+
 function exportTimeOffRequests(){
   const data=allRequestsCache;
   if(!data.length){alert('No requests to export.');return;}
@@ -8547,45 +8520,52 @@ function updateTsTabCounts(){
 
 function renderTimesheetsTable(){
   const el=document.getElementById('timesheets-table');
+  if(!el)return;
   const isDemo=adminStaff?.role==='demo';
   const search=(document.getElementById('ts-search')?.value||'').toLowerCase();
   const weekFilter=document.getElementById('ts-week-filter')?.value||'';
-  // Treat null/undefined status as PENDING for old format timesheets
-  const normalizedCache=allTimesheetsCache.map(t=>({...t,status:t.status||'PENDING'}));
-  let filtered=tsFilterStatus==='ALL'?normalizedCache:normalizedCache.filter(t=>t.status===tsFilterStatus);
+  const normalized=allTimesheetsCache.map(t=>({...t,status:t.status||'PENDING'}));
+  let filtered=tsFilterStatus==='ALL'?normalized:normalized.filter(t=>t.status===tsFilterStatus);
   if(search)filtered=filtered.filter(t=>(t.employee_name||'').toLowerCase().includes(search));
   if(weekFilter&&weekFilter!=='all')filtered=filtered.filter(t=>t.week_ending===weekFilter);
   updateTsTabCounts();
-  if(!filtered||filtered.length===0){el.innerHTML='<div style="padding:20px 0;text-align:center;color:#888;font-size:13px;">No timesheets found.</div>';return;}
-  // Table header
-  const header='<div style="display:grid;grid-template-columns:36px 1fr 110px 90px 90px 110px;gap:8px;padding:8px 12px;background:var(--gray);border-radius:8px 8px 0 0;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-top:12px;">'+
-    '<div></div><div>Employee</div><div>Week Ending</div><div>Hours</div><div>Status</div><div></div></div>';
-  const rows=filtered.map((t,idx)=>{
-    const displayName=isDemo?'Employee '+(idx+1):t.employee_name;
-    const initials=isDemo?'E':getInitials(t.employee_name);
+  if(!filtered.length){
+    el.innerHTML='<div style="padding:20px;text-align:center;color:#888;">No timesheets found.</div>';
+    return;
+  }
+  const header='<div style="display:grid;grid-template-columns:36px 1fr 110px 90px 90px 110px;gap:8px;padding:8px 12px;background:var(--gray);border-radius:8px 8px 0 0;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-top:12px;"><div></div><div>Employee</div><div>Week Ending</div><div>Hours</div><div>Status</div><div></div></div>';
+  let html='';
+  filtered.forEach(function(t,idx){
+    const displayName=isDemo?'Employee '+(idx+1):(t.employee_name||'Unknown');
+    const initials=getInitials(t.employee_name);
     const avatarColor=getAvatarColor(t.employee_name);
-    const statusClass=t.status==='APPROVED'?'approved':t.status==='DRAFT'?'':'pending';
     const statusLabel=t.status==='PENDING'?'SUBMITTED':t.status;
-    // Calculate total hours
-    let totalHrs=0;let hasMissed=false;
-    if(t.hours_data){try{const hrsData=JSON.parse(t.hours_data);Object.values(hrsData).forEach(d=>{if(d.total)totalHrs+=parseFloat(d.total)||0;if(d.missed)hasMissed=true;});}catch(e){}}
+    const statusClass=t.status==='APPROVED'?'approved':t.status==='DRAFT'?'':'pending';
+    let totalHrs=0;
+    let hasMissed=false;
+    if(t.hours_data){
+      try{
+        const hd=JSON.parse(t.hours_data);
+        Object.values(hd).forEach(function(d){
+          if(d&&d.total)totalHrs+=parseFloat(d.total)||0;
+          if(d&&d.missed)hasMissed=true;
+        });
+      }catch(e){}
+    }
     const isPending=t.status==='PENDING';
-    return '<div data-tid="'+t.id+'" style="display:grid;grid-template-columns:36px 1fr 110px 90px 90px 110px;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border);align-items:center;font-size:13px;background:#fff;cursor:pointer;" onclick="toggleTsRow(this.dataset.tid,this)">'+ 
-      '<div style="width:32px;height:32px;border-radius:50%;background:'+avatarColor+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">'+initials+'</div>'+
-      '<div><div style="font-weight:700;color:var(--navy);">'+displayName+'</div><div style="font-size:11px;color:#888;">'+t.county+'</div></div>'+
-      '<div style="color:#555;font-size:12px;">'+t.week_ending+'</div>'+
-      '<div style="font-weight:700;color:var(--navy);">'+(totalHrs>0?totalHrs.toFixed(1)+'h':'—')+(hasMissed?' <span style="color:var(--warn);font-size:10px;" title="Has missed punches">⚠</span>':'')+'</div>'+
-      '<div><span class="badge badge-'+statusClass+'" style="font-size:10px;">'+statusLabel+'</span></div>'+
-      '<div style="display:flex;gap:4px;justify-content:flex-end;" onclick="event.stopPropagation()">'+
-        (isPending&&!isDemo?'<button style="width:28px;height:28px;border-radius:6px;border:1px solid #27AE60;background:#fff;color:#27AE60;cursor:pointer;font-size:14px;" data-tid="'+t.id+'" onclick="approveTimesheet(this.dataset.tid)" title="Approve">✓</button>':'')+ 
-        (!isDemo?'<button style="width:28px;height:28px;border-radius:6px;border:1px solid #fcc;background:#fff;color:var(--red);cursor:pointer;font-size:12px;" data-tid="'+t.id+'" onclick="deleteSingleTimesheet(this.dataset.tid)" title="Delete">🗑️</button>':'')+ 
-      '</div>'+
-    '</div>'+
-    '<div id="ts-detail-'+t.id+'" style="display:none;border-bottom:1px solid var(--border);background:#f7f9fc;padding:16px 12px;">'+
-      buildTsDetailView(t,isDemo)+
-    '</div>';
+    html+='<div data-tid="'+t.id+'" style="display:grid;grid-template-columns:36px 1fr 110px 90px 90px 110px;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border);align-items:center;font-size:13px;background:#fff;cursor:pointer;" onclick="toggleTsRow(this.dataset.tid,this)">';
+    html+='<div style="width:32px;height:32px;border-radius:50%;background:'+avatarColor+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;">'+initials+'</div>';
+    html+='<div><div style="font-weight:700;color:var(--navy);">'+displayName+'</div><div style="font-size:11px;color:#888;">'+(t.county||'')+'</div></div>';
+    html+='<div style="color:#555;font-size:12px;">'+(t.week_ending||'—')+'</div>';
+    html+='<div style="font-weight:700;color:var(--navy);">'+(totalHrs>0?totalHrs.toFixed(1)+'h':'—')+(hasMissed?'<span style="color:var(--warn);font-size:10px;margin-left:4px;">⚠</span>':'')+'</div>';
+    html+='<div><span class="badge badge-'+statusClass+'" style="font-size:10px;">'+statusLabel+'</span></div>';
+    html+='<div style="display:flex;gap:4px;justify-content:flex-end;" onclick="event.stopPropagation()">';
+    if(isPending&&!isDemo)html+='<button style="width:28px;height:28px;border-radius:6px;border:1px solid #27AE60;background:#fff;color:#27AE60;cursor:pointer;font-size:14px;" data-tid="'+t.id+'" onclick="approveTimesheet(this.dataset.tid)" title="Approve">✓</button>';
+    if(!isDemo)html+='<button style="width:28px;height:28px;border-radius:6px;border:1px solid #fcc;background:#fff;color:var(--red);cursor:pointer;font-size:12px;" data-tid="'+t.id+'" onclick="deleteSingleTimesheet(this.dataset.tid)" title="Delete">🗑️</button>';
+    html+='</div></div>';
+    html+='<div id="ts-detail-'+t.id+'" style="display:none;border-bottom:1px solid var(--border);background:#f7f9fc;padding:16px 12px;">'+buildTsDetailView(t,isDemo)+'</div>';
   });
-  el.innerHTML=header+'<div style="border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;overflow:hidden;">'+rows.join('')+'</div>';
+  el.innerHTML=header+'<div style="border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;overflow:hidden;">'+html+'</div>';
 }
 
 function buildTsDetailView(t,isDemo){
