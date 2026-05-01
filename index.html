@@ -8247,7 +8247,7 @@ function renderRequestsTable(){
         (!isDemo?'<button style="width:28px;height:28px;border-radius:6px;border:1px solid #ddd;background:#fff;color:#888;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;" onclick="openEditRequest('+r.id+')" title="Edit">✏️</button>':'')
       +'</div>'+
     '</div>';
-  }).join('');
+  });
   el.innerHTML=header+'<div style="border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;overflow:hidden;">'+rows.join('')+'</div>';
 }
 function exportTimeOffRequests(){
@@ -8584,7 +8584,7 @@ function renderTimesheetsTable(){
     '<div id="ts-detail-'+t.id+'" style="display:none;border-bottom:1px solid var(--border);background:#f7f9fc;padding:16px 12px;">'+
       buildTsDetailView(t,isDemo)+
     '</div>';
-  }).join('');
+  });
   el.innerHTML=header+'<div style="border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;overflow:hidden;">'+rows.join('')+'</div>';
 }
 
