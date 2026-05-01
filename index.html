@@ -4759,8 +4759,8 @@ async function loadDirectMessageEmployees(){
   // Count unread messages per employee
   const unreadByEmp={};
   try{
-    const{data}=await db.from('employee_messages').select('from_email,is_read').eq('is_read',false);
-    (data||[]).forEach(m=>{unreadByEmp[m.from_email]=(unreadByEmp[m.from_email]||0)+1;});
+    const{data}=await db.from('employee_messages').select('employee_email,is_read').eq('is_read',false).eq('from_admin',false);
+    (data||[]).forEach(m=>{unreadByEmp[m.employee_email]=(unreadByEmp[m.employee_email]||0)+1;});
   }catch(e){}
   listEl.innerHTML=employees.map(e=>{
     const unread=unreadByEmp[e.employee_email]||0;
@@ -4790,7 +4790,7 @@ async function openDirectThread(email,name){
   // Load thread
   await loadDirectThread(email,name);
   // Mark as read
-  try{await db.from('employee_messages').update({is_read:true}).or('from_email.eq.'+email+',to_email.eq.'+email).eq('is_read',false);}catch(e){}
+  try{await db.from('employee_messages').update({is_read:true}).eq('employee_email',email).eq('is_read',false);}catch(e){}
   // Refresh employee list
   loadDirectMessageEmployees();
 }
@@ -4799,7 +4799,7 @@ async function loadDirectThread(email,name){
   const threadEl=document.getElementById('direct-msg-thread');if(!threadEl)return;
   try{
     // Get messages from employee to admin
-    const{data:empMsgs}=await db.from('employee_messages').select('*').eq('from_email',email).order('sent_at',{ascending:true});
+    const{data:empMsgs}=await db.from('employee_messages').select('*').eq('employee_email',email).eq('from_admin',false).order('sent_at',{ascending:true});
     // Get admin replies to this employee
     const{data:adminMsgs}=await db.from('employee_messages').select('*').eq('to_email',email).order('sent_at',{ascending:true});
     // Merge and sort - employee msgs vs admin msgs (to_email matches)
@@ -4828,10 +4828,11 @@ async function sendDirectMessage(){
   input.value='';
   try{
     await db.from('employee_messages').insert([{
-      from_email:adminStaff?.email||'admin@ridesource',
+      employee_email:currentDirectMsgEmployee,
+      employee_name:allProfilesCache.find(p=>p.employee_email===currentDirectMsgEmployee)?.employee_name||'',
       from_name:adminName,
       to_email:currentDirectMsgEmployee,
-      employee_name:allProfilesCache.find(p=>p.employee_email===currentDirectMsgEmployee)?.employee_name||'',
+      subject:'Direct Message from '+adminName,
       message:msg,
       body:msg,
       is_read:false,
@@ -5261,7 +5262,7 @@ async function loadEmpSentMessages(){
 let allEmpMessagesCache=[];
 async function loadEmployeeMessages(){
   try{
-    const {data}=await db.from('employee_messages').select('*').order('sent_at',{ascending:false});
+    const {data}=await db.from('employee_messages').select('*').eq('from_admin',false).order('sent_at',{ascending:false});
     allEmpMessagesCache=data||[];
     const unread=allEmpMessagesCache.filter(m=>!m.is_read).length;
     const badge=document.getElementById('badge-emp-messages');
@@ -8498,7 +8499,7 @@ async function loadOnboarding(){
 let tsFilterStatus='ALL';
 async function loadTimesheets(){
   try{
-    const {data}=await db.from('timesheets').select('*').order('submitted_at',{ascending:false});
+    const {data}=await db.from('timesheets').select('*').order('id',{ascending:false});
     allTimesheetsCache=data||[];
     const pending=(data||[]).filter(t=>t.status==='PENDING').length;
     const badge=document.getElementById('badge-timesheets');
@@ -8550,7 +8551,9 @@ function renderTimesheetsTable(){
   const isDemo=adminStaff?.role==='demo';
   const search=(document.getElementById('ts-search')?.value||'').toLowerCase();
   const weekFilter=document.getElementById('ts-week-filter')?.value||'';
-  let filtered=tsFilterStatus==='ALL'?allTimesheetsCache:allTimesheetsCache.filter(t=>t.status===tsFilterStatus);
+  // Treat null/undefined status as PENDING for old format timesheets
+  const normalizedCache=allTimesheetsCache.map(t=>({...t,status:t.status||'PENDING'}));
+  let filtered=tsFilterStatus==='ALL'?normalizedCache:normalizedCache.filter(t=>t.status===tsFilterStatus);
   if(search)filtered=filtered.filter(t=>(t.employee_name||'').toLowerCase().includes(search));
   if(weekFilter)filtered=filtered.filter(t=>t.week_ending===weekFilter);
   updateTsTabCounts();
