@@ -7,6 +7,25 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script>
+
+// ═══════════════════════════════════════════════
+// DATE TIMEZONE FIX
+// ═══════════════════════════════════════════════
+function parseLocalDate(dateStr){
+  if(!dateStr)return null;
+  const s=String(dateStr).split('T')[0];
+  const parts=s.split('-');
+  if(parts.length===3){
+    return new Date(parseInt(parts[0]),parseInt(parts[1])-1,parseInt(parts[2]));
+  }
+  return new Date(dateStr);
+}
+
+function fmtDate(dateStr,opts){
+  const d=parseLocalDate(dateStr);
+  if(!d||isNaN(d))return'—';
+  return d.toLocaleDateString('en-US',opts||{month:'short',day:'numeric',year:'numeric'});
+}
 let docxReady = new Promise(function(resolve, reject) {
   function tryLoad(urls, idx) {
     if (idx >= urls.length) { reject(new Error('docx failed to load')); return; }
@@ -4922,7 +4941,7 @@ async function createMemo(){
     document.getElementById('memo-audience').value='all';
     document.getElementById('memo-priority').value='normal';
     document.getElementById('memo-require-ack').checked=false;
-    document.getElementById('memo-send-email').checked=false;
+    const sendEmailEl=document.getElementById('memo-send-email');if(sendEmailEl)sendEmailEl.checked=false;
     document.getElementById('memo-dashboard-banner').checked=false;
     const msg=document.getElementById('memo-send-msg');msg.style.display='inline';setTimeout(()=>msg.style.display='none',3000);
     loadMemos();
@@ -4963,7 +4982,7 @@ async function loadEmployeeMemos(){
   try{
     const {data}=await db.from('memos').select('*').eq('is_active',true).order('created_at',{ascending:false});
     // Check for urgent dashboard banner memos
-    const urgentBanner=(data||[]).find(m=>m.dashboard_banner&&m.priority==='urgent'&&!(m.read_by||[]).includes(user.email));
+    const urgentBanner=(data||[]).find(m=>m.dashboard_banner&&m.priority==='urgent'&&!((m.read_by||[]).includes(user.email)||(m.read_by||[]).includes(user.name)));
     const bannerEl=document.getElementById('urgent-memo-banner');
     const bannerSubjectEl=document.getElementById('urgent-memo-subject');
     if(bannerEl&&bannerSubjectEl){
@@ -4986,7 +5005,7 @@ async function loadEmployeeMemos(){
       return profile&&profile.assigned_supervisor===m.audience;
     });
     // Filter to unread
-    const unread=relevant.filter(m=>!(m.read_by||[]).includes(user.name));
+    const unread=relevant.filter(m=>!((m.read_by||[]).includes(user.name)||(m.read_by||[]).includes(user.email)));
     const wrap=document.getElementById('emp-memos-wrap');
     const list=document.getElementById('emp-memos-list');
     if(!wrap||!list)return;
@@ -5016,6 +5035,7 @@ async function acknowledgeMemo(id,btn){
   try{
     const memo=await db.from('memos').select('read_by,comments').eq('id',id).single();
     const existing=memo.data?.read_by||[];
+    if(existing.includes(user.name)||existing.includes(user.email)){btn.textContent='Already acknowledged';return;}
     const existingComments=memo.data?.comments||[];
     const commentText=document.getElementById('emp-memo-comment-'+id)?.value.trim();
     const updates={};
@@ -5100,7 +5120,7 @@ async function loadEmpMemoHistory(){
       readList.innerHTML='<p style="color:#888;font-size:13px;">No memos yet.</p>';
       updateMemoCardCounts(0,0);return;
     }
-    const unread=relevant.filter(m=>!(m.read_by||[]).includes(user.name));
+    const unread=relevant.filter(m=>!((m.read_by||[]).includes(user.name)||(m.read_by||[]).includes(user.email)));
     const read=relevant.filter(m=>(m.read_by||[]).includes(user.name));
     function memoCard(m,isRead){
       const urgentBadge=m.priority==='urgent'?'<span style="background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:6px;">🔴 URGENT</span>':'';
@@ -5156,6 +5176,7 @@ async function acknowledgeMemoFromHistory(id,btn){
   try{
     const memo=await db.from('memos').select('read_by,comments').eq('id',id).single();
     const existing=memo.data?.read_by||[];
+    if(existing.includes(user.name)||existing.includes(user.email)){btn.textContent='Already acknowledged';return;}
     const existingComments=memo.data?.comments||[];
     const commentText=document.getElementById('emp-hist-comment-'+id)?.value.trim();
     const updates={};
@@ -5169,14 +5190,25 @@ async function acknowledgeMemoFromHistory(id,btn){
 async function loadEmpSentMessages(){
   if(!user)return;
   try{
-    const {data}=await db.from('employee_messages').select('*').eq('employee_email',user.email).order('sent_at',{ascending:false});
+    // Load BOTH sent messages AND received replies from admin
+    const {data}=await db.from('employee_messages').select('*')
+      .or('employee_email.eq.'+user.email+',to_email.eq.'+user.email)
+      .order('sent_at',{ascending:false});
     const list=document.getElementById('emp-sent-messages-list');
     if(!list)return;
     const sentCount=document.getElementById('memo-card-sent-count');if(sentCount)sentCount.textContent=(data?data.length:0)+' sent';
     if(!data||!data.length){list.innerHTML='<p style="color:#888;font-size:13px;">No messages sent yet.</p>';return;}
     list.innerHTML=data.map(m=>{
       const dt=new Date(m.sent_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+      const isFromAdmin=m.from_admin===true||m.to_email===user.email;
       const readBadge=m.is_read?'<span style="color:var(--success);font-size:11px;font-weight:700;">✓ Seen</span>':'<span style="color:#888;font-size:11px;">Pending</span>';
+      if(isFromAdmin){
+        // Message FROM admin TO employee
+        return '<div style="border:1px solid #a78bfa;border-radius:10px;padding:12px;margin-bottom:8px;background:#faf5ff;">' +
+          '<div style="font-size:11px;font-weight:700;color:#5b21b6;margin-bottom:4px;">📨 Message from Supervisor · '+dt+'</div>' +
+          '<div style="font-size:13px;color:#444;white-space:pre-wrap;">'+m.message+'</div>' +
+        '</div>';
+      }
       return '<div style="border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;background:#fafafa;">' +
         '<div style="display:flex;justify-content:space-between;align-items:center;">' +
           '<div style="font-size:13px;font-weight:700;color:var(--navy);">' + m.subject + '</div>' +
@@ -5194,7 +5226,7 @@ async function loadEmpSentMessages(){
 let allEmpMessagesCache=[];
 async function loadEmployeeMessages(){
   try{
-    const {data}=await db.from('employee_messages').select('*').order('sent_at',{ascending:false});
+    const {data}=await db.from('employee_messages').select('*').eq('from_admin',false).order('sent_at',{ascending:false});
     allEmpMessagesCache=data||[];
     const unread=allEmpMessagesCache.filter(m=>!m.is_read).length;
     const badge=document.getElementById('badge-emp-messages');
@@ -5879,8 +5911,8 @@ async function loadFleetMaintHistory(){
   el.innerHTML='<div style="font-size:12px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">History</div>'+
     records.map(m=>{
       const isOverdue=m.next_due_date&&new Date(m.next_due_date)<today;
-      const dt=new Date(m.service_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-      const nextDt=m.next_due_date?new Date(m.next_due_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'—';
+      const dt=fmtDate(m.service_date);
+      const nextDt=m.next_due_date?fmtDate(m.next_due_date):'—';
       return '<div style="border:1px solid '+(isOverdue?'var(--warn)':'var(--border)')+';border-radius:10px;padding:14px;margin-bottom:8px;background:'+(isOverdue?'#fffbf0':'#fafafa')+';">'+
         '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">'+
           '<div style="flex:1;">'+
@@ -5965,6 +5997,10 @@ async function saveFleetMaintEntry(){
     if(document.getElementById('fm-notes')?.value.trim())oilNotes+=(oilNotes?'\n':'')+document.getElementById('fm-notes').value.trim();
     entry.notes=oilNotes||null;
     entry.invoice_number=oilInvoice||null;
+    // Capture total cost from calculator BEFORE reset clears it
+    const oilTotalStr=document.getElementById('fm-oil-total')?.textContent||'$0.00';
+    const oilTotal=parseFloat(oilTotalStr.replace('$',''))||parseFloat(document.getElementById('fm-cost')?.value)||0;
+    if(oilTotal>0)entry.cost=oilTotal;
     resetOilForm();
     clearIds=['fm-date','fm-mileage','fm-next-date','fm-next-mileage','fm-shop','fm-cost','fm-notes'];
 
@@ -6105,7 +6141,7 @@ function renderFleetMasterLog(){
   const typeColors={'Oil Change':'#e8f4fd','Tire Changeover':'#e8f5e9','Preventative':'#f3e5f5','Repair':'#fdecea','Inspection':'#fff3e0'};
   el.innerHTML=records.map(m=>{
     const isOverdue=m.next_due_date&&new Date(m.next_due_date)<today;
-    const dt=new Date(m.service_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    const dt=fmtDate(m.service_date);
     const typeBg=typeColors[m.maintenance_type]||'#f0f0f0';
     return '<div class="card" style="margin-bottom:8px;padding:14px;'+(isOverdue?'border-color:var(--warn);':'')+'">'+
       '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">'+
@@ -9796,7 +9832,16 @@ async function submitExpense(){
       expense_category:category,status:'PENDING',submitted_at:new Date().toISOString()
     }]);
     document.getElementById('exp-submit-form').style.display='none';
-    document.getElementById('exp-success').style.display='block';
+    const succEl=document.getElementById('exp-success');
+    if(succEl){succEl.style.display='block';}
+    // Reset form for next submission after 3 seconds
+    setTimeout(()=>{
+      document.getElementById('exp-submit-form').style.display='block';
+      if(succEl)succEl.style.display='none';
+      ['exp-date','exp-amount','exp-facility','exp-description'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+      document.getElementById('exp-type').value='';
+      const fi=document.getElementById('exp-receipt');if(fi)fi.value='';
+    },3000);
   }catch(e){alert('Unable to submit. Please try again. '+e.message);}
 }
 
@@ -11776,7 +11821,7 @@ async function renderFleetOverview(vehicleId){
       </div>
       <div style="background:#f7f9fc;border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;cursor:pointer;" onclick="switchFleetMaintTab('tires')">
         <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Last Changeover</div>
-        <div style="font-size:12px;font-weight:800;color:var(--navy);">${(()=>{const co=allFleetMaintenanceCache.filter(m=>m.vehicle_id===v.vehicle_id&&m.maintenance_type==='Tire Changeover').sort((a,b)=>new Date(b.service_date)-new Date(a.service_date))[0];return co?new Date(co.service_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'No record';})()}</div>
+        <div style="font-size:12px;font-weight:800;color:var(--navy);">${(()=>{const co=allFleetMaintenanceCache.filter(m=>m.vehicle_id===v.vehicle_id&&m.maintenance_type==='Tire Changeover').sort((a,b)=>new Date(b.service_date)-new Date(a.service_date))[0];return co?fmtDate(co.service_date):'No record';})()}</div>
       </div>
       <div style="background:#f7f9fc;border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;cursor:pointer;" onclick="switchFleetMaintTab('inspection')">
         <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Last Inspection</div>
@@ -11822,7 +11867,7 @@ async function renderFleetOverview(vehicleId){
             <span style="font-weight:700;color:var(--navy);">${m.maintenance_type}</span>
             ${m.notes?`<span style="color:#888;font-size:12px;margin-left:8px;">${m.notes.substring(0,40)}</span>`:''}
           </div>
-          <div style="color:#888;font-size:12px;white-space:nowrap;">${new Date(m.service_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</div>
+          <div style="color:#888;font-size:12px;white-space:nowrap;">${fmtDate(m.service_date)}</div>
         </div>`).join('')}
     </div>
   `;
