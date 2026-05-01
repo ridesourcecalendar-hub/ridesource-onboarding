@@ -8256,13 +8256,28 @@ function renderRequestsTable(){
   const el=document.getElementById('requests-table');
   if(!el)return;
   const isDemo=adminStaff?.role==='demo';
-  const statusFilter=document.getElementById('req-status-filter')?.value||'ALL';
+  const tab=currentReqTab||'PENDING';
   const search=(document.getElementById('req-search')?.value||'').toLowerCase();
-  let filtered=statusFilter==='ALL'?allRequestsCache:allRequestsCache.filter(r=>r.status===statusFilter);
+  const supFilter=(document.getElementById('req-supervisor-filter')?.value||'');
+  let filtered=allRequestsCache;
+  // Tab filter
+  if(tab==='PENDING')filtered=filtered.filter(r=>r.status==='PENDING');
+  else if(tab==='APPROVED')filtered=filtered.filter(r=>r.status==='APPROVED');
+  else if(tab==='DENIED')filtered=filtered.filter(r=>r.status==='DENIED');
+  else if(tab==='PTO')filtered=filtered.filter(r=>r.status==='PTO_PENDING'||r.request_type==='Use PTO Hours');
+  // else ALL — no filter
+  if(supFilter)filtered=filtered.filter(r=>(r.assigned_supervisor||r.county||'')==supFilter||(r.employee_email||'').includes(supFilter));
   if(search)filtered=filtered.filter(r=>(r.employee_name||'').toLowerCase().includes(search)||(r.request_type||'').toLowerCase().includes(search));
-  const msgs={PENDING:'No pending requests.',APPROVED:'No approved requests.',DENIED:'No denied requests.',ALL:'No requests found.'};
+  // Update quick summary
+  const now=new Date();const monthStart=new Date(now.getFullYear(),now.getMonth(),1);const next7=new Date(now.getTime()+7*24*60*60*1000);
+  const qsPending=document.getElementById('qs-pending');if(qsPending)qsPending.textContent=allRequestsCache.filter(r=>r.status==='PENDING').length;
+  const qsApproved=document.getElementById('qs-approved');if(qsApproved)qsApproved.textContent=allRequestsCache.filter(r=>r.status==='APPROVED'&&new Date(r.decided_at||r.submitted_at)>=monthStart).length;
+  const qsDenied=document.getElementById('qs-denied');if(qsDenied)qsDenied.textContent=allRequestsCache.filter(r=>r.status==='DENIED'&&new Date(r.decided_at||r.submitted_at)>=monthStart).length;
+  const qsUpcoming=document.getElementById('qs-upcoming');if(qsUpcoming)qsUpcoming.textContent=allRequestsCache.filter(r=>r.status==='APPROVED'&&new Date(r.start_date)>=now&&new Date(r.start_date)<=next7).length;
+  const qsPto=document.getElementById('qs-pto');if(qsPto)qsPto.textContent=allRequestsCache.filter(r=>r.status==='PTO_PENDING'||r.request_type==='Use PTO Hours').length;
+  const msgs={PENDING:'No pending requests.',APPROVED:'No approved requests.',DENIED:'No denied requests.',PTO:'No PTO requests.',ALL:'No requests found.'};
   if(!filtered.length){
-    el.innerHTML='<div style="padding:20px;text-align:center;color:#888;">'+(msgs[statusFilter]||'No requests found.')+'</div>';
+    el.innerHTML='<div style="padding:20px;text-align:center;color:#888;">'+(msgs[tab]||'No requests found.')+'</div>';
     return;
   }
   const header='<div style="display:grid;grid-template-columns:36px 1fr 110px 140px 90px 160px;gap:8px;padding:8px 12px;background:var(--gray);border-radius:8px 8px 0 0;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-top:12px;"><div></div><div>Employee</div><div>Type</div><div>Dates / Time</div><div>Status</div><div>Actions</div></div>';
@@ -8351,8 +8366,8 @@ async function decideRequest(id,status){
   loadRequests();loadDashboard();renderCalendar();
 }
 function openEditRequest(id){
-  const r=allRequestsCache.find(x=>x.id===id);
-  if(!r)return;
+  const r=allRequestsCache.find(x=>String(x.id)===String(id));
+  if(!r){console.warn('Request not found:',id);return;}
   document.getElementById('edit-req-id').value=id;
   document.getElementById('edit-req-type').value=r.request_type||'';
   document.getElementById('edit-req-start').value=r.start_date||'';
@@ -8380,7 +8395,6 @@ async function quickDeleteRequest(id){
   await db.from('time_off_requests').delete().eq('id',id);
   loadRequests();loadDashboard();renderCalendar();
 }
-
 // CALL-OUT LOG
 let allCallOutsCache=[];
 async function loadCallOuts(){
