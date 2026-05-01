@@ -1039,22 +1039,16 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
         <div class="card-title" style="font-size:22px;color:#5b21b6;margin-bottom:4px;">📢 Memos &amp; Messages</div>
         <p style="color:#888;font-size:14px;margin-bottom:20px;">View memos from your supervisor and send messages to the office.</p>
 
-        <!-- Card Tabs -->
-        <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
-          <button id="memo-card-btn-unread" onclick="switchMemoCard('unread')" style="flex:1;min-width:140px;padding:16px 12px;border-radius:12px;border:2px solid #5b21b6;background:#5b21b6;color:#fff;font-size:14px;font-weight:700;cursor:pointer;text-align:center;transition:all .2s;">
-            <div style="font-size:22px;margin-bottom:4px;">🔔</div>
-            <div>Unread Memos</div>
-            <div id="memo-card-unread-count" style="font-size:12px;font-weight:400;margin-top:2px;opacity:.85;">0 unread</div>
+        <!-- Tab buttons -->
+        <div style="display:flex;gap:0;margin-bottom:20px;border-bottom:2px solid var(--border);">
+          <button id="memo-card-btn-unread" onclick="switchMemoCard('unread')" style="flex:1;padding:12px 8px;border:none;border-bottom:3px solid #5b21b6;margin-bottom:-2px;background:none;color:#5b21b6;font-size:13px;font-weight:700;cursor:pointer;text-align:center;">
+            🔔 Unread <span id="memo-card-unread-count" style="background:#5b21b6;color:#fff;border-radius:10px;padding:1px 8px;font-size:11px;margin-left:4px;">0</span>
           </button>
-          <button id="memo-card-btn-read" onclick="switchMemoCard('read')" style="flex:1;min-width:140px;padding:16px 12px;border-radius:12px;border:2px solid var(--border);background:#fff;color:var(--navy);font-size:14px;font-weight:700;cursor:pointer;text-align:center;transition:all .2s;">
-            <div style="font-size:22px;margin-bottom:4px;">📬</div>
-            <div>Read Memos</div>
-            <div id="memo-card-read-count" style="font-size:12px;font-weight:400;margin-top:2px;color:#888;">0 read</div>
+          <button id="memo-card-btn-read" onclick="switchMemoCard('read')" style="flex:1;padding:12px 8px;border:none;border-bottom:3px solid transparent;margin-bottom:-2px;background:none;color:#888;font-size:13px;font-weight:700;cursor:pointer;text-align:center;">
+            📬 Read <span id="memo-card-read-count" style="background:#ddd;color:#555;border-radius:10px;padding:1px 8px;font-size:11px;margin-left:4px;">0</span>
           </button>
-          <button id="memo-card-btn-sent" onclick="switchMemoCard('sent')" style="flex:1;min-width:140px;padding:16px 12px;border-radius:12px;border:2px solid var(--border);background:#fff;color:var(--navy);font-size:14px;font-weight:700;cursor:pointer;text-align:center;transition:all .2s;">
-            <div style="font-size:22px;margin-bottom:4px;">📤</div>
-            <div>Messages Sent</div>
-            <div id="memo-card-sent-count" style="font-size:12px;font-weight:400;margin-top:2px;color:#888;">0 sent</div>
+          <button id="memo-card-btn-sent" onclick="switchMemoCard('sent')" style="flex:1;padding:12px 8px;border:none;border-bottom:3px solid transparent;margin-bottom:-2px;background:none;color:#888;font-size:13px;font-weight:700;cursor:pointer;text-align:center;">
+            💬 Messages
           </button>
         </div>
 
@@ -1068,25 +1062,39 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
           <div id="emp-memo-read-list"><p style="color:#888;font-size:13px;">Loading...</p></div>
         </div>
 
-        <!-- Sent Panel -->
+        <!-- Sent/Messages Panel -->
         <div id="memo-panel-sent" style="display:none;">
-          <!-- Compose -->
-          <div class="card" style="border-color:#5b21b6;margin-bottom:16px;">
-            <div class="card-title" style="color:#5b21b6;cursor:pointer;" onclick="toggleEmpMessageForm()">✉️ Send a Message to Supervisor <span id="emp-msg-toggle" style="font-size:12px;color:#888;">▼ expand</span></div>
-            <div id="emp-msg-form" style="display:none;margin-top:14px;">
-              <div class="form-field"><label>Subject *</label><input type="text" id="emp-msg-subject" placeholder="e.g. Question about my schedule" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
-              <div class="form-field"><label>Message *</label><textarea id="emp-msg-body" placeholder="Write your message here..." style="width:100%;min-height:100px;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;font-family:Arial,sans-serif;outline:none;resize:vertical;"></textarea></div>
+          <!-- Compose message -->
+          <div class="card" style="border-left:4px solid #5b21b6;margin-bottom:20px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="toggleEmpMessageForm()">
+              <div style="font-size:15px;font-weight:800;color:#5b21b6;">✉️ Send a Message to Supervisor</div>
+              <span id="emp-msg-toggle" style="font-size:12px;color:#888;">▼ expand</span>
+            </div>
+            <div id="emp-msg-form" style="display:none;margin-top:16px;">
+              <div class="form-field">
+                <label>Subject *</label>
+                <input type="text" id="emp-msg-subject" placeholder="e.g. Question about my schedule" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+              </div>
+              <div class="form-field">
+                <label>Message *</label>
+                <textarea id="emp-msg-body" placeholder="Write your message here..." style="width:100%;min-height:100px;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;font-family:Arial,sans-serif;outline:none;resize:vertical;"></textarea>
+              </div>
+              <div class="form-field">
+                <label>📎 Attachment (optional)</label>
+                <input type="file" id="emp-msg-attachment" accept="image/*,.pdf,.doc,.docx" style="width:100%;padding:8px;border:2px solid var(--border);border-radius:8px;font-size:13px;">
+              </div>
               <div style="display:flex;gap:10px;align-items:center;">
                 <button class="btn-primary" style="background:#5b21b6;" onclick="sendEmployeeMessage()">📤 Send Message</button>
-                <span id="emp-msg-sent" style="font-size:13px;color:var(--success);display:none;">✓ Message sent!</span>
+                <span id="emp-msg-sent" style="font-size:13px;color:var(--success);display:none;">✅ Message sent!</span>
               </div>
             </div>
           </div>
           <!-- Sent list -->
+          <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:12px;">📤 Previously Sent Messages</div>
           <div id="emp-sent-messages-list"><p style="color:#888;font-size:13px;">Loading...</p></div>
         </div>
 
-        <!-- Hidden legacy list id for data bleed clear compat -->
+        <!-- Hidden legacy -->
         <div id="emp-memo-history-list" style="display:none;"></div>
       </div>
     </div><!-- end main-content -->
@@ -2772,86 +2780,95 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
       <!-- MEMOS (ADMIN) - Collective Staff style -->
       <div id="section-adm-memos" class="admin-section">
         <div style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:2px;">📢 Memos &amp; Messages</div>
-        <p style="color:#888;font-size:13px;margin-bottom:16px;">Compose announcements and message employees directly.</p>
+        <p style="color:#888;font-size:13px;margin-bottom:16px;">Send official memos to your team and message employees directly.</p>
 
-        <!-- Three-tab navigation -->
-        <div style="display:flex;gap:4px;margin-bottom:20px;border-bottom:2px solid var(--border);">
-          <button id="adm-memo-main-tab-compose" onclick="setMemoMainTab('compose')" style="padding:10px 20px;font-size:13px;font-weight:700;border:none;border-bottom:2px solid var(--navy);margin-bottom:-2px;cursor:pointer;background:none;color:var(--navy);">Compose</button>
-          <button id="adm-memo-main-tab-sent" onclick="setMemoMainTab('sent')" style="padding:10px 20px;font-size:13px;font-weight:700;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;background:none;color:#888;">Sent Memos<span id="badge-emp-messages" style="background:var(--red);color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:6px;display:none;">●</span></button>
-          <button id="adm-memo-main-tab-direct" onclick="setMemoMainTab('direct')" style="padding:10px 20px;font-size:13px;font-weight:700;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;background:none;color:#888;">Direct Messages<span id="badge-direct-messages" style="background:var(--red);color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:6px;display:none;">●</span></button>
+        <!-- Tab bar -->
+        <div style="display:flex;gap:0;margin-bottom:20px;border-bottom:2px solid var(--border);">
+          <button id="adm-memo-main-tab-compose" onclick="setMemoMainTab('compose')" style="padding:10px 22px;font-size:13px;font-weight:700;border:none;border-bottom:3px solid var(--navy);margin-bottom:-2px;cursor:pointer;background:none;color:var(--navy);">✉️ New Memo</button>
+          <button id="adm-memo-main-tab-sent" onclick="setMemoMainTab('sent')" style="padding:10px 22px;font-size:13px;font-weight:700;border:none;border-bottom:3px solid transparent;margin-bottom:-2px;cursor:pointer;background:none;color:#888;">📋 Sent Memos<span id="badge-emp-messages" style="background:var(--red);color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:6px;display:none;">●</span></button>
+          <button id="adm-memo-main-tab-direct" onclick="setMemoMainTab('direct')" style="padding:10px 22px;font-size:13px;font-weight:700;border:none;border-bottom:3px solid transparent;margin-bottom:-2px;cursor:pointer;background:none;color:#888;">💬 Direct Messages<span id="badge-direct-messages" style="background:var(--red);color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:6px;display:none;">●</span></button>
         </div>
 
         <!-- COMPOSE TAB -->
         <div id="adm-memo-panel-compose">
-          <div style="display:grid;grid-template-columns:1fr 280px;gap:20px;align-items:start;">
-            <!-- Left: Form -->
+          <div style="display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start;">
             <div class="card">
-              <div style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:16px;">New Memo</div>
+              <div style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:16px;">📝 Compose Memo</div>
               <div class="form-field">
-                <label style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;">Subject Line</label>
+                <label style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;">Subject Line *</label>
                 <input type="text" id="memo-subject" placeholder="What is this memo about?" oninput="updateMemoPreview()" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;margin-top:4px;">
               </div>
-              <div class="form-field">
-                <label style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;">Priority</label>
-                <select id="memo-priority" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;margin-top:4px;">
-                  <option value="normal">General Announcement</option>
-                  <option value="urgent">🔴 Urgent</option>
-                </select>
-              </div>
-              <div class="form-field">
-                <label style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;">Recipients</label>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px;">
-                  <button id="memo-aud-btn-all" onclick="setMemoAudience('all')" style="padding:10px;border-radius:8px;border:2px solid var(--navy);background:var(--navy);color:#fff;font-size:13px;font-weight:600;cursor:pointer;">All Staff</button>
-                  <button id="memo-aud-btn-tiffany" onclick="setMemoAudience('Tiffany Gallagher')" style="padding:10px;border-radius:8px;border:2px solid var(--border);background:#fff;color:#555;font-size:13px;font-weight:600;cursor:pointer;">Tiffany's Team</button>
-                  <button id="memo-aud-btn-nicole" onclick="setMemoAudience('Nicole Geel')" style="padding:10px;border-radius:8px;border:2px solid var(--border);background:#fff;color:#555;font-size:13px;font-weight:600;cursor:pointer;">Nicole's Team</button>
-                  <button id="memo-aud-btn-robin" onclick="setMemoAudience('Robin Lausier')" style="padding:10px;border-radius:8px;border:2px solid var(--border);background:#fff;color:#555;font-size:13px;font-weight:600;cursor:pointer;">Robin's Team</button>
+              <div class="form-row">
+                <div class="form-field">
+                  <label style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;">Priority</label>
+                  <select id="memo-priority" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;margin-top:4px;">
+                    <option value="normal">📋 General Announcement</option>
+                    <option value="urgent">🔴 Urgent</option>
+                  </select>
                 </div>
-                <input type="hidden" id="memo-audience" value="all">
+                <div class="form-field">
+                  <label style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;">Recipients</label>
+                  <select id="memo-audience" onchange="updateMemoPreview()" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;margin-top:4px;">
+                    <option value="all">👥 All Staff</option>
+                    <option value="Tiffany Gallagher">Tiffany's Team</option>
+                    <option value="Nicole Geel">Nicole's Team</option>
+                    <option value="Robin Lausier">Robin's Team</option>
+                  </select>
+                </div>
               </div>
               <div class="form-field">
-                <label style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;">Message</label>
-                <textarea id="memo-body" placeholder="Write your memo here..." oninput="updateMemoPreview()" style="width:100%;min-height:140px;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;font-family:Arial,sans-serif;outline:none;resize:vertical;margin-top:4px;"></textarea>
+                <label style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;">Message *</label>
+                <textarea id="memo-body" placeholder="Write your memo here..." oninput="updateMemoPreview()" style="width:100%;min-height:160px;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;font-family:Arial,sans-serif;outline:none;resize:vertical;margin-top:4px;"></textarea>
               </div>
-              <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px;">
-                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;margin-bottom:8px;">
-                  <input type="checkbox" id="memo-dashboard-banner" style="width:15px;height:15px;cursor:pointer;">
-                  <span>Mark as URGENT — displays emergency banner on all employee dashboards</span>
+              <div class="form-field">
+                <label style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;">📎 Attachment (optional)</label>
+                <input type="file" id="memo-attachment" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx" style="width:100%;padding:8px;border:2px solid var(--border);border-radius:8px;font-size:13px;margin-top:4px;">
+                <div style="font-size:11px;color:#888;margin-top:4px;">Attach a PDF, document, or image to this memo</div>
+              </div>
+              <div style="background:var(--light);border-radius:8px;padding:12px 14px;margin-top:4px;">
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;margin-bottom:10px;">
+                  <input type="checkbox" id="memo-dashboard-banner" style="width:15px;height:15px;cursor:pointer;accent-color:var(--red);">
+                  <span><strong style="color:var(--red);">🚨 Mark Urgent</strong> — displays emergency banner on employee dashboards</span>
+                </label>
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;margin-bottom:10px;">
+                  <input type="checkbox" id="memo-require-ack" style="width:15px;height:15px;cursor:pointer;accent-color:var(--navy);">
+                  <span>✍️ <strong>Require acknowledgment</strong> — employee must confirm they read it</span>
                 </label>
                 <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;">
-                  <input type="checkbox" id="memo-require-ack" style="width:15px;height:15px;cursor:pointer;">
-                  <span>Require employee acknowledgment</span>
+                  <input type="checkbox" id="memo-send-email" style="width:15px;height:15px;cursor:pointer;accent-color:var(--navy);">
+                  <span>📧 Send email notification to recipients</span>
                 </label>
               </div>
-              <div style="display:flex;justify-content:flex-end;margin-top:16px;">
-                <button class="btn btn-primary" onclick="createMemo()" style="padding:10px 24px;">Send Memo →</button>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;">
+                <span id="memo-send-msg" style="font-size:13px;color:var(--success);display:none;">✅ Memo sent!</span>
+                <span id="memo-send-uploading" style="font-size:13px;color:#888;display:none;">⏳ Uploading...</span>
+                <button class="btn btn-primary" onclick="createMemo()" style="padding:10px 28px;margin-left:auto;">Send Memo →</button>
               </div>
-              <span id="memo-send-msg" style="font-size:13px;color:var(--success);display:none;text-align:right;display:block;margin-top:8px;">✓ Memo sent!</span>
             </div>
-            <!-- Right: Live Preview + Delivery Options -->
-            <div>
-              <div class="card" style="margin-bottom:12px;">
-                <div style="font-size:13px;font-weight:800;color:var(--navy);margin-bottom:12px;">Live Preview</div>
-                <div style="background:var(--light);border-radius:8px;padding:12px;">
-                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-                    <div style="width:32px;height:32px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;">RS</div>
-                    <div><div style="font-size:12px;font-weight:700;color:var(--navy);">RideSource Inc.</div><div style="font-size:11px;color:#888;" id="memo-preview-date">Internal Memo</div></div>
+            <!-- Right: Live Preview -->
+            <div style="position:sticky;top:80px;">
+              <div class="card" style="border-top:4px solid var(--navy);">
+                <div style="font-size:12px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">👁 Live Preview</div>
+                <div style="background:#f0f4fb;border-radius:10px;padding:14px;">
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                    <div style="width:34px;height:34px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">RS</div>
+                    <div>
+                      <div style="font-size:12px;font-weight:700;color:var(--navy);">RideSource Inc.</div>
+                      <div style="font-size:11px;color:#888;" id="memo-preview-date">Internal Memo</div>
+                    </div>
                   </div>
-                  <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:6px;" id="memo-preview-subject">Your subject will appear here</div>
-                  <div style="font-size:12px;color:#555;white-space:pre-wrap;" id="memo-preview-body">Your message will appear here as you type...</div>
-                  <div style="font-size:11px;color:#aaa;margin-top:8px;" id="memo-preview-footer">Sent by <span id="memo-preview-sender">Admin</span> · RideSource Inc.</div>
+                  <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:8px;min-height:20px;" id="memo-preview-subject">Your subject will appear here</div>
+                  <div style="font-size:12px;color:#555;white-space:pre-wrap;min-height:40px;" id="memo-preview-body">Your message will appear here as you type...</div>
+                  <div style="font-size:11px;color:#aaa;margin-top:10px;border-top:1px solid #dde;padding-top:8px;" id="memo-preview-footer">Sent by <span id="memo-preview-sender">Admin</span> · RideSource Inc.</div>
                 </div>
               </div>
-              <div class="card">
-                <div style="font-size:13px;font-weight:800;color:var(--navy);margin-bottom:12px;">Delivery Options</div>
-                <label style="display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:8px;cursor:pointer;">
-                  <input type="checkbox" checked disabled style="width:14px;height:14px;"> In-app notification
-                </label>
-                <label style="display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:8px;cursor:pointer;">
-                  <input type="checkbox" id="memo-send-email" style="width:14px;height:14px;cursor:pointer;"> Email notification
-                </label>
-                <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;">
-                  <input type="checkbox" id="memo-require-ack-delivery" onchange="document.getElementById('memo-require-ack').checked=this.checked" style="width:14px;height:14px;cursor:pointer;"> Require acknowledgment
-                </label>
+              <!-- Hidden legacy elements for JS compat -->
+              <div style="display:none;">
+                <button id="memo-aud-btn-all"></button>
+                <button id="memo-aud-btn-tiffany"></button>
+                <button id="memo-aud-btn-nicole"></button>
+                <button id="memo-aud-btn-robin"></button>
+                <input type="checkbox" id="memo-require-ack-delivery">
               </div>
             </div>
           </div>
@@ -2859,77 +2876,78 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 
         <!-- SENT MEMOS TAB -->
         <div id="adm-memo-panel-sent" style="display:none;">
-          <!-- Stats bar -->
           <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;">
-            <div class="card" style="text-align:center;padding:16px;">
+            <div class="card" style="text-align:center;padding:16px;border-top:3px solid var(--navy);">
               <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Sent This Month</div>
-              <div style="font-size:24px;font-weight:800;color:var(--navy);" id="memo-stat-sent">0</div>
+              <div style="font-size:28px;font-weight:800;color:var(--navy);" id="memo-stat-sent">0</div>
             </div>
-            <div class="card" style="text-align:center;padding:16px;">
+            <div class="card" style="text-align:center;padding:16px;border-top:3px solid #3b82f6;">
               <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Avg Read Rate</div>
-              <div style="font-size:24px;font-weight:800;color:var(--navy);" id="memo-stat-rate">—</div>
+              <div style="font-size:28px;font-weight:800;color:#3b82f6;" id="memo-stat-rate">—</div>
             </div>
-            <div class="card" style="text-align:center;padding:16px;">
+            <div class="card" style="text-align:center;padding:16px;border-top:3px solid var(--success);">
               <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Acknowledged</div>
-              <div style="font-size:24px;font-weight:800;color:var(--navy);" id="memo-stat-ack">0</div>
+              <div style="font-size:28px;font-weight:800;color:var(--success);" id="memo-stat-ack">0</div>
             </div>
-            <div class="card" style="text-align:center;padding:16px;">
+            <div class="card" style="text-align:center;padding:16px;border-top:3px solid var(--red);">
               <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Outstanding</div>
-              <div style="font-size:24px;font-weight:800;color:var(--red);" id="memo-stat-outstanding">0</div>
+              <div style="font-size:28px;font-weight:800;color:var(--red);" id="memo-stat-outstanding">0</div>
             </div>
           </div>
-          <!-- Filters -->
-          <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center;">
-            <select id="memo-audience-filter" onchange="renderAdminMemoList()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:#fff;">
+          <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center;">
+            <input type="text" id="memo-search" placeholder="🔍 Search by subject or content..." oninput="renderAdminMemoList()" style="padding:9px 13px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;flex:1;min-width:200px;">
+            <select id="memo-audience-filter" onchange="renderAdminMemoList()" style="padding:9px 13px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:#fff;">
               <option value="">All Audiences</option>
-              <option value="all">All Employees</option>
+              <option value="all">All Staff</option>
               <option value="Tiffany Gallagher">Tiffany's Team</option>
               <option value="Nicole Geel">Nicole's Team</option>
               <option value="Robin Lausier">Robin's Team</option>
             </select>
-            <input type="text" id="memo-search" placeholder="🔍 Search memos..." oninput="renderAdminMemoList()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;flex:1;min-width:160px;">
             <div style="display:flex;border-radius:8px;overflow:hidden;border:1px solid var(--border);">
-              <button id="memo-tab-active" onclick="setMemoTab('active')" style="padding:7px 14px;font-size:12px;font-weight:700;border:none;cursor:pointer;background:var(--navy);color:#fff;">Active</button>
-              <button id="memo-tab-archived" onclick="setMemoTab('archived')" style="padding:7px 14px;font-size:12px;font-weight:700;border:none;cursor:pointer;background:#f0f0f0;color:#888;">Archived</button>
+              <button id="memo-tab-active" onclick="setMemoTab('active')" style="padding:8px 16px;font-size:12px;font-weight:700;border:none;cursor:pointer;background:var(--navy);color:#fff;">Active</button>
+              <button id="memo-tab-archived" onclick="setMemoTab('archived')" style="padding:8px 16px;font-size:12px;font-weight:700;border:none;cursor:pointer;background:#f0f0f0;color:#888;">Archived</button>
             </div>
           </div>
-          <!-- Table header -->
-          <div style="display:grid;grid-template-columns:1fr 140px 80px 80px 100px;gap:8px;padding:8px 12px;background:var(--gray);border-radius:8px 8px 0 0;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;">
-            <div>Subject</div><div>Recipients</div><div>Sent</div><div>Read</div><div>Acknowledged</div>
-          </div>
-          <div id="memo-admin-list" style="border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;overflow:hidden;"><p style="color:#888;font-size:13px;padding:16px;">Loading...</p></div>
+          <div id="memo-admin-list" style="border:1px solid var(--border);border-radius:10px;overflow:hidden;"><p style="color:#888;font-size:13px;padding:16px;">Loading...</p></div>
         </div>
 
         <!-- DIRECT MESSAGES TAB -->
         <div id="adm-memo-panel-direct" style="display:none;">
-          <div style="display:grid;grid-template-columns:220px 1fr;gap:0;border:1px solid var(--border);border-radius:12px;overflow:hidden;min-height:500px;">
-            <!-- Employee list -->
+          <div style="display:grid;grid-template-columns:240px 1fr;gap:0;border:1px solid var(--border);border-radius:12px;overflow:hidden;min-height:520px;">
             <div style="border-right:1px solid var(--border);background:#fafafa;">
-              <div style="padding:12px 16px;font-size:12px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);">Employees</div>
+              <div style="padding:12px 16px;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);">👥 Employees</div>
               <div id="direct-msg-emp-list"><p style="color:#aaa;font-size:12px;padding:16px;">Loading...</p></div>
             </div>
-            <!-- Thread -->
             <div style="display:flex;flex-direction:column;">
-              <div id="direct-msg-thread-header" style="padding:14px 20px;border-bottom:1px solid var(--border);font-size:14px;font-weight:700;color:var(--navy);">Select an employee to view messages</div>
-              <div id="direct-msg-thread" style="flex:1;overflow-y:auto;padding:16px;min-height:380px;max-height:400px;"></div>
-              <div id="direct-msg-compose" style="display:none;padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:center;">
-                <input type="text" id="direct-msg-input" placeholder="Message employee... (Enter to send)" style="flex:1;padding:9px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendDirectMessage();}">
-                <button onclick="sendDirectMessage()" style="background:var(--navy);color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;">Send →</button>
+              <div id="direct-msg-thread-header" style="padding:14px 20px;border-bottom:1px solid var(--border);font-size:14px;font-weight:700;color:var(--navy);background:#fff;">Select an employee to view messages</div>
+              <div id="direct-msg-thread" style="flex:1;overflow-y:auto;padding:16px;min-height:360px;max-height:380px;background:#f9fafb;"></div>
+              <div id="direct-msg-compose" style="display:none;padding:12px 16px;border-top:1px solid var(--border);background:#fff;">
+                <div style="display:flex;gap:8px;align-items:flex-end;">
+                  <div style="flex:1;">
+                    <textarea id="direct-msg-input" placeholder="Write a message... (Enter to send, Shift+Enter for new line)" rows="2" style="width:100%;padding:9px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;resize:none;font-family:Arial,sans-serif;" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendDirectMessage();}"></textarea>
+                    <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
+                      <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:12px;color:#555;padding:5px 10px;border:1px solid var(--border);border-radius:6px;background:#fff;">
+                        📎 Attach file
+                        <input type="file" id="direct-msg-file" accept="image/*,.pdf,.doc,.docx" style="display:none;" onchange="updateDirectMsgFileLabel(this)">
+                      </label>
+                      <span id="direct-msg-file-name" style="font-size:11px;color:#888;"></span>
+                    </div>
+                  </div>
+                  <button onclick="sendDirectMessage()" style="background:var(--navy);color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;align-self:flex-start;">Send →</button>
+                </div>
               </div>
             </div>
           </div>
-          <!-- Keep legacy cards hidden but present for backward compat -->
           <div id="emp-msg-cards-wrap" style="display:none;">
-            <div id="adm-msg-unread-count"></div>
-            <div id="adm-msg-read-count"></div>
-            <div id="adm-msg-panel-unread"></div>
-            <div id="adm-msg-panel-read" style="display:none;"></div>
+            <div id="adm-msg-unread-count"></div><div id="adm-msg-read-count"></div>
+            <div id="adm-msg-panel-unread"></div><div id="adm-msg-panel-read" style="display:none;"></div>
           </div>
         </div>
       </div>
 
+
       <!-- DOCUMENT LIBRARY -->
-      <div id="section-adm-documents" class="admin-section">
+            <div id="section-adm-documents" class="admin-section">
         <div style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:4px;">📥 Document Library</div>
         <p style="color:#888;font-size:13px;margin-bottom:24px;">Download official RideSource documents for printing or offline reference.</p>
 
@@ -4809,9 +4827,11 @@ async function loadDirectThread(email,name){
     threadEl.innerHTML=all.map(m=>{
       const isAdmin=m.side==='admin';
       const time=new Date(m.sent_at).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
+      const attachHtml=m.attachment_url?`<div style="margin-top:6px;"><a href="${m.attachment_url}" target="_blank" style="display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,0.2);color:${isAdmin?'#fff':'var(--navy)'};padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700;text-decoration:none;border:1px solid rgba(255,255,255,0.3);">📎 ${m.attachment_name||'Attachment'}</a></div>`:'';
       return `<div style="display:flex;justify-content:${isAdmin?'flex-end':'flex-start'};margin-bottom:12px;">
         <div style="max-width:70%;background:${isAdmin?'var(--navy)':'#f0f4fb'};color:${isAdmin?'#fff':'var(--navy)'};padding:10px 14px;border-radius:${isAdmin?'12px 12px 4px 12px':'12px 12px 12px 4px'};font-size:13px;">
           ${m.message||m.body||''}
+          ${attachHtml}
           <div style="font-size:10px;opacity:.7;margin-top:4px;text-align:right;">${isAdmin?'You':'Employee'} · ${time}</div>
         </div>
       </div>`;
@@ -4820,27 +4840,43 @@ async function loadDirectThread(email,name){
   }catch(e){threadEl.innerHTML='<p style="color:#aaa;font-size:13px;padding:16px;">Unable to load messages.</p>';}
 }
 
+function updateDirectMsgFileLabel(input){
+  const label=document.getElementById('direct-msg-file-name');
+  if(label)label.textContent=input.files?.[0]?.name||'';
+}
 async function sendDirectMessage(){
   const input=document.getElementById('direct-msg-input');
-  const msg=input?.value?.trim();
-  if(!msg||!currentDirectMsgEmployee)return;
-  input.value='';
+  const body=(input?.value||'').trim();
+  const fileInput=document.getElementById('direct-msg-file');
+  const file=fileInput?.files?.[0];
+  if(!body&&!file){input?.focus();return;}
+  if(!currentDirectMsgEmployee)return;
   try{
-    await db.from('employee_messages').insert([{
-      employee_email:currentDirectMsgEmployee,
-      employee_name:allProfilesCache.find(p=>p.employee_email===currentDirectMsgEmployee)?.employee_name||'',
+    let attachmentUrl=null,attachmentName=null;
+    if(file){
+      const fname='messages/'+Date.now()+'_'+file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+      const{data:up,error:ue}=await db.storage.from('ridesource-uploads').upload(fname,file);
+      if(!ue&&up){const{data:u}=db.storage.from('ridesource-uploads').getPublicUrl(fname);attachmentUrl=u?.publicUrl||null;attachmentName=file.name;}
+    }
+    const{error}=await db.from('employee_messages').insert([{
+      from_email:adminStaff?.email||'admin@ridesource',
       from_name:adminName,
-      to_email:currentDirectMsgEmployee,
-      subject:'Direct Message from '+adminName,
-      message:msg,
-      body:msg,
+      to_email:currentDirectMsgEmployee.email,
+      from_admin:true,
+      message:body||('📎 '+attachmentName),
+      body:body||('📎 '+attachmentName),
+      attachment_url:attachmentUrl,
+      attachment_name:attachmentName,
       is_read:false,
       sent_at:new Date().toISOString()
     }]);
-    // Reload thread
-    const emp=allProfilesCache.find(e=>e.employee_email===currentDirectMsgEmployee);
-    if(emp)loadDirectThread(currentDirectMsgEmployee,emp.employee_name);
-  }catch(e){alert('Error sending message: '+e.message);}
+    if(error)throw error;
+    if(input)input.value='';
+    if(fileInput)fileInput.value='';
+    const label=document.getElementById('direct-msg-file-name');
+    if(label)label.textContent='';
+    loadDirectMessages(currentDirectMsgEmployee.email);
+  }catch(e){alert('Error: '+e.message);}
 }
 
 async function loadMemos(){
@@ -4945,6 +4981,7 @@ function renderAdminMemoList(){
       <div id="memo-expand-${m.id}" style="display:none;padding:12px 14px;background:#f7f9fc;border-top:1px solid var(--border);">
         <div style="font-size:12px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Message</div>
         <div style="font-size:13px;color:#444;white-space:pre-wrap;margin-bottom:12px;">${m.body}</div>
+        ${m.attachment_url?`<div style="margin-bottom:12px;"><a href="${m.attachment_url}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:#e8f0fe;color:#1565c0;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;border:1px solid #bbdefb;">📎 ${m.attachment_name||'View Attachment'}</a></div>`:''}
         <div style="font-size:12px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Read by (${readCount})</div>
         <div style="font-size:12px;color:#555;">${readers}</div>
         ${m.require_acknowledgement?`<div style="margin-top:8px;font-size:12px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Not yet read (${totalEmployees-readCount})</div><div style="font-size:12px;color:var(--red);">${allProfilesCache.filter(p=>!(m.read_by||[]).includes(p.employee_name)&&!(m.read_by||[]).includes(p.employee_email)).map(p=>p.employee_name).join(', ')||'Everyone has read this!'}</div>`:''}
@@ -4962,13 +4999,26 @@ async function createMemo(){
   const dashBanner=document.getElementById('memo-dashboard-banner')?.checked||false;
   if(!subject||!body){alert('Subject and message are required.');return;}
   try{
+    // Handle attachment upload
+    let attachmentUrl=null,attachmentName=null;
+    const attachFile=document.getElementById('memo-attachment')?.files?.[0];
+    if(attachFile){
+      const uploadMsg=document.getElementById('memo-send-uploading');
+      if(uploadMsg)uploadMsg.style.display='inline';
+      const fname='memos/'+Date.now()+'_'+attachFile.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+      const{data:up,error:ue}=await db.storage.from('ridesource-uploads').upload(fname,attachFile);
+      if(!ue&&up){const{data:u}=db.storage.from('ridesource-uploads').getPublicUrl(fname);attachmentUrl=u?.publicUrl||null;attachmentName=attachFile.name;}
+      if(uploadMsg)uploadMsg.style.display='none';
+    }
     const {error}=await db.from('memos').insert([{
       subject,body,audience,priority,
       require_acknowledgement:requireAck,
       send_email:sendEmail,
       dashboard_banner:dashBanner,
       created_by:adminName,created_at:new Date().toISOString(),
-      is_active:true,read_by:[]
+      is_active:true,read_by:[],
+      attachment_url:attachmentUrl,
+      attachment_name:attachmentName
     }]);
     if(error)throw error;
     document.getElementById('memo-subject').value='';
@@ -4976,6 +5026,7 @@ async function createMemo(){
     document.getElementById('memo-audience').value='all';
     document.getElementById('memo-priority').value='normal';
     document.getElementById('memo-require-ack').checked=false;
+    const attEl=document.getElementById('memo-attachment');if(attEl)attEl.value='';
     const sendEmailEl=document.getElementById('memo-send-email');if(sendEmailEl)sendEmailEl.checked=false;
     document.getElementById('memo-dashboard-banner').checked=false;
     const msg=document.getElementById('memo-send-msg');msg.style.display='inline';setTimeout(()=>msg.style.display='none',3000);
@@ -5056,6 +5107,7 @@ async function loadEmployeeMemos(){
         <div style="font-size:14px;font-weight:700;color:#5b21b6;margin-bottom:4px;">${m.subject}${urgentBadge}</div>
         <div style="font-size:11px;color:#888;margin-bottom:10px;">From ${m.created_by} · ${dt}</div>
         <div style="font-size:13px;color:#444;margin-bottom:14px;white-space:pre-wrap;">${m.body}</div>
+        ${m.attachment_url?`<div style="margin-bottom:14px;"><a href="${m.attachment_url}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:#ede9fe;color:#5b21b6;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;border:1px solid #c4b5fd;">📎 ${m.attachment_name||'View Attachment'}</a></div>`:''}
         <div style="margin-bottom:12px;">
           <label style="font-size:11px;font-weight:700;color:#5b21b6;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px;">💬 Comment (optional)</label>
           <textarea id="emp-memo-comment-${m.id}" placeholder="Add a question or comment for your supervisor..." style="width:100%;padding:8px 12px;border:1px solid #d0b8f5;border-radius:8px;font-size:13px;font-family:Arial,sans-serif;outline:none;resize:vertical;min-height:60px;"></textarea>
@@ -5100,14 +5152,13 @@ function switchMemoCard(card){
     const panel=document.getElementById('memo-panel-'+c);
     const active=c===card;
     if(btn){
-      btn.style.background=active?'#5b21b6':'#fff';
-      btn.style.color=active?'#fff':'var(--navy)';
-      btn.style.borderColor=active?'#5b21b6':'var(--border)';
-      const countEl=btn.querySelector('div:last-child');
-      if(countEl)countEl.style.color=active?'rgba(255,255,255,0.85)':'#888';
+      btn.style.borderBottomColor=active?'#5b21b6':'transparent';
+      btn.style.color=active?'#5b21b6':'#888';
     }
     if(panel)panel.style.display=active?'block':'none';
   });
+  if(card==='unread'||card==='read')loadEmpMemoHistory();
+  if(card==='sent'){loadEmpSentMessages();}
 }
 function toggleEmpMessageForm(){
   const f=document.getElementById('emp-msg-form');
@@ -5118,15 +5169,27 @@ function toggleEmpMessageForm(){
 async function sendEmployeeMessage(){
   const subject=document.getElementById('emp-msg-subject').value.trim();
   const body=document.getElementById('emp-msg-body').value.trim();
+  const fileInput=document.getElementById('emp-msg-attachment');
+  const file=fileInput?.files?.[0];
   if(!subject||!body){alert('Please enter a subject and message.');return;}
   try{
+    let attachmentUrl=null,attachmentName=null;
+    if(file){
+      const fname='messages/'+Date.now()+'_'+file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+      const{data:up,error:ue}=await db.storage.from('ridesource-uploads').upload(fname,file);
+      if(!ue&&up){const{data:u}=db.storage.from('ridesource-uploads').getPublicUrl(fname);attachmentUrl=u?.publicUrl||null;attachmentName=file.name;}
+    }
     const {error}=await db.from('employee_messages').insert([{
       employee_name:user.name,employee_email:user.email,county:user.county,
-      subject,body,sent_at:new Date().toISOString(),is_read:false
+      subject,body,
+      attachment_url:attachmentUrl,
+      attachment_name:attachmentName,
+      sent_at:new Date().toISOString(),is_read:false
     }]);
     if(error)throw error;
     document.getElementById('emp-msg-subject').value='';
     document.getElementById('emp-msg-body').value='';
+    if(fileInput)fileInput.value='';
     document.getElementById('emp-msg-form').style.display='none';
     document.getElementById('emp-msg-toggle').textContent='▼ expand';
     const msg=document.getElementById('emp-msg-sent');msg.style.display='inline';setTimeout(()=>msg.style.display='none',3000);
@@ -5203,8 +5266,8 @@ async function loadEmpMemoHistory(){
 function updateMemoCardCounts(unread,read){
   const u=document.getElementById('memo-card-unread-count');
   const r=document.getElementById('memo-card-read-count');
-  if(u)u.textContent=unread+' unread';
-  if(r)r.textContent=read+' read';
+  if(u){u.textContent=unread;u.style.background=unread>0?'#5b21b6':'#ddd';u.style.color=unread>0?'#fff':'#555';}
+  if(r){r.textContent=read;r.style.background=read>0?'#27AE60':'#ddd';r.style.color=read>0?'#fff':'#555';}
 }
 async function acknowledgeMemoFromHistory(id,btn){
   btn.disabled=true;btn.textContent='Acknowledging...';
