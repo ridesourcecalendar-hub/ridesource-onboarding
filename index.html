@@ -2776,13 +2776,13 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 
         <!-- Three-tab navigation -->
         <div style="display:flex;gap:4px;margin-bottom:20px;border-bottom:2px solid var(--border);">
-          <button id="memo-main-tab-compose" onclick="setMemoMainTab('compose')" style="padding:10px 20px;font-size:13px;font-weight:700;border:none;border-bottom:2px solid var(--navy);margin-bottom:-2px;cursor:pointer;background:none;color:var(--navy);">Compose</button>
-          <button id="memo-main-tab-sent" onclick="setMemoMainTab('sent')" style="padding:10px 20px;font-size:13px;font-weight:700;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;background:none;color:#888;">Sent Memos<span id="badge-emp-messages" style="background:var(--red);color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:6px;display:none;">●</span></button>
-          <button id="memo-main-tab-direct" onclick="setMemoMainTab('direct')" style="padding:10px 20px;font-size:13px;font-weight:700;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;background:none;color:#888;">Direct Messages<span id="badge-direct-messages" style="background:var(--red);color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:6px;display:none;">●</span></button>
+          <button id="adm-memo-main-tab-compose" onclick="setMemoMainTab('compose')" style="padding:10px 20px;font-size:13px;font-weight:700;border:none;border-bottom:2px solid var(--navy);margin-bottom:-2px;cursor:pointer;background:none;color:var(--navy);">Compose</button>
+          <button id="adm-memo-main-tab-sent" onclick="setMemoMainTab('sent')" style="padding:10px 20px;font-size:13px;font-weight:700;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;background:none;color:#888;">Sent Memos<span id="badge-emp-messages" style="background:var(--red);color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:6px;display:none;">●</span></button>
+          <button id="adm-memo-main-tab-direct" onclick="setMemoMainTab('direct')" style="padding:10px 20px;font-size:13px;font-weight:700;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;background:none;color:#888;">Direct Messages<span id="badge-direct-messages" style="background:var(--red);color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:6px;display:none;">●</span></button>
         </div>
 
         <!-- COMPOSE TAB -->
-        <div id="memo-panel-compose">
+        <div id="adm-memo-panel-compose">
           <div style="display:grid;grid-template-columns:1fr 280px;gap:20px;align-items:start;">
             <!-- Left: Form -->
             <div class="card">
@@ -2858,7 +2858,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
         </div>
 
         <!-- SENT MEMOS TAB -->
-        <div id="memo-panel-sent" style="display:none;">
+        <div id="adm-memo-panel-sent" style="display:none;">
           <!-- Stats bar -->
           <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;">
             <div class="card" style="text-align:center;padding:16px;">
@@ -2901,7 +2901,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
         </div>
 
         <!-- DIRECT MESSAGES TAB -->
-        <div id="memo-panel-direct" style="display:none;">
+        <div id="adm-memo-panel-direct" style="display:none;">
           <div style="display:grid;grid-template-columns:220px 1fr;gap:0;border:1px solid var(--border);border-radius:12px;overflow:hidden;min-height:500px;">
             <!-- Employee list -->
             <div style="border-right:1px solid var(--border);background:#fafafa;">
@@ -4683,8 +4683,8 @@ let currentDirectMsgEmployee=null;
 function setMemoMainTab(tab){
   currentMemoMainTab=tab;
   ['compose','sent','direct'].forEach(t=>{
-    const btn=document.getElementById('memo-main-tab-'+t);
-    const panel=document.getElementById('memo-panel-'+t);
+    const btn=document.getElementById('adm-memo-main-tab-'+t);
+    const panel=document.getElementById('adm-memo-panel-'+t);
     if(btn){
       btn.style.color=t===tab?'var(--navy)':'#888';
       btn.style.borderBottom=t===tab?'2px solid var(--navy)':'2px solid transparent';
@@ -8460,7 +8460,7 @@ async function loadOnboarding(){
   if(printList)printList.innerHTML=printReqs.length===0?'No printed copy requests.':`<div>${printReqs.map((e,idx)=>`<div style="padding:6px 0;border-bottom:1px solid #e0e0e0;font-size:12px;"><strong>${demoMask(e.name,idx)}</strong>${isDemo?'':' ('+e.email+')'} - ${e.county}</div>`).join('')}</div>`;
 }
 // TIMESHEETS ADMIN
-let tsFilterStatus='PENDING';
+let tsFilterStatus='ALL';
 async function loadTimesheets(){
   try{
     const {data}=await db.from('timesheets').select('*').order('submitted_at',{ascending:false});
