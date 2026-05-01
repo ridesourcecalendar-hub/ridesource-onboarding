@@ -8158,7 +8158,7 @@ function filterReqUpcoming(){
       '<div></div>'+
     '</div>';
   }).join('');
-  el.innerHTML=header+'<div style="border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;overflow:hidden;">'+rows+'</div>';
+  el.innerHTML=header+'<div style="border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;overflow:hidden;">'+rows.join('')+'</div>';
 }
 
 function setReqTab(tab){
@@ -8248,7 +8248,7 @@ function renderRequestsTable(){
       +'</div>'+
     '</div>';
   }).join('');
-  el.innerHTML=header+'<div style="border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;overflow:hidden;">'+rows+'</div>';
+  el.innerHTML=header+'<div style="border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;overflow:hidden;">'+rows.join('')+'</div>';
 }
 function exportTimeOffRequests(){
   const data=allRequestsCache;
@@ -8585,7 +8585,7 @@ function renderTimesheetsTable(){
       buildTsDetailView(t,isDemo)+
     '</div>';
   }).join('');
-  el.innerHTML=header+'<div style="border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;overflow:hidden;">'+rows+'</div>';
+  el.innerHTML=header+'<div style="border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;overflow:hidden;">'+rows.join('')+'</div>';
 }
 
 function buildTsDetailView(t,isDemo){
@@ -10093,7 +10093,7 @@ function renderExpensesTable(){
       '</div>':'')+
     '</div>';
   }).join('');
-  el.innerHTML=header+'<div style="border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;overflow:hidden;">'+rows+'</div>';
+  el.innerHTML=header+'<div style="border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;overflow:hidden;">'+rows.join('')+'</div>';
 }
 
 function toggleExpenseRow(id,rowEl){
