@@ -3709,6 +3709,13 @@ function adminLogout(){
 
 // NAV
 function showSection(id){
+  // Reset expense form visibility when showing expenses
+  if(id==='expenses'){
+    const form=document.getElementById('exp-submit-form');
+    const succ=document.getElementById('exp-success');
+    if(form)form.style.display='block';
+    if(succ)succ.style.display='none';
+  }
   document.querySelectorAll('.portal-section').forEach(el=>el.style.display='none');
   document.querySelectorAll('#screen-portal .nav-item').forEach(el=>el.classList.remove('active'));
   document.getElementById('section-'+id).style.display='block';
@@ -3747,7 +3754,7 @@ function showAdmin(id){
   if(id==='fleet'){loadFleetVehicles();loadFleetMaintenance();loadFleetTires();loadFleetChangeovers();}
   if(id==='vehicle-records')loadVehicleRecords();
   if(id==='callouts')loadCallOuts();
-  if(id==='requests')loadTimeOffRequests();
+  if(id==='requests')loadRequests();
   // Keep profile cache fresh when navigating to sections that use it for filtering
   if(id==='requests'||id==='callouts')if(allProfilesCache.length===0)loadEmployeeFolders();
 }
@@ -4783,7 +4790,7 @@ async function openDirectThread(email,name){
   // Load thread
   await loadDirectThread(email,name);
   // Mark as read
-  try{await db.from('employee_messages').update({is_read:true}).eq('from_email',email).eq('is_read',false);}catch(e){}
+  try{await db.from('employee_messages').update({is_read:true}).or('from_email.eq.'+email+',to_email.eq.'+email).eq('is_read',false);}catch(e){}
   // Refresh employee list
   loadDirectMessageEmployees();
 }
@@ -4793,10 +4800,12 @@ async function loadDirectThread(email,name){
   try{
     // Get messages from employee to admin
     const{data:empMsgs}=await db.from('employee_messages').select('*').eq('from_email',email).order('sent_at',{ascending:true});
-    // Get admin replies stored in memos with direct=true
-    const{data:adminMsgs}=await db.from('employee_messages').select('*').eq('to_email',email).eq('from_admin',true).order('sent_at',{ascending:true});
-    // Merge and sort
-    const all=[...(empMsgs||[]).map(m=>({...m,side:'employee'})),...(adminMsgs||[]).map(m=>({...m,side:'admin'}))].sort((a,b)=>new Date(a.sent_at)-new Date(b.sent_at));
+    // Get admin replies to this employee
+    const{data:adminMsgs}=await db.from('employee_messages').select('*').eq('to_email',email).order('sent_at',{ascending:true});
+    // Merge and sort - employee msgs vs admin msgs (to_email matches)
+    const empSet=new Set((empMsgs||[]).map(m=>m.id));
+    const allMsgs=[...(empMsgs||[]).map(m=>({...m,side:'employee'})),...(adminMsgs||[]).filter(m=>!empSet.has(m.id)).map(m=>({...m,side:'admin'}))].sort((a,b)=>new Date(a.sent_at)-new Date(b.sent_at));
+    const all=allMsgs;
     if(!all.length){threadEl.innerHTML='<p style="color:#aaa;font-size:13px;text-align:center;padding:40px 0;">No messages yet. Send the first message!</p>';return;}
     threadEl.innerHTML=all.map(m=>{
       const isAdmin=m.side==='admin';
@@ -4822,7 +4831,7 @@ async function sendDirectMessage(){
       from_email:adminStaff?.email||'admin@ridesource',
       from_name:adminName,
       to_email:currentDirectMsgEmployee,
-      from_admin:true,
+      employee_name:allProfilesCache.find(p=>p.employee_email===currentDirectMsgEmployee)?.employee_name||'',
       message:msg,
       body:msg,
       is_read:false,
