@@ -5546,22 +5546,35 @@ function renderOilRequestsStrip(){
 }
 
 async function dismissOilRequest(id){
-  // Mark as resolved so it disappears from banner
   try{
-    await db.from('vehicle_reports').update({status:'RESOLVED',resolved_by:adminName,resolved_at:new Date().toISOString()}).eq('id',parseInt(id)||id);
-    allVehicleRecordsCache=allVehicleRecordsCache.map(r=>(r.id===id||r.id===parseInt(id))?{...r,status:'RESOLVED'}:r);
+    const{error}=await db.from('vehicle_reports')
+      .update({status:'RESOLVED',resolved_by:adminName,resolved_at:new Date().toISOString()})
+      .eq('id',id);
+    if(error){
+      console.error('Dismiss error:',error);
+      alert('Could not dismiss: '+error.message+'\n\nRun this SQL in Supabase:\nCREATE POLICY "admin_update_reports" ON vehicle_reports FOR UPDATE USING (true) WITH CHECK (true);');
+      return;
+    }
+    allVehicleRecordsCache=allVehicleRecordsCache.map(r=>String(r.id)===String(id)?{...r,status:'RESOLVED'}:r);
+    await loadVehicleRecords();
     renderOilRequestsStrip();
-    showRealtimeToast('Oil change request dismissed');
+    showRealtimeToast('✅ Oil change request dismissed');
   }catch(e){alert('Error: '+e.message);}
 }
 
 async function deleteOilRequest(id){
   if(!confirm('Permanently delete this oil change request? This cannot be undone.'))return;
   try{
-    await db.from('vehicle_reports').delete().eq('id',parseInt(id)||id);
-    allVehicleRecordsCache=allVehicleRecordsCache.filter(r=>r.id!==id&&r.id!==parseInt(id));
+    const{error}=await db.from('vehicle_reports').delete().eq('id',id);
+    if(error){
+      console.error('Delete error:',error);
+      alert('Could not delete: '+error.message);
+      return;
+    }
+    allVehicleRecordsCache=allVehicleRecordsCache.filter(r=>String(r.id)!==String(id));
+    await loadVehicleRecords();
     renderOilRequestsStrip();
-    showRealtimeToast('Request deleted');
+    showRealtimeToast('✅ Request deleted');
   }catch(e){alert('Error: '+e.message);}
 }
 
