@@ -1352,7 +1352,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
                 <span style="width:10px;height:10px;border-radius:50%;background:#f59e0b;display:inline-block;margin-left:6px;"></span>Personal
                 <span style="width:10px;height:10px;border-radius:50%;background:#10b981;display:inline-block;margin-left:6px;"></span>Other
               </div>
-              <button onclick="showAdmin('time-off')" style="font-size:11px;color:var(--navy);background:none;border:none;cursor:pointer;font-weight:700;">View All →</button>
+              <button onclick="showAdmin('requests')" style="font-size:11px;color:var(--navy);background:none;border:none;cursor:pointer;font-weight:700;">View All →</button>
             </div>
           </div>
           <div id="dash-week-schedule" style="overflow-x:auto;"></div>
@@ -1397,7 +1397,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
           <div class="card" style="padding:16px 20px;">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
               <div style="font-size:14px;font-weight:800;color:var(--navy);">🚩 Attendance Flags</div>
-              <button onclick="showAdmin('call-outs')" style="font-size:11px;color:var(--navy);background:none;border:none;cursor:pointer;font-weight:700;">View All →</button>
+              <button onclick="showAdmin('callouts')" style="font-size:11px;color:var(--navy);background:none;border:none;cursor:pointer;font-weight:700;">View All →</button>
             </div>
             <div id="dash-flags-list" style="font-size:13px;color:#888;">Loading...</div>
           </div>
@@ -3729,7 +3729,7 @@ function showSection(id){
 function showAdmin(id){
   document.querySelectorAll('.admin-section').forEach(el=>el.style.display='none');
   document.querySelectorAll('#screen-admin .nav-item').forEach(el=>el.classList.remove('active'));
-  document.getElementById('section-adm-'+id).style.display='block';
+  const _secEl=document.getElementById('section-adm-'+id);if(!_secEl){console.warn('Missing:section-adm-'+id);return;}  _secEl.style.display='block';
   document.getElementById('nav-adm-'+id)?.classList.add('active');
   if(id==='employee-folders'){
     // Always return to list view, never re-open a detail view
@@ -5226,7 +5226,7 @@ async function loadEmpSentMessages(){
 let allEmpMessagesCache=[];
 async function loadEmployeeMessages(){
   try{
-    const {data}=await db.from('employee_messages').select('*').eq('from_admin',false).order('sent_at',{ascending:false});
+    const {data}=await db.from('employee_messages').select('*').order('sent_at',{ascending:false});
     allEmpMessagesCache=data||[];
     const unread=allEmpMessagesCache.filter(m=>!m.is_read).length;
     const badge=document.getElementById('badge-emp-messages');
@@ -7603,7 +7603,7 @@ async function loadDashboard(){
       <div class="admin-stat-icon" style="background:#e0e7ff;">👥</div>
       <div><div class="admin-stat-val">${unique}</div><div class="admin-stat-label">Active Employees</div></div>
     </div>
-    <div class="admin-stat-card" style="cursor:pointer;" onclick="showAdmin('time-off')">
+    <div class="admin-stat-card" style="cursor:pointer;" onclick="showAdmin('requests')">
       <div class="admin-stat-icon" style="background:#fff3cd;">⏳</div>
       <div><div class="admin-stat-val">${reqs.length}</div><div class="admin-stat-label">Pending Approvals</div></div>
     </div>
@@ -7694,7 +7694,7 @@ function renderActivityFeed(reqs,sheets,openVr,incidents,pendingExp){
     icon:'⏳',color:'#f59e0b',
     title:r.employee_name+' — '+r.request_type,
     sub:r.start_date+(r.end_date&&r.end_date!==r.start_date?' to '+r.end_date:''),
-    action:()=>showAdmin('time-off'),badge:'Pending',badgeColor:'var(--warn)'
+    action:()=>showAdmin('requests'),badge:'Pending',badgeColor:'var(--warn)'
   }));
   // Pending timesheets
   sheets.slice(0,2).forEach(s=>items.push({
