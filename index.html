@@ -855,7 +855,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
           <div class="form-field"><label>Other — please describe</label><input type="text" id="ir-nature-other" placeholder="Describe if not listed above"></div>
 
           <div style="font-size:13px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.5px;margin:20px 0 14px;padding-bottom:8px;border-bottom:2px solid var(--red);">Section IV — Injury &amp; Incident Description</div>
-          <div class="form-field"><label>Sequence of Events *</label><textarea id="ir-sequence" placeholder="Describe exactly what happened leading up to, during, and after the incident..." style="min-height:100px;"></textarea></div>
+          <div class="form-field"><label>Sequence of Events *</label><textarea id="ir-sequence" placeholder="Describe exactly what happened leading up to, during, and after the incident..." style="min-height:200px;resize:vertical;"></textarea></div>
           <div class="form-field"><label>Injuries — describe extent and body part(s) affected</label><textarea id="ir-injuries" placeholder="Describe any injuries to member, driver, escort, or service animal. Write 'None' if no injuries." style="min-height:70px;"></textarea></div>
           <div class="form-field"><label>If Member Conduct/Misconduct — explain</label><textarea id="ir-conduct-desc" placeholder="Describe member behavior if applicable..." style="min-height:60px;"></textarea></div>
           <div class="form-field"><label>Unsafe Conditions or Practices That May Have Contributed</label><textarea id="ir-unsafe-conditions" placeholder="Describe any unsafe conditions, methods, or practices..." style="min-height:60px;"></textarea></div>
@@ -1278,8 +1278,47 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 
       <!-- VOL MEMOS -->
       <div id="section-vol-memos" class="portal-section">
-        <div class="card-title" style="font-size:22px;color:var(--navy);margin-bottom:8px;">📢 Memos</div>
-        <div id="vol-memos-list"><p style="color:#888;font-size:13px;">Loading...</p></div>
+        <div class="card-title" style="font-size:22px;color:var(--navy);margin-bottom:8px;">📢 Memos &amp; Messages</div>
+
+        <!-- Tab bar -->
+        <div style="display:flex;gap:0;margin-bottom:20px;border-bottom:2px solid var(--border);">
+          <button id="vol-memo-tab-unread" onclick="switchVolMemoTab('unread')" style="flex:1;padding:11px 8px;border:none;border-bottom:3px solid var(--navy);margin-bottom:-2px;background:none;color:var(--navy);font-size:13px;font-weight:700;cursor:pointer;text-align:center;">🔔 Unread</button>
+          <button id="vol-memo-tab-read" onclick="switchVolMemoTab('read')" style="flex:1;padding:11px 8px;border:none;border-bottom:3px solid transparent;margin-bottom:-2px;background:none;color:#888;font-size:13px;font-weight:700;cursor:pointer;text-align:center;">📬 Read</button>
+          <button id="vol-memo-tab-send" onclick="switchVolMemoTab('send')" style="flex:1;padding:11px 8px;border:none;border-bottom:3px solid transparent;margin-bottom:-2px;background:none;color:#888;font-size:13px;font-weight:700;cursor:pointer;text-align:center;">💬 Send Message</button>
+        </div>
+
+        <!-- Unread panel -->
+        <div id="vol-memo-panel-unread">
+          <div id="vol-memos-list"><p style="color:#888;font-size:13px;">Loading...</p></div>
+        </div>
+
+        <!-- Read panel -->
+        <div id="vol-memo-panel-read" style="display:none;">
+          <div id="vol-memos-read-list"><p style="color:#888;font-size:13px;">Loading...</p></div>
+        </div>
+
+        <!-- Send message panel -->
+        <div id="vol-memo-panel-send" style="display:none;">
+          <div class="card" style="border-left:4px solid var(--navy);">
+            <div style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:16px;">✉️ Send a Message to Supervisor</div>
+            <div class="form-field">
+              <label>Subject *</label>
+              <input type="text" id="vol-msg-subject" placeholder="e.g. Question about my schedule" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+            </div>
+            <div class="form-field">
+              <label>Message *</label>
+              <textarea id="vol-msg-body" placeholder="Write your message here..." style="width:100%;min-height:120px;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;font-family:Arial,sans-serif;outline:none;resize:vertical;"></textarea>
+            </div>
+            <div class="form-field">
+              <label>📎 Attachment (optional)</label>
+              <input type="file" id="vol-msg-attachment" accept="image/*,.pdf,.doc,.docx" style="width:100%;padding:8px;border:2px solid var(--border);border-radius:8px;font-size:13px;">
+            </div>
+            <div style="display:flex;gap:10px;align-items:center;">
+              <button class="btn btn-primary" onclick="sendVolMessage()">📤 Send Message</button>
+              <span id="vol-msg-sent" style="font-size:13px;color:var(--success);display:none;">✅ Message sent!</span>
+            </div>
+          </div>
+        </div>
       </div>
 
     </div><!-- end main-content -->
@@ -2720,7 +2759,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
             <div class="form-field"><label>Other — please describe</label><input type="text" id="adm-ir-nature-other" placeholder="Describe if not listed above"></div>
 
             <div style="font-size:13px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.5px;margin:20px 0 14px;padding-bottom:8px;border-bottom:2px solid var(--red);">Section IV — Injury &amp; Incident Description</div>
-            <div class="form-field"><label>Sequence of Events *</label><textarea id="adm-ir-sequence" placeholder="Describe exactly what happened leading up to, during, and after the incident..." style="min-height:100px;"></textarea></div>
+            <div class="form-field"><label>Sequence of Events *</label><textarea id="adm-ir-sequence" placeholder="Describe exactly what happened leading up to, during, and after the incident..." style="min-height:200px;resize:vertical;"></textarea></div>
             <div class="form-field"><label>Injuries — describe extent and body part(s) affected</label><textarea id="adm-ir-injuries" placeholder="Describe any injuries to member, driver, escort, or service animal. Write 'None' if no injuries." style="min-height:70px;"></textarea></div>
             <div class="form-field"><label>If Member Conduct/Misconduct — explain</label><textarea id="adm-ir-conduct-desc" placeholder="Describe member behavior if applicable..." style="min-height:60px;"></textarea></div>
             <div class="form-field"><label>Unsafe Conditions or Practices That May Have Contributed</label><textarea id="adm-ir-unsafe-conditions" placeholder="Describe any unsafe conditions, methods, or practices..." style="min-height:60px;"></textarea></div>
@@ -3140,7 +3179,8 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
               <button class="btn btn-sm" style="background:#e8f4fd;color:#1565c0;" onclick="exportExpenses()">⬇️ Export CSV</button>
             </div>
             <div style="display:flex;gap:4px;margin-bottom:0;border-bottom:2px solid var(--border);">
-              <button id="exp-tab-PENDING" class="req-tab req-tab-active" onclick="setExpTab('PENDING')">Pending <span class="req-count" id="exp-count-PENDING" style="background:var(--red);color:#fff;">0</span></button>
+              <button id="exp-tab-ALL" class="req-tab req-tab-active" onclick="setExpTab('ALL')">All <span class="req-count" id="exp-count-ALL" style="background:var(--navy);color:#fff;">0</span></button>
+              <button id="exp-tab-PENDING" class="req-tab" onclick="setExpTab('PENDING')">Pending <span class="req-count" id="exp-count-PENDING" style="background:var(--red);color:#fff;">0</span></button>
               <button id="exp-tab-APPROVED" class="req-tab req-tab-approved" onclick="setExpTab('APPROVED')">Approved <span class="req-count" id="exp-count-APPROVED" style="background:#ddd;color:#555;">0</span></button>
               <button id="exp-tab-DENIED" class="req-tab req-tab-denied" onclick="setExpTab('DENIED')">Denied <span class="req-count" id="exp-count-DENIED" style="background:#ddd;color:#555;">0</span></button>
               <button id="exp-tab-ALL" class="req-tab" style="margin-left:auto;" onclick="setExpTab('ALL')">All</button>
@@ -6969,7 +7009,7 @@ function openIncidentModal(id){
     </div>
     <div style="margin-bottom:12px;"><div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Nature of Incident</div><div style="font-size:13px;">${nature}</div>${r.nature_other?`<div style="font-size:12px;color:#888;">Other: ${r.nature_other}</div>`:''}</div>
     ${r.member_name?`<div style="margin-bottom:12px;"><div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Member</div><div style="font-size:13px;">${r.member_name}${r.modivcare_trip_number?' · Trip #'+r.modivcare_trip_number:''}</div></div>`:''}
-    <div style="margin-bottom:12px;"><div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Sequence of Events</div><div style="font-size:13px;white-space:pre-wrap;background:var(--gray);padding:10px;border-radius:6px;">${r.driver_statement||'—'}</div></div>
+    <div style="margin-bottom:12px;"><div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Sequence of Events</div><div style="font-size:13px;white-space:pre-wrap;background:var(--gray);padding:10px;border-radius:6px;line-height:1.6;max-height:300px;overflow-y:auto;">${r.sequence||r.driver_statement||r.description||'—'}</div></div>
     ${r.injury_description?`<div style="margin-bottom:12px;"><div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Injuries</div><div style="font-size:13px;">${r.injury_description}</div></div>`:''}
     ${r.law_enforcement_called?`<div style="margin-bottom:12px;"><div style="font-size:11px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">⚠️ Law Enforcement Called</div><div style="font-size:13px;">${r.police_report_number||'No report number provided'}</div></div>`:''}
     ${r.post_incident_action?`<div style="margin-bottom:12px;"><div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Post-Incident Action</div><div style="font-size:13px;">${r.post_incident_action}</div></div>`:''}
@@ -10033,7 +10073,7 @@ async function buildDocx(templateId){
 // EXPENSES & REIMBURSEMENTS
 // ═══════════════════════════════════════════════
 let allExpensesCache=[];
-let currentExpTab='PENDING';
+let currentExpTab='ALL';
 
 function handlePaymentTypeChange(){
   const type=document.getElementById('exp-payment-type')?.value;
@@ -10203,6 +10243,8 @@ function renderExpensesTable(){
     const el2=document.getElementById('exp-count-'+s);
     if(el2)el2.textContent=allExpensesCache.filter(e=>e.status===s).length;
   });
+  const allCountEl=document.getElementById('exp-count-ALL');
+  if(allCountEl)allCountEl.textContent=allExpensesCache.length;
   const now=new Date();
   const monthStart=new Date(now.getFullYear(),now.getMonth(),1);
   const pending=allExpensesCache.filter(e=>e.status==='PENDING');
@@ -11404,6 +11446,62 @@ function resetVolExpense(){
 }
 
 // VOL MEMOS
+function switchVolMemoTab(tab){
+  ['unread','read','send'].forEach(t=>{
+    const btn=document.getElementById('vol-memo-tab-'+t);
+    const panel=document.getElementById('vol-memo-panel-'+t);
+    const active=t===tab;
+    if(btn){btn.style.borderBottomColor=active?'var(--navy)':'transparent';btn.style.color=active?'var(--navy)':'#888';}
+    if(panel)panel.style.display=active?'block':'none';
+  });
+  if(tab==='read')loadVolMemosRead();
+}
+async function loadVolMemosRead(){
+  const el=document.getElementById('vol-memos-read-list');if(!el||!volUser)return;
+  try{
+    const{data}=await db.from('memos').select('*').order('created_at',{ascending:false});
+    const memos=(data||[]).filter(m=>{
+      const aud=m.audience;
+      return aud==='all'||aud===volUser.supervisor||aud===volUser.county;
+    });
+    const read=memos.filter(m=>(m.read_by||[]).includes(volUser.email)||(m.read_by||[]).includes(volUser.name));
+    if(!read.length){el.innerHTML='<p style="color:#888;font-size:13px;">No read memos yet.</p>';return;}
+    el.innerHTML=read.map(m=>{
+      const dt=new Date(m.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+      return `<div style="border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;background:#f9f9f9;opacity:.85;">
+        <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:4px;">${m.subject}</div>
+        <div style="font-size:11px;color:#888;margin-bottom:8px;">From ${m.created_by} · ${dt} · ✅ Read</div>
+        <div style="font-size:13px;color:#555;white-space:pre-wrap;">${m.body}</div>
+        ${m.attachment_url?`<div style="margin-top:8px;"><a href="${m.attachment_url}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:#e8f0fe;color:#1565c0;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;">📎 ${m.attachment_name||'View Attachment'}</a></div>`:''}
+      </div>`;
+    }).join('');
+  }catch(e){el.innerHTML='<p style="color:#888;font-size:13px;">Unable to load.</p>';}
+}
+async function sendVolMessage(){
+  const subject=document.getElementById('vol-msg-subject').value.trim();
+  const body=document.getElementById('vol-msg-body').value.trim();
+  const fileInput=document.getElementById('vol-msg-attachment');
+  const file=fileInput?.files?.[0];
+  if(!subject||!body){alert('Please enter a subject and message.');return;}
+  try{
+    let attachmentUrl=null,attachmentName=null;
+    if(file){
+      const fname='messages/'+Date.now()+'_'+file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+      const{data:up,error:ue}=await db.storage.from('ridesource-uploads').upload(fname,file);
+      if(!ue&&up){const{data:u}=db.storage.from('ridesource-uploads').getPublicUrl(fname);attachmentUrl=u?.publicUrl||null;attachmentName=file.name;}
+    }
+    const{error}=await db.from('employee_messages').insert([{
+      employee_name:volUser.name,employee_email:volUser.email,county:volUser.county,
+      subject,body,attachment_url:attachmentUrl,attachment_name:attachmentName,
+      sent_at:new Date().toISOString(),is_read:false,is_volunteer:true
+    }]);
+    if(error)throw error;
+    document.getElementById('vol-msg-subject').value='';
+    document.getElementById('vol-msg-body').value='';
+    if(fileInput)fileInput.value='';
+    const msg=document.getElementById('vol-msg-sent');msg.style.display='inline';setTimeout(()=>msg.style.display='none',3000);
+  }catch(e){alert('Error sending message: '+e.message);}
+}
 async function loadVolMemos(){
   const el=document.getElementById('vol-memos-list');if(!el||!volUser)return;
   try{
