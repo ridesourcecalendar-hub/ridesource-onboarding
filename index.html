@@ -10079,10 +10079,11 @@ function renderExpensesTable(){
   const approved=allExpensesCache.filter(e=>e.status==='APPROVED'&&new Date(e.decided_at||e.submitted_at)>=monthStart);
   const unpaid=allExpensesCache.filter(e=>e.status==='APPROVED'&&!e.paid_to_finance&&!e.sent_to_finance);
   const sentToFinance=allExpensesCache.filter(e=>e.sent_to_finance);
-  document.getElementById('exp-qs-pending').textContent=pending.length;
-  document.getElementById('exp-qs-approved').textContent=approved.length;
-  document.getElementById('exp-qs-total').textContent='$'+approved.reduce((s,e)=>s+parseFloat(e.amount||0),0).toFixed(2);
-  document.getElementById('exp-qs-pending-amt').textContent='$'+pending.reduce((s,e)=>s+parseFloat(e.amount||0),0).toFixed(2);
+  const allCount=document.getElementById('exp-count-ALL');if(allCount)allCount.textContent=allExpensesCache.length;
+  const qsPending=document.getElementById('exp-qs-pending');if(qsPending)qsPending.textContent=pending.length;
+  const qsApproved=document.getElementById('exp-qs-approved');if(qsApproved)qsApproved.textContent=approved.length;
+  const qsTotal=document.getElementById('exp-qs-total');if(qsTotal)qsTotal.textContent='$'+approved.reduce((s,e)=>s+parseFloat(e.amount||0),0).toFixed(2);
+  const qsPendingAmt=document.getElementById('exp-qs-pending-amt');if(qsPendingAmt)qsPendingAmt.textContent='$'+pending.reduce((s,e)=>s+parseFloat(e.amount||0),0).toFixed(2);
   const unpaidEl=document.getElementById('exp-qs-unpaid');if(unpaidEl)unpaidEl.textContent='$'+unpaid.reduce((s,e)=>s+parseFloat(e.amount||0),0).toFixed(2);
   const finEl=document.getElementById('exp-qs-finance');if(finEl)finEl.textContent='$'+sentToFinance.reduce((s,e)=>s+parseFloat(e.amount||0),0).toFixed(2);
 
