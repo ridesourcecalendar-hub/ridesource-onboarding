@@ -8383,6 +8383,17 @@ async function loadRequests(){
   if(ca){ca.textContent=approved;ca.style.background=approved?'#27AE60':'#ddd';ca.style.color=approved?'#fff':'#555';}
   if(cd){cd.textContent=denied;cd.style.background=denied?'#c0392b':'#ddd';cd.style.color=denied?'#fff':'#555';}
   if(cpto){cpto.textContent=pto;cpto.style.background=pto?'#1565c0':'#ddd';cpto.style.color=pto?'#fff':'#555';}
+  // Quick summary sidebar
+  const now=new Date();const next7=new Date(now);next7.setDate(now.getDate()+7);
+  const monthStart=new Date(now.getFullYear(),now.getMonth(),1);
+  const approvedMonth=allRequestsCache.filter(r=>r.status==='APPROVED'&&new Date(r.decided_at||r.submitted_at)>=monthStart).length;
+  const deniedMonth=allRequestsCache.filter(r=>r.status==='DENIED'&&new Date(r.decided_at||r.submitted_at)>=monthStart).length;
+  const upcoming=allRequestsCache.filter(r=>r.status==='APPROVED'&&r.start_date&&new Date(r.start_date)>=now&&new Date(r.start_date)<=next7).length;
+  const qsp=document.getElementById('qs-pending');if(qsp)qsp.textContent=pending;
+  const qsa=document.getElementById('qs-approved');if(qsa)qsa.textContent=approvedMonth;
+  const qsd=document.getElementById('qs-denied');if(qsd)qsd.textContent=deniedMonth;
+  const qsu=document.getElementById('qs-upcoming');if(qsu)qsu.textContent=upcoming;
+  const qspto=document.getElementById('qs-pto');if(qspto)qspto.textContent=pto;
   renderRequestsTable();
 }
 async function decideRequest(id,status){
