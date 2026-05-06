@@ -485,6 +485,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
         <div class="sidebar-label">Documents</div>
         <div class="nav-item" onclick="showSection('training')" id="nav-training"><span class="nav-icon">📋</span>Driver Training Guide</div>
         <div class="nav-item" onclick="showSection('handbook')" id="nav-handbook"><span class="nav-icon">📖</span>Employee Handbook</div>
+        <div class="nav-item" onclick="showSection('portal-guide')" id="nav-portal-guide"><span class="nav-icon">🗺️</span>Portal Guide</div>
         <div class="nav-item" onclick="showSection('downloads')" id="nav-downloads"><span class="nav-icon">📥</span>Downloads</div>
         <div class="sidebar-label">Actions</div>
         <div class="nav-item" onclick="showSection('policies')" id="nav-policies"><span class="nav-icon">✍️</span>Policy Sign-Offs<span class="nav-badge" id="badge-policies">0/12</span></div>
@@ -537,6 +538,20 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
       </div>
 
       <!-- TRAINING -->
+<div id="section-portal-guide" class="portal-section">
+        <div style="font-size:22px;font-weight:800;color:#5b21b6;margin-bottom:4px;">🗺️ Portal Guide</div>
+        <p style="color:#888;font-size:14px;margin-bottom:20px;">Everything you need to know about using the RideSource Staff Portal.</p>
+        <div class="doc-reader" style="border-top:4px solid #5b21b6;">
+          <div class="doc-nav" style="background:linear-gradient(135deg,#5b21b6,#7c3aed);"><div class="doc-nav-title" style="color:#fff;">📱 Employee Portal Guide</div></div>
+          <div class="doc-tabs" id="emp-guide-tabs"></div>
+          <div class="doc-body" id="emp-guide-body"></div>
+          <div class="doc-footer">
+            <div style="font-size:12px;color:#888;">RideSource Staff Portal · Employee Guide</div>
+            <div style="display:flex;gap:8px;"><button class="btn btn-secondary btn-sm" onclick="changeEmpGuideSection(-1)">← Previous</button><button class="btn btn-primary btn-sm" style="background:#5b21b6;" onclick="changeEmpGuideSection(1)">Next →</button></div>
+          </div>
+        </div>
+      </div>
+
       <div id="section-training" class="portal-section">
         <div class="card-title" style="font-size:22px;color:var(--navy);margin-bottom:4px;">📋 Driver Training Guide</div>
         <p style="color:#888;font-size:14px;margin-bottom:20px;">Version 2.1 · February 2026</p>
@@ -2924,23 +2939,39 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 
         <!-- DIRECT MESSAGES TAB -->
         <div id="adm-memo-panel-direct" style="display:none;">
-          <div style="display:grid;grid-template-columns:220px 1fr;gap:0;border:1px solid var(--border);border-radius:12px;overflow:hidden;min-height:500px;">
-            <!-- Employee list -->
-            <div style="border-right:1px solid var(--border);background:#fafafa;">
-              <div style="padding:12px 16px;font-size:12px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);">Employees</div>
+          <!-- Search bar -->
+          <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center;">
+            <input type="text" id="direct-msg-search" placeholder="🔍 Search by name, subject, or content..." oninput="filterDirectMessages()" style="flex:1;padding:9px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+            <button onclick="openNewDirectMessage()" style="background:var(--navy);color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">✉️ New Message</button>
+            <div style="display:flex;border-radius:8px;overflow:hidden;border:1px solid var(--border);">
+              <button id="dmtab-unread" onclick="setDmTab('unread')" style="padding:8px 14px;font-size:12px;font-weight:700;border:none;cursor:pointer;background:var(--navy);color:#fff;">Unread</button>
+              <button id="dmtab-all" onclick="setDmTab('all')" style="padding:8px 14px;font-size:12px;font-weight:700;border:none;cursor:pointer;background:#f0f0f0;color:#888;">All</button>
+              <button id="dmtab-sent" onclick="setDmTab('sent')" style="padding:8px 14px;font-size:12px;font-weight:700;border:none;cursor:pointer;background:#f0f0f0;color:#888;">Sent</button>
+            </div>
+          </div>
+          <!-- Two-pane email layout -->
+          <div style="display:grid;grid-template-columns:320px 1fr;gap:0;border:1px solid var(--border);border-radius:12px;overflow:hidden;min-height:520px;">
+            <!-- Left: message list -->
+            <div style="border-right:1px solid var(--border);background:#fafafa;overflow-y:auto;max-height:520px;">
               <div id="direct-msg-emp-list"><p style="color:#aaa;font-size:12px;padding:16px;">Loading...</p></div>
             </div>
-            <!-- Thread -->
-            <div style="display:flex;flex-direction:column;">
-              <div id="direct-msg-thread-header" style="padding:14px 20px;border-bottom:1px solid var(--border);font-size:14px;font-weight:700;color:var(--navy);">Select an employee to view messages</div>
-              <div id="direct-msg-thread" style="flex:1;overflow-y:auto;padding:16px;min-height:380px;max-height:400px;"></div>
-              <div id="direct-msg-compose" style="display:none;padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:center;">
-                <input type="text" id="direct-msg-input" placeholder="Message employee... (Enter to send)" style="flex:1;padding:9px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendDirectMessage();}">
-                <button onclick="sendDirectMessage()" style="background:var(--navy);color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;">Send →</button>
+            <!-- Right: message detail + reply -->
+            <div style="display:flex;flex-direction:column;background:#fff;">
+              <div id="direct-msg-thread-header" style="padding:16px 20px;border-bottom:1px solid var(--border);background:#fff;">
+                <div style="font-size:14px;font-weight:700;color:var(--navy);">Select a message to view</div>
+              </div>
+              <div id="direct-msg-thread" style="flex:1;overflow-y:auto;padding:20px;min-height:340px;max-height:380px;"></div>
+              <div id="direct-msg-compose" style="display:none;padding:16px 20px;border-top:2px solid var(--border);background:#f7f9fc;">
+                <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Reply</div>
+                <textarea id="direct-msg-input" placeholder="Write your reply..." rows="3" style="width:100%;padding:10px 14px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;resize:vertical;font-family:Arial,sans-serif;box-sizing:border-box;" onkeydown="if(event.key==='Enter'&&event.ctrlKey){event.preventDefault();sendDirectMessage();}"></textarea>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">
+                  <span style="font-size:11px;color:#aaa;">Ctrl+Enter to send</span>
+                  <button onclick="sendDirectMessage()" style="background:var(--navy);color:#fff;border:none;border-radius:8px;padding:9px 20px;font-size:13px;font-weight:700;cursor:pointer;">Send Reply →</button>
+                </div>
               </div>
             </div>
           </div>
-          <!-- Keep legacy cards hidden but present for backward compat -->
+          <!-- Keep legacy hidden for backward compat -->
           <div id="emp-msg-cards-wrap" style="display:none;">
             <div id="adm-msg-unread-count"></div>
             <div id="adm-msg-read-count"></div>
@@ -3750,6 +3781,7 @@ function showSection(id){
   });
   if(id==='timeoff')loadMyRequests();
   if(id==='memos-emp'){switchMemoCard('unread');loadEmpMemoHistory();loadEmpSentMessages();}
+  if(id==='portal-guide')buildEmpGuide();
   if(id==='timesheet'){tsCurrentId=null;tsActiveWeek=getCurrentWeekNum();buildTimesheetRows();switchTsWeek(tsActiveWeek);}
   if(id==='vehicle')loadMyVehicleReports();
   if(id==='incident'){buildIncidentForm();loadMyIncidents();}
@@ -4843,73 +4875,169 @@ function renderSentMemoStats(){
   const o=document.getElementById('memo-stat-outstanding');if(o)o.textContent=outstanding;
 }
 
-async function loadDirectMessageEmployees(){
-  const listEl=document.getElementById('direct-msg-emp-list');if(!listEl)return;
-  // Get unique employees from messages cache
-  const employees=allProfilesCache.length>0?allProfilesCache:[];
-  if(!employees.length){listEl.innerHTML='<p style="color:#aaa;font-size:12px;padding:16px;">No employee profiles found.</p>';return;}
-  // Count unread messages per employee
-  const unreadByEmp={};
-  try{
-    const{data}=await db.from('employee_messages').select('employee_email,is_read').eq('is_read',false).eq('from_admin',false);
-    (data||[]).forEach(m=>{unreadByEmp[m.employee_email]=(unreadByEmp[m.employee_email]||0)+1;});
-  }catch(e){}
-  listEl.innerHTML=employees.map(e=>{
-    const unread=unreadByEmp[e.employee_email]||0;
-    const initials=getInitials(e.employee_name);
-    const color=getAvatarColor(e.employee_name);
-    return `<div onclick="openDirectThread('${e.employee_email}','${e.employee_name}')" style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);background:${currentDirectMsgEmployee===e.employee_email?'#f0f4fb':'#fafafa'};" id="direct-emp-${e.employee_email.replace('@','_').replace('.','_')}">
-      <div style="width:32px;height:32px;border-radius:50%;background:${color};color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">${initials}</div>
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:13px;font-weight:700;color:var(--navy);">${e.employee_name}</div>
-        <div style="font-size:11px;color:#aaa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">No messages yet</div>
-      </div>
-      ${unread>0?`<span style="background:var(--red);color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;">${unread}</span>`:''}
-    </div>`;
-  }).join('');
-}
-
-async function openDirectThread(email,name){
-  currentDirectMsgEmployee=email;
-  // Update header
-  const header=document.getElementById('direct-msg-thread-header');
-  if(header)header.innerHTML=`<div style="display:flex;align-items:center;gap:10px;"><div style="width:36px;height:36px;border-radius:50%;background:${getAvatarColor(name)};color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;">${getInitials(name)}</div><div><div style="font-size:14px;font-weight:800;color:var(--navy);">${name}</div><div style="font-size:11px;color:#888;">Direct message thread</div></div></div>`;
-  // Show compose
-  const compose=document.getElementById('direct-msg-compose');
-  if(compose)compose.style.display='flex';
-  const input=document.getElementById('direct-msg-input');
-  if(input)input.placeholder=`Message ${name.split(' ')[0]}... (Enter to send)`;
-  // Load thread
-  await loadDirectThread(email,name);
-  // Mark as read
-  try{await db.from('employee_messages').update({is_read:true}).eq('employee_email',email).eq('is_read',false);}catch(e){}
-  // Refresh employee list
+let dmTabFilter='unread';
+let dmSearchQuery='';
+let currentDirectMsgId=null;
+function setDmTab(tab){
+  dmTabFilter=tab;
+  ['unread','all','sent'].forEach(t=>{
+    const btn=document.getElementById('dmtab-'+t);
+    if(btn){btn.style.background=t===tab?'var(--navy)':'#f0f0f0';btn.style.color=t===tab?'#fff':'#888';}
+  });
   loadDirectMessageEmployees();
 }
-
-async function loadDirectThread(email,name){
-  const threadEl=document.getElementById('direct-msg-thread');if(!threadEl)return;
+function filterDirectMessages(){
+  dmSearchQuery=(document.getElementById('direct-msg-search')?.value||'').toLowerCase();
+  loadDirectMessageEmployees();
+}
+async function loadDirectMessageEmployees(){
+  const listEl=document.getElementById('direct-msg-emp-list');if(!listEl)return;
+  listEl.innerHTML='<p style="color:#aaa;font-size:12px;padding:16px;">Loading...</p>';
   try{
-    // Get messages from employee to admin (employee sent)
-    const{data:empMsgs}=await db.from('employee_messages').select('*').eq('employee_email',email).eq('from_admin',false).order('sent_at',{ascending:true});
-    // Get admin replies to this employee (admin sent)
-    const{data:adminMsgs}=await db.from('employee_messages').select('*').eq('to_email',email).eq('from_admin',true).order('sent_at',{ascending:true});
-    // Merge and sort
-    const empSet=new Set((empMsgs||[]).map(m=>m.id));
-    const allMsgs=[...(empMsgs||[]).map(m=>({...m,side:'employee'})),...(adminMsgs||[]).filter(m=>!empSet.has(m.id)).map(m=>({...m,side:'admin'}))].sort((a,b)=>new Date(a.sent_at)-new Date(b.sent_at));
-    if(!allMsgs.length){threadEl.innerHTML='<p style="color:#aaa;font-size:13px;text-align:center;padding:40px 0;">No messages yet. Send the first message below!</p>';return;}
-    threadEl.innerHTML=allMsgs.map(m=>{
-      const isAdmin=m.side==='admin';
-      const time=new Date(m.sent_at).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
-      return `<div style="display:flex;justify-content:${isAdmin?'flex-end':'flex-start'};margin-bottom:12px;">
-        <div style="max-width:70%;background:${isAdmin?'var(--navy)':'#f0f4fb'};color:${isAdmin?'#fff':'var(--navy)'};padding:10px 14px;border-radius:${isAdmin?'12px 12px 4px 12px':'12px 12px 12px 4px'};font-size:13px;">
-          ${m.message||m.body||''}
-          <div style="font-size:10px;opacity:.7;margin-top:4px;text-align:right;">${isAdmin?'You':'Employee'} · ${time}</div>
-        </div>
-      </div>`;
+    const{data:allMsgs}=await db.from('employee_messages').select('*').order('sent_at',{ascending:false});
+    const msgs=allMsgs||[];
+    let filtered=msgs;
+    if(dmTabFilter==='unread') filtered=msgs.filter(m=>!m.is_read&&!m.from_admin);
+    else if(dmTabFilter==='sent') filtered=msgs.filter(m=>m.from_admin);
+    if(dmSearchQuery) filtered=filtered.filter(m=>
+      (m.employee_name||'').toLowerCase().includes(dmSearchQuery)||
+      (m.subject||'').toLowerCase().includes(dmSearchQuery)||
+      (m.body||'').toLowerCase().includes(dmSearchQuery)
+    );
+    if(!filtered.length){
+      listEl.innerHTML='<p style="color:#aaa;font-size:13px;padding:20px;text-align:center;">'+
+        (dmTabFilter==='unread'?'✅ No unread messages':dmTabFilter==='sent'?'No sent messages yet.':'No messages found.')
+        +'</p>';
+      return;
+    }
+    listEl.innerHTML=filtered.map(m=>{
+      const isUnread=!m.is_read&&!m.from_admin;
+      const dt=new Date(m.sent_at).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+      const preview=(m.body||m.message||'').substring(0,70).replace(/</g,'&lt;');
+      const senderName=m.from_admin?'You → '+(m.employee_name||''): (m.employee_name||'Unknown');
+      const initials=getInitials(m.from_admin?(m.employee_name||adminName):m.employee_name);
+      const color=m.from_admin?'var(--navy)':getAvatarColor(m.employee_name);
+      const isSelected=currentDirectMsgId===m.id;
+      const bg=isSelected?'#e8f0fc':isUnread?'#fff':'#fafafa';
+      return '<div onclick="openDirectMessage('+m.id+',\''+(m.employee_email||'')+'\',\''+(m.employee_name||'')+'\','+(m.from_admin?'true':'false')+')" style="display:flex;align-items:flex-start;gap:10px;padding:12px 14px;cursor:pointer;border-bottom:1px solid var(--border);background:'
+        +bg+';">'+
+        '<div style="width:38px;height:38px;border-radius:50%;background:'+color+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">'+initials+'</div>'+
+        '<div style="flex:1;min-width:0;">'+
+          '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">'+
+            '<div style="font-size:13px;font-weight:'+(isUnread?'800':'600')+';color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;">'+senderName+'</div>'+
+            '<div style="font-size:11px;color:#aaa;">'+dt+'</div>'+
+          '</div>'+
+          '<div style="font-size:12px;font-weight:'+(isUnread?'700':'500')+';color:'+(isUnread?'#222':'#555')+';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+(m.subject||'(no subject)')+'</div>'+
+          '<div style="font-size:11px;color:#999;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;">'+preview+'</div>'+
+        '</div>'+
+        (isUnread?'<div style="width:8px;height:8px;border-radius:50%;background:var(--navy);flex-shrink:0;margin-top:6px;"></div>':'')+
+      '</div>';
     }).join('');
-    threadEl.scrollTop=threadEl.scrollHeight;
-  }catch(e){threadEl.innerHTML='<p style="color:#aaa;font-size:13px;padding:16px;">Unable to load messages.</p>';}
+  }catch(e){listEl.innerHTML='<p style="color:#aaa;font-size:12px;padding:16px;">Unable to load messages.</p>';}
+}
+
+async function openDirectMessage(id,email,name,isAdminMsg){
+  currentDirectMsgEmployee=email;
+  currentDirectMsgId=id;
+  const threadEl=document.getElementById('direct-msg-thread');
+  const headerEl=document.getElementById('direct-msg-thread-header');
+  const compose=document.getElementById('direct-msg-compose');
+  if(!threadEl)return;
+  try{
+    const{data:m}=await db.from('employee_messages').select('*').eq('id',id).single();
+    if(!m)return;
+    const dt=new Date(m.sent_at).toLocaleString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
+    const fromLabel=m.from_admin?adminName:(m.employee_name||'Employee');
+    const toLabel=m.from_admin?(m.employee_name||email):'RideSource Management';
+    const color=m.from_admin?'var(--navy)':getAvatarColor(m.employee_name);
+    if(headerEl)headerEl.innerHTML=
+      '<div style="display:flex;align-items:center;gap:12px;">'+
+        '<div style="width:40px;height:40px;border-radius:50%;background:'+color+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;">'+getInitials(fromLabel)+'</div>'+
+        '<div style="flex:1;">'+
+          '<div style="font-size:15px;font-weight:800;color:var(--navy);">'+(m.subject||'(no subject)')+'</div>'+
+          '<div style="font-size:12px;color:#888;margin-top:2px;">From <strong>'+fromLabel+'</strong> · To <strong>'+toLabel+'</strong></div>'+
+        '</div>'+
+        '<div style="font-size:11px;color:#aaa;">'+dt+'</div>'+
+      '</div>';
+    threadEl.innerHTML=
+      '<div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:16px;">'+
+        '<div style="background:var(--gray);padding:12px 16px;font-size:12px;color:#666;line-height:1.8;">'+
+          '<div><strong style="color:#888;display:inline-block;width:60px;">From:</strong> <strong>'+fromLabel+'</strong>'+(m.from_email?' &lt;'+m.from_email+'&gt;':'')+'</div>'+
+          '<div><strong style="color:#888;display:inline-block;width:60px;">To:</strong> '+toLabel+'</div>'+
+          '<div><strong style="color:#888;display:inline-block;width:60px;">Date:</strong> '+dt+'</div>'+
+          (m.subject?'<div><strong style="color:#888;display:inline-block;width:60px;">Subject:</strong> '+m.subject+'</div>':'')+
+        '</div>'+
+        '<div style="padding:20px 16px;font-size:14px;color:#333;line-height:1.75;white-space:pre-wrap;background:#fff;">'+(m.body||m.message||'').replace(/</g,'&lt;')+'</div>'+
+      '</div>'+
+      (m.admin_reply?
+        '<div style="border:1px solid #a78bfa;border-radius:10px;overflow:hidden;">'+
+          '<div style="background:#f5f3ff;padding:8px 16px;font-size:11px;font-weight:700;color:#5b21b6;text-transform:uppercase;letter-spacing:.5px;">↩ Reply from '+adminName+'</div>'+
+          '<div style="padding:16px;font-size:13px;color:#333;line-height:1.6;white-space:pre-wrap;background:#faf9ff;">'+m.admin_reply.replace(/</g,'&lt;')+'</div>'+
+        '</div>' :'');
+    if(compose){
+      compose.style.display=!m.from_admin?'block':'none';
+      const inp=document.getElementById('direct-msg-input');
+      if(inp){inp.value='';inp.placeholder='Reply to '+name.split(' ')[0]+'...';}
+    }
+    if(!m.is_read&&!m.from_admin)
+      await db.from('employee_messages').update({is_read:true,read_at:new Date().toISOString()}).eq('id',id);
+    loadDirectMessageEmployees();
+  }catch(e){threadEl.innerHTML='<p style="color:#aaa;font-size:13px;padding:16px;">Unable to load message.</p>';}
+}
+
+function openNewDirectMessage(){
+  document.getElementById('ndm-to-search').value='';
+  document.getElementById('ndm-to-email').value='';
+  document.getElementById('ndm-to-name').value='';
+  document.getElementById('ndm-subject').value='';
+  document.getElementById('ndm-body').value='';
+  document.getElementById('ndm-selected-employee').style.display='none';
+  document.getElementById('ndm-employee-dropdown').style.display='none';
+  document.getElementById('new-direct-msg-modal').classList.add('open');
+  setTimeout(()=>document.getElementById('ndm-to-search').focus(),100);
+}
+function filterNdmEmployees(){
+  const q=(document.getElementById('ndm-to-search')?.value||'').toLowerCase();
+  const dd=document.getElementById('ndm-employee-dropdown');
+  if(!q||q.length<1){dd.style.display='none';return;}
+  const matches=allProfilesCache.filter(p=>
+    !['Terminated','Separated','Inactive'].includes(p.employment_status||'')&&
+    (p.employee_name||'').toLowerCase().includes(q)
+  ).slice(0,8);
+  if(!matches.length){dd.style.display='none';return;}
+  dd.style.display='block';
+  dd.innerHTML=matches.map(p=>`<div onclick="selectNdmEmployee('${p.employee_email}','${p.employee_name.replace(/'/g,"\\'")}','${(p.county||'').replace(/'/g,"\\'")}' )" style="padding:10px 14px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border);" onmouseenter="this.style.background='#f0f4fc'" onmouseleave="this.style.background=''">
+    <strong>${p.employee_name}</strong><span style="color:#888;font-size:12px;margin-left:6px;">${p.county||''}</span>
+  </div>`).join('');
+}
+function selectNdmEmployee(email,name,county){
+  document.getElementById('ndm-to-email').value=email;
+  document.getElementById('ndm-to-name').value=name;
+  document.getElementById('ndm-to-search').value=name;
+  document.getElementById('ndm-employee-dropdown').style.display='none';
+  const sel=document.getElementById('ndm-selected-employee');
+  sel.textContent='✓ '+name+(county?' · '+county:'');
+  sel.style.display='block';
+}
+async function sendNewDirectMessage(){
+  const toEmail=document.getElementById('ndm-to-email').value;
+  const toName=document.getElementById('ndm-to-name').value;
+  const subject=document.getElementById('ndm-subject').value.trim();
+  const body=document.getElementById('ndm-body').value.trim();
+  if(!toEmail){alert('Please select an employee.');return;}
+  if(!subject||!body){alert('Subject and message are required.');return;}
+  try{
+    await db.from('employee_messages').insert([{
+      employee_email:toEmail,employee_name:toName,
+      from_name:adminName,from_email:adminStaff?.email||'admin@ridesource',
+      to_email:toEmail,from_admin:true,
+      subject,message:body,body,is_read:false,
+      sent_at:new Date().toISOString()
+    }]);
+    closeModal('new-direct-msg-modal');
+    showRealtimeToast('Message sent to '+toName+' ✓');
+    setDmTab('sent');
+  }catch(e){alert('Error sending: '+e.message);}
 }
 
 async function sendDirectMessage(){
@@ -4931,9 +5059,9 @@ async function sendDirectMessage(){
       is_read:false,
       sent_at:new Date().toISOString()
     }]);
-    // Reload thread
-    const emp=allProfilesCache.find(e=>e.employee_email===currentDirectMsgEmployee);
-    if(emp)loadDirectThread(currentDirectMsgEmployee,emp.employee_name);
+    // Reload the current message detail and refresh inbox list
+    if(currentDirectMsgId)openDirectMessage(currentDirectMsgId,currentDirectMsgEmployee,allProfilesCache.find(p=>p.employee_email===currentDirectMsgEmployee)?.employee_name||'',false);
+    loadDirectMessageEmployees();
   }catch(e){alert('Error sending message: '+e.message);}
 }
 
@@ -5387,16 +5515,17 @@ function renderEmployeeMessagesList(){
   if(rc)rc.textContent=read.length+' read';
   function msgCard(m){
     const dt=new Date(m.sent_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-    return '<div class="card" style="margin-bottom:10px;'+(!m.is_read?'border-color:#a78bfa;':'')+'">' +
+    return '<div class="card" style="margin-bottom:10px;'+(!m.is_read?'border-color:#a78bfa;border-width:2px;':'')+'">' +
       '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">' +
         '<div style="flex:1;">' +
           '<div style="font-size:15px;font-weight:700;color:var(--navy);">'+m.subject+'</div>' +
           '<div style="font-size:11px;color:#888;margin-top:2px;">From <strong>'+m.employee_name+'</strong>'+(m.county?' ('+m.county+')':'')+ ' · '+dt+'</div>' +
         '</div>' +
+        (m.is_read?'<span style="color:var(--success);font-size:11px;font-weight:700;">✓ Read</span>':'<span style="background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;">NEW</span>')+
       '</div>' +
       '<div style="font-size:13px;color:#555;margin-top:10px;white-space:pre-wrap;background:var(--gray);padding:12px;border-radius:8px;">'+m.body+'</div>' +
-      (m.admin_reply?'<div style="margin-top:8px;background:#e8f4fd;border-radius:8px;padding:8px 12px;font-size:12px;"><strong>Your reply:</strong> '+m.admin_reply+'</div>':'') +
-      (!m.is_read?'<div style="margin-top:12px;display:flex;gap:8px;align-items:flex-end;"><div style="flex:1;"><label style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px;">Reply (optional)</label><input type="text" id="adm-reply-'+m.id+'" placeholder="Type a reply..." value="'+(m.admin_reply||'')+'" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div><button onclick="markMessageRead('+m.id+')" style="background:#5b21b6;color:#fff;border:none;padding:9px 16px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">✓ Mark Read &amp; Reply</button></div>':'') +
+      (m.admin_reply?'<div style="margin-top:8px;background:#e8f4fd;border-radius:8px;padding:8px 12px;font-size:12px;border-left:3px solid var(--navy);"><strong>Your reply:</strong> '+m.admin_reply+'</div>':'') +
+      '<div style="margin-top:12px;display:flex;gap:8px;align-items:flex-end;"><div style="flex:1;"><label style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px;">'+(m.is_read?'Send another reply':'Reply (optional)')+'</label><input type="text" id="adm-reply-'+m.id+'" placeholder="Type a reply..." value="'+(m.admin_reply||'')+'" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;box-sizing:border-box;"></div><button onclick="markMessageRead('+m.id+')" style="background:#5b21b6;color:#fff;border:none;padding:9px 16px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">'+(m.is_read?'📤 Send Reply':'✓ Mark Read &amp; Reply')+'</button></div>' +
     '</div>';
   }
   const up=document.getElementById('adm-msg-panel-unread');
@@ -5407,8 +5536,24 @@ function renderEmployeeMessagesList(){
 }
 async function markMessageRead(id){
   const reply=document.getElementById('adm-reply-'+id)?.value.trim()||null;
+  const orig=allEmpMessagesCache.find(m=>m.id===id);
   try{
     await db.from('employee_messages').update({is_read:true,admin_reply:reply,read_at:new Date().toISOString()}).eq('id',id);
+    // If there's a reply, also insert it as a new from_admin message so employee sees it in their thread
+    if(reply&&orig){
+      await db.from('employee_messages').insert([{
+        employee_email:orig.employee_email,
+        employee_name:orig.employee_name,
+        from_name:adminName,
+        from_email:adminStaff?.email||'admin@ridesource',
+        to_email:orig.employee_email,
+        from_admin:true,
+        subject:'Re: '+(orig.subject||''),
+        message:reply,body:reply,
+        is_read:false,
+        sent_at:new Date().toISOString()
+      }]);
+    }
     loadEmployeeMessages();
   }catch(e){alert('Error: '+e.message);}
 }
@@ -7717,6 +7862,64 @@ function generateOnboardingPacket(){
 }
 
 // ADMIN MANAGER GUIDE
+const EMP_GUIDE_SECTIONS=[
+  {title:'👋 Welcome',content:`<div style="text-align:center;padding:20px 0 10px;"><div style="font-size:48px;margin-bottom:12px;">👋</div><h1 style="color:#5b21b6;">Welcome to the RideSource Staff Portal!</h1><p style="font-size:15px;color:#555;max-width:500px;margin:0 auto 20px;">This is your one-stop hub for everything work-related — time off, timesheets, memos, vehicle reports, and more. This guide will walk you through each section step by step.</p></div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-top:16px;">
+    <div style="background:#f3f0ff;border:2px solid #7c3aed;border-radius:12px;padding:16px;text-align:center;"><div style="font-size:28px;">📅</div><div style="font-weight:700;font-size:13px;color:#5b21b6;margin-top:6px;">Time Off</div><div style="font-size:11px;color:#888;margin-top:2px;">Request days off</div></div>
+    <div style="background:#f0f9ff;border:2px solid #0077b6;border-radius:12px;padding:16px;text-align:center;"><div style="font-size:28px;">🕐</div><div style="font-weight:700;font-size:13px;color:#0077b6;margin-top:6px;">Timesheets</div><div style="font-size:11px;color:#888;margin-top:2px;">Submit weekly hours</div></div>
+    <div style="background:#fff8f0;border:2px solid #e67e22;border-radius:12px;padding:16px;text-align:center;"><div style="font-size:28px;">🚐</div><div style="font-weight:700;font-size:13px;color:#e67e22;margin-top:6px;">Vehicle Report</div><div style="font-size:11px;color:#888;margin-top:2px;">Report issues</div></div>
+    <div style="background:#f0fff4;border:2px solid #27AE60;border-radius:12px;padding:16px;text-align:center;"><div style="font-size:28px;">📢</div><div style="font-weight:700;font-size:13px;color:#27AE60;margin-top:6px;">Memos</div><div style="font-size:11px;color:#888;margin-top:2px;">Read announcements</div></div>
+    <div style="background:#fff0f6;border:2px solid #e91e8c;border-radius:12px;padding:16px;text-align:center;"><div style="font-size:28px;">💰</div><div style="font-weight:700;font-size:13px;color:#e91e8c;margin-top:6px;">Expenses</div><div style="font-size:11px;color:#888;margin-top:2px;">Submit receipts</div></div>
+    <div style="background:#fff8f0;border:2px solid var(--red);border-radius:12px;padding:16px;text-align:center;"><div style="font-size:28px;">🚨</div><div style="font-weight:700;font-size:13px;color:var(--red);margin-top:6px;">Incidents</div><div style="font-size:11px;color:#888;margin-top:2px;">Report accidents</div></div>
+  </div><div class="callout" style="margin-top:20px;background:#f3f0ff;border-left-color:#7c3aed;"><strong>📌 How to Log In</strong><ol style="margin:8px 0 0;padding-left:18px;font-size:13px;"><li>Go to the portal URL your supervisor provided</li><li>Select the <strong>Employee</strong> tab</li><li>Enter your <strong>4-digit Driver ID</strong> and <strong>Last Name</strong> — OR — your Full Name, Email, and County</li><li>Click <strong>Quick Sign In</strong> or <strong>Enter Employee Portal</strong></li></ol></div>`},
+  {title:'🏠 Dashboard',content:`<h1>🏠 Your Dashboard</h1><p>The Dashboard is the first thing you see after logging in. It gives you a quick snapshot of everything that needs your attention.</p><div style="display:grid;gap:12px;margin:16px 0;">
+    <div style="border:1px solid var(--border);border-left:4px solid #5b21b6;border-radius:8px;padding:14px 16px;"><div style="font-weight:700;color:#5b21b6;margin-bottom:4px;">🔔 Unread Memos</div><div style="font-size:13px;color:#555;">Shows how many memos from your supervisor you haven't read yet. Click to go straight to Memos.</div></div>
+    <div style="border:1px solid var(--border);border-left:4px solid #0077b6;border-radius:8px;padding:14px 16px;"><div style="font-weight:700;color:#0077b6;margin-bottom:4px;">📅 Upcoming Time Off</div><div style="font-size:13px;color:#555;">Shows your approved upcoming time off requests at a glance.</div></div>
+    <div style="border:1px solid var(--border);border-left:4px solid #27AE60;border-radius:8px;padding:14px 16px;"><div style="font-weight:700;color:#27AE60;margin-bottom:4px;">✍️ Policies Pending</div><div style="font-size:13px;color:#555;">Reminds you if you have policy documents that still need your signature.</div></div>
+    <div style="border:1px solid var(--border);border-left:4px solid var(--red);border-radius:8px;padding:14px 16px;"><div style="font-weight:700;color:var(--red);margin-bottom:4px;">🚨 Urgent Memo Banner</div><div style="font-size:13px;color:#555;">If your supervisor sends an urgent memo, a red banner will appear at the top of your screen. Read it as soon as possible.</div></div>
+  </div><div class="callout"><strong>💡 Tip:</strong> Check your dashboard every time you log in — it'll tell you if anything needs your attention right away.</div>`},
+  {title:'📅 Time Off',content:`<h1>📅 Requesting Time Off</h1><p>Use this section to submit any time off request — full days, partial days, PTO, or personal appointments.</p><h2>How to Submit a Request</h2><ol><li>Click <strong>Request Time Off</strong> in the left menu</li><li>Choose your <strong>Request Type</strong>:<ul><li><strong>Full Day Off</strong> — you won't be working at all</li><li><strong>Multiple Days</strong> — spans more than one day</li><li><strong>Start Late</strong> — arriving after your normal start time</li><li><strong>End Early</strong> — leaving before your normal end time</li><li><strong>Mid-Day Appointment</strong> — you'll be out for part of the middle of your shift</li><li><strong>Use PTO Hours</strong> — using accrued paid time off</li></ul></li><li>Select your <strong>start and end dates</strong></li><li>If partial day — enter the <strong>time range</strong> (e.g. 9:00 AM – 11:00 AM)</li><li>Add a <strong>reason</strong> (optional but helpful)</li><li>Click <strong>Submit Request</strong></li></ol><div class="callout"><strong>What happens next?</strong> Your supervisor will receive a notification and approve or deny the request. You'll get an email either way. Approved time off appears on the team calendar automatically.</div><h2>Checking Your Request Status</h2><p>After submitting, scroll down on the Time Off page to see your request history — Pending, Approved, and Denied requests all show there.</p>`},
+  {title:'🕐 Timesheets',content:`<h1>🕐 Submitting Your Timesheet</h1><p>Submit your timesheet <strong>every Friday</strong> through the portal. Your supervisor will review and approve it.</p><h2>How to Submit</h2><ol><li>Click <strong>Submit Timesheet</strong> in the left menu</li><li>Select the <strong>week ending date</strong> (the Friday of the week)</li><li>Enter your hours for each day you worked</li><li>Add your <strong>total mileage</strong> for the week</li><li>Add any notes if needed (e.g. holiday, training day)</li><li>Click <strong>Submit Timesheet</strong></li></ol><div class="callout" style="background:#fff8f0;border-left-color:var(--red);"><strong>⚠️ Important:</strong> Submit every Friday without fail. Late or missing timesheets delay payroll processing. If you forget, contact your supervisor immediately.</div><h2>After Submitting</h2><p>Your timesheet will show as <strong>Pending</strong> until your supervisor reviews it. You'll see it change to <strong>Approved</strong> once it's been reviewed. If there's a discrepancy, your supervisor will reach out to you directly.</p>`},
+  {title:'🚐 Vehicle Report',content:`<h1>🚐 Submitting a Vehicle Report</h1><p>Use this anytime something happens with your vehicle — damage, mechanical issues, oil changes, receipts, or anything the office needs to know about.</p><h2>What You Can Report</h2><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0;">
+    <div style="background:#f7f9fc;border-radius:8px;padding:10px 12px;font-size:13px;"><strong>🔧</strong> Mechanical issues</div>
+    <div style="background:#f7f9fc;border-radius:8px;padding:10px 12px;font-size:13px;"><strong>💥</strong> Damage reports</div>
+    <div style="background:#f7f9fc;border-radius:8px;padding:10px 12px;font-size:13px;"><strong>🛢️</strong> Oil change receipts</div>
+    <div style="background:#f7f9fc;border-radius:8px;padding:10px 12px;font-size:13px;"><strong>🪟</strong> Windshield/glass damage</div>
+    <div style="background:#f7f9fc;border-radius:8px;padding:10px 12px;font-size:13px;"><strong>🔩</strong> Repair receipts</div>
+    <div style="background:#f7f9fc;border-radius:8px;padding:10px 12px;font-size:13px;"><strong>🛞</strong> Tire issues</div>
+  </div><h2>How to Submit</h2><ol><li>Click <strong>Vehicle Report</strong> in the left menu</li><li>Select the <strong>report type</strong> from the dropdown</li><li>Select your <strong>vehicle</strong></li><li>Enter the <strong>date</strong> and current <strong>mileage</strong></li><li>Describe the issue or service in the <strong>notes field</strong></li><li>Attach a photo or receipt if you have one</li><li>Click <strong>Submit Report</strong></li></ol><div class="callout"><strong>💡 Tip:</strong> When in doubt, report it! It's always better to have a record than to miss something that needs attention.</div>`},
+  {title:'📢 Memos',content:`<h1>📢 Memos &amp; Messages</h1><p>This is where you receive announcements from your supervisor and can send direct messages to the office.</p><h2>📬 Reading Memos</h2><ol><li>Click <strong>Memos &amp; Messages</strong> in the left menu</li><li>The <strong>Unread</strong> tab shows memos you haven't read yet — these are highlighted</li><li>Click a memo to read the full message</li><li>If a memo has a 📎 attachment, click the link to download it</li><li>If the memo requires acknowledgment, click <strong>"I have read and understood this memo"</strong> after reading</li><li>Memos move to the <strong>Read</strong> tab once acknowledged</li></ol><div class="callout" style="background:#fff8f0;border-left-color:var(--red);"><strong>🚨 Urgent Memos</strong> appear as a red banner on your dashboard. Read these immediately — they contain time-sensitive information.</div><h2>💬 Sending a Message</h2><ol><li>Click the <strong>Messages</strong> tab</li><li>Click <strong>"Send a Message to Supervisor"</strong> to expand the form</li><li>Enter a subject and your message</li><li>Attach a file if needed</li><li>Click <strong>Send Message</strong></li></ol><p>Your supervisor will see your message in the Direct Messages section of the Admin Portal.</p>`},
+  {title:'💰 Expenses',content:`<h1>💰 Submitting Expenses</h1><p>Use this section to submit any work-related expenses for reimbursement — fuel, supplies, parking, tolls, or anything approved by your supervisor.</p><h2>How to Submit</h2><ol><li>Click <strong>Expenses</strong> in the left menu</li><li>Select the <strong>expense category</strong></li><li>Enter the <strong>date</strong> and <strong>amount</strong></li><li>Add a <strong>description</strong> of what the expense was for</li><li>Attach your <strong>receipt</strong> (photo or PDF)</li><li>Click <strong>Submit Expense</strong></li></ol><div class="callout"><strong>💡 Tips:</strong><ul style="margin:6px 0 0;padding-left:18px;font-size:13px;"><li>Always attach a receipt — expenses without receipts may be delayed</li><li>Submit expenses promptly — don't let them pile up</li><li>If unsure whether something is reimbursable, message your supervisor first</li></ul></div><h2>Checking Status</h2><p>After submitting, your expense will show as <strong>Pending</strong> until approved. You can view your submission history by expanding the history section below the form.</p>`},
+  {title:'🚨 Incidents',content:`<h1>🚨 Incident Reports</h1><p>Use this section to report any accident, injury, near-miss, or safety concern that happened during your shift — no matter how minor it seems.</p><div class="callout" style="background:#fff8f0;border-left-color:var(--red);"><strong>⚠️ Report ALL incidents — even minor ones.</strong> Early reporting protects you, your passengers, and the company. Never wait to see if something "becomes a problem."</div><h2>What to Report</h2><ul><li>Vehicle accidents (any severity)</li><li>Passenger injuries or falls</li><li>Near-miss events</li><li>Personal injuries during your shift</li><li>Safety hazards you observed</li><li>Any situation that felt unsafe</li></ul><h2>How to Submit</h2><ol><li>Click <strong>Incident Report</strong> in the left menu</li><li>Fill in the <strong>date, time, and location</strong></li><li>Select the <strong>incident type</strong></li><li>Describe what happened in detail</li><li>List any witnesses or passengers involved</li><li>Attach photos if available</li><li>Click <strong>Submit Report</strong></li></ol><p>Your supervisor will be notified immediately and will follow up with you.</p>`},
+  {title:'✍️ Policies',content:`<h1>✍️ Policy Sign-Offs</h1><p>When you're first hired — and whenever RideSource updates a policy — you'll be asked to read and sign off on important company policies.</p><h2>How It Works</h2><ol><li>Click <strong>Policy Sign-Offs</strong> in the left menu</li><li>You'll see a list of policies with a status badge showing <strong>Signed ✅</strong> or <strong>Pending ⏳</strong></li><li>Click any policy to read the full document</li><li>After reading, click <strong>"I Agree"</strong> or <strong>"Sign Off"</strong> at the bottom</li><li>Your signature is recorded with a timestamp</li></ol><div class="callout"><strong>📌 Important:</strong> Policy sign-offs are required. Your supervisor can see which policies you've signed. If you have questions about any policy, reach out to your supervisor before signing.</div>`},
+  {title:'📥 Downloads',content:`<h1>📥 Downloads</h1><p>The Downloads section has all the official RideSource documents you might need — available anytime, on any device.</p><div style="display:grid;gap:10px;margin:16px 0;">
+    <div style="border:1px solid var(--border);border-radius:8px;padding:12px 16px;display:flex;align-items:center;gap:12px;"><div style="font-size:24px;">📖</div><div><div style="font-weight:700;font-size:13px;color:var(--navy);">Employee Handbook</div><div style="font-size:12px;color:#888;">Company policies, expectations, and procedures</div></div></div>
+    <div style="border:1px solid var(--border);border-radius:8px;padding:12px 16px;display:flex;align-items:center;gap:12px;"><div style="font-size:24px;">📋</div><div><div style="font-weight:700;font-size:13px;color:var(--navy);">Driver Training Guide</div><div style="font-size:12px;color:#888;">Your complete training roadmap</div></div></div>
+    <div style="border:1px solid var(--border);border-radius:8px;padding:12px 16px;display:flex;align-items:center;gap:12px;"><div style="font-size:24px;">📄</div><div><div style="font-weight:700;font-size:13px;color:var(--navy);">HR Forms</div><div style="font-size:12px;color:#888;">Performance evals, incident forms, and more</div></div></div>
+  </div><p style="font-size:13px;color:#888;">Click any document to download a PDF copy to your device.</p>`},
+  {title:'❓ Need Help?',content:`<div style="text-align:center;padding:20px 0;"><div style="font-size:48px;margin-bottom:12px;">❓</div><h1 style="color:#5b21b6;">Need Help?</h1><p style="font-size:14px;color:#555;max-width:480px;margin:0 auto 24px;">If something isn't working or you have a question about the portal, here's how to get help.</p></div>
+  <div style="display:grid;gap:12px;max-width:480px;margin:0 auto;">
+    <div style="border:2px solid #5b21b6;border-radius:12px;padding:16px 20px;"><div style="font-weight:700;color:#5b21b6;font-size:14px;margin-bottom:4px;">💬 Message Your Supervisor</div><div style="font-size:13px;color:#555;">Use the Messages section in Memos &amp; Messages to send a direct message to the office.</div></div>
+    <div style="border:2px solid #0077b6;border-radius:12px;padding:16px 20px;"><div style="font-weight:700;color:#0077b6;font-size:14px;margin-bottom:4px;">📧 Email HR Directly</div><div style="font-size:13px;color:#555;">tiffanyb@ridesourcemaine.com</div></div>
+    <div style="border:2px solid #27AE60;border-radius:12px;padding:16px 20px;"><div style="font-weight:700;color:#27AE60;font-size:14px;margin-bottom:4px;">📞 Call the Office</div><div style="font-size:13px;color:#555;">207-812-5357</div></div>
+  </div><div class="callout" style="margin-top:24px;"><strong>Portal URL:</strong> Save this in your phone's browser bookmarks so you always have quick access!<br><strong>https://ridesourcecalendar-hub.github.io/ridesource-onboarding/</strong></div>`}
+];
+let empGuideSection=0;
+function buildEmpGuide(){
+  document.getElementById('emp-guide-tabs').innerHTML=EMP_GUIDE_SECTIONS.map((s,i)=>`<div class="doc-tab ${i===0?'active':''}" onclick="goEmpGuideSection(${i})">${s.title}</div>`).join('');
+  renderEmpGuideSection(0);
+}
+function renderEmpGuideSection(i){
+  empGuideSection=i;
+  document.getElementById('emp-guide-body').innerHTML=EMP_GUIDE_SECTIONS[i]?.content||'';
+  document.querySelectorAll('#emp-guide-tabs .doc-tab').forEach((t,j)=>t.classList.toggle('active',i===j));
+  document.getElementById('emp-guide-body').scrollTop=0;
+}
+function goEmpGuideSection(i){renderEmpGuideSection(i);}
+function changeEmpGuideSection(dir){
+  const next=empGuideSection+dir;
+  if(next>=0&&next<EMP_GUIDE_SECTIONS.length)renderEmpGuideSection(next);
+}
+
 const MGR_SECTIONS=[
   {title:'Intro',content:`<h1>Supervisor &amp; Manager Guide</h1><p><strong>CONFIDENTIAL — FOR SUPERVISORS, MANAGERS &amp; HR ONLY</strong></p><p>Version 1.0 | February 2026 | HR Department</p><p>This guide covers everything a supervisor or manager needs to run the RideSource Staff Portal, manage time off and timesheets, log call-outs, review vehicle reports, and support new employees through their 90-day onboarding period.</p>`},
   {title:'Sec 1: Onboarding',content:`<h1>Section 1: Your Role in Onboarding</h1><table><tr><td><strong>Before Day 3</strong></td><td>Confirm all clearances; send Welcome Aboard Letter; order online training; assign trainer; prepare vehicle; add to Complicore, CTS, Insurance, WEX</td></tr><tr><td><strong>Days 3–5</strong></td><td>Hands-on vehicle training with seasoned driver trainer; issue phone on Day 5</td></tr><tr><td><strong>Day 6 (Monday)</strong></td><td>Office orientation: policies, handbook, Staff Portal walkthrough, badge photo, timesheet, time off, fuel card</td></tr><tr><td><strong>Day 7+</strong></td><td>Driver on the road solo; monitor first week closely</td></tr><tr><td><strong>Within 60 Days</strong></td><td>Coordinate in-person CPR/AED certification</td></tr></table>`},
@@ -14193,6 +14396,34 @@ function toggleMemoExpand(id){
       <button class="btn btn-secondary" onclick="closeModal('incident-review-modal')">Cancel</button>
       <button class="btn" style="background:#e67e22;color:#fff;" onclick="saveIncidentReview('Closed')">🔒 Save & Close Incident</button>
       <button class="btn btn-primary" onclick="saveIncidentReview()">💾 Save Review</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="new-direct-msg-modal">
+  <div class="modal" style="max-width:560px;">
+    <button class="modal-close" onclick="closeModal('new-direct-msg-modal')">✕</button>
+    <h3 style="color:var(--navy);margin-bottom:4px;">✉️ New Direct Message</h3>
+    <p style="font-size:13px;color:#888;margin-bottom:16px;">Send a message directly to an employee. They will see it in their Memos & Messages section.</p>
+    <div class="form-field">
+      <label>To (Employee) *</label>
+      <input type="text" id="ndm-to-search" placeholder="Search employee name..." oninput="filterNdmEmployees()" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;" autocomplete="off">
+      <div id="ndm-employee-dropdown" style="display:none;border:1px solid var(--border);border-radius:8px;margin-top:4px;max-height:160px;overflow-y:auto;background:#fff;box-shadow:0 4px 12px rgba(0,0,0,.1);"></div>
+      <input type="hidden" id="ndm-to-email">
+      <input type="hidden" id="ndm-to-name">
+      <div id="ndm-selected-employee" style="display:none;margin-top:6px;padding:6px 10px;background:var(--light);border-radius:6px;font-size:13px;font-weight:700;color:var(--navy);"></div>
+    </div>
+    <div class="form-field">
+      <label>Subject *</label>
+      <input type="text" id="ndm-subject" placeholder="Message subject..." style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+    </div>
+    <div class="form-field">
+      <label>Message *</label>
+      <textarea id="ndm-body" placeholder="Write your message..." style="width:100%;min-height:120px;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;font-family:Arial,sans-serif;outline:none;resize:vertical;"></textarea>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;">
+      <button class="btn btn-secondary" onclick="closeModal('new-direct-msg-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="sendNewDirectMessage()">📤 Send Message</button>
     </div>
   </div>
 </div>
