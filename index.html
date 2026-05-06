@@ -2353,35 +2353,121 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 
       <!-- FLEET CALENDAR -->
       <div id="section-adm-fleet-calendar" class="admin-section">
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
+        <!-- Header -->
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
           <div>
             <div style="font-size:22px;font-weight:800;color:var(--navy);">📅 Fleet Calendar</div>
-            <p style="color:#888;font-size:13px;margin-top:2px;">MDVC inspections, vehicle inspections, registrations, and tire changeover deadlines.</p>
+            <p style="color:#888;font-size:13px;margin-top:2px;">Schedule appointments, track deadlines, and manage vehicle availability.</p>
           </div>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-            <button onclick="fleetCalPrev()" style="padding:7px 12px;border:1px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;font-size:14px;">◀</button>
-            <div id="fleet-cal-month-label" style="font-size:15px;font-weight:800;color:var(--navy);min-width:160px;text-align:center;"></div>
-            <button onclick="fleetCalNext()" style="padding:7px 12px;border:1px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;font-size:14px;">▶</button>
+            <button onclick="fleetCalPrintSchedule()" style="padding:7px 14px;border:1px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;font-size:12px;font-weight:700;color:#555;">🖨️ Print Schedule</button>
+            <button onclick="openAddFleetAppt()" style="padding:7px 14px;border:none;border-radius:8px;background:var(--navy);color:#fff;cursor:pointer;font-size:12px;font-weight:700;">+ Schedule Appointment</button>
           </div>
         </div>
-        <!-- Legend -->
-        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;padding:10px 14px;background:#f7f9fc;border-radius:8px;font-size:12px;">
-          <div style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;border-radius:3px;background:#1565c0;display:inline-block;"></span>MDVC Inspection</div>
-          <div style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;border-radius:3px;background:#e67e22;display:inline-block;"></span>Vehicle Inspection</div>
-          <div style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;border-radius:3px;background:#27AE60;display:inline-block;"></span>Registration Due</div>
-          <div style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;border-radius:3px;background:#8e44ad;display:inline-block;"></span>Tire Changeover</div>
-          <div style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;border-radius:3px;background:#c0392b;display:inline-block;"></span>Oil Change Due</div>
+
+        <!-- View + Nav controls -->
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+          <div style="display:flex;gap:4px;border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+            <button id="fcal-view-month" onclick="setFleetCalView('month')" style="padding:7px 16px;border:none;background:var(--navy);color:#fff;font-size:12px;font-weight:700;cursor:pointer;">Month</button>
+            <button id="fcal-view-week" onclick="setFleetCalView('week')" style="padding:7px 16px;border:none;background:#f0f0f0;color:#888;font-size:12px;font-weight:700;cursor:pointer;">Week</button>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <button onclick="fleetCalPrev()" style="padding:7px 12px;border:1px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;font-size:14px;">◀</button>
+            <div id="fleet-cal-month-label" style="font-size:15px;font-weight:800;color:var(--navy);min-width:200px;text-align:center;"></div>
+            <button onclick="fleetCalNext()" style="padding:7px 12px;border:1px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;font-size:14px;">▶</button>
+            <button onclick="fleetCalToday()" style="padding:7px 12px;border:1px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;font-size:12px;font-weight:700;color:var(--navy);">Today</button>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <select id="fcal-vehicle-filter" onchange="renderFleetCalendar()" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-size:12px;outline:none;background:#fff;">
+              <option value="">All Vehicles</option>
+            </select>
+          </div>
         </div>
-        <!-- Upcoming deadlines list -->
-        <div class="card" style="margin-bottom:16px;">
-          <div style="font-size:14px;font-weight:800;color:var(--navy);margin-bottom:12px;">⚠️ Upcoming Deadlines (Next 60 Days)</div>
+
+        <!-- Legend -->
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;padding:8px 14px;background:#f7f9fc;border-radius:8px;font-size:11px;font-weight:600;">
+          <div style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:2px;background:#1565c0;display:inline-block;"></span>MDVC</div>
+          <div style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:2px;background:#e67e22;display:inline-block;"></span>Inspection</div>
+          <div style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:2px;background:#27AE60;display:inline-block;"></span>Registration</div>
+          <div style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:2px;background:#8e44ad;display:inline-block;"></span>Tire Changeover</div>
+          <div style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:2px;background:#c0392b;display:inline-block;"></span>Oil Change</div>
+          <div style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:2px;background:#00796b;display:inline-block;"></span>Shop Appt</div>
+          <div style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:2px;background:#555;display:inline-block;"></span>Out of Service</div>
+          <div style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:2px;background:#27AE60;border:2px solid #fff;outline:1px solid #27AE60;display:inline-block;"></span>Completed ✓</div>
+        </div>
+
+        <!-- Upcoming deadlines -->
+        <div class="card" style="margin-bottom:12px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <div style="font-size:14px;font-weight:800;color:var(--navy);">⚠️ Upcoming Deadlines</div>
+            <div style="display:flex;gap:6px;">
+              <button onclick="setDeadlineDays(30)" id="fcal-days-30" style="padding:4px 10px;border-radius:6px;border:2px solid var(--navy);background:var(--navy);color:#fff;font-size:11px;font-weight:700;cursor:pointer;">30 days</button>
+              <button onclick="setDeadlineDays(60)" id="fcal-days-60" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:#fff;color:#555;font-size:11px;font-weight:700;cursor:pointer;">60 days</button>
+              <button onclick="setDeadlineDays(90)" id="fcal-days-90" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:#fff;color:#555;font-size:11px;font-weight:700;cursor:pointer;">90 days</button>
+            </div>
+          </div>
           <div id="fleet-cal-upcoming"><p style="color:#888;font-size:13px;">Loading...</p></div>
         </div>
+
         <!-- Calendar grid -->
-        <div id="fleet-cal-grid"></div>
+        <div id="fleet-cal-grid" style="background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden;"></div>
       </div>
 
       <!-- FLEET VEHICLE DETAIL MODAL -->
+<!-- FLEET APPOINTMENT MODAL -->
+<div class="modal-overlay" id="fleet-appt-modal">
+  <div class="modal" style="max-width:540px;">
+    <button class="modal-close" onclick="closeModal('fleet-appt-modal')">✕</button>
+    <h3 id="fappt-modal-title" style="color:var(--navy);margin-bottom:16px;">📅 Schedule Appointment</h3>
+    <input type="hidden" id="fappt-id">
+    <div class="form-row">
+      <div class="form-field"><label>Vehicle *</label>
+        <select id="fappt-vehicle" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+          <option value="">— Select Vehicle —</option>
+        </select>
+      </div>
+      <div class="form-field"><label>Appointment Type *</label>
+        <select id="fappt-type" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+          <option>Shop Appointment</option>
+          <option>MDVC Inspection</option>
+          <option>Vehicle Inspection</option>
+          <option>Oil Change</option>
+          <option>Tire Changeover</option>
+          <option>Registration Renewal</option>
+          <option>Out of Service</option>
+          <option>Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-field"><label>Date *</label>
+        <input type="date" id="fappt-date" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+      </div>
+      <div class="form-field"><label>Time (optional)</label>
+        <input type="time" id="fappt-time" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+      </div>
+    </div>
+    <div class="form-field"><label>Shop / Location Name</label>
+      <input type="text" id="fappt-shop" placeholder="e.g. Kinney's Quality Autocare" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+    </div>
+    <div class="form-field"><label>Shop Address (optional)</label>
+      <input type="text" id="fappt-shop-address" placeholder="e.g. 123 Main St, Ellsworth ME" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+    </div>
+    <div class="form-field"><label>Notes / Mechanic Instructions</label>
+      <textarea id="fappt-notes" placeholder="What needs to be done, parts needed, special instructions..." style="width:100%;min-height:80px;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;font-family:Arial,sans-serif;outline:none;resize:vertical;"></textarea>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+      <input type="checkbox" id="fappt-completed" style="width:16px;height:16px;">
+      <label for="fappt-completed" style="font-size:13px;font-weight:600;color:#555;cursor:pointer;">Mark as completed</label>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;">
+      <button class="btn btn-secondary" onclick="closeModal('fleet-appt-modal')">Cancel</button>
+      <button id="fappt-delete-btn" class="btn" style="background:#fdecea;color:var(--red);border:1px solid #fcc;" onclick="deleteFleetAppt()">🗑️ Delete</button>
+      <button class="btn btn-primary" onclick="saveFleetAppt()">💾 Save Appointment</button>
+    </div>
+  </div>
+</div>
+
       <div class="modal-overlay" id="fleet-vehicle-modal">
         <div class="modal" style="max-width:700px;">
           <button class="modal-close" onclick="closeModal('fleet-vehicle-modal')">✕</button>
@@ -4103,7 +4189,17 @@ function showAdmin(id){
   if(id==='analytics'){setTimeout(()=>loadAnalytics(),500);}
   if(id==='recognition'){renderRecogCalendar();}
   if(id==='fleet'){loadFleetVehicles();loadFleetMaintenance();loadFleetTires();loadFleetChangeovers();}
-  if(id==='fleet-calendar'){renderFleetCalendar();}
+  if(id==='fleet-calendar'){
+    // Populate vehicle dropdown in appointment modal
+    const vsel=document.getElementById('fappt-vehicle');
+    if(vsel&&vsel.options.length<=1){
+      (allFleetVehiclesCache||[]).forEach(v=>{
+        const o=document.createElement('option');o.value=v.vehicle_id;
+        o.textContent=v.vehicle_id+(v.year?' ('+v.year+' '+v.make+')':'');vsel.appendChild(o);
+      });
+    }
+    renderFleetCalendar();
+  }
   if(id==='vehicle-records')loadVehicleRecords();
   if(id==='callouts')loadCallOuts();
   if(id==='requests')loadRequests();
@@ -6993,102 +7089,304 @@ function renderFleetMasterLog(){
   }).join('');
 }
 // ═══════════════════════════════════════════════
-// FLEET CALENDAR
+// FLEET CALENDAR — Phase 1
 // ═══════════════════════════════════════════════
 let fleetCalYear=new Date().getFullYear();
 let fleetCalMonth=new Date().getMonth();
+let fleetCalView='month'; // 'month' or 'week'
+let fleetCalWeekOffset=0; // weeks from current week
+let fleetCalDeadlineDays=30;
+let allFleetApptsCache=[];
 
-function fleetCalPrev(){fleetCalMonth--;if(fleetCalMonth<0){fleetCalMonth=11;fleetCalYear--;}renderFleetCalendar();}
-function fleetCalNext(){fleetCalMonth++;if(fleetCalMonth>11){fleetCalMonth=0;fleetCalYear++;}renderFleetCalendar();}
+function fleetCalPrev(){
+  if(fleetCalView==='month'){fleetCalMonth--;if(fleetCalMonth<0){fleetCalMonth=11;fleetCalYear--;}}
+  else{fleetCalWeekOffset--;}
+  renderFleetCalendar();
+}
+function fleetCalNext(){
+  if(fleetCalView==='month'){fleetCalMonth++;if(fleetCalMonth>11){fleetCalMonth=0;fleetCalYear++;}}
+  else{fleetCalWeekOffset++;}
+  renderFleetCalendar();
+}
+function fleetCalToday(){fleetCalYear=new Date().getFullYear();fleetCalMonth=new Date().getMonth();fleetCalWeekOffset=0;renderFleetCalendar();}
+function setFleetCalView(v){
+  fleetCalView=v;
+  const mb=document.getElementById('fcal-view-month');
+  const wb=document.getElementById('fcal-view-week');
+  if(mb){mb.style.background=v==='month'?'var(--navy)':'#f0f0f0';mb.style.color=v==='month'?'#fff':'#888';}
+  if(wb){wb.style.background=v==='week'?'var(--navy)':'#f0f0f0';wb.style.color=v==='week'?'#fff':'#888';}
+  renderFleetCalendar();
+}
+function setDeadlineDays(n){
+  fleetCalDeadlineDays=n;
+  [30,60,90].forEach(d=>{
+    const btn=document.getElementById('fcal-days-'+d);
+    if(btn){btn.style.background=d===n?'var(--navy)':'#fff';btn.style.color=d===n?'#fff':'#555';btn.style.borderColor=d===n?'var(--navy)':'var(--border)';}
+  });
+  renderFleetCalendar();
+}
 
-function renderFleetCalendar(){
-  const label=document.getElementById('fleet-cal-month-label');
-  if(label)label.textContent=new Date(fleetCalYear,fleetCalMonth).toLocaleDateString('en-US',{month:'long',year:'numeric'});
+async function loadFleetAppointments(){
+  try{
+    const{data}=await db.from('fleet_appointments').select('*').order('appt_date',{ascending:true});
+    allFleetApptsCache=data||[];
+  }catch(e){allFleetApptsCache=[];}
+}
 
-  // Build events from fleet data
-  const events={};
-  const upcoming=[];
-  const today=new Date();
-  const in60=new Date(today);in60.setDate(today.getDate()+60);
+async function renderFleetCalendar(){
+  // Make sure we have latest data
+  if(!allFleetVehiclesCache.length)await loadFleetVehicles();
+  if(!allFleetMaintenanceCache.length)await loadFleetMaintenance();
+  if(!allChangeoverCache?.length)await loadFleetChangeovers();
+  await loadFleetAppointments();
 
-  function addEvent(dateStr,label,color,vehicleId){
+  // Populate vehicle filter
+  const vsel=document.getElementById('fcal-vehicle-filter');
+  if(vsel&&vsel.options.length<=1){
+    (allFleetVehiclesCache||[]).forEach(v=>{
+      const o=document.createElement('option');o.value=v.vehicle_id;o.textContent=v.vehicle_id+(v.year?' ('+v.year+' '+v.make+')':'');vsel.appendChild(o);
+    });
+  }
+  const vehicleFilter=vsel?.value||'';
+
+  const today=new Date();today.setHours(0,0,0,0);
+  const inN=new Date(today);inN.setDate(today.getDate()+fleetCalDeadlineDays);
+
+  // Build all events
+  const allEvents=[];
+  function addEv(dateStr,label,color,vehicleId,type,apptId,completed,notes,shopName){
     if(!dateStr)return;
-    const d=new Date(dateStr+'T00:00:00');
-    const isOverdue=d<today;
-    const isSoon=d>=today&&d<=in60;
-    if(d.getMonth()===fleetCalMonth&&d.getFullYear()===fleetCalYear){
-      const k=d.getDate();
-      if(!events[k])events[k]=[];
-      events[k].push({label,color,vehicleId,overdue:isOverdue});
-    }
-    if(isSoon||isOverdue){
-      upcoming.push({date:d,dateStr,label,color,vehicleId,overdue:isOverdue,daysAway:Math.ceil((d-today)/(1000*60*60*24))});
-    }
+    if(vehicleFilter&&vehicleId!==vehicleFilter)return;
+    allEvents.push({dateStr,label,color,vehicleId,type,apptId:apptId||null,completed:!!completed,notes:notes||'',shopName:shopName||''});
   }
 
-  // Pull from fleet maintenance cache
-  (allFleetMaintenanceCache||[]).forEach(m=>{
-    if(m.maintenance_type==='Inspection'&&m.next_due_date)
-      addEvent(m.next_due_date,'📋 '+m.vehicle_id+' Insp','#e67e22',m.vehicle_id);
-    if(m.maintenance_type==='Oil Change'&&m.next_due_date)
-      addEvent(m.next_due_date,'🛢️ '+m.vehicle_id+' Oil','#c0392b',m.vehicle_id);
-  });
-  // Pull tire changeovers
-  (allChangeoverCache||[]).forEach(c=>{
-    if(c.scheduled_date)
-      addEvent(c.scheduled_date,'🔄 '+c.vehicle_id+' Tires','#8e44ad',c.vehicle_id);
-  });
-  // Pull vehicle registration/MDVC from fleet vehicles
+  // Deadlines from vehicle records
   (allFleetVehiclesCache||[]).forEach(v=>{
-    if(v.registration_expires)
-      addEvent(v.registration_expires,'📄 '+v.vehicle_id+' Reg','#27AE60',v.vehicle_id);
-    if(v.mdvc_inspection_due)
-      addEvent(v.mdvc_inspection_due,'🔍 '+v.vehicle_id+' MDVC','#1565c0',v.vehicle_id);
+    if(v.registration_expires)addEv(v.registration_expires,'📄 '+v.vehicle_id+' Reg','#27AE60',v.vehicle_id,'registration');
+    if(v.mdvc_inspection_due)addEv(v.mdvc_inspection_due,'🔍 '+v.vehicle_id+' MDVC','#1565c0',v.vehicle_id,'mdvc');
+  });
+  // Deadlines from maintenance log
+  (allFleetMaintenanceCache||[]).forEach(m=>{
+    if(m.next_due_date){
+      if(m.maintenance_type==='Inspection')addEv(m.next_due_date,'📋 '+m.vehicle_id+' Insp','#e67e22',m.vehicle_id,'inspection');
+      else if(m.maintenance_type==='Oil Change')addEv(m.next_due_date,'🛢️ '+m.vehicle_id+' Oil','#c0392b',m.vehicle_id,'oil');
+    }
+  });
+  // Tire changeovers
+  (allChangeoverCache||[]).forEach(c=>{
+    if(c.scheduled_date)addEv(c.scheduled_date,'🔄 '+(c.vehicle_id||'Fleet')+' Tires','#8e44ad',c.vehicle_id||'','changeover');
+  });
+  // Scheduled appointments
+  (allFleetApptsCache||[]).forEach(a=>{
+    const color=a.appt_type==='Out of Service'?'#555':a.appt_type==='Shop Appointment'?'#00796b':'#1565c0';
+    const icon=a.appt_type==='Out of Service'?'🚫':a.appt_type==='Shop Appointment'?'🔧':'📅';
+    addEv(a.appt_date,icon+' '+a.vehicle_id+(a.shop_name?' @ '+a.shop_name:''),color,a.vehicle_id,a.appt_type,a.id,a.completed,a.notes,a.shop_name);
   });
 
-  // Render upcoming list
+  // Sort events by date
+  allEvents.sort((a,b)=>new Date(a.dateStr)-new Date(b.dateStr));
+
+  // Render upcoming deadlines
   const upEl=document.getElementById('fleet-cal-upcoming');
   if(upEl){
-    upcoming.sort((a,b)=>a.date-b.date);
-    if(!upcoming.length){
-      upEl.innerHTML='<p style="color:#888;font-size:13px;">No deadlines in the next 60 days. ✅</p>';
+    const upcomingEvs=allEvents.filter(e=>{
+      const d=new Date(e.dateStr+'T00:00:00');
+      return(d>=today&&d<=inN)||d<today;
+    }).sort((a,b)=>new Date(a.dateStr)-new Date(b.dateStr));
+    if(!upcomingEvs.length){
+      upEl.innerHTML=`<p style="color:#888;font-size:13px;">No deadlines in the next ${fleetCalDeadlineDays} days. ✅</p>`;
     } else {
       upEl.innerHTML='<div style="display:flex;flex-direction:column;gap:6px;">'+
-        upcoming.slice(0,20).map(u=>{
-          const dayLabel=u.overdue?'<span style="color:var(--red);font-weight:800;">OVERDUE</span>':
-            u.daysAway===0?'<span style="color:var(--red);font-weight:800;">TODAY</span>':
-            u.daysAway<=7?'<span style="color:var(--warn);font-weight:700;">'+u.daysAway+' days</span>':
-            '<span style="color:#555;">'+u.daysAway+' days</span>';
-          return`<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;background:${u.overdue?'#fdecea':'#f7f9fc'};border:1px solid ${u.overdue?'#fcc':'var(--border)'};">
-            <div style="width:10px;height:10px;border-radius:50%;background:${u.color};flex-shrink:0;"></div>
-            <div style="flex:1;font-size:13px;font-weight:600;color:var(--navy);">${u.label}</div>
-            <div style="font-size:12px;color:#888;">${u.date.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</div>
+        upcomingEvs.slice(0,25).map(u=>{
+          const d=new Date(u.dateStr+'T00:00:00');
+          const daysAway=Math.ceil((d-today)/(1000*60*60*24));
+          const overdue=d<today&&!u.completed;
+          const dayLabel=u.completed?'<span style="color:#27AE60;font-weight:800;">✓ Done</span>':
+            overdue?'<span style="color:var(--red);font-weight:800;">OVERDUE</span>':
+            daysAway===0?'<span style="color:var(--red);font-weight:800;">TODAY</span>':
+            daysAway<=7?'<span style="color:var(--warn);font-weight:700;">'+daysAway+'d</span>':
+            '<span style="color:#555;">'+daysAway+'d</span>';
+          return`<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;background:${u.completed?'#f0faf4':overdue?'#fdecea':'#f7f9fc'};border:1px solid ${u.completed?'#b7e4c7':overdue?'#fcc':'var(--border)'};">
+            <div style="width:10px;height:10px;border-radius:50%;background:${u.color};flex-shrink:0;${u.completed?'opacity:.4':''}"></div>
+            <div style="flex:1;font-size:13px;font-weight:600;color:${u.completed?'#888':'var(--navy)'};${u.completed?'text-decoration:line-through;':''}">${u.label}</div>
+            ${u.notes?`<div style="font-size:11px;color:#888;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${u.notes}</div>`:''}
+            <div style="font-size:11px;color:#aaa;">${d.toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div>
             ${dayLabel}
-            <button onclick="showAdmin('fleet');setTimeout(()=>openFleetVehicle('${u.vehicleId}'),400);" style="font-size:11px;padding:3px 8px;border-radius:5px;border:1px solid var(--border);background:#fff;cursor:pointer;color:var(--navy);">View →</button>
+            ${u.apptId?`<button onclick="openEditFleetAppt('${u.apptId}')" style="font-size:11px;padding:3px 8px;border-radius:5px;border:1px solid var(--border);background:#fff;cursor:pointer;">✏️</button>`:''}
+            ${!u.completed&&u.apptId?`<button onclick="markFleetApptDone('${u.apptId}')" style="font-size:11px;padding:3px 8px;border-radius:5px;border:1px solid #27AE60;background:#fff;color:#27AE60;cursor:pointer;">✓ Done</button>`:''}
+            ${!u.apptId?`<button onclick="openScheduleFromDeadline('${u.vehicleId}','${u.type}','${u.dateStr}')" style="font-size:11px;padding:3px 8px;border-radius:5px;border:1px solid var(--navy);background:#fff;cursor:pointer;color:var(--navy);">📅 Schedule</button>`:''}
           </div>`;
-        }).join('')+
-      '</div>';
+        }).join('')+'</div>';
     }
   }
 
-  // Render calendar grid
-  const gridEl=document.getElementById('fleet-cal-grid');
-  if(!gridEl)return;
+  // Render calendar view
+  if(fleetCalView==='month'){renderFleetCalMonthView(allEvents,today);}
+  else{renderFleetCalWeekView(allEvents,today);}
+
+  // Update label
+  const label=document.getElementById('fleet-cal-month-label');
+  if(label){
+    if(fleetCalView==='month'){
+      label.textContent=new Date(fleetCalYear,fleetCalMonth).toLocaleDateString('en-US',{month:'long',year:'numeric'});
+    } else {
+      const weekStart=getFleetWeekStart();
+      const weekEnd=new Date(weekStart);weekEnd.setDate(weekStart.getDate()+6);
+      label.textContent=weekStart.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' – '+weekEnd.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    }
+  }
+}
+
+function renderFleetCalMonthView(allEvents,today){
+  const gridEl=document.getElementById('fleet-cal-grid');if(!gridEl)return;
   const firstDay=new Date(fleetCalYear,fleetCalMonth,1).getDay();
   const daysInMonth=new Date(fleetCalYear,fleetCalMonth+1,0).getDate();
-  let html='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;">';
-  ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d=>html+=`<div style="text-align:center;font-size:11px;font-weight:700;color:#888;padding:6px 0;">${d}</div>`);
-  for(let i=0;i<firstDay;i++)html+=`<div style="min-height:80px;"></div>`;
+  let html='<div style="display:grid;grid-template-columns:repeat(7,1fr);">';
+  ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d=>
+    html+=`<div style="text-align:center;font-size:11px;font-weight:700;color:#888;padding:8px 0;background:#f7f9fc;border-bottom:1px solid var(--border);">${d}</div>`);
+  for(let i=0;i<firstDay;i++)
+    html+=`<div style="min-height:90px;border-right:1px solid #f0f0f0;border-bottom:1px solid #f0f0f0;background:#fafafa;"></div>`;
   for(let d=1;d<=daysInMonth;d++){
+    const dateStr=fleetCalYear+'-'+String(fleetCalMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
     const isToday=today.getDate()===d&&today.getMonth()===fleetCalMonth&&today.getFullYear()===fleetCalYear;
-    const evs=events[d]||[];
-    html+=`<div style="min-height:80px;border:1px solid #e8e8e8;border-radius:4px;padding:4px;background:${isToday?'#EAF0FB':'#fff'};">
-      <div style="font-size:12px;font-weight:${isToday?'800':'600'};color:${isToday?'var(--navy)':'#333'};margin-bottom:3px;">${d}</div>
-      ${evs.map(e=>`<div onclick="showAdmin('fleet');setTimeout(()=>openFleetVehicle('${e.vehicleId}'),400);" style="background:${e.color};color:#fff;font-size:9px;padding:2px 5px;border-radius:3px;margin-bottom:2px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;cursor:pointer;${e.overdue?'opacity:.7;text-decoration:line-through;':''}" title="${e.label}">${e.label}</div>`).join('')}
+    const dayEvs=allEvents.filter(e=>e.dateStr===dateStr);
+    html+=`<div onclick="fleetCalDayClick('${dateStr}')" style="min-height:90px;border-right:1px solid #f0f0f0;border-bottom:1px solid #f0f0f0;padding:4px;cursor:pointer;background:${isToday?'#EAF0FB':'#fff'};transition:background .1s;" onmouseenter="this.style.background='#f5f8ff'" onmouseleave="this.style.background='${isToday?'#EAF0FB':'#fff'}'">
+      <div style="font-size:12px;font-weight:${isToday?'800':'500'};color:${isToday?'var(--navy)':'#333'};margin-bottom:3px;${isToday?'background:var(--navy);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;':''}">${d}</div>
+      ${dayEvs.slice(0,4).map(e=>`<div style="background:${e.color};color:#fff;font-size:9px;padding:2px 5px;border-radius:3px;margin-bottom:2px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;${e.completed?'opacity:.45;text-decoration:line-through;':''}" title="${e.label}${e.notes?' — '+e.notes:''}">${e.label}</div>`).join('')}
+      ${dayEvs.length>4?`<div style="font-size:9px;color:#888;padding:1px 3px;">+${dayEvs.length-4} more</div>`:''}
     </div>`;
   }
   html+='</div>';
   gridEl.innerHTML=html;
+}
+
+function getFleetWeekStart(){
+  const today=new Date();today.setHours(0,0,0,0);
+  const day=today.getDay();
+  const start=new Date(today);
+  start.setDate(today.getDate()-day+(fleetCalWeekOffset*7));
+  return start;
+}
+
+function renderFleetCalWeekView(allEvents,today){
+  const gridEl=document.getElementById('fleet-cal-grid');if(!gridEl)return;
+  const weekStart=getFleetWeekStart();
+  let html='<div style="display:grid;grid-template-columns:repeat(7,1fr);">';
+  const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  for(let i=0;i<7;i++){
+    const d=new Date(weekStart);d.setDate(weekStart.getDate()+i);
+    const isToday=d.toDateString()===today.toDateString();
+    const dateStr=d.toISOString().split('T')[0];
+    html+=`<div style="text-align:center;font-size:11px;font-weight:700;color:${isToday?'var(--navy)':'#888'};padding:8px 4px;background:${isToday?'#EAF0FB':'#f7f9fc'};border-bottom:2px solid ${isToday?'var(--navy)':'var(--border)'};">${days[i]}<br><span style="font-size:16px;font-weight:800;">${d.getDate()}</span></div>`;
+  }
+  for(let i=0;i<7;i++){
+    const d=new Date(weekStart);d.setDate(weekStart.getDate()+i);
+    const dateStr=d.toISOString().split('T')[0];
+    const isToday=d.toDateString()===today.toDateString();
+    const dayEvs=allEvents.filter(e=>e.dateStr===dateStr);
+    html+=`<div onclick="fleetCalDayClick('${dateStr}')" style="min-height:200px;border-right:1px solid #f0f0f0;padding:6px;cursor:pointer;background:${isToday?'#fafcff':'#fff'};" onmouseenter="this.style.background='#f5f8ff'" onmouseleave="this.style.background='${isToday?'#fafcff':'#fff'}'">
+      ${dayEvs.map(e=>`<div style="background:${e.color};color:#fff;font-size:10px;padding:4px 7px;border-radius:5px;margin-bottom:4px;cursor:pointer;${e.completed?'opacity:.45;text-decoration:line-through;':''}" onclick="event.stopPropagation();${e.apptId?`openEditFleetAppt('${e.apptId}')`:`openScheduleFromDeadline('${e.vehicleId}','${e.type}','${e.dateStr}')`}" title="${e.label}${e.notes?' — '+e.notes:''}">${e.label}${e.shopName?'<br><span style="opacity:.8;font-size:9px;">'+e.shopName+'</span>':''}</div>`).join('')}
+      ${!dayEvs.length?`<div style="color:#ddd;font-size:11px;text-align:center;margin-top:20px;">+ Add</div>`:''}
+    </div>`;
+  }
+  html+='</div>';
+  gridEl.innerHTML=html;
+}
+
+function fleetCalDayClick(dateStr){
+  // Open add appointment pre-filled with this date
+  openAddFleetAppt(dateStr);
+}
+
+function openAddFleetAppt(dateStr){
+  document.getElementById('fappt-id').value='';
+  document.getElementById('fappt-date').value=dateStr||new Date().toISOString().split('T')[0];
+  document.getElementById('fappt-vehicle').value='';
+  document.getElementById('fappt-type').value='Shop Appointment';
+  document.getElementById('fappt-shop').value='';
+  document.getElementById('fappt-shop-address').value='';
+  document.getElementById('fappt-time').value='';
+  document.getElementById('fappt-notes').value='';
+  document.getElementById('fappt-completed').checked=false;
+  document.getElementById('fappt-modal-title').textContent='📅 Schedule Appointment';
+  const delBtn=document.getElementById('fappt-delete-btn');
+  if(delBtn)delBtn.style.display='none';
+  document.getElementById('fleet-appt-modal').classList.add('open');
+}
+
+function openScheduleFromDeadline(vehicleId,type,dateStr){
+  openAddFleetAppt(dateStr);
+  document.getElementById('fappt-vehicle').value=vehicleId;
+  const typeMap={registration:'Vehicle Inspection',mdvc:'MDVC Inspection',inspection:'Vehicle Inspection',oil:'Oil Change',changeover:'Tire Changeover'};
+  document.getElementById('fappt-type').value=typeMap[type]||'Shop Appointment';
+}
+
+async function openEditFleetAppt(id){
+  const a=allFleetApptsCache.find(x=>x.id===id||x.id===parseInt(id));
+  if(!a)return;
+  document.getElementById('fappt-id').value=a.id;
+  document.getElementById('fappt-date').value=a.appt_date||'';
+  document.getElementById('fappt-vehicle').value=a.vehicle_id||'';
+  document.getElementById('fappt-type').value=a.appt_type||'Shop Appointment';
+  document.getElementById('fappt-shop').value=a.shop_name||'';
+  document.getElementById('fappt-shop-address').value=a.shop_address||'';
+  document.getElementById('fappt-time').value=a.appt_time||'';
+  document.getElementById('fappt-notes').value=a.notes||'';
+  document.getElementById('fappt-completed').checked=!!a.completed;
+  document.getElementById('fappt-modal-title').textContent='✏️ Edit Appointment';
+  const delBtn2=document.getElementById('fappt-delete-btn');
+  if(delBtn2)delBtn2.style.display='inline-flex';
+  document.getElementById('fleet-appt-modal').classList.add('open');
+}
+
+async function saveFleetAppt(){
+  const id=document.getElementById('fappt-id').value;
+  const payload={
+    appt_date:document.getElementById('fappt-date').value,
+    vehicle_id:document.getElementById('fappt-vehicle').value,
+    appt_type:document.getElementById('fappt-type').value,
+    shop_name:document.getElementById('fappt-shop').value||null,
+    shop_address:document.getElementById('fappt-shop-address').value||null,
+    appt_time:document.getElementById('fappt-time').value||null,
+    notes:document.getElementById('fappt-notes').value||null,
+    completed:document.getElementById('fappt-completed').checked,
+    logged_by:adminName,
+    updated_at:new Date().toISOString()
+  };
+  if(!payload.appt_date||!payload.vehicle_id){alert('Date and Vehicle are required.');return;}
+  try{
+    if(id){await db.from('fleet_appointments').update(payload).eq('id',id);}
+    else{await db.from('fleet_appointments').insert([{...payload,created_at:new Date().toISOString()}]);}
+    closeModal('fleet-appt-modal');
+    showRealtimeToast('Appointment saved ✓');
+    renderFleetCalendar();
+  }catch(e){alert('Error saving: '+e.message);}
+}
+
+async function deleteFleetAppt(){
+  const id=document.getElementById('fappt-id').value;
+  if(!id||!confirm('Delete this appointment?'))return;
+  await db.from('fleet_appointments').delete().eq('id',id);
+  closeModal('fleet-appt-modal');
+  showRealtimeToast('Appointment deleted');
+  renderFleetCalendar();
+}
+
+async function markFleetApptDone(id){
+  await db.from('fleet_appointments').update({completed:true,updated_at:new Date().toISOString()}).eq('id',id);
+  showRealtimeToast('Marked complete ✓');
+  renderFleetCalendar();
+}
+
+function fleetCalPrintSchedule(){
+  const upcoming=document.getElementById('fleet-cal-upcoming')?.innerHTML||'';
+  const grid=document.getElementById('fleet-cal-grid')?.innerHTML||'';
+  const label=document.getElementById('fleet-cal-month-label')?.textContent||'';
+  const w=window.open('','_blank');
+  w.document.write(`<html><head><title>Fleet Schedule — ${label}</title>
+  <style>body{font-family:Arial,sans-serif;padding:20px;}h1{color:#0a1628;}table{width:100%;border-collapse:collapse;}td,th{border:1px solid #ddd;padding:6px;font-size:11px;}</style>
+  </head><body><h1>RideSource Fleet Schedule — ${label}</h1><h2>Upcoming Deadlines</h2>${upcoming}<h2>Calendar</h2>${grid}</body></html>`);
+  w.document.close();w.print();
 }
 
 function exportFleetLog(){
