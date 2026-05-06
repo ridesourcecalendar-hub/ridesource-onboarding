@@ -3683,8 +3683,13 @@ function startPortal(opts){
   document.body.classList.add('portal-active');
   showSection('dashboard');
   showMobileNav();
-  loadSavedState();buildTraining();buildHandbook();buildPolicies();updateDashboard();loadSignedPolicies();setTimeout(()=>{loadEmpMemoHistory();},1200);
-  buildTimesheetRows();buildIncidentForm();loadEmployeeMemos();
+  loadSavedState();buildTraining();buildHandbook();buildPolicies();updateDashboard();loadSignedPolicies();
+  // Load employee's own profile so memo audience filter works, then load memos
+  db.from('employee_profiles').select('*').or(`employee_email.eq.${user.email},employee_name.eq.${user.name}`).limit(1).then(({data})=>{
+    if(data&&data.length)allProfilesCache=[data[0]];
+    loadEmpMemoHistory();
+    loadEmployeeMemos();
+  }).catch(()=>{loadEmpMemoHistory();loadEmployeeMemos();});
   tsActiveWeek=getCurrentWeekNum();
   document.getElementById('vr-date').value=new Date().toISOString().split('T')[0];
   // Hide completion banner until Supabase confirms
@@ -5256,11 +5261,12 @@ async function loadEmployeeMemos(){
       if(wrap)wrap.style.display='none';
       return;
     }
-    // Filter by audience
+    // Filter by audience - if profile not loaded yet, show all (don't hide memos)
     const relevant=data.filter(m=>{
-      if(m.audience==='all')return true;
-      const profile=allProfilesCache.find(p=>p.employee_email===user.email);
-      return profile&&profile.assigned_supervisor===m.audience;
+      if(!m.audience||m.audience==='all')return true;
+      const profile=allProfilesCache.find(p=>p.employee_email===user.email||p.employee_name===user.name);
+      if(!profile)return true; // show if profile not loaded yet
+      return profile.assigned_supervisor===m.audience;
     });
     // Filter to unread
     const unread=relevant.filter(m=>!((m.read_by||[]).includes(user.name)||(m.read_by||[]).includes(user.email)));
@@ -5371,9 +5377,10 @@ async function loadEmpMemoHistory(){
       updateMemoCardCounts(0,0);return;
     }
     const relevant=data.filter(m=>{
-      if(m.audience==='all')return true;
-      const profile=allProfilesCache.find(p=>p.employee_email===user.email);
-      return profile&&profile.assigned_supervisor===m.audience;
+      if(!m.audience||m.audience==='all')return true;
+      const profile=allProfilesCache.find(p=>p.employee_email===user.email||p.employee_name===user.name);
+      if(!profile)return true;
+      return profile.assigned_supervisor===m.audience;
     });
     if(!relevant.length){
       unreadList.innerHTML='<p style="color:#888;font-size:13px;">No memos yet.</p>';
