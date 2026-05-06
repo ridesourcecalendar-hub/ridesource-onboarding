@@ -2400,7 +2400,11 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
               <div class="form-field"><label>County</label>
                 <select id="fmev-county" style="width:100%;padding:10px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
                   <option value="">-- Select County --</option>
-                  ${Object.keys(COUNTY_COLORS||{}).map(c=>`<option>${c}</option>`).join('')}
+                  <option>Androscoggin</option><option>Aroostook</option><option>Cumberland</option>
+                  <option>Franklin</option><option>Hancock</option><option>Kennebec</option>
+                  <option>Knox</option><option>Lincoln</option><option>Oxford</option>
+                  <option>Penobscot</option><option>Piscataquis</option><option>Sagadahoc</option>
+                  <option>Somerset</option><option>Waldo</option><option>Washington</option><option>York</option>
                 </select>
               </div>
               <div class="form-field"><label>Max Occupancy</label><input type="number" id="fmev-occupancy" style="width:100%;padding:10px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
@@ -6855,7 +6859,8 @@ function renderFleetMasterLog(){
         (m.shop_name?'<span style="font-size:12px;color:#888;">'+m.shop_name+'</span>':'')+
         (m.cost?'<span style="font-size:12px;font-weight:700;color:var(--navy);">$'+parseFloat(m.cost).toFixed(2)+'</span>':'')+
         (isOverdue?'<span style="background:var(--warn);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:8px;">OVERDUE</span>':'')+
-        '<button class="btn btn-sm btn-red" style="margin-left:auto;" data-mid="'+m.id+'" onclick="deleteFleetMaintEntry(this.dataset.mid)">🗑️</button>'+
+        '<button class="btn btn-sm" style="margin-left:auto;background:#f0f4fb;color:var(--navy);border:1px solid var(--border);" data-mid="'+m.id+'" onclick="openEditFleetMaint(this.dataset.mid)">✏️ Edit</button>'+
+        '<button class="btn btn-sm btn-red" data-mid="'+m.id+'" onclick="deleteFleetMaintEntry(this.dataset.mid)">🗑️</button>'+
       '</div>'+
       (m.notes?'<div style="font-size:12px;color:#666;margin-top:8px;">'+m.notes+'</div>':'')+
     '</div>';
@@ -9054,14 +9059,22 @@ async function decideRequest(id,status){
   }catch(e){console.log('Email notification error:',e);}
   loadRequests();loadDashboard();renderCalendar();
 }
+function toggleEditReqTimes(){
+  const type=document.getElementById('edit-req-type')?.value||'';
+  const row=document.getElementById('edit-req-time-row');
+  if(row)row.style.display=['Start Late','End Early','Mid-Day Appointment'].includes(type)?'grid':'none';
+}
 function openEditRequest(id){
-  const r=allRequestsCache.find(x=>x.id===id);
+  const r=allRequestsCache.find(x=>x.id===id||x.id===parseInt(id));
   if(!r)return;
   document.getElementById('edit-req-id').value=id;
   document.getElementById('edit-req-type').value=r.request_type||'';
   document.getElementById('edit-req-start').value=r.start_date||'';
   document.getElementById('edit-req-end').value=r.end_date||r.start_date||'';
   document.getElementById('edit-req-reason').value=r.reason||'';
+  document.getElementById('edit-req-start-time').value=r.start_time||'';
+  document.getElementById('edit-req-end-time').value=r.end_time||'';
+  toggleEditReqTimes();
   document.getElementById('edit-request-modal').classList.add('open');
 }
 async function saveEditedRequest(){
@@ -9070,7 +9083,9 @@ async function saveEditedRequest(){
   const start=document.getElementById('edit-req-start').value;
   const end=document.getElementById('edit-req-end').value;
   const reason=document.getElementById('edit-req-reason').value;
-  await db.from('time_off_requests').update({request_type:type,start_date:start,end_date:end,reason}).eq('id',id);
+  const startTime=document.getElementById('edit-req-start-time').value||null;
+  const endTime=document.getElementById('edit-req-end-time').value||null;
+  await db.from('time_off_requests').update({request_type:type,start_date:start,end_date:end,reason,start_time:startTime,end_time:endTime}).eq('id',id);
   closeModal('edit-request-modal');loadRequests();
 }
 async function deleteAdminRequest(){
@@ -12782,17 +12797,6 @@ async function renderFleetOverview(vehicleId){
       </div>
     </div>
 
-    <!-- Quick actions -->
-    <div style="margin-bottom:20px;">
-      <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Quick Actions</div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <button onclick="switchFleetMaintTab('oil')" style="padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:#fff;font-size:12px;font-weight:700;cursor:pointer;color:var(--navy);">🛢️ Log Oil Change</button>
-        <button onclick="switchFleetMaintTab('repair')" style="padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:#fff;font-size:12px;font-weight:700;cursor:pointer;color:var(--navy);">🔧 Log Repair</button>
-        <button onclick="switchFleetMaintTab('inspection')" style="padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:#fff;font-size:12px;font-weight:700;cursor:pointer;color:var(--navy);">📋 Log Inspection</button>
-        <button onclick="switchFleetMaintTab('reports')" style="padding:8px 14px;border-radius:8px;border:${openReports.length>0?'2px solid var(--red)':'1px solid var(--border)'};background:${openReports.length>0?'#fdecea':'#fff'};font-size:12px;font-weight:700;cursor:pointer;color:${openReports.length>0?'var(--red)':'var(--navy)'};">🚐 Driver Reports ${openReports.length>0?'('+openReports.length+' open)':''}</button>
-      </div>
-    </div>
-
     <!-- Open driver reports -->
     ${openReports.length>0?`
     <div style="margin-bottom:20px;">
@@ -13568,9 +13572,10 @@ async function saveTowRecord(vehicleId){
   try{
     await db.from('fleet_maintenance').insert([{
       vehicle_id:vehicleId,maintenance_type:'Tow Charge',
-      service_date:date,cost:parseFloat(cost),vendor,
-      notes:notes+(receiptUrl?'\nReceipt: '+receiptUrl:''),
-      performed_by:driver||adminName,
+      service_date:date,cost:parseFloat(cost)||0,
+      shop_name:vendor||null,
+      notes:(notes||'')+(driver?'\nDriver: '+driver:'')+(receiptUrl?'\nReceipt: '+receiptUrl:''),
+      logged_by:adminName,
       created_at:new Date().toISOString()
     }]);
     ['tow-date','tow-vendor','tow-cost','tow-driver','tow-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
@@ -14498,14 +14503,22 @@ function toggleMemoExpand(id){
     <h3>Edit Time Off Request</h3>
     <p style="font-size:13px;color:#888;margin-bottom:16px;">Update the details below. Changes will be saved immediately.</p>
     <input type="hidden" id="edit-req-id">
-    <div class="form-field"><label>Request Type</label><select id="edit-req-type"><option>Full Day Off</option><option>Multiple Days</option><option>Start Late</option><option>End Early</option><option>Mid-Day Appointment</option><option>Use PTO Hours</option></select></div>
-    <div class="form-row">
-      <div class="form-field"><label>Start Date</label><input type="date" id="edit-req-start"></div>
-      <div class="form-field"><label>End Date</label><input type="date" id="edit-req-end"></div>
+    <div class="form-field"><label>Request Type</label>
+      <select id="edit-req-type" onchange="toggleEditReqTimes()" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+        <option>Full Day Off</option><option>Multiple Days</option><option>Start Late</option><option>End Early</option><option>Mid-Day Appointment</option><option>Use PTO Hours</option>
+      </select>
     </div>
-    <div class="form-field"><label>Reason</label><input type="text" id="edit-req-reason" placeholder="Brief reason..."></div>
+    <div class="form-row">
+      <div class="form-field"><label>Start Date</label><input type="date" id="edit-req-start" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+      <div class="form-field"><label>End Date</label><input type="date" id="edit-req-end" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+    </div>
+    <div id="edit-req-time-row" style="display:none;" class="form-row">
+      <div class="form-field"><label>Start Time</label><input type="time" id="edit-req-start-time" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+      <div class="form-field"><label>End Time</label><input type="time" id="edit-req-end-time" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+    </div>
+    <div class="form-field"><label>Reason</label><input type="text" id="edit-req-reason" placeholder="Brief reason..." style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;">
-      <button class="btn btn-red btn-sm" onclick="deleteAdminRequest()" style="margin-right:auto;">🗑️ Delete Request</button>
+      <button class="btn btn-red btn-sm" onclick="deleteAdminRequest()" style="margin-right:auto;">🗑️ Delete</button>
       <button class="btn btn-secondary" onclick="closeModal('edit-request-modal')">Cancel</button>
       <button class="btn btn-primary" onclick="saveEditedRequest()">Save Changes</button>
     </div>
