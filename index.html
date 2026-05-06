@@ -2668,31 +2668,101 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
                 <div class="form-field"><label>Service Type *</label>
                   <select id="fm-prev-type" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
                     <option value="">— Select Service —</option>
-                    <option>Air Filter</option>
-                    <option>Cabin Filter</option>
-                    <option>Brake Inspection</option>
-                    <option>Brake Replacement</option>
-                    <option>Fluid Check / Top-Off</option>
-                    <option>Belt / Hose Check</option>
-                    <option>Wiper Blades</option>
-                    <option>Battery Check / Replacement</option>
-                    <option>Transmission Service</option>
-                    <option>Coolant Flush</option>
-                    <option>Spark Plugs</option>
-                    <option>Other</option>
+                    <optgroup label="Tires">
+                      <option>Tire Rotation</option>
+                      <option>Tire Replacement</option>
+                      <option>Tire Changeover (Summer → Winter)</option>
+                      <option>Tire Changeover (Winter → Summer)</option>
+                      <option>Tire Balance</option>
+                      <option>Tire Plug / Patch</option>
+                      <option>TPMS Service</option>
+                    </optgroup>
+                    <optgroup label="Brakes">
+                      <option>Brake Inspection</option>
+                      <option>Brake Pad Replacement</option>
+                      <option>Brake Rotor Replacement</option>
+                      <option>Brake Fluid Flush</option>
+                    </optgroup>
+                    <optgroup label="Filters & Fluids">
+                      <option>Air Filter</option>
+                      <option>Cabin Filter</option>
+                      <option>Fluid Check / Top-Off</option>
+                      <option>Transmission Service</option>
+                      <option>Coolant Flush</option>
+                      <option>Power Steering Flush</option>
+                    </optgroup>
+                    <optgroup label="Other">
+                      <option>Belt / Hose Check</option>
+                      <option>Wiper Blades</option>
+                      <option>Battery Check / Replacement</option>
+                      <option>Spark Plugs</option>
+                      <option>Wheel Alignment</option>
+                      <option>Other</option>
+                    </optgroup>
                   </select>
                 </div>
-                <div class="form-field"><label>Service Date *</label><input type="date" id="fm-prev-date"></div>
+                <div class="form-field"><label>Service Date *</label>
+                  <input type="date" id="fm-prev-date" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                </div>
               </div>
               <div class="form-row">
-                <div class="form-field"><label>Mileage at Service</label><input type="number" id="fm-prev-mileage" placeholder="e.g. 45230"></div>
-                <div class="form-field"><label>Next Due Date</label><input type="date" id="fm-prev-next-date"></div>
+                <div class="form-field"><label>Mileage at Service</label>
+                  <input type="number" id="fm-prev-mileage" placeholder="e.g. 45230" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                </div>
+                <div class="form-field"><label>Next Due Date</label>
+                  <input type="date" id="fm-prev-next-date" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                </div>
               </div>
               <div class="form-row">
-                <div class="form-field"><label>Shop / Location</label><input type="text" id="fm-prev-shop" placeholder="e.g. Napa Auto, Ellsworth ME"></div>
-                <div class="form-field"><label>Cost</label><input type="number" id="fm-prev-cost" placeholder="e.g. 89.95" step="0.01"></div>
+                <div class="form-field"><label>Shop / Location</label>
+                  <input type="text" id="fm-prev-shop" placeholder="e.g. Sullivan Tire, Ellsworth ME" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                </div>
+                <div class="form-field"><label>Invoice Number</label>
+                  <input type="text" id="fm-prev-invoice" placeholder="e.g. INV-2026-0042" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                </div>
               </div>
-              <div class="form-field"><label>Notes</label><textarea id="fm-prev-notes" style="min-height:60px;" placeholder="Any additional details..."></textarea></div>
+
+              <div class="form-field"><label>Work Performed *</label>
+                <textarea id="fm-prev-notes" style="width:100%;min-height:70px;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;font-family:Arial,sans-serif;outline:none;resize:vertical;" placeholder="Describe all work done, tire sizes, part numbers, etc."></textarea>
+              </div>
+
+              <!-- Parts Section -->
+              <div class="form-field">
+                <label>Parts Used</label>
+                <div style="background:#f7f9fc;border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:6px;">
+                  <div style="display:grid;grid-template-columns:1fr 80px 90px 24px;gap:6px;margin-bottom:6px;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;">
+                    <div>Part Description</div><div>Qty</div><div>Unit Price</div><div></div>
+                  </div>
+                  <div id="fm-prev-parts-list" style="display:flex;flex-direction:column;gap:4px;"></div>
+                  <button type="button" onclick="addPrevPartRow()" style="font-size:12px;padding:5px 12px;border-radius:6px;border:1px solid var(--navy);background:#f0f4fb;color:var(--navy);cursor:pointer;margin-top:6px;">+ Add Part</button>
+                </div>
+              </div>
+
+              <!-- Additional Services -->
+              <div class="form-field">
+                <label>Additional Services</label>
+                <div id="fm-prev-services-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:6px;"></div>
+                <button type="button" onclick="addPrevServiceRow()" style="font-size:12px;padding:5px 12px;border-radius:6px;border:1px solid var(--navy);background:#f0f4fb;color:var(--navy);cursor:pointer;">+ Add Service</button>
+              </div>
+
+              <!-- Cost Breakdown -->
+              <div class="form-field">
+                <label>Cost Breakdown</label>
+                <div style="background:#f7f9fc;border:1px solid var(--border);border-radius:8px;padding:12px;">
+                  <div class="form-row">
+                    <div class="form-field"><label style="font-size:11px;">Labor ($)</label><input type="number" id="fm-prev-cost-labor" placeholder="0.00" step="0.01" min="0" oninput="calcPrevTotal()" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;"></div>
+                    <div class="form-field"><label style="font-size:11px;">Parts ($)</label><input type="number" id="fm-prev-cost-parts" placeholder="0.00" step="0.01" min="0" oninput="calcPrevTotal()" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;" readonly></div>
+                  </div>
+                  <div class="form-row">
+                    <div class="form-field"><label style="font-size:11px;">Shop Supplies / Fees ($)</label><input type="number" id="fm-prev-cost-supplies" placeholder="0.00" step="0.01" min="0" oninput="calcPrevTotal()" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;"></div>
+                    <div class="form-field"><label style="font-size:11px;">Sales Tax ($)</label><input type="number" id="fm-prev-cost-tax" placeholder="0.00" step="0.01" min="0" oninput="calcPrevTotal()" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;"></div>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:2px solid var(--border);margin-top:4px;">
+                    <span style="font-size:13px;font-weight:800;color:var(--navy);">Total</span>
+                    <span id="fm-prev-cost-total" style="font-size:18px;font-weight:900;color:var(--navy);">$0.00</span>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <!-- REPAIR FORM -->
@@ -6959,10 +7029,35 @@ async function saveFleetMaintEntry(){
     const prevNextDate=document.getElementById('fm-prev-next-date').value;
     if(prevNextDate)entry.next_due_date=prevNextDate;
     entry.shop_name=document.getElementById('fm-prev-shop').value.trim()||null;
-    entry.cost=parseFloat(document.getElementById('fm-prev-cost').value)||null;
-    entry.notes=(type+(document.getElementById('fm-prev-notes').value.trim()?'\n'+document.getElementById('fm-prev-notes').value.trim():''));
-    clearIds=['fm-prev-date','fm-prev-mileage','fm-prev-next-date','fm-prev-shop','fm-prev-cost','fm-prev-notes'];
-    document.getElementById('fm-prev-type').value='';
+    entry.invoice_number=document.getElementById('fm-prev-invoice')?.value.trim()||null;
+    // Build parts list
+    const prevParts=[];
+    document.querySelectorAll('#fm-prev-parts-list > div').forEach(row=>{
+      const inputs=row.querySelectorAll('input');
+      if(inputs[0]?.value.trim())prevParts.push(inputs[0].value.trim()+(inputs[1]?.value?' x'+inputs[1].value:'')+(inputs[2]?.value?' @ $'+inputs[2].value:''));
+    });
+    // Build services list
+    const prevSvcs=[];
+    document.querySelectorAll('#fm-prev-services-list > div').forEach(row=>{
+      const inputs=row.querySelectorAll('input');
+      if(inputs[0]?.value.trim())prevSvcs.push(inputs[0].value.trim()+(inputs[1]?.value?' ($'+inputs[1].value+')':''));
+    });
+    const notesText=document.getElementById('fm-prev-notes').value.trim();
+    const noteParts=prevParts.length?'Parts: '+prevParts.join(', '):'';
+    const noteSvcs=prevSvcs.length?'Additional: '+prevSvcs.join(', '):'';
+    entry.notes=[type,notesText,noteParts,noteSvcs].filter(Boolean).join('\n');
+    // Cost
+    const prevLabor=parseFloat(document.getElementById('fm-prev-cost-labor')?.value)||0;
+    const prevPartsAmt=parseFloat(document.getElementById('fm-prev-cost-parts')?.value)||0;
+    const prevSupplies=parseFloat(document.getElementById('fm-prev-cost-supplies')?.value)||0;
+    const prevTax=parseFloat(document.getElementById('fm-prev-cost-tax')?.value)||0;
+    let prevSvcsAmt=0;
+    document.querySelectorAll('#fm-prev-services-list > div').forEach(row=>{
+      prevSvcsAmt+=parseFloat(row.querySelectorAll('input')[1]?.value)||0;
+    });
+    entry.cost=prevLabor+prevPartsAmt+prevSupplies+prevTax+prevSvcsAmt||null;
+    clearPrevForm();
+    clearIds=[];
 
   } else if(tab==='repair'){
     const date=document.getElementById('fm-rep-date').value;
@@ -14762,6 +14857,68 @@ function initRepairForm(){
     const el=document.getElementById(id);if(el)el.value='';
   });
   const total=document.getElementById('fm-cost-total');if(total)total.textContent='$0.00';
+}
+
+function addPrevPartRow(){
+  const list=document.getElementById('fm-prev-parts-list');
+  if(!list)return;
+  const div=document.createElement('div');
+  div.style.cssText='display:grid;grid-template-columns:1fr 80px 90px 24px;gap:6px;align-items:center;';
+  div.innerHTML=`
+    <input type="text" list="common-parts-list" placeholder="Part description..." style="padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;" oninput="calcPrevTotal()">
+    <input type="number" placeholder="Qty" min="1" value="1" style="padding:7px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;text-align:center;" oninput="calcPrevTotal()">
+    <input type="number" placeholder="$0.00" step="0.01" min="0" style="padding:7px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;" oninput="calcPrevTotal()">
+    <button type="button" onclick="this.closest('div').remove();calcPrevTotal();" style="width:24px;height:30px;border-radius:6px;border:1px solid #fcc;background:#fff;color:var(--red);cursor:pointer;font-size:12px;padding:0;">✕</button>
+  `;
+  list.appendChild(div);
+  if(!document.getElementById('common-parts-list')){
+    const dl=document.createElement('datalist');dl.id='common-parts-list';
+    COMMON_PARTS.forEach(p=>{const opt=document.createElement('option');opt.value=p;dl.appendChild(opt);});
+    document.body.appendChild(dl);
+  }
+}
+
+function addPrevServiceRow(){
+  const list=document.getElementById('fm-prev-services-list');
+  if(!list)return;
+  const div=document.createElement('div');
+  div.style.cssText='display:grid;grid-template-columns:1fr 100px 24px;gap:6px;align-items:center;';
+  div.innerHTML=`
+    <input type="text" placeholder="Additional service performed..." style="padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;">
+    <input type="number" placeholder="$0.00" step="0.01" min="0" style="padding:8px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;" oninput="calcPrevTotal()">
+    <button type="button" onclick="this.closest('div').remove();calcPrevTotal();" style="width:24px;height:32px;border-radius:6px;border:1px solid #fcc;background:#fff;color:var(--red);cursor:pointer;font-size:12px;padding:0;">✕</button>
+  `;
+  list.appendChild(div);
+}
+
+function calcPrevTotal(){
+  let partsTotal=0;
+  document.querySelectorAll('#fm-prev-parts-list > div').forEach(row=>{
+    const inputs=row.querySelectorAll('input');
+    if(inputs.length>=3){partsTotal+=(parseFloat(inputs[1]?.value)||0)*(parseFloat(inputs[2]?.value)||0);}
+  });
+  let servicesTotal=0;
+  document.querySelectorAll('#fm-prev-services-list > div').forEach(row=>{
+    const inputs=row.querySelectorAll('input');
+    if(inputs.length>=2){servicesTotal+=parseFloat(inputs[1]?.value)||0;}
+  });
+  const partsEl=document.getElementById('fm-prev-cost-parts');
+  if(partsEl)partsEl.value=partsTotal>0?partsTotal.toFixed(2):'';
+  const labor=parseFloat(document.getElementById('fm-prev-cost-labor')?.value)||0;
+  const supplies=parseFloat(document.getElementById('fm-prev-cost-supplies')?.value)||0;
+  const tax=parseFloat(document.getElementById('fm-prev-cost-tax')?.value)||0;
+  const total=labor+partsTotal+servicesTotal+supplies+tax;
+  const totalEl=document.getElementById('fm-prev-cost-total');
+  if(totalEl)totalEl.textContent='$'+total.toFixed(2);
+}
+
+function clearPrevForm(){
+  ['fm-prev-type','fm-prev-shop','fm-prev-invoice','fm-prev-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['fm-prev-date','fm-prev-next-date'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['fm-prev-mileage','fm-prev-cost-labor','fm-prev-cost-parts','fm-prev-cost-supplies','fm-prev-cost-tax'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const total=document.getElementById('fm-prev-cost-total');if(total)total.textContent='$0.00';
+  const parts=document.getElementById('fm-prev-parts-list');if(parts)parts.innerHTML='';
+  const svcs=document.getElementById('fm-prev-services-list');if(svcs)svcs.innerHTML='';
 }
 
 function addRepairIssueRow(){
