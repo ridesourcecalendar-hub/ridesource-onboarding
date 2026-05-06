@@ -2398,15 +2398,23 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 
         <!-- Upcoming deadlines -->
         <div class="card" style="margin-bottom:12px;">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-            <div style="font-size:14px;font-weight:800;color:var(--navy);">⚠️ Upcoming Deadlines</div>
-            <div style="display:flex;gap:6px;">
-              <button onclick="setDeadlineDays(30)" id="fcal-days-30" style="padding:4px 10px;border-radius:6px;border:2px solid var(--navy);background:var(--navy);color:#fff;font-size:11px;font-weight:700;cursor:pointer;">30 days</button>
-              <button onclick="setDeadlineDays(60)" id="fcal-days-60" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:#fff;color:#555;font-size:11px;font-weight:700;cursor:pointer;">60 days</button>
-              <button onclick="setDeadlineDays(90)" id="fcal-days-90" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:#fff;color:#555;font-size:11px;font-weight:700;cursor:pointer;">90 days</button>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;cursor:pointer;" onclick="toggleFleetDeadlines()">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="font-size:14px;font-weight:800;color:var(--navy);">⚠️ Upcoming Deadlines</div>
+              <span id="fleet-deadlines-badge" style="background:var(--red);color:#fff;border-radius:10px;padding:1px 8px;font-size:11px;font-weight:700;"></span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="display:flex;gap:6px;" onclick="event.stopPropagation()">
+                <button onclick="setDeadlineDays(30)" id="fcal-days-30" style="padding:4px 10px;border-radius:6px;border:2px solid var(--navy);background:var(--navy);color:#fff;font-size:11px;font-weight:700;cursor:pointer;">30 days</button>
+                <button onclick="setDeadlineDays(60)" id="fcal-days-60" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:#fff;color:#555;font-size:11px;font-weight:700;cursor:pointer;">60 days</button>
+                <button onclick="setDeadlineDays(90)" id="fcal-days-90" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:#fff;color:#555;font-size:11px;font-weight:700;cursor:pointer;">90 days</button>
+              </div>
+              <span id="fleet-deadlines-chevron" style="font-size:18px;color:#888;transition:transform .2s;">▼</span>
             </div>
           </div>
-          <div id="fleet-cal-upcoming"><p style="color:#888;font-size:13px;">Loading...</p></div>
+          <div id="fleet-cal-upcoming-wrap">
+            <div id="fleet-cal-upcoming"><p style="color:#888;font-size:13px;">Loading...</p></div>
+          </div>
         </div>
 
         <!-- Calendar grid -->
@@ -7117,6 +7125,15 @@ function setFleetCalView(v){
   if(wb){wb.style.background=v==='week'?'var(--navy)':'#f0f0f0';wb.style.color=v==='week'?'#fff':'#888';}
   renderFleetCalendar();
 }
+function toggleFleetDeadlines(){
+  const wrap=document.getElementById('fleet-cal-upcoming-wrap');
+  const chevron=document.getElementById('fleet-deadlines-chevron');
+  if(!wrap)return;
+  const isHidden=wrap.style.display==='none';
+  wrap.style.display=isHidden?'block':'none';
+  if(chevron)chevron.style.transform=isHidden?'rotate(0deg)':'rotate(-90deg)';
+}
+
 function setDeadlineDays(n){
   fleetCalDeadlineDays=n;
   [30,60,90].forEach(d=>{
@@ -7193,6 +7210,9 @@ async function renderFleetCalendar(){
       const d=new Date(e.dateStr+'T00:00:00');
       return(d>=today&&d<=inN)||d<today;
     }).sort((a,b)=>new Date(a.dateStr)-new Date(b.dateStr));
+    const badge=document.getElementById('fleet-deadlines-badge');
+    const overdueCount=upcomingEvs.filter(u=>new Date(u.dateStr+'T00:00:00')<today&&!u.completed).length;
+    if(badge)badge.textContent=overdueCount?overdueCount+' overdue':upcomingEvs.length?upcomingEvs.length+' upcoming':'';
     if(!upcomingEvs.length){
       upEl.innerHTML=`<p style="color:#888;font-size:13px;">No deadlines in the next ${fleetCalDeadlineDays} days. ✅</p>`;
     } else {
