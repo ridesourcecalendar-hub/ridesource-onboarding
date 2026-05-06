@@ -1411,6 +1411,7 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 
         <div class="sidebar-label">🚐 Fleet & Operations</div>
         <div class="nav-item" onclick="showAdmin('fleet')" id="nav-adm-fleet"><span class="nav-icon">🔧</span>Fleet Maintenance<span class="nav-badge" id="badge-fleet" style="background:var(--red);display:none;">!</span></div>
+        <div class="nav-item" onclick="showAdmin('fleet-calendar')" id="nav-adm-fleet-calendar"><span class="nav-icon">📅</span>Fleet Calendar</div>
         <div class="nav-item" onclick="showAdmin('assets')" id="nav-adm-assets"><span class="nav-icon">📦</span>Asset Management</div>
         <div class="nav-item" onclick="showAdmin('vehicle-records')" id="nav-adm-vehicle-records"><span class="nav-icon">🚐</span>Vehicle Reports</div>
         <div class="nav-item" onclick="showAdmin('incidents')" id="nav-adm-incidents"><span class="nav-icon">🚨</span>Incident Log<span class="nav-badge" id="badge-incidents" style="background:var(--red);">0</span></div>
@@ -2350,6 +2351,36 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 
       </div><!-- end section-adm-fleet -->
 
+      <!-- FLEET CALENDAR -->
+      <div id="section-adm-fleet-calendar" class="admin-section">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
+          <div>
+            <div style="font-size:22px;font-weight:800;color:var(--navy);">📅 Fleet Calendar</div>
+            <p style="color:#888;font-size:13px;margin-top:2px;">MDVC inspections, vehicle inspections, registrations, and tire changeover deadlines.</p>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+            <button onclick="fleetCalPrev()" style="padding:7px 12px;border:1px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;font-size:14px;">◀</button>
+            <div id="fleet-cal-month-label" style="font-size:15px;font-weight:800;color:var(--navy);min-width:160px;text-align:center;"></div>
+            <button onclick="fleetCalNext()" style="padding:7px 12px;border:1px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;font-size:14px;">▶</button>
+          </div>
+        </div>
+        <!-- Legend -->
+        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;padding:10px 14px;background:#f7f9fc;border-radius:8px;font-size:12px;">
+          <div style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;border-radius:3px;background:#1565c0;display:inline-block;"></span>MDVC Inspection</div>
+          <div style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;border-radius:3px;background:#e67e22;display:inline-block;"></span>Vehicle Inspection</div>
+          <div style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;border-radius:3px;background:#27AE60;display:inline-block;"></span>Registration Due</div>
+          <div style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;border-radius:3px;background:#8e44ad;display:inline-block;"></span>Tire Changeover</div>
+          <div style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;border-radius:3px;background:#c0392b;display:inline-block;"></span>Oil Change Due</div>
+        </div>
+        <!-- Upcoming deadlines list -->
+        <div class="card" style="margin-bottom:16px;">
+          <div style="font-size:14px;font-weight:800;color:var(--navy);margin-bottom:12px;">⚠️ Upcoming Deadlines (Next 60 Days)</div>
+          <div id="fleet-cal-upcoming"><p style="color:#888;font-size:13px;">Loading...</p></div>
+        </div>
+        <!-- Calendar grid -->
+        <div id="fleet-cal-grid"></div>
+      </div>
+
       <!-- FLEET VEHICLE DETAIL MODAL -->
       <div class="modal-overlay" id="fleet-vehicle-modal">
         <div class="modal" style="max-width:700px;">
@@ -2419,6 +2450,10 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
               <div class="form-field"><label>Oil Change Interval (months)</label><input type="number" id="fmev-oil-months" placeholder="3" style="width:100%;padding:10px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
             </div>
             <div class="form-field"><label>Notes</label><textarea id="fmev-notes" style="width:100%;min-height:60px;padding:10px;border:2px solid var(--border);border-radius:8px;font-size:13px;font-family:Arial,sans-serif;outline:none;resize:vertical;"></textarea></div>
+            <div class="form-row">
+              <div class="form-field"><label>Registration Expires</label><input type="date" id="fmev-reg-expires" style="width:100%;padding:10px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+              <div class="form-field"><label>MDVC Inspection Due</label><input type="date" id="fmev-mdvc-due" style="width:100%;padding:10px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+            </div>
             <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px;">
               <button class="btn btn-primary" onclick="saveFleetVehicleEdit()">💾 Save Changes</button>
             </div>
@@ -3987,6 +4022,7 @@ function applyRoleBasedNav(role){
     ['nav-adm-timesheets','timesheets'],
     ['nav-adm-calendar','calendar'],
     ['nav-adm-fleet','fleet'],
+    ['nav-adm-fleet-calendar','fleet'],
     ['nav-adm-assets','assets'],
     ['nav-adm-vehicle-records','vehicles'],
     ['nav-adm-incidents','incidents'],
@@ -4067,6 +4103,7 @@ function showAdmin(id){
   if(id==='analytics'){setTimeout(()=>loadAnalytics(),500);}
   if(id==='recognition'){renderRecogCalendar();}
   if(id==='fleet'){loadFleetVehicles();loadFleetMaintenance();loadFleetTires();loadFleetChangeovers();}
+  if(id==='fleet-calendar'){renderFleetCalendar();}
   if(id==='vehicle-records')loadVehicleRecords();
   if(id==='callouts')loadCallOuts();
   if(id==='requests')loadRequests();
@@ -6502,6 +6539,8 @@ function populateFleetVehicleEdit(vehicleId){
   document.getElementById('fmev-oil-miles').value=v.oil_change_interval_miles||'';
   document.getElementById('fmev-oil-months').value=v.oil_change_interval_months||'';
   document.getElementById('fmev-notes').value=v.notes||'';
+  document.getElementById('fmev-reg-expires').value=v.registration_expires||'';
+  document.getElementById('fmev-mdvc-due').value=v.mdvc_inspection_due||'';
   // Populate county select dynamically if empty
   const countyEl=document.getElementById('fmev-county');
   if(countyEl&&countyEl.options.length<=1){
@@ -6525,7 +6564,9 @@ async function saveFleetVehicleEdit(){
       wheelchair_accessible:document.getElementById('fmev-wheelchair').value||null,
       oil_change_interval_miles:parseInt(document.getElementById('fmev-oil-miles').value)||null,
       oil_change_interval_months:parseInt(document.getElementById('fmev-oil-months').value)||null,
-      notes:document.getElementById('fmev-notes').value||null
+      notes:document.getElementById('fmev-notes').value||null,
+      registration_expires:document.getElementById('fmev-reg-expires').value||null,
+      mdvc_inspection_due:document.getElementById('fmev-mdvc-due').value||null
     }).eq('vehicle_id',vehicleId);
     showRealtimeToast('Vehicle details saved ✓');
     await loadFleetVehicles();
@@ -6951,6 +6992,105 @@ function renderFleetMasterLog(){
     '</div>';
   }).join('');
 }
+// ═══════════════════════════════════════════════
+// FLEET CALENDAR
+// ═══════════════════════════════════════════════
+let fleetCalYear=new Date().getFullYear();
+let fleetCalMonth=new Date().getMonth();
+
+function fleetCalPrev(){fleetCalMonth--;if(fleetCalMonth<0){fleetCalMonth=11;fleetCalYear--;}renderFleetCalendar();}
+function fleetCalNext(){fleetCalMonth++;if(fleetCalMonth>11){fleetCalMonth=0;fleetCalYear++;}renderFleetCalendar();}
+
+function renderFleetCalendar(){
+  const label=document.getElementById('fleet-cal-month-label');
+  if(label)label.textContent=new Date(fleetCalYear,fleetCalMonth).toLocaleDateString('en-US',{month:'long',year:'numeric'});
+
+  // Build events from fleet data
+  const events={};
+  const upcoming=[];
+  const today=new Date();
+  const in60=new Date(today);in60.setDate(today.getDate()+60);
+
+  function addEvent(dateStr,label,color,vehicleId){
+    if(!dateStr)return;
+    const d=new Date(dateStr+'T00:00:00');
+    const isOverdue=d<today;
+    const isSoon=d>=today&&d<=in60;
+    if(d.getMonth()===fleetCalMonth&&d.getFullYear()===fleetCalYear){
+      const k=d.getDate();
+      if(!events[k])events[k]=[];
+      events[k].push({label,color,vehicleId,overdue:isOverdue});
+    }
+    if(isSoon||isOverdue){
+      upcoming.push({date:d,dateStr,label,color,vehicleId,overdue:isOverdue,daysAway:Math.ceil((d-today)/(1000*60*60*24))});
+    }
+  }
+
+  // Pull from fleet maintenance cache
+  (allFleetMaintenanceCache||[]).forEach(m=>{
+    if(m.maintenance_type==='Inspection'&&m.next_due_date)
+      addEvent(m.next_due_date,'📋 '+m.vehicle_id+' Insp','#e67e22',m.vehicle_id);
+    if(m.maintenance_type==='Oil Change'&&m.next_due_date)
+      addEvent(m.next_due_date,'🛢️ '+m.vehicle_id+' Oil','#c0392b',m.vehicle_id);
+  });
+  // Pull tire changeovers
+  (allChangeoverCache||[]).forEach(c=>{
+    if(c.scheduled_date)
+      addEvent(c.scheduled_date,'🔄 '+c.vehicle_id+' Tires','#8e44ad',c.vehicle_id);
+  });
+  // Pull vehicle registration/MDVC from fleet vehicles
+  (allFleetVehiclesCache||[]).forEach(v=>{
+    if(v.registration_expires)
+      addEvent(v.registration_expires,'📄 '+v.vehicle_id+' Reg','#27AE60',v.vehicle_id);
+    if(v.mdvc_inspection_due)
+      addEvent(v.mdvc_inspection_due,'🔍 '+v.vehicle_id+' MDVC','#1565c0',v.vehicle_id);
+  });
+
+  // Render upcoming list
+  const upEl=document.getElementById('fleet-cal-upcoming');
+  if(upEl){
+    upcoming.sort((a,b)=>a.date-b.date);
+    if(!upcoming.length){
+      upEl.innerHTML='<p style="color:#888;font-size:13px;">No deadlines in the next 60 days. ✅</p>';
+    } else {
+      upEl.innerHTML='<div style="display:flex;flex-direction:column;gap:6px;">'+
+        upcoming.slice(0,20).map(u=>{
+          const dayLabel=u.overdue?'<span style="color:var(--red);font-weight:800;">OVERDUE</span>':
+            u.daysAway===0?'<span style="color:var(--red);font-weight:800;">TODAY</span>':
+            u.daysAway<=7?'<span style="color:var(--warn);font-weight:700;">'+u.daysAway+' days</span>':
+            '<span style="color:#555;">'+u.daysAway+' days</span>';
+          return`<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;background:${u.overdue?'#fdecea':'#f7f9fc'};border:1px solid ${u.overdue?'#fcc':'var(--border)'};">
+            <div style="width:10px;height:10px;border-radius:50%;background:${u.color};flex-shrink:0;"></div>
+            <div style="flex:1;font-size:13px;font-weight:600;color:var(--navy);">${u.label}</div>
+            <div style="font-size:12px;color:#888;">${u.date.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</div>
+            ${dayLabel}
+            <button onclick="showAdmin('fleet');setTimeout(()=>openFleetVehicle('${u.vehicleId}'),400);" style="font-size:11px;padding:3px 8px;border-radius:5px;border:1px solid var(--border);background:#fff;cursor:pointer;color:var(--navy);">View →</button>
+          </div>`;
+        }).join('')+
+      '</div>';
+    }
+  }
+
+  // Render calendar grid
+  const gridEl=document.getElementById('fleet-cal-grid');
+  if(!gridEl)return;
+  const firstDay=new Date(fleetCalYear,fleetCalMonth,1).getDay();
+  const daysInMonth=new Date(fleetCalYear,fleetCalMonth+1,0).getDate();
+  let html='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;">';
+  ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d=>html+=`<div style="text-align:center;font-size:11px;font-weight:700;color:#888;padding:6px 0;">${d}</div>`);
+  for(let i=0;i<firstDay;i++)html+=`<div style="min-height:80px;"></div>`;
+  for(let d=1;d<=daysInMonth;d++){
+    const isToday=today.getDate()===d&&today.getMonth()===fleetCalMonth&&today.getFullYear()===fleetCalYear;
+    const evs=events[d]||[];
+    html+=`<div style="min-height:80px;border:1px solid #e8e8e8;border-radius:4px;padding:4px;background:${isToday?'#EAF0FB':'#fff'};">
+      <div style="font-size:12px;font-weight:${isToday?'800':'600'};color:${isToday?'var(--navy)':'#333'};margin-bottom:3px;">${d}</div>
+      ${evs.map(e=>`<div onclick="showAdmin('fleet');setTimeout(()=>openFleetVehicle('${e.vehicleId}'),400);" style="background:${e.color};color:#fff;font-size:9px;padding:2px 5px;border-radius:3px;margin-bottom:2px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;cursor:pointer;${e.overdue?'opacity:.7;text-decoration:line-through;':''}" title="${e.label}">${e.label}</div>`).join('')}
+    </div>`;
+  }
+  html+='</div>';
+  gridEl.innerHTML=html;
+}
+
 function exportFleetLog(){
   if(!allFleetMaintenanceCache.length){alert('No records to export.');return;}
   const headers=['Vehicle ID','Type','Date','Mileage','Next Due Date','Next Due Mileage','Shop','Cost','Notes','Logged By'];
@@ -9385,11 +9525,35 @@ function updateTsTabCounts(){
     if(t.hours_data){try{const rows=JSON.parse(t.hours_data);Object.values(rows).forEach(d=>{if(d.missed)missed++;});}catch(e){}}
   });
   const missedEl=document.getElementById('ts-qs-missed');if(missedEl)missedEl.textContent=missed;
-  // Populate week filter
+  // Populate week filter - Saturdays only from actual data
   const weekSel=document.getElementById('ts-week-filter');
-  if(weekSel&&weekSel.options.length<=1){
-    const weeks=[...new Set(allTimesheetsCache.map(t=>t.week_ending).filter(Boolean))].sort().reverse();
-    weeks.forEach(w=>{const opt=document.createElement('option');opt.value=w;opt.textContent='Week ending '+w;weekSel.appendChild(opt);});
+  if(weekSel){
+    const existingWeeks=[...new Set(allTimesheetsCache.map(t=>t.week_ending).filter(w=>{
+      if(!w)return false;
+      // Only include Saturdays (day 6)
+      const d=new Date(w+'T00:00:00');
+      return d.getDay()===6;
+    }))].sort().reverse();
+    // Also add upcoming Saturdays from current pay period even if no data yet
+    const anchor=new Date('2026-05-03T00:00:00');
+    const today=new Date();
+    const extraSats=new Set(existingWeeks);
+    for(let i=-2;i<=4;i++){
+      const sat=new Date(anchor);
+      sat.setDate(anchor.getDate()+(Math.floor((today-anchor)/(14*24*60*60*1000))+i)*14+6);
+      extraSats.add(sat.toISOString().split('T')[0]);
+      sat.setDate(sat.getDate()+7);
+      extraSats.add(sat.toISOString().split('T')[0]);
+    }
+    const allSats=[...extraSats].sort().reverse().slice(0,16);
+    weekSel.innerHTML='<option value="">All Weeks</option>';
+    allSats.forEach(w=>{
+      const opt=document.createElement('option');
+      opt.value=w;
+      const d=new Date(w+'T00:00:00');
+      opt.textContent='Week ending '+d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+      weekSel.appendChild(opt);
+    });
   }
 }
 
