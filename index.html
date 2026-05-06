@@ -3226,8 +3226,11 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
               <button id="exp-tab-PENDING" class="req-tab" onclick="setExpTab('PENDING')">Pending <span class="req-count" id="exp-count-PENDING" style="background:var(--red);color:#fff;">0</span></button>
               <button id="exp-tab-APPROVED" class="req-tab req-tab-approved" onclick="setExpTab('APPROVED')">Approved <span class="req-count" id="exp-count-APPROVED" style="background:#ddd;color:#555;">0</span></button>
               <button id="exp-tab-DENIED" class="req-tab req-tab-denied" onclick="setExpTab('DENIED')">Denied <span class="req-count" id="exp-count-DENIED" style="background:#ddd;color:#555;">0</span></button>
+              <button id="exp-tab-VEHICLE" class="req-tab" onclick="setExpTab('VEHICLE')" style="margin-left:auto;">🚐 Vehicle Costs</button>
             </div>
             <div id="expenses-table" style="margin-top:0;">Loading...</div>
+            <!-- Vehicle Maintenance Costs Panel -->
+            <div id="expenses-vehicle-panel" style="display:none;margin-top:8px;"></div>
           </div>
 
           <!-- RIGHT: Quick Summary -->
@@ -10558,11 +10561,98 @@ function updateExpenseBadge(){
 
 function setExpTab(tab){
   currentExpTab=tab;
-  ['PENDING','APPROVED','DENIED','ALL'].forEach(t=>{
+  ['PENDING','APPROVED','DENIED','ALL','VEHICLE'].forEach(t=>{
     const btn=document.getElementById('exp-tab-'+t);
     if(btn)btn.className='req-tab'+(t===tab?' req-tab-active':'')+(t==='APPROVED'?' req-tab-approved':'')+(t==='DENIED'?' req-tab-denied':'');
   });
-  renderExpensesTable();
+  const mainTable=document.getElementById('expenses-table');
+  const vehiclePanel=document.getElementById('expenses-vehicle-panel');
+  if(tab==='VEHICLE'){
+    if(mainTable)mainTable.style.display='none';
+    if(vehiclePanel){vehiclePanel.style.display='block';renderVehicleExpensesPanel();}
+  } else {
+    if(mainTable)mainTable.style.display='block';
+    if(vehiclePanel)vehiclePanel.style.display='none';
+    renderExpensesTable();
+  }
+}
+
+function renderVehicleExpensesPanel(){
+  const el=document.getElementById('expenses-vehicle-panel');if(!el)return;
+  // Combine fleet maintenance costs + vehicle expense submissions
+  const maintCosts=[];
+  (allFleetMaintenanceCache||[]).forEach(m=>{
+    if(m.cost&&parseFloat(m.cost)>0){
+      maintCosts.push({
+        date:m.service_date,vehicle_id:m.vehicle_id,
+        type:m.maintenance_type,description:m.notes||m.maintenance_type,
+        amount:parseFloat(m.cost),vendor:m.shop_name||m.vendor||'—',
+        source:'Fleet Log',receipt_url:m.receipt_url||null
+      });
+    }
+  });
+  const expCosts=(allExpensesCache||[]).filter(e=>
+    (e.expense_category||'').toLowerCase().includes('vehicle')||
+    (e.expense_type||'').toLowerCase().includes('vehicle')||
+    (e.expense_type||'').toLowerCase().includes('fuel')||
+    (e.expense_type||'').toLowerCase().includes('oil')||
+    (e.expense_type||'').toLowerCase().includes('repair')||
+    (e.vehicle_id)
+  ).map(e=>({
+    date:e.expense_date,vehicle_id:e.vehicle_id||'—',
+    type:e.expense_type,description:e.description||e.expense_type,
+    amount:parseFloat(e.amount||0),vendor:e.employee_name||'—',
+    source:'Expense',status:e.status,receipt_url:e.receipt_url||null
+  }));
+  const all=[...maintCosts,...expCosts].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const total=all.reduce((s,c)=>s+c.amount,0);
+  const byVehicle={};all.forEach(c=>{const v=c.vehicle_id||'Unknown';if(!byVehicle[v])byVehicle[v]=0;byVehicle[v]+=c.amount;});
+  el.innerHTML=`
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;">
+      <div class="card" style="padding:14px 20px;text-align:center;flex:1;min-width:120px;">
+        <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;">Total Vehicle Costs</div>
+        <div style="font-size:22px;font-weight:800;color:var(--navy);margin-top:4px;">$${total.toFixed(2)}</div>
+      </div>
+      <div class="card" style="padding:14px 20px;text-align:center;flex:1;min-width:120px;">
+        <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;">Cost Entries</div>
+        <div style="font-size:22px;font-weight:800;color:var(--navy);margin-top:4px;">${all.length}</div>
+      </div>
+      <div class="card" style="padding:14px 20px;flex:3;min-width:200px;">
+        <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">By Vehicle</div>
+        ${Object.entries(byVehicle).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([v,amt])=>`
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
+            <span style="font-weight:600;color:var(--navy);">${v}</span>
+            <span style="font-weight:800;">$${amt.toFixed(2)}</span>
+          </div>`).join('')}
+      </div>
+    </div>
+    <div style="margin-bottom:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+      <input type="text" id="veh-exp-search" placeholder="🔍 Search vehicle or description..." oninput="renderVehicleExpensesPanel()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;flex:1;min-width:180px;">
+      <button onclick="exportVehicleExpenses()" style="padding:8px 14px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;">📥 Export CSV</button>
+    </div>
+    ${all.length?`
+    <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+      <div style="display:grid;grid-template-columns:90px 100px 1fr 120px 100px 80px 70px;gap:8px;padding:8px 12px;background:var(--gray);font-size:11px;font-weight:700;color:#888;text-transform:uppercase;">
+        <div>Date</div><div>Vehicle</div><div>Description</div><div>Vendor/Employee</div><div>Type</div><div>Source</div><div style="text-align:right;">Amount</div>
+      </div>
+      ${all.map(c=>`<div style="display:grid;grid-template-columns:90px 100px 1fr 120px 100px 80px 70px;gap:8px;padding:10px 12px;border-top:1px solid var(--border);font-size:12px;align-items:center;background:#fff;">
+        <div style="color:#888;">${c.date||'—'}</div>
+        <div style="font-weight:700;color:var(--navy);">${c.vehicle_id||'—'}</div>
+        <div style="color:#555;">${c.description}${c.receipt_url?` <a href="${c.receipt_url}" target="_blank" style="color:#1565c0;font-size:11px;">📎</a>`:''}</div>
+        <div style="color:#555;">${c.vendor}</div>
+        <div><span style="background:#f0f4fb;color:var(--navy);font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px;">${c.type}</span></div>
+        <div><span style="background:${c.source==='Expense'?'#fff3cd':'#f0faf4'};color:${c.source==='Expense'?'#856404':'#27AE60'};font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px;">${c.source}</span></div>
+        <div style="font-weight:800;color:var(--navy);text-align:right;">$${c.amount.toFixed(2)}</div>
+      </div>`).join('')}
+    </div>`:'<p style="color:#888;font-size:13px;text-align:center;padding:30px 0;">No vehicle costs found.</p>'}`;
+}
+
+function exportVehicleExpenses(){
+  const maintCosts=(allFleetMaintenanceCache||[]).filter(m=>m.cost&&parseFloat(m.cost)>0).map(m=>['Fleet Log',m.vehicle_id,m.service_date,m.maintenance_type,m.notes||'',m.shop_name||'','','$'+parseFloat(m.cost).toFixed(2)]);
+  const expCosts=(allExpensesCache||[]).filter(e=>(e.expense_category||'').toLowerCase().includes('vehicle')||(e.expense_type||'').toLowerCase().includes('vehicle')||(e.expense_type||'').toLowerCase().includes('fuel')||e.vehicle_id).map(e=>['Expense',e.vehicle_id||'',e.expense_date,e.expense_type,e.description||'',e.employee_name||'',e.status||'',' $'+parseFloat(e.amount||0).toFixed(2)]);
+  const rows=[['Source','Vehicle ID','Date','Type','Description','Vendor/Employee','Status','Amount'],...maintCosts,...expCosts];
+  const csv=rows.map(r=>r.map(v=>'"'+(v||'').toString().replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='vehicle_expenses_'+new Date().toISOString().split('T')[0]+'.csv';a.click();
 }
 
 function renderExpensesTable(){
