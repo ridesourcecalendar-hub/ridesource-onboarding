@@ -8847,7 +8847,6 @@ function renderRequestsTable(){
   if(!el)return;
   const isDemo=adminStaff?.role==='demo';
   const search=(document.getElementById('req-search')?.value||'').toLowerCase();
-  // Use currentReqTab (set by tab buttons) as primary filter
   let filtered=applyCountyToCache(allRequestsCache);
   if(currentReqTab==='PENDING')filtered=filtered.filter(r=>r.status==='PENDING'||r.status==='PTO_PENDING');
   else if(currentReqTab==='PTO')filtered=filtered.filter(r=>r.request_type==='Use PTO Hours'||r.status==='PTO_PENDING');
@@ -8858,7 +8857,8 @@ function renderRequestsTable(){
     el.innerHTML='<div style="padding:20px;text-align:center;color:#888;">'+(msgs[currentReqTab]||'No requests found.')+'</div>';
     return;
   }
-  const header='<div style="display:grid;grid-template-columns:36px 1fr 100px 120px 100px 120px;gap:8px;padding:8px 12px;background:var(--gray);border-radius:8px 8px 0 0;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-top:12px;"><div></div><div>Employee</div><div>Type</div><div>Dates</div><div>Status</div><div>Actions</div></div>';
+  function fmtTime(t){if(!t)return'';try{const[h,m]=t.split(':');const hr=parseInt(h);return(hr>12?hr-12:hr||12)+':'+(m||'00')+(hr>=12?'pm':'am');}catch(e){return t;}}
+  const header='<div style="display:grid;grid-template-columns:36px 1fr 130px 150px 90px 140px;gap:8px;padding:8px 12px;background:var(--gray);border-radius:8px 8px 0 0;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-top:12px;"><div></div><div>Employee</div><div>Type</div><div>Dates / Times</div><div>Status</div><div>Actions</div></div>';
   let html='';
   filtered.forEach(function(r,idx){
     const displayName=isDemo?'Employee '+(idx+1):(r.employee_name||'Unknown');
@@ -8866,17 +8866,22 @@ function renderRequestsTable(){
     const avatarColor=getAvatarColor(r.employee_name);
     const statusClass=r.status==='APPROVED'?'approved':r.status==='DENIED'?'denied':'pending';
     const dateRange=r.start_date+(r.end_date&&r.end_date!==r.start_date?' – '+r.end_date:'');
-    html+='<div style="display:grid;grid-template-columns:36px 1fr 100px 120px 100px 120px;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border);align-items:center;font-size:13px;background:#fff;">';
+    // Show times for partial day requests
+    const isPartial=['Start Late','End Early','Mid-Day Appointment'].includes(r.request_type);
+    const timeStr=isPartial&&r.start_time?(fmtTime(r.start_time)+(r.end_time?' – '+fmtTime(r.end_time):'')):'';
+    const datesDisplay=dateRange+(timeStr?'<br><span style="font-size:11px;color:#1565c0;font-weight:600;">⏰ '+timeStr+'</span>':'');
+    html+='<div style="display:grid;grid-template-columns:36px 1fr 130px 150px 90px 140px;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border);align-items:center;font-size:13px;background:#fff;">';
     html+='<div style="width:32px;height:32px;border-radius:50%;background:'+avatarColor+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;">'+initials+'</div>';
-    html+='<div><div style="font-weight:700;color:var(--navy);">'+displayName+'</div><div style="font-size:11px;color:#888;">'+(r.county||'')+'</div></div>';
+    html+='<div><div style="font-weight:700;color:var(--navy);">'+displayName+'</div><div style="font-size:11px;color:#888;">'+(r.county||'')+(r.reason?'<div style="font-size:11px;color:#aaa;font-style:italic;margin-top:1px;">'+r.reason+'</div>':'')+'</div></div>';
     html+='<div style="font-size:12px;color:#555;">'+(r.request_type||'—')+'</div>';
-    html+='<div style="font-size:12px;color:#555;">'+dateRange+'</div>';
+    html+='<div style="font-size:12px;color:#555;">'+datesDisplay+'</div>';
     html+='<div><span class="badge badge-'+statusClass+'" style="font-size:10px;">'+r.status+'</span></div>';
-    html+='<div style="display:flex;gap:4px;">';
-    if(r.status==='PENDING'&&!isDemo){
-      html+='<button style="padding:4px 8px;border-radius:5px;border:1px solid #27AE60;background:#fff;color:#27AE60;cursor:pointer;font-size:11px;" data-rid="'+r.id+'" onclick="decideRequest(this.dataset.rid,&quot;APPROVED&quot;)">✓ Approve</button>';
-      html+='<button style="padding:4px 8px;border-radius:5px;border:1px solid var(--red);background:#fff;color:var(--red);cursor:pointer;font-size:11px;" data-rid="'+r.id+'" onclick="decideRequest(this.dataset.rid,&quot;DENIED&quot;)">✕ Deny</button>';
+    html+='<div style="display:flex;gap:4px;flex-wrap:wrap;">';
+    if((r.status==='PENDING'||r.status==='PTO_PENDING')&&!isDemo){
+      html+='<button style="padding:4px 8px;border-radius:5px;border:1px solid #27AE60;background:#fff;color:#27AE60;cursor:pointer;font-size:11px;" data-rid="'+r.id+'" onclick="decideRequest(this.dataset.rid,\'APPROVED\')">✓</button>';
+      html+='<button style="padding:4px 8px;border-radius:5px;border:1px solid var(--red);background:#fff;color:var(--red);cursor:pointer;font-size:11px;" data-rid="'+r.id+'" onclick="decideRequest(this.dataset.rid,\'DENIED\')">✕</button>';
     }
+    if(!isDemo)html+='<button style="padding:4px 8px;border-radius:5px;border:1px solid var(--border);background:#fff;color:#555;cursor:pointer;font-size:11px;" data-rid="'+r.id+'" onclick="openEditRequest(this.dataset.rid)">✏️</button>';
     html+='</div></div>';
   });
   el.innerHTML=header+'<div style="border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;overflow:hidden;">'+html+'</div>';
