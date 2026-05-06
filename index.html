@@ -3321,6 +3321,9 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
           </div>
         </div>
 
+        <!-- Asset Type Tabs -->
+        <div id="asset-type-tabs" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:12px;border-bottom:2px solid var(--border);padding-bottom:8px;"></div>
+
         <!-- Asset Count -->
         <div id="asset-count" style="font-size:12px;color:#888;margin-bottom:12px;"></div>
 
@@ -3402,8 +3405,27 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
             <div class="form-field"><label>Purchase Cost ($)</label>
               <input type="number" id="asset-cost" placeholder="0.00" step="0.01" min="0" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
             </div>
-            <div class="form-field"><label>Current Owner / Custodian</label>
-              <input type="text" id="asset-owner" placeholder="e.g. Tiffany G, Norway Office" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+            <div class="form-field"><label>County</label>
+              <select id="asset-owner" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                <option value="">— Select County —</option>
+                <option>Androscoggin</option><option>Aroostook</option><option>Cumberland</option>
+                <option>Franklin</option><option>Hancock</option><option>Kennebec</option>
+                <option>Knox</option><option>Lincoln</option><option>Oxford</option>
+                <option>Penobscot</option><option>Piscataquis</option><option>Sagadahoc</option>
+                <option>Somerset</option><option>Waldo</option><option>Washington</option><option>York</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field"><label>Assigned To (Primary)</label>
+              <select id="asset-assigned-to" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                <option value="">— Unassigned —</option>
+              </select>
+            </div>
+            <div class="form-field"><label>Assigned To (Secondary) <span style="font-weight:400;color:#aaa;">optional</span></label>
+              <select id="asset-assigned-to-2" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+                <option value="">— None —</option>
+              </select>
             </div>
           </div>
           <div class="form-field"><label>Condition Notes</label>
@@ -8639,13 +8661,16 @@ function renderRequestsTable(){
   const el=document.getElementById('requests-table');
   if(!el)return;
   const isDemo=adminStaff?.role==='demo';
-  const statusFilter=document.getElementById('req-status-filter')?.value||'ALL';
   const search=(document.getElementById('req-search')?.value||'').toLowerCase();
-  let filtered=statusFilter==='ALL'?allRequestsCache:allRequestsCache.filter(r=>r.status===statusFilter);
+  // Use currentReqTab (set by tab buttons) as primary filter
+  let filtered=allRequestsCache;
+  if(currentReqTab==='PENDING')filtered=allRequestsCache.filter(r=>r.status==='PENDING'||r.status==='PTO_PENDING');
+  else if(currentReqTab==='PTO')filtered=allRequestsCache.filter(r=>r.request_type==='Use PTO Hours'||r.status==='PTO_PENDING');
+  else if(currentReqTab!=='ALL')filtered=allRequestsCache.filter(r=>r.status===currentReqTab);
   if(search)filtered=filtered.filter(r=>(r.employee_name||'').toLowerCase().includes(search)||(r.request_type||'').toLowerCase().includes(search));
-  const msgs={PENDING:'No pending requests.',APPROVED:'No approved requests.',DENIED:'No denied requests.',ALL:'No requests found.'};
+  const msgs={PENDING:'No pending requests.',APPROVED:'No approved requests.',DENIED:'No denied requests.',PTO:'No PTO requests.',ALL:'No requests found.'};
   if(!filtered.length){
-    el.innerHTML='<div style="padding:20px;text-align:center;color:#888;">'+(msgs[statusFilter]||'No requests found.')+'</div>';
+    el.innerHTML='<div style="padding:20px;text-align:center;color:#888;">'+(msgs[currentReqTab]||'No requests found.')+'</div>';
     return;
   }
   const header='<div style="display:grid;grid-template-columns:36px 1fr 100px 120px 100px 120px;gap:8px;padding:8px 12px;background:var(--gray);border-radius:8px 8px 0 0;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-top:12px;"><div></div><div>Employee</div><div>Type</div><div>Dates</div><div>Status</div><div>Actions</div></div>';
@@ -13503,6 +13528,19 @@ function renderAssets(){
   if(assignedF==='assigned')filtered=filtered.filter(a=>a.assigned_to_name);
   if(assignedF==='unassigned')filtered=filtered.filter(a=>!a.assigned_to_name);
 
+  // Render type tabs
+  const tabsEl=document.getElementById('asset-type-tabs');
+  if(tabsEl){
+    const typeCounts={};
+    allAssetsCache.forEach(a=>{const t=a.asset_type||'Other';typeCounts[t]=(typeCounts[t]||0)+1;});
+    const types=['All',...Object.keys(typeCounts).sort()];
+    tabsEl.innerHTML=types.map(t=>{
+      const count=t==='All'?allAssetsCache.length:(typeCounts[t]||0);
+      const active=typeF===''&&t==='All'||typeF===t;
+      return`<button onclick="document.getElementById('asset-type-filter').value='${t==='All'?'':t}';renderAssets();" style="padding:5px 12px;border-radius:20px;border:2px solid ${active?'var(--navy)':'var(--border)'};background:${active?'var(--navy)':'#fff'};color:${active?'#fff':'#555'};font-size:12px;font-weight:700;cursor:pointer;">${t} <span style="opacity:.7">${count}</span></button>`;
+    }).join('');
+  }
+
   if(countEl)countEl.textContent=filtered.length+' of '+allAssetsCache.length+' assets';
 
   if(!filtered.length){
@@ -13581,19 +13619,19 @@ function assetTypeIcon(type){
 function openAddAssetModal(){
   document.getElementById('asset-modal-title').textContent='➕ Add New Asset';
   document.getElementById('asset-edit-id').value='';
-  ['asset-tag','asset-manufacturer','asset-model','asset-serial','asset-color',
-   'asset-location','asset-owner','asset-condition'].forEach(id=>{
+  ['asset-tag','asset-manufacturer','asset-model','asset-serial','asset-color','asset-location','asset-condition'].forEach(id=>{
     const el=document.getElementById(id);if(el)el.value='';
   });
   document.getElementById('asset-type').value='';
   document.getElementById('asset-status').value='Available';
   document.getElementById('asset-assigned-to').value='';
+  const sel2=document.getElementById('asset-assigned-to-2');if(sel2)sel2.value='';
+  document.getElementById('asset-owner').value='';
   document.getElementById('asset-purchase-date').value='';
   document.getElementById('asset-cost').value='';
   document.getElementById('asset-photo-preview').innerHTML='📦';
   document.getElementById('asset-photo-input').value='';
   document.getElementById('asset-save-msg').style.display='none';
-  // Populate employee dropdown
   populateAssetEmployeeDropdown();
   document.getElementById('add-asset-modal').classList.add('open');
 }
@@ -13611,35 +13649,36 @@ function openEditAssetModal(id){
   document.getElementById('asset-color').value=a.color||'';
   document.getElementById('asset-status').value=a.status||'Available';
   document.getElementById('asset-location').value=a.location||'';
-  document.getElementById('asset-owner').value=a.current_owner||'';
+  document.getElementById('asset-owner').value=a.county||a.current_owner||'';
   document.getElementById('asset-condition').value=a.condition_notes||'';
   document.getElementById('asset-purchase-date').value=a.purchase_date||'';
   document.getElementById('asset-cost').value=a.purchase_cost||'';
   document.getElementById('asset-save-msg').style.display='none';
-  // Photo preview
   const preview=document.getElementById('asset-photo-preview');
   if(a.photo_url){
     preview.innerHTML=`<img src="${a.photo_url}" style="width:100%;height:100%;object-fit:contain;">`;
   } else {
     preview.innerHTML=assetTypeIcon(a.asset_type)||'📦';
   }
-  populateAssetEmployeeDropdown(a.assigned_to_name);
+  populateAssetEmployeeDropdown(a.assigned_to_name,a.assigned_to_name_2);
   document.getElementById('add-asset-modal').classList.add('open');
 }
 
-function populateAssetEmployeeDropdown(selectedName=''){
+function populateAssetEmployeeDropdown(selectedName='',selectedName2=''){
   const sel=document.getElementById('asset-assigned-to');
+  const sel2=document.getElementById('asset-assigned-to-2');
   if(!sel)return;
-  sel.innerHTML='<option value="">— Unassigned —</option>';
-  const employees=allProfilesCache||[];
-  employees.sort((a,b)=>(a.employee_name||'').localeCompare(b.employee_name||''));
-  employees.forEach(e=>{
-    const opt=document.createElement('option');
-    opt.value=e.employee_name;
-    opt.textContent=e.employee_name+(e.county?' ('+e.county+')':'');
-    if(e.employee_name===selectedName)opt.selected=true;
-    sel.appendChild(opt);
-  });
+  const opts='<option value="">— Unassigned —</option>'+
+    (allProfilesCache||[]).filter(e=>!['Terminated','Separated','Inactive'].includes(e.employment_status||''))
+    .sort((a,b)=>(a.employee_name||'').localeCompare(b.employee_name||''))
+    .map(e=>`<option value="${e.employee_name}"${e.employee_name===selectedName?' selected':''}>${e.employee_name}${e.county?' ('+e.county+')':''}</option>`).join('');
+  sel.innerHTML=opts;
+  if(sel2){
+    sel2.innerHTML='<option value="">— None —</option>'+
+      (allProfilesCache||[]).filter(e=>!['Terminated','Separated','Inactive'].includes(e.employment_status||''))
+      .sort((a,b)=>(a.employee_name||'').localeCompare(b.employee_name||''))
+      .map(e=>`<option value="${e.employee_name}"${e.employee_name===selectedName2?' selected':''}>${e.employee_name}${e.county?' ('+e.county+')':''}</option>`).join('');
+  }
 }
 
 function previewAssetPhoto(input){
@@ -13670,9 +13709,14 @@ async function saveAsset(){
   if(photoInput?.files?.length){
     try{
       const file=photoInput.files[0];
-      const fname='assets/'+Date.now()+'-'+file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
-      const{data:up,error:ue}=await db.storage.from('ridesource-uploads').upload(fname,file);
+      const ext=file.name.split('.').pop().toLowerCase();
+      const fname='assets/'+Date.now()+'.'+(ext||'jpg');
+      const{data:up,error:ue}=await db.storage.from('ridesource-uploads').upload(fname,file,{upsert:true,contentType:file.type});
       if(!ue&&up){const{data:u}=db.storage.from('ridesource-uploads').getPublicUrl(fname);photoUrl=u?.publicUrl||null;}
+      // Base64 fallback for small images
+      if(!photoUrl&&file.size<=500000){
+        photoUrl=await new Promise(res=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.readAsDataURL(file);});
+      }
     }catch(e){console.log('Photo upload:',e);}
   }
 
@@ -13685,8 +13729,10 @@ async function saveAsset(){
     color:document.getElementById('asset-color').value.trim()||null,
     status:document.getElementById('asset-status').value||'Available',
     location:document.getElementById('asset-location').value.trim()||null,
-    current_owner:document.getElementById('asset-owner').value.trim()||null,
+    county:document.getElementById('asset-owner').value||null,
+    current_owner:document.getElementById('asset-owner').value||null,
     assigned_to_name:document.getElementById('asset-assigned-to').value||null,
+    assigned_to_name_2:document.getElementById('asset-assigned-to-2')?.value||null,
     condition_notes:document.getElementById('asset-condition').value.trim()||null,
     purchase_date:document.getElementById('asset-purchase-date').value||null,
     purchase_cost:parseFloat(document.getElementById('asset-cost').value)||null,
