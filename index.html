@@ -10205,12 +10205,41 @@ async function submitExpense(){
   let receiptUrl=null;
   const fileInput=document.getElementById('exp-receipt');
   if(fileInput?.files?.length){
+    const file=fileInput.files[0];
+    // Validate file size (max 5MB)
+    if(file.size>5*1024*1024){alert('Receipt file is too large. Please use a file under 5MB.');return;}
     try{
-      const file=fileInput.files[0];
-      const fileName='expenses/'+user.email+'-'+Date.now()+'-'+file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
-      const{data:up,error:ue}=await db.storage.from('ridesource-uploads').upload(fileName,file);
-      if(!ue&&up){const{data:u}=db.storage.from('ridesource-uploads').getPublicUrl(fileName);receiptUrl=u?.publicUrl||null;}
-    }catch(e){console.log('Receipt upload:',e);}
+      const ext=file.name.split('.').pop().toLowerCase();
+      const safeExt=['jpg','jpeg','png','gif','webp','pdf'].includes(ext)?ext:'jpg';
+      const fileName='expenses/'+Date.now()+'-'+(user.email||'emp').replace(/[^a-z0-9]/gi,'_')+'.'+safeExt;
+      const{data:up,error:ue}=await db.storage.from('ridesource-uploads').upload(fileName,file,{upsert:true,contentType:file.type});
+      if(ue){
+        console.log('Receipt upload error:',ue.message);
+        // Try alternate bucket name
+        const{data:up2,error:ue2}=await db.storage.from('uploads').upload(fileName,file,{upsert:true});
+        if(!ue2&&up2){
+          const{data:u}=db.storage.from('uploads').getPublicUrl(fileName);
+          receiptUrl=u?.publicUrl||null;
+        } else {
+          console.log('Alt bucket also failed:',ue2?.message);
+        }
+      } else if(up){
+        const{data:u}=db.storage.from('ridesource-uploads').getPublicUrl(fileName);
+        receiptUrl=u?.publicUrl||null;
+      }
+    }catch(e){console.log('Receipt upload exception:',e);}
+    if(!receiptUrl){
+      // Store file as base64 as last resort for small files
+      if(file.size<=500000){
+        try{
+          receiptUrl=await new Promise(res=>{
+            const r=new FileReader();
+            r.onload=e=>res(e.target.result);
+            r.readAsDataURL(file);
+          });
+        }catch(e){}
+      }
+    }
   }
   // Build payment string
   const paymentStr=paymentType+(paymentDetail?' - '+paymentDetail:'');
