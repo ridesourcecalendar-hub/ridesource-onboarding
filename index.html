@@ -456,10 +456,12 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
       </div>
       <div id="landing-admin" style="display:none;">
         <div class="landing-title">Admin &amp; Manager Access</div>
-        <div class="landing-desc">Supervisors and HR staff only. Enter your password to continue.</div>
+        <div class="landing-desc">Enter your email and password to continue.</div>
+        <input class="landing-field" id="admin-email" type="email" placeholder="Your Email Address" onkeydown="if(event.key==='Enter')adminLogin()">
         <input class="landing-field" id="admin-pass" type="password" placeholder="Your Password" onkeydown="if(event.key==='Enter')adminLogin()">
+        <div style="font-size:12px;color:#aaa;margin-top:-8px;margin-bottom:8px;text-align:center;">No email? Use master password only — leave email blank.</div>
         <button class="landing-btn" onclick="adminLogin()">Enter Admin Portal →</button>
-        <div class="error-msg" id="admin-error">Incorrect password. Please try again.</div>
+        <div class="error-msg" id="admin-error">Incorrect credentials. Please try again.</div>
       </div>
     </div>
   </div>
@@ -1322,6 +1324,19 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
       <span style="color:rgba(255,255,255,.7);font-size:13px;" id="admin-display"></span>
       <button class="btn-logout" onclick="adminLogout()">Sign Out</button>
     </div>
+  </div>
+  <!-- County Filter Bar (shown for roles with countyFilter permission) -->
+  <div id="admin-county-filter-bar" style="display:none;background:rgba(0,0,0,.2);padding:6px 20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+    <span style="font-size:11px;font-weight:700;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.5px;">Viewing:</span>
+    <select id="admin-county-filter" onchange="applyCountyFilter()" style="padding:4px 10px;border-radius:6px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.15);color:#fff;font-size:12px;font-weight:700;outline:none;cursor:pointer;">
+      <option value="">All Counties</option>
+      <option>Androscoggin</option><option>Aroostook</option><option>Cumberland</option>
+      <option>Franklin</option><option>Hancock</option><option>Kennebec</option>
+      <option>Knox</option><option>Lincoln</option><option>Oxford</option>
+      <option>Penobscot</option><option>Piscataquis</option><option>Sagadahoc</option>
+      <option>Somerset</option><option>Waldo</option><option>Washington</option><option>York</option>
+    </select>
+    <span id="admin-county-filter-label" style="font-size:11px;color:rgba(255,255,255,.6);"></span>
   </div>
   <div class="portal-layout">
     <div class="sidebar">
@@ -3699,29 +3714,23 @@ window.addEventListener('load',async function(){
       document.body.classList.add('portal-active');
       showMobileNav();
     } else if(sess.type==='admin'&&sess.name){
-      // Look up staff record from Supabase — no local credentials stored
-      const {data:staffData}=await db.from('admin_staff').select('name,title,email,role').eq('name',sess.name).single();
-      const staff=staffData;
+      // Look up staff record from Supabase
+      const {data:staffData}=await db.from('admin_staff').select('*').eq('name',sess.name).maybeSingle();
+      const staff=staffData||{name:sess.name,role:sess.role||'admin',email:sess.email};
       if(staff){
-        adminName=staff.role==='demo'?'Admin':staff.name;adminStaff=staff;
+        adminName=staff.role==='demo'?'Admin':staff.name;
+        adminStaff={...staff,assigned_counties:sess.counties||[]};
         document.getElementById('admin-display').textContent=staff.role==='demo'?'Admin':staff.name;
         document.getElementById('dash-admin-name').textContent=staff.role==='demo'?'Admin':staff.name.split(' ')[0];
-        // Always do fresh DB lookup to get current role (in case it was changed)
-        try{
-          const{data:freshStaff}=await db.from('admin_staff').select('role').eq('name',staff.name).single();
-          if(freshStaff?.role)staff.role=freshStaff.role;
-        }catch(e){}
+        const roleBadgeMap={admin:'Admin',owner:'Owner',ops_manager:'Ops Mgr',hr:'HR',supervisor:'Supervisor',fleet:'Fleet',demo:'DEMO'};
         const badge=document.getElementById('admin-role-badge');
-        if(badge)badge.textContent=staff.role==='admin'?'Admin':staff.role==='owner'?'Owner':staff.role==='ops_manager'?'Ops Mgr':staff.role==='hr'?'HR':staff.role==='demo'?'DEMO':staff.title.split(' ')[0];
-        // Restore gear button visibility
-        const gearBtn=document.getElementById('admin-config-btn');
-        if(gearBtn)gearBtn.style.display=staff.role==='admin'?'block':'none';
-        // Give CSS time to settle before any section shows
+        if(badge)badge.textContent=roleBadgeMap[staff.role]||'Staff';
+        applyRoleBasedNav(staff.role);
         await new Promise(r=>setTimeout(r,200));
-        const analyticsNav=document.getElementById('nav-adm-analytics');
-        if(analyticsNav)analyticsNav.style.display=['admin','owner','ops_manager'].includes(staff.role)?'flex':'none';
         document.getElementById('screen-landing').classList.remove('active');
         document.getElementById('screen-admin').classList.add('active');
+        const mobileNav=document.getElementById('mobile-bottom-nav');
+        if(mobileNav)mobileNav.style.display='none';
         buildMgrGuide();buildHbRef();
         loadEmployeeFolders();
         loadDashboard();loadRequests();loadCallOuts();loadFlags();loadOnboarding();renderCalendar();
@@ -3804,42 +3813,140 @@ function logout(){
 
 // ADMIN AUTH
 async function adminLogin(){
+  const email=(document.getElementById('admin-email')?.value||'').trim().toLowerCase();
   const pass=document.getElementById('admin-pass').value;
   const errEl=document.getElementById('admin-error');
   errEl.style.display='none';
   if(!pass){errEl.style.display='block';return;}
-  // Check password against hashed values in Supabase
-  const {data,error}=await db.rpc('check_admin_password',{input_password:pass});
-  if(error||!data||data.length===0){errEl.style.display='block';return;}
-  const staff=data[0];
-  document.getElementById('admin-error').style.display='none';
+  let staff=null;
+  // Try email+password login first
+  if(email){
+    try{
+      const{data}=await db.from('admin_staff').select('*').eq('email',email).limit(1);
+      if(data&&data.length>0){
+        const candidate=data[0];
+        // Check password via RPC or direct match
+        const{data:pwCheck}=await db.rpc('check_staff_password',{p_email:email,p_password:pass}).maybeSingle();
+        if(pwCheck){staff=candidate;}
+        else{
+          // Fallback: plain text password match (for staff not yet using hashed)
+          if(candidate.password===pass||candidate.pin===pass){staff=candidate;}
+        }
+      }
+    }catch(e){console.log('Email login:',e);}
+  }
+  // Fallback: master password (no email required)
+  if(!staff){
+    try{
+      const{data,error}=await db.rpc('check_admin_password',{input_password:pass});
+      if(!error&&data&&data.length>0){staff=data[0];}
+    }catch(e){console.log('Master pw:',e);}
+  }
+  if(!staff){errEl.style.display='block';return;}
   adminName=staff.role==='demo'?'Admin':staff.name;
   adminStaff=staff;
   const displayName=staff.role==='demo'?'Admin':staff.name;
   document.getElementById('admin-display').textContent=displayName;
   document.getElementById('dash-admin-name').textContent=staff.role==='demo'?'Admin':staff.name.split(' ')[0];
-  // Update header badge to show role
+  // Update header badge
+  const roleBadgeMap={admin:'Admin',owner:'Owner',ops_manager:'Ops Mgr',hr:'HR',supervisor:'Supervisor',fleet:'Fleet',demo:'DEMO'};
   const badge=document.getElementById('admin-role-badge');
-  if(badge)badge.textContent=staff.role==='admin'?'Admin':staff.role==='owner'?'Owner':staff.role==='ops_manager'?'Ops Mgr':staff.role==='hr'?'HR':staff.role==='demo'?'DEMO':staff.title.split(' ')[0];
-  // Show gear icon only for admin role
-  const gearBtn=document.getElementById('admin-config-btn');
-  if(gearBtn)gearBtn.style.display=staff.role==='admin'?'block':'none';
-  // Show analytics for admin/owner/ops_manager
-  const analyticsNavEl=document.getElementById('nav-adm-analytics');
-  if(analyticsNavEl)analyticsNavEl.style.display=['admin','owner','ops_manager'].includes(staff.role)?'flex':'none';
-  const sess2=JSON.stringify({type:'admin',name:staff.name,role:staff.role,ts:Date.now()});
+  if(badge)badge.textContent=roleBadgeMap[staff.role]||staff.title?.split(' ')[0]||'Staff';
+  // Apply role-based nav visibility
+  applyRoleBasedNav(staff.role);
+  const sess2=JSON.stringify({type:'admin',name:staff.name,role:staff.role,email:staff.email,counties:staff.assigned_counties||[],ts:Date.now()});
   sessionStorage.setItem('rs_session',sess2);localStorage.setItem('rs_session',sess2);
   document.getElementById('screen-landing').classList.remove('active');
   document.getElementById('screen-admin').classList.add('active');
-  // Hide mobile nav on admin portal
   const mobileNav=document.getElementById('mobile-bottom-nav');
   if(mobileNav)mobileNav.style.display='none';
   buildMgrGuide();buildHbRef();
-  loadEmployeeFolders(); // pre-load profile cache so supervisor filters work immediately
+  loadEmployeeFolders();
   loadDashboard();loadRequests();loadCallOuts();loadFlags();loadOnboarding();renderCalendar();
   loadTimesheets();loadVehicleRecords();loadIncidents();loadMemos();loadEmployeeMessages();loadFleetVehicles();loadFleetMaintenance();loadFleetTires();loadFleetChangeovers();loadExpenses();
   setupRealtimeSubscriptions();
 }
+function getActiveCountyFilter(){
+  // Admin sees all, others use the county filter bar or their assigned counties
+  if(!adminStaff)return null;
+  if(adminStaff.role==='admin')return null; // admin always sees all
+  const barFilter=document.getElementById('admin-county-filter')?.value||'';
+  if(barFilter)return[barFilter]; // user picked a specific county
+  // For supervisor role, filter to their assigned counties
+  if(adminStaff.role==='supervisor'&&adminStaff.assigned_counties?.length){
+    return adminStaff.assigned_counties;
+  }
+  return null; // null means show all
+}
+
+function applyCountyFilter(){
+  const filter=document.getElementById('admin-county-filter')?.value||'';
+  const label=document.getElementById('admin-county-filter-label');
+  if(label)label.textContent=filter?'Showing '+filter+' only':'';
+  // Refresh all currently visible data
+  renderRequestsTable();
+  renderTimesheetsTable();
+  renderIncidentTable();
+  renderExpensesTable();
+  renderAdminMemoList();
+  renderEmployeeMessagesList();
+  loadEmployeeFolders();
+}
+
+function applyCountyToCache(data,countyField='county'){
+  const counties=getActiveCountyFilter();
+  if(!counties||!counties.length)return data;
+  return(data||[]).filter(item=>counties.includes(item[countyField]||''));
+}
+
+function applyRoleBasedNav(role){
+  // Define what each role can see
+  const perms={
+    admin:     {employees:1,timeoff:1,timesheets:1,callouts:1,calendar:1,fleet:1,vehicles:1,expenses:1,incidents:1,assets:1,templates:1,warnings:1,memos:1,messages:1,analytics:1,config:1,onboarding:1,recognition:1,documents:1,managerGuide:1,handbook:1,submitVehicle:1,submitIncident:1,countyFilter:0},
+    ops_manager:{employees:1,timeoff:1,timesheets:1,callouts:1,calendar:1,fleet:1,vehicles:1,expenses:1,incidents:1,assets:1,templates:1,warnings:1,memos:1,messages:1,analytics:1,config:0,onboarding:1,recognition:1,documents:1,managerGuide:1,handbook:1,submitVehicle:1,submitIncident:1,countyFilter:1},
+    owner:     {employees:1,timeoff:1,timesheets:1,callouts:1,calendar:1,fleet:1,vehicles:1,expenses:1,incidents:1,assets:1,templates:1,warnings:1,memos:1,messages:1,analytics:1,config:0,onboarding:1,recognition:1,documents:1,managerGuide:1,handbook:1,submitVehicle:0,submitIncident:0,countyFilter:1},
+    hr:        {employees:1,timeoff:1,timesheets:1,callouts:1,calendar:1,fleet:0,vehicles:0,expenses:0,incidents:1,assets:'view',templates:1,warnings:1,memos:1,messages:1,analytics:'hr',config:0,onboarding:1,recognition:1,documents:1,managerGuide:1,handbook:1,submitVehicle:0,submitIncident:0,countyFilter:1},
+    supervisor:{employees:1,timeoff:1,timesheets:1,callouts:1,calendar:1,fleet:'view',vehicles:1,expenses:1,incidents:1,assets:'view',templates:'view',warnings:0,memos:0,messages:1,analytics:0,config:0,onboarding:0,recognition:0,documents:1,managerGuide:0,handbook:1,submitVehicle:1,submitIncident:1,countyFilter:0},
+    fleet:     {employees:0,timeoff:'view',timesheets:0,callouts:0,calendar:1,fleet:1,vehicles:1,expenses:1,incidents:0,assets:'view',templates:0,warnings:0,memos:1,messages:1,analytics:0,config:0,onboarding:0,recognition:0,documents:0,managerGuide:0,handbook:0,submitVehicle:1,submitIncident:0,countyFilter:1},
+    demo:      {employees:1,timeoff:1,timesheets:1,callouts:1,calendar:1,fleet:1,vehicles:1,expenses:1,incidents:1,assets:1,templates:1,warnings:1,memos:1,messages:1,analytics:1,config:0,onboarding:1,recognition:1,documents:1,managerGuide:1,handbook:1,submitVehicle:1,submitIncident:1,countyFilter:1}
+  };
+  const p=perms[role]||perms.supervisor;
+  // Nav visibility map: [nav element id, permission key]
+  const navMap=[
+    ['nav-adm-employee-folders','employees'],
+    ['nav-adm-onboarding-tracker','onboarding'],
+    ['nav-adm-warnings','warnings'],
+    ['nav-adm-recognition','recognition'],
+    ['nav-adm-requests','timeoff'],
+    ['nav-adm-callouts','callouts'],
+    ['nav-adm-timesheets','timesheets'],
+    ['nav-adm-calendar','calendar'],
+    ['nav-adm-fleet','fleet'],
+    ['nav-adm-assets','assets'],
+    ['nav-adm-vehicle-records','vehicles'],
+    ['nav-adm-incidents','incidents'],
+    ['nav-adm-expenses','expenses'],
+    ['nav-adm-memos','memos'],
+    ['nav-adm-templates','templates'],
+    ['nav-adm-documents','documents'],
+    ['nav-adm-manager-guide','managerGuide'],
+    ['nav-adm-handbook-ref','handbook'],
+    ['nav-adm-analytics','analytics'],
+  ];
+  navMap.forEach(([id,key])=>{
+    const el=document.getElementById(id);
+    if(el)el.style.display=p[key]?'flex':'none';
+  });
+  // Config gear button
+  const gearBtn=document.getElementById('admin-config-btn');
+  if(gearBtn)gearBtn.style.display=p.config?'block':'none';
+  // County filter bar - show for roles that have it
+  const countyBar=document.getElementById('admin-county-filter-bar');
+  if(countyBar)countyBar.style.display=p.countyFilter?'flex':'none';
+  // Store permissions on adminStaff for use in data filtering
+  if(adminStaff)adminStaff._perms=p;
+}
+
 function adminLogout(){
   sessionStorage.removeItem('rs_session');localStorage.removeItem('rs_session');
   document.getElementById('screen-admin').classList.remove('active');
@@ -5041,7 +5148,12 @@ async function loadDirectMessageEmployees(){
   listEl.innerHTML='<p style="color:#aaa;font-size:12px;padding:16px;">Loading...</p>';
   try{
     const{data:allMsgs}=await db.from('employee_messages').select('*').order('sent_at',{ascending:false});
-    const msgs=allMsgs||[];
+    const msgs=(allMsgs||[]).filter(m=>{
+      // Admin sees all, others only see messages to/from their own email
+      if(adminStaff?.role==='admin')return true;
+      const myEmail=(adminStaff?.email||'').toLowerCase();
+      return(m.to_email||'').toLowerCase()===myEmail||(m.from_email||'').toLowerCase()===myEmail||!m.from_admin;
+    });
     let filtered=msgs;
     if(dmTabFilter==='unread') filtered=msgs.filter(m=>!m.is_read&&!m.from_admin);
     else if(dmTabFilter==='sent') filtered=msgs.filter(m=>m.from_admin);
@@ -8736,10 +8848,10 @@ function renderRequestsTable(){
   const isDemo=adminStaff?.role==='demo';
   const search=(document.getElementById('req-search')?.value||'').toLowerCase();
   // Use currentReqTab (set by tab buttons) as primary filter
-  let filtered=allRequestsCache;
-  if(currentReqTab==='PENDING')filtered=allRequestsCache.filter(r=>r.status==='PENDING'||r.status==='PTO_PENDING');
-  else if(currentReqTab==='PTO')filtered=allRequestsCache.filter(r=>r.request_type==='Use PTO Hours'||r.status==='PTO_PENDING');
-  else if(currentReqTab!=='ALL')filtered=allRequestsCache.filter(r=>r.status===currentReqTab);
+  let filtered=applyCountyToCache(allRequestsCache);
+  if(currentReqTab==='PENDING')filtered=filtered.filter(r=>r.status==='PENDING'||r.status==='PTO_PENDING');
+  else if(currentReqTab==='PTO')filtered=filtered.filter(r=>r.request_type==='Use PTO Hours'||r.status==='PTO_PENDING');
+  else if(currentReqTab!=='ALL')filtered=filtered.filter(r=>r.status===currentReqTab);
   if(search)filtered=filtered.filter(r=>(r.employee_name||'').toLowerCase().includes(search)||(r.request_type||'').toLowerCase().includes(search));
   const msgs={PENDING:'No pending requests.',APPROVED:'No approved requests.',DENIED:'No denied requests.',PTO:'No PTO requests.',ALL:'No requests found.'};
   if(!filtered.length){
@@ -9082,7 +9194,7 @@ function renderTimesheetsTable(){
   const isDemo=adminStaff?.role==='demo';
   const search=(document.getElementById('ts-search')?.value||'').toLowerCase();
   const weekFilter=document.getElementById('ts-week-filter')?.value||'';
-  const normalized=allTimesheetsCache.map(t=>({...t,status:t.status||'PENDING'}));
+  const normalized=applyCountyToCache(allTimesheetsCache).map(t=>({...t,status:t.status||'PENDING'}));
   let filtered=tsFilterStatus==='ALL'?normalized:normalized.filter(t=>t.status===tsFilterStatus);
   if(search)filtered=filtered.filter(t=>(t.employee_name||'').toLowerCase().includes(search));
   if(weekFilter&&weekFilter!=='all')filtered=filtered.filter(t=>t.week_ending===weekFilter);
@@ -10662,7 +10774,7 @@ function renderExpensesTable(){
   const search=(document.getElementById('exp-search')?.value||'').toLowerCase();
   const typeFilter=document.getElementById('exp-type-filter')?.value||'';
   const paidFilter=document.getElementById('exp-paid-filter')?.value||'';
-  let filtered=allExpensesCache;
+  let filtered=applyCountyToCache(allExpensesCache);
   if(currentExpTab!=='ALL')filtered=filtered.filter(e=>e.status===currentExpTab);
   if(search)filtered=filtered.filter(e=>(e.employee_name||'').toLowerCase().includes(search));
   if(typeFilter)filtered=filtered.filter(e=>e.expense_type===typeFilter);
@@ -12788,12 +12900,18 @@ async function quickSignIn(){
 // ═══════════════════════════════════════════════
 // EDIT STAFF ACCOUNT
 // ═══════════════════════════════════════════════
-function openEditStaffModal(id, name, title, email, role){
+async function openEditStaffModal(id, name, title, email, role){
   document.getElementById('edit-staff-id').value=id;
   document.getElementById('edit-staff-name').value=name;
   document.getElementById('edit-staff-title').value=title;
   document.getElementById('edit-staff-email').value=email;
   document.getElementById('edit-staff-role').value=role;
+  // Load counties if staff record has them
+  try{
+    const{data:sc}=await db.from('admin_staff').select('assigned_counties').eq('id',id).single();
+    const countiesEl=document.getElementById('edit-staff-counties');
+    if(countiesEl)countiesEl.value=(sc?.assigned_counties||[]).join(', ');
+  }catch(e){}
   document.getElementById('edit-staff-msg').style.display='none';
   document.getElementById('edit-staff-err').style.display='none';
   document.getElementById('edit-staff-modal').classList.add('open');
@@ -12805,13 +12923,14 @@ async function saveStaffEdit(){
   const title=document.getElementById('edit-staff-title').value.trim();
   const email=document.getElementById('edit-staff-email').value.trim();
   const role=document.getElementById('edit-staff-role').value;
+  const countiesRaw=document.getElementById('edit-staff-counties')?.value||'';
+  const counties=countiesRaw.split(',').map(c=>c.trim()).filter(Boolean);
   const msgEl=document.getElementById('edit-staff-msg');
   const errEl=document.getElementById('edit-staff-err');
   msgEl.style.display='none';errEl.style.display='none';
   if(!name||!role){errEl.textContent='Name and role are required.';errEl.style.display='inline';return;}
   if(!id){errEl.textContent='Error: no account ID found.';errEl.style.display='inline';return;}
   try{
-    // Use RPC with SECURITY DEFINER to bypass RLS
     const{error:rpcError}=await db.rpc('update_admin_staff',{
       p_id:id,
       p_name:name,
@@ -12820,6 +12939,8 @@ async function saveStaffEdit(){
       p_role:role
     });
     if(rpcError)throw rpcError;
+    // Save counties separately (direct update)
+    await db.from('admin_staff').update({assigned_counties:counties.length?counties:null}).eq('id',id);
     msgEl.textContent='✓ Saved!';
     msgEl.style.display='inline';
     setTimeout(()=>{
@@ -14304,16 +14425,21 @@ function toggleMemoExpand(id){
         <option value="admin">Admin</option>
         <option value="hr">HR</option>
         <option value="supervisor">Supervisor</option>
+        <option value="fleet">Fleet</option>
         <option value="demo">Demo</option>
       </select>
     </div>
+    <div class="form-field"><label>Assigned Counties <span style="font-weight:400;color:#aaa;">(for Supervisor role — comma separated)</span></label>
+      <input type="text" id="edit-staff-counties" placeholder="e.g. Hancock, Oxford, Penobscot" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+    </div>
     <div style="background:#f7f9fc;border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:12px;color:#888;">
       <strong style="color:var(--navy);">Role permissions:</strong><br>
-      <strong>Owner</strong> — Full view + approve/edit, Analytics, no Config Panel<br>
-      <strong>Ops Manager</strong> — Same as Owner, tracked separately<br>
+      <strong>Owner</strong> — Full view, analytics, county filter, own messages/memos<br>
+      <strong>Ops Manager</strong> — Same as Owner, own messages/memos<br>
       <strong>Admin</strong> — Full access including Config Panel<br>
-      <strong>HR</strong> — Employee management, approvals, no Analytics<br>
-      <strong>Supervisor</strong> — View + approve, limited editing<br>
+      <strong>HR</strong> — Employees, time off, incidents, templates, memos, messages<br>
+      <strong>Supervisor</strong> — Own counties: employees, time off, timesheets, fleet view<br>
+      <strong>Fleet</strong> — Fleet, vehicles, expenses, time off calendar view, memos/messages<br>
       <strong>Demo</strong> — Read-only, anonymized data
     </div>
     <div style="display:flex;gap:10px;align-items:center;">
