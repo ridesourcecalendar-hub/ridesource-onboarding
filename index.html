@@ -3381,7 +3381,15 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
         <!-- Filters + View Toggle -->
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center;">
           <input type="text" id="asset-search" placeholder="🔍 Search assets..." onInput="renderAssets()"
-            style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;min-width:200px;">
+            style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;min-width:160px;">
+          <select id="asset-county-filter" onchange="renderAssets()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:#fff;">
+            <option value="">All Counties</option>
+            <option>Androscoggin</option><option>Aroostook</option><option>Cumberland</option>
+            <option>Franklin</option><option>Hancock</option><option>Kennebec</option>
+            <option>Knox</option><option>Lincoln</option><option>Oxford</option>
+            <option>Penobscot</option><option>Piscataquis</option><option>Sagadahoc</option>
+            <option>Somerset</option><option>Waldo</option><option>Washington</option><option>York</option>
+          </select>
           <select id="asset-type-filter" onchange="renderAssets()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:#fff;">
             <option value="">All Types</option>
             <option>Smartphone</option><option>Tablet</option><option>Laptop</option>
@@ -13986,6 +13994,7 @@ function renderAssets(){
   if(!el)return;
 
   const search=(document.getElementById('asset-search')?.value||'').toLowerCase();
+  const countyF=document.getElementById('asset-county-filter')?.value||'';
   const typeF=document.getElementById('asset-type-filter')?.value||'';
   const statusF=document.getElementById('asset-status-filter')?.value||'';
   const assignedF=document.getElementById('asset-assigned-filter')?.value||'';
@@ -13998,6 +14007,7 @@ function renderAssets(){
     (a.serial_number||'').toLowerCase().includes(search)||
     (a.assigned_to_name||'').toLowerCase().includes(search)
   );
+  if(countyF)filtered=filtered.filter(a=>(a.county||a.current_owner||'')=== countyF);
   if(typeF)filtered=filtered.filter(a=>a.asset_type===typeF);
   if(statusF)filtered=filtered.filter(a=>a.status===statusF);
   if(assignedF==='assigned')filtered=filtered.filter(a=>a.assigned_to_name);
@@ -14038,7 +14048,7 @@ function renderAssets(){
         const sc=statusColor[a.status]||'#888';
         const sb=statusBg[a.status]||'#f5f5f5';
         const photoHtml=a.photo_url
-          ?`<img src="${a.photo_url}" style="width:100%;height:120px;object-fit:contain;background:#f7f9fc;border-radius:6px 6px 0 0;">`
+          ?`<img src="${a.photo_url}" onerror="this.parentElement.innerHTML='<div style=\\"width:100%;height:120px;background:#f0f4fb;border-radius:6px 6px 0 0;display:flex;align-items:center;justify-content:center;font-size:40px;\\">${assetTypeIcon(a.asset_type)}</div>'" style="width:100%;height:120px;object-fit:contain;background:#f7f9fc;border-radius:6px 6px 0 0;">`
           :`<div style="width:100%;height:120px;background:#f0f4fb;border-radius:6px 6px 0 0;display:flex;align-items:center;justify-content:center;font-size:40px;">${assetTypeIcon(a.asset_type)}</div>`;
         return`<div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;cursor:pointer;background:#fff;" onclick="openEditAssetModal('${a.id}')">
           ${photoHtml}
@@ -14066,7 +14076,7 @@ function renderAssets(){
         const sc=statusColor[a.status]||'#888';
         const sb=statusBg[a.status]||'#f5f5f5';
         const photoHtml=a.photo_url
-          ?`<img src="${a.photo_url}" style="width:38px;height:38px;object-fit:contain;border-radius:6px;background:#f7f9fc;">`
+          ?`<img src="${a.photo_url}" onerror="this.outerHTML='<div style=\\"width:38px;height:38px;border-radius:6px;background:#f0f4fb;display:flex;align-items:center;justify-content:center;font-size:20px;\\">${assetTypeIcon(a.asset_type)}</div>'" style="width:38px;height:38px;object-fit:contain;border-radius:6px;background:#f7f9fc;">`
           :`<div style="width:38px;height:38px;border-radius:6px;background:#f0f4fb;display:flex;align-items:center;justify-content:center;font-size:20px;">${assetTypeIcon(a.asset_type)}</div>`;
         return`<div style="display:grid;grid-template-columns:50px 1fr 100px 120px 130px 100px 80px;gap:8px;padding:10px 12px;border-top:1px solid var(--border);align-items:center;cursor:pointer;background:#fff;" onclick="openEditAssetModal('${a.id}')">
           <div>${photoHtml}</div>
