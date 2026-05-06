@@ -5634,23 +5634,31 @@ async function sendDirectMessage(){
   if(!msg||!currentDirectMsgEmployee)return;
   input.value='';
   try{
+    const empName=allProfilesCache.find(p=>p.employee_email===currentDirectMsgEmployee)?.employee_name||'';
+    // Insert reply as new from_admin message
     await db.from('employee_messages').insert([{
       employee_email:currentDirectMsgEmployee,
-      employee_name:allProfilesCache.find(p=>p.employee_email===currentDirectMsgEmployee)?.employee_name||'',
+      employee_name:empName,
       from_name:adminName,
-      from_email:adminStaff?.email||'admin@ridesource',
+      from_email:adminStaff?.email||'tiffanyb@ridesourcemaine.com',
       to_email:currentDirectMsgEmployee,
       from_admin:true,
-      subject:'Direct Message from '+adminName,
-      message:msg,
-      body:msg,
+      subject:'Re: Message from '+empName,
+      message:msg,body:msg,
       is_read:false,
       sent_at:new Date().toISOString()
     }]);
-    // Reload thread view
-    const empName=allProfilesCache.find(p=>p.employee_email===currentDirectMsgEmployee)?.employee_name||currentDirectMsgEmployee;
-    openDirectThread(currentDirectMsgEmployee,empName,true);
-  }catch(e){alert('Error sending message: '+e.message);}
+    // Also stamp admin_reply on the most recent employee message so they see it inline
+    const{data:orig}=await db.from('employee_messages').select('id')
+      .eq('employee_email',currentDirectMsgEmployee).eq('from_admin',false)
+      .order('sent_at',{ascending:false}).limit(1);
+    if(orig&&orig.length){
+      await db.from('employee_messages').update({
+        admin_reply:msg,is_read:true,read_at:new Date().toISOString()
+      }).eq('id',orig[0].id);
+    }
+    openDirectThread(currentDirectMsgEmployee,empName||currentDirectMsgEmployee,true);
+  }catch(e){alert('Error sending: '+e.message);}
 }
 
 async function loadMemos(){
@@ -6040,34 +6048,33 @@ async function acknowledgeMemoFromHistory(id,btn){
 async function loadEmpSentMessages(){
   if(!user)return;
   try{
-    // Load BOTH sent messages AND received replies from admin
-    const {data}=await db.from('employee_messages').select('*')
-      .or('employee_email.eq.'+user.email+',to_email.eq.'+user.email)
+    // Load all messages in both directions for this employee
+    const{data:sent}=await db.from('employee_messages').select('*')
+      .eq('employee_email',user.email).eq('from_admin',false)
+      .order('sent_at',{ascending:false});
+    const{data:received}=await db.from('employee_messages').select('*')
+      .eq('to_email',user.email).eq('from_admin',true)
       .order('sent_at',{ascending:false});
     const list=document.getElementById('emp-sent-messages-list');
     if(!list)return;
-    const sentCount=document.getElementById('memo-card-sent-count');if(sentCount)sentCount.textContent=(data?data.length:0)+' sent';
-    if(!data||!data.length){list.innerHTML='<p style="color:#888;font-size:13px;">No messages sent yet.</p>';return;}
-    list.innerHTML=data.map(m=>{
-      const dt=new Date(m.sent_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-      const isFromAdmin=m.from_admin===true||m.to_email===user.email;
-      const readBadge=m.is_read?'<span style="color:var(--success);font-size:11px;font-weight:700;">✓ Seen</span>':'<span style="color:#888;font-size:11px;">Pending</span>';
-      if(isFromAdmin){
-        // Message FROM admin TO employee
-        return '<div style="border:1px solid #a78bfa;border-radius:10px;padding:12px;margin-bottom:8px;background:#faf5ff;">' +
-          '<div style="font-size:11px;font-weight:700;color:#5b21b6;margin-bottom:4px;">📨 Message from Supervisor · '+dt+'</div>' +
-          '<div style="font-size:13px;color:#444;white-space:pre-wrap;">'+m.message+'</div>' +
-        '</div>';
-      }
-      return '<div style="border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;background:#fafafa;">' +
-        '<div style="display:flex;justify-content:space-between;align-items:center;">' +
-          '<div style="font-size:13px;font-weight:700;color:var(--navy);">' + m.subject + '</div>' +
-          readBadge +
-        '</div>' +
-        '<div style="font-size:11px;color:#888;margin-top:2px;">' + dt + '</div>' +
-        '<div style="font-size:13px;color:#555;margin-top:8px;white-space:pre-wrap;">' + m.body + '</div>' +
-        (m.admin_reply?'<div style="margin-top:10px;background:#e8f4fd;border-radius:8px;padding:8px 12px;font-size:12px;"><strong>Reply from supervisor:</strong> '+m.admin_reply+'</div>':'') +
-      '</div>';
+    const allMsgs=[...(sent||[]).map(m=>({...m,_dir:'sent'})),...(received||[]).map(m=>({...m,_dir:'received'}))].sort((a,b)=>new Date(b.sent_at)-new Date(a.sent_at));
+    const sentCount=document.getElementById('memo-card-sent-count');
+    if(sentCount)sentCount.textContent=(sent?.length||0)+' sent';
+    if(!allMsgs.length){list.innerHTML='<p style="color:#888;font-size:13px;">No messages yet.</p>';return;}
+    list.innerHTML=allMsgs.map(m=>{
+      const dt=new Date(m.sent_at).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
+      const isReply=m._dir==='received';
+      return`<div style="border:1px solid ${isReply?'#a78bfa':'var(--border)'};border-left:3px solid ${isReply?'#7c3aed':'var(--navy)'};border-radius:8px;padding:12px 16px;margin-bottom:8px;background:${isReply?'#faf5ff':'#fafafa'};">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <div style="font-size:12px;font-weight:700;color:${isReply?'#7c3aed':'var(--navy)'};">
+            ${isReply?'📨 Reply from your Supervisor':'📤 You → RideSource Management'}
+          </div>
+          <div style="font-size:11px;color:#aaa;">${dt}</div>
+        </div>
+        ${m.subject&&!m.subject.startsWith('Re:')?`<div style="font-size:12px;font-weight:700;color:#555;margin-bottom:4px;">${m.subject}</div>`:''}
+        <div style="font-size:13px;color:#333;white-space:pre-wrap;line-height:1.6;">${(m.body||m.message||'').replace(/</g,'&lt;')}</div>
+        ${!isReply&&m.admin_reply?`<div style="margin-top:10px;background:#f5f3ff;border-radius:6px;padding:8px 12px;font-size:12px;border-left:3px solid #7c3aed;"><strong style="color:#7c3aed;">Supervisor replied:</strong> ${m.admin_reply}</div>`:''}
+      </div>`;
     }).join('');
   }catch(e){console.log('Sent messages:',e);}
 }
