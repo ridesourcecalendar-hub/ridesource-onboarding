@@ -15838,43 +15838,6 @@ function toggleMemoExpand(id){
 <div id="mobile-menu-panel" style="display:none;position:fixed;bottom:56px;left:0;right:0;background:#fff;border-top:1px solid var(--border);z-index:199;box-shadow:0 -4px 20px rgba(0,0,0,0.1);padding:12px;max-height:70vh;overflow-y:auto;">
   <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;padding:0 4px;">Documents</div>
 
-<!-- EDIT FLEET MAINTENANCE MODAL -->
-<div class="modal-overlay" id="edit-fleet-maint-modal">
-  <div class="modal" style="max-width:520px;">
-    <button class="modal-close" onclick="closeModal('edit-fleet-maint-modal')">✕</button>
-    <h3 style="color:var(--navy);margin-bottom:4px;">✏️ Edit Maintenance Entry</h3>
-    <div id="efm-type-label" style="font-size:12px;color:#888;margin-bottom:16px;"></div>
-    <input type="hidden" id="efm-id">
-    <div class="form-row">
-      <div class="form-field"><label>Date *</label><input type="date" id="efm-date" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
-      <div class="form-field"><label>Mileage</label><input type="number" id="efm-mileage" placeholder="e.g. 87500" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
-    </div>
-    <div class="form-row">
-      <div class="form-field"><label>Shop / Vendor</label><input type="text" id="efm-shop" placeholder="e.g. Prompto Ellsworth" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
-      <div class="form-field"><label>Invoice Number</label><input type="text" id="efm-invoice" placeholder="e.g. INV-2026-0042" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
-    </div>
-    <div class="form-row">
-      <div class="form-field"><label>Cost ($)</label><input type="number" id="efm-cost" placeholder="0.00" step="0.01" min="0" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
-      <div class="form-field"><label>Payment Method</label>
-        <select id="efm-payment" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
-          <option value="">— Not paid yet —</option>
-          <option>Charge Account</option><option>Cash</option>
-          <option>Credit Card</option><option>Check</option><option>Paid by Employee</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-field"><label>Next Due Date</label><input type="date" id="efm-next-date" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
-      <div class="form-field"><label>Next Due Mileage</label><input type="number" id="efm-next-mileage" placeholder="e.g. 90000" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
-    </div>
-    <div class="form-field"><label>Notes</label><textarea id="efm-notes" style="width:100%;min-height:80px;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;font-family:Arial,sans-serif;outline:none;resize:vertical;"></textarea></div>
-    <div style="display:flex;gap:10px;align-items:center;margin-top:8px;">
-      <button class="btn btn-primary" onclick="saveEditFleetMaint()">💾 Save Changes</button>
-      <button class="btn btn-sm" style="background:#f0f0f0;color:#555;" onclick="closeModal('edit-fleet-maint-modal')">Cancel</button>
-      <span id="efm-msg" style="font-size:13px;color:var(--success);display:none;">✓ Saved!</span>
-    </div>
-  </div>
-</div>
 
 <!-- LOG REPAIR FROM REPORT MODAL -->
 <div class="modal-overlay" id="log-from-report-modal">
@@ -15953,6 +15916,45 @@ function toggleMemoExpand(id){
     </div>
     <div id="all-maint-list" style="overflow-y:auto;flex:1;">
       <p style="color:#888;font-size:13px;">Loading...</p>
+    </div>
+  </div>
+</div>
+
+
+<!-- EDIT FLEET MAINTENANCE MODAL -->
+<div class="modal-overlay" id="edit-fleet-maint-modal">
+  <div class="modal" style="max-width:520px;">
+    <button class="modal-close" onclick="closeModal('edit-fleet-maint-modal')">✕</button>
+    <h3 style="color:var(--navy);margin-bottom:4px;">✏️ Edit Maintenance Entry</h3>
+    <div id="efm-type-label" style="font-size:12px;color:#888;margin-bottom:16px;"></div>
+    <input type="hidden" id="efm-id">
+    <div class="form-row">
+      <div class="form-field"><label>Date *</label><input type="date" id="efm-date" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+      <div class="form-field"><label>Mileage</label><input type="number" id="efm-mileage" placeholder="e.g. 87500" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-field"><label>Shop / Vendor</label><input type="text" id="efm-shop" placeholder="e.g. Prompto Ellsworth" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+      <div class="form-field"><label>Invoice Number</label><input type="text" id="efm-invoice" placeholder="e.g. INV-2026-0042" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-field"><label>Cost ($)</label><input type="number" id="efm-cost" placeholder="0.00" step="0.01" min="0" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+      <div class="form-field"><label>Payment Method</label>
+        <select id="efm-payment" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+          <option value="">— Not paid yet —</option>
+          <option>Charge Account</option><option>Cash</option>
+          <option>Credit Card</option><option>Check</option><option>Paid by Employee</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-field"><label>Next Due Date</label><input type="date" id="efm-next-date" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+      <div class="form-field"><label>Next Due Mileage</label><input type="number" id="efm-next-mileage" placeholder="e.g. 90000" style="width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;"></div>
+    </div>
+    <div class="form-field"><label>Notes</label><textarea id="efm-notes" style="width:100%;min-height:80px;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;font-family:Arial,sans-serif;outline:none;resize:vertical;"></textarea></div>
+    <div style="display:flex;gap:10px;align-items:center;margin-top:8px;">
+      <button class="btn btn-primary" onclick="saveEditFleetMaint()">💾 Save Changes</button>
+      <button class="btn btn-sm" style="background:#f0f0f0;color:#555;" onclick="closeModal('edit-fleet-maint-modal')">Cancel</button>
+      <span id="efm-msg" style="font-size:13px;color:var(--success);display:none;">✓ Saved!</span>
     </div>
   </div>
 </div>
