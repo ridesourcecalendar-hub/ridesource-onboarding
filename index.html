@@ -2726,12 +2726,12 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
                 <textarea id="fm-prev-notes" style="width:100%;min-height:70px;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;font-family:Arial,sans-serif;outline:none;resize:vertical;" placeholder="Describe all work done, tire sizes, part numbers, etc."></textarea>
               </div>
 
-              <!-- Parts Section -->
+              <!-- Parts Section — Description + Qty only -->
               <div class="form-field">
                 <label>Parts Used</label>
                 <div style="background:#f7f9fc;border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:6px;">
-                  <div style="display:grid;grid-template-columns:1fr 80px 90px 24px;gap:6px;margin-bottom:6px;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;">
-                    <div>Part Description</div><div>Qty</div><div>Unit Price</div><div></div>
+                  <div style="display:grid;grid-template-columns:1fr 80px 24px;gap:6px;margin-bottom:6px;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;">
+                    <div>Part Description</div><div>Qty</div><div></div>
                   </div>
                   <div id="fm-prev-parts-list" style="display:flex;flex-direction:column;gap:4px;"></div>
                   <button type="button" onclick="addPrevPartRow()" style="font-size:12px;padding:5px 12px;border-radius:6px;border:1px solid var(--navy);background:#f0f4fb;color:var(--navy);cursor:pointer;margin-top:6px;">+ Add Part</button>
@@ -2751,10 +2751,14 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
                 <div style="background:#f7f9fc;border:1px solid var(--border);border-radius:8px;padding:12px;">
                   <div class="form-row">
                     <div class="form-field"><label style="font-size:11px;">Labor ($)</label><input type="number" id="fm-prev-cost-labor" placeholder="0.00" step="0.01" min="0" oninput="calcPrevTotal()" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;"></div>
-                    <div class="form-field"><label style="font-size:11px;">Parts ($)</label><input type="number" id="fm-prev-cost-parts" placeholder="0.00" step="0.01" min="0" oninput="calcPrevTotal()" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;" readonly></div>
+                    <div class="form-field"><label style="font-size:11px;">Parts ($)</label><input type="number" id="fm-prev-cost-parts" placeholder="0.00" step="0.01" min="0" oninput="calcPrevTotal()" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;"></div>
                   </div>
                   <div class="form-row">
-                    <div class="form-field"><label style="font-size:11px;">Shop Supplies / Fees ($)</label><input type="number" id="fm-prev-cost-supplies" placeholder="0.00" step="0.01" min="0" oninput="calcPrevTotal()" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;"></div>
+                    <div class="form-field"><label style="font-size:11px;">Shop Fee / Supplies ($)</label><input type="number" id="fm-prev-cost-supplies" placeholder="0.00" step="0.01" min="0" oninput="calcPrevTotal()" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;"></div>
+                    <div class="form-field"><label style="font-size:11px;">Other ($)</label><input type="number" id="fm-prev-cost-other" placeholder="0.00" step="0.01" min="0" oninput="calcPrevTotal()" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;"></div>
+                  </div>
+                  <div class="form-row">
+                    <div class="form-field"><label style="font-size:11px;">Discount (-$)</label><input type="number" id="fm-prev-cost-discount" placeholder="0.00" step="0.01" min="0" oninput="calcPrevTotal()" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;"></div>
                     <div class="form-field"><label style="font-size:11px;">Sales Tax ($)</label><input type="number" id="fm-prev-cost-tax" placeholder="0.00" step="0.01" min="0" oninput="calcPrevTotal()" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;"></div>
                   </div>
                   <div style="display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:2px solid var(--border);margin-top:4px;">
@@ -7046,16 +7050,14 @@ async function saveFleetMaintEntry(){
     const noteParts=prevParts.length?'Parts: '+prevParts.join(', '):'';
     const noteSvcs=prevSvcs.length?'Additional: '+prevSvcs.join(', '):'';
     entry.notes=[type,notesText,noteParts,noteSvcs].filter(Boolean).join('\n');
-    // Cost
+    // Cost from manual fields
     const prevLabor=parseFloat(document.getElementById('fm-prev-cost-labor')?.value)||0;
     const prevPartsAmt=parseFloat(document.getElementById('fm-prev-cost-parts')?.value)||0;
     const prevSupplies=parseFloat(document.getElementById('fm-prev-cost-supplies')?.value)||0;
+    const prevOther=parseFloat(document.getElementById('fm-prev-cost-other')?.value)||0;
+    const prevDiscount=parseFloat(document.getElementById('fm-prev-cost-discount')?.value)||0;
     const prevTax=parseFloat(document.getElementById('fm-prev-cost-tax')?.value)||0;
-    let prevSvcsAmt=0;
-    document.querySelectorAll('#fm-prev-services-list > div').forEach(row=>{
-      prevSvcsAmt+=parseFloat(row.querySelectorAll('input')[1]?.value)||0;
-    });
-    entry.cost=prevLabor+prevPartsAmt+prevSupplies+prevTax+prevSvcsAmt||null;
+    entry.cost=Math.max(0,prevLabor+prevPartsAmt+prevSupplies+prevOther-prevDiscount+prevTax)||null;
     clearPrevForm();
     clearIds=[];
 
@@ -14863,12 +14865,11 @@ function addPrevPartRow(){
   const list=document.getElementById('fm-prev-parts-list');
   if(!list)return;
   const div=document.createElement('div');
-  div.style.cssText='display:grid;grid-template-columns:1fr 80px 90px 24px;gap:6px;align-items:center;';
+  div.style.cssText='display:grid;grid-template-columns:1fr 80px 24px;gap:6px;align-items:center;';
   div.innerHTML=`
-    <input type="text" list="common-parts-list" placeholder="Part description..." style="padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;" oninput="calcPrevTotal()">
-    <input type="number" placeholder="Qty" min="1" value="1" style="padding:7px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;text-align:center;" oninput="calcPrevTotal()">
-    <input type="number" placeholder="$0.00" step="0.01" min="0" style="padding:7px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;" oninput="calcPrevTotal()">
-    <button type="button" onclick="this.closest('div').remove();calcPrevTotal();" style="width:24px;height:30px;border-radius:6px;border:1px solid #fcc;background:#fff;color:var(--red);cursor:pointer;font-size:12px;padding:0;">✕</button>
+    <input type="text" list="common-parts-list" placeholder="Part description (size, brand, part #)..." style="padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;">
+    <input type="number" placeholder="Qty" min="1" value="1" style="padding:7px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;text-align:center;">
+    <button type="button" onclick="this.closest('div').remove();" style="width:24px;height:30px;border-radius:6px;border:1px solid #fcc;background:#fff;color:var(--red);cursor:pointer;font-size:12px;padding:0;">✕</button>
   `;
   list.appendChild(div);
   if(!document.getElementById('common-parts-list')){
@@ -14892,22 +14893,13 @@ function addPrevServiceRow(){
 }
 
 function calcPrevTotal(){
-  let partsTotal=0;
-  document.querySelectorAll('#fm-prev-parts-list > div').forEach(row=>{
-    const inputs=row.querySelectorAll('input');
-    if(inputs.length>=3){partsTotal+=(parseFloat(inputs[1]?.value)||0)*(parseFloat(inputs[2]?.value)||0);}
-  });
-  let servicesTotal=0;
-  document.querySelectorAll('#fm-prev-services-list > div').forEach(row=>{
-    const inputs=row.querySelectorAll('input');
-    if(inputs.length>=2){servicesTotal+=parseFloat(inputs[1]?.value)||0;}
-  });
-  const partsEl=document.getElementById('fm-prev-cost-parts');
-  if(partsEl)partsEl.value=partsTotal>0?partsTotal.toFixed(2):'';
   const labor=parseFloat(document.getElementById('fm-prev-cost-labor')?.value)||0;
+  const parts=parseFloat(document.getElementById('fm-prev-cost-parts')?.value)||0;
   const supplies=parseFloat(document.getElementById('fm-prev-cost-supplies')?.value)||0;
+  const other=parseFloat(document.getElementById('fm-prev-cost-other')?.value)||0;
+  const discount=parseFloat(document.getElementById('fm-prev-cost-discount')?.value)||0;
   const tax=parseFloat(document.getElementById('fm-prev-cost-tax')?.value)||0;
-  const total=labor+partsTotal+servicesTotal+supplies+tax;
+  const total=Math.max(0,labor+parts+supplies+other-discount+tax);
   const totalEl=document.getElementById('fm-prev-cost-total');
   if(totalEl)totalEl.textContent='$'+total.toFixed(2);
 }
@@ -14915,7 +14907,7 @@ function calcPrevTotal(){
 function clearPrevForm(){
   ['fm-prev-type','fm-prev-shop','fm-prev-invoice','fm-prev-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   ['fm-prev-date','fm-prev-next-date'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  ['fm-prev-mileage','fm-prev-cost-labor','fm-prev-cost-parts','fm-prev-cost-supplies','fm-prev-cost-tax'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['fm-prev-mileage','fm-prev-cost-labor','fm-prev-cost-parts','fm-prev-cost-supplies','fm-prev-cost-other','fm-prev-cost-discount','fm-prev-cost-tax'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   const total=document.getElementById('fm-prev-cost-total');if(total)total.textContent='$0.00';
   const parts=document.getElementById('fm-prev-parts-list');if(parts)parts.innerHTML='';
   const svcs=document.getElementById('fm-prev-services-list');if(svcs)svcs.innerHTML='';
