@@ -2866,6 +2866,19 @@ body{font-family:Arial,sans-serif;background:#F0F4FA;color:#222;min-height:100vh
 
         <!-- COMPOSE TAB -->
         <div id="adm-memo-panel-compose">
+          <!-- Quick Memo Templates -->
+          <div style="margin-bottom:16px;">
+            <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">⚡ Quick Templates</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button onclick="applyMemoTemplate('birthday')" style="padding:6px 12px;border-radius:20px;border:2px solid #f59e0b;background:#fffbeb;color:#92400e;font-size:12px;font-weight:700;cursor:pointer;">🎂 Birthday</button>
+              <button onclick="applyMemoTemplate('anniversary')" style="padding:6px 12px;border-radius:20px;border:2px solid #8b5cf6;background:#f5f3ff;color:#5b21b6;font-size:12px;font-weight:700;cursor:pointer;">🎉 Work Anniversary</button>
+              <button onclick="applyMemoTemplate('holiday')" style="padding:6px 12px;border-radius:20px;border:2px solid #ef4444;background:#fef2f2;color:#991b1b;font-size:12px;font-weight:700;cursor:pointer;">🎄 Holiday</button>
+              <button onclick="applyMemoTemplate('snowday')" style="padding:6px 12px;border-radius:20px;border:2px solid #3b82f6;background:#eff6ff;color:#1d4ed8;font-size:12px;font-weight:700;cursor:pointer;">❄️ Snow Day</button>
+              <button onclick="applyMemoTemplate('closure')" style="padding:6px 12px;border-radius:20px;border:2px solid #f97316;background:#fff7ed;color:#9a3412;font-size:12px;font-weight:700;cursor:pointer;">🔒 Office Closure</button>
+              <button onclick="applyMemoTemplate('reminder')" style="padding:6px 12px;border-radius:20px;border:2px solid #10b981;background:#ecfdf5;color:#065f46;font-size:12px;font-weight:700;cursor:pointer;">📌 Reminder</button>
+              <button onclick="applyMemoTemplate('urgent')" style="padding:6px 12px;border-radius:20px;border:2px solid var(--red);background:#fef2f2;color:#991b1b;font-size:12px;font-weight:700;cursor:pointer;">🔴 Urgent Notice</button>
+            </div>
+          </div>
           <div style="display:grid;grid-template-columns:1fr 280px;gap:20px;align-items:start;">
             <!-- Left: Form -->
             <div class="card">
@@ -4915,6 +4928,63 @@ function setMemoAudience(val){
       btn.style.borderColor=isActive?'var(--navy)':'var(--border)';
     }
   });
+}
+
+function applyMemoTemplate(type){
+  const subEl=document.getElementById('memo-subject');
+  const bodyEl=document.getElementById('memo-body');
+  const priEl=document.getElementById('memo-priority');
+  const ackEl=document.getElementById('memo-require-ack');
+  const bannerEl=document.getElementById('memo-dashboard-banner');
+  if(!subEl||!bodyEl)return;
+  const templates={
+    birthday:{
+      subject:'🎂 Happy Birthday!',
+      body:'🎈🎂🎈\n\nPlease join us in wishing a very Happy Birthday to [Employee Name]!\n\nWe hope your special day is filled with joy and celebration. Thank you for being such a valued member of our team! 🎉\n\n— The RideSource Team',
+      priority:'normal',ack:false,banner:false
+    },
+    anniversary:{
+      subject:'🎉 Work Anniversary Celebration!',
+      body:'⭐ Congratulations to [Employee Name]! ⭐\n\nToday marks [X] year(s) with RideSource — and we couldn\'t be more grateful to have you on our team.\n\nYour dedication, reliability, and hard work make a real difference every single day. Here\'s to many more years ahead! 🚐💙\n\n— The RideSource Team',
+      priority:'normal',ack:false,banner:false
+    },
+    holiday:{
+      subject:'🎄 Happy Holidays from RideSource!',
+      body:'🎄✨🎁\n\nWarm wishes to you and your loved ones this holiday season!\n\nWe are so grateful for each and every one of you — your commitment to our passengers and to each other is what makes RideSource special. We hope this season brings you rest, joy, and time with the people you love.\n\n🎅 Happy Holidays!\n\n— The RideSource Team',
+      priority:'normal',ack:false,banner:false
+    },
+    snowday:{
+      subject:'❄️ Snow Day / Weather Delay Notice',
+      body:'❄️🚐❄️\n\nDue to current weather conditions, please be advised of the following:\n\n[DETAILS — e.g. "All runs delayed by 2 hours today" or "Office closed — essential runs only"]\n\nDrive safe, take your time, and please check in with your supervisor before heading out. Safety comes first!\n\nQuestions? Call or text the office.\n\n— RideSource Management',
+      priority:'urgent',ack:true,banner:true
+    },
+    closure:{
+      subject:'🔒 Office Closure Notice',
+      body:'📢 IMPORTANT NOTICE\n\nPlease be advised that the [Ellsworth / Norway] office will be CLOSED on [DATE] due to [REASON].\n\n[Any specific instructions for drivers — e.g. "All scheduled runs will still operate" or "Please contact dispatch for your assignments"]\n\nIf you have any questions, please reach out in advance.\n\n— RideSource Management',
+      priority:'urgent',ack:true,banner:true
+    },
+    reminder:{
+      subject:'📌 Reminder: [Subject]',
+      body:'Hi Team,\n\nJust a friendly reminder about [TOPIC]:\n\n• [Key point 1]\n• [Key point 2]\n• [Key point 3]\n\nIf you have any questions, don\'t hesitate to reach out.\n\nThanks!\n— [Your Name]',
+      priority:'normal',ack:false,banner:false
+    },
+    urgent:{
+      subject:'🔴 URGENT: Action Required',
+      body:'⚠️ URGENT NOTICE ⚠️\n\nThis message requires your immediate attention.\n\n[DETAILS]\n\nPlease [ACTION REQUIRED] by [DEADLINE].\n\nContact your supervisor immediately if you have questions.\n\n— RideSource Management',
+      priority:'urgent',ack:true,banner:true
+    }
+  };
+  const t=templates[type];
+  if(!t)return;
+  subEl.value=t.subject;
+  bodyEl.value=t.body;
+  if(priEl)priEl.value=t.priority;
+  if(ackEl)ackEl.checked=t.ack;
+  if(bannerEl)bannerEl.checked=t.banner;
+  updateMemoPreview();
+  // Scroll to form
+  subEl.focus();
+  subEl.scrollIntoView({behavior:'smooth',block:'center'});
 }
 
 function updateMemoPreview(){
@@ -12006,12 +12076,19 @@ async function saveAvailabilityTime(key,value){
   const ind=document.getElementById('avail-save-indicator');
   if(ind)ind.textContent='Saving...';
   try{
-    const{data}=await db.from('employee_profiles').select('availability_data').eq('id',currentProfileId).single();
+    // Use currentProfileId (admin) or look up by current user email (employee)
+    let pid=currentProfileId;
+    if(!pid&&user?.email){
+      const{data:pd}=await db.from('employee_profiles').select('id').eq('employee_email',user.email).single();
+      pid=pd?.id;
+    }
+    if(!pid){if(ind)ind.textContent='Profile not found';return;}
+    const{data}=await db.from('employee_profiles').select('availability_data').eq('id',pid).single();
     const current=data?.availability_data?JSON.parse(data.availability_data):{};
     current[key]=value;
-    await db.from('employee_profiles').update({availability_data:JSON.stringify(current)}).eq('id',currentProfileId);
+    await db.from('employee_profiles').update({availability_data:JSON.stringify(current)}).eq('id',pid);
     if(ind){ind.textContent='✓ Saved';setTimeout(()=>ind.textContent='',2000);}
-  }catch(e){if(ind)ind.textContent='Save failed';}
+  }catch(e){if(ind)ind.textContent='Save failed';console.log('Avail save:',e);}
 }
 
 async function saveAvailabilityItem(checkbox){
