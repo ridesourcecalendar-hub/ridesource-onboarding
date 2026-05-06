@@ -5272,30 +5272,107 @@ async function loadDirectMessageEmployees(){
         +'</p>';
       return;
     }
-    listEl.innerHTML=filtered.map(m=>{
-      const isUnread=!m.is_read&&!m.from_admin;
-      const dt=new Date(m.sent_at).toLocaleDateString('en-US',{month:'short',day:'numeric'});
-      const preview=(m.body||m.message||'').substring(0,70).replace(/</g,'&lt;');
-      const senderName=m.from_admin?'You → '+(m.employee_name||''): (m.employee_name||'Unknown');
-      const initials=getInitials(m.from_admin?(m.employee_name||adminName):m.employee_name);
-      const color=m.from_admin?'var(--navy)':getAvatarColor(m.employee_name);
-      const isSelected=currentDirectMsgId===m.id;
-      const bg=isSelected?'#e8f0fc':isUnread?'#fff':'#fafafa';
-      return '<div onclick="openDirectMessage('+m.id+',\''+(m.employee_email||'')+'\',\''+(m.employee_name||'')+'\','+(m.from_admin?'true':'false')+')" style="display:flex;align-items:flex-start;gap:10px;padding:12px 14px;cursor:pointer;border-bottom:1px solid var(--border);background:'
-        +bg+';">'+
-        '<div style="width:38px;height:38px;border-radius:50%;background:'+color+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">'+initials+'</div>'+
+    // Group by employee (thread view)
+    const threads={};
+    msgs.forEach(m=>{
+      const empEmail=m.from_admin?(m.to_email||m.employee_email):m.employee_email;
+      const empName=m.from_admin?(m.employee_name||m.to_email):m.employee_name;
+      const key=empEmail||empName||'unknown';
+      if(!threads[key]){threads[key]={empEmail,empName,messages:[],unreadCount:0,latestDate:m.sent_at};}
+      threads[key].messages.push(m);
+      if(!m.is_read&&!m.from_admin)threads[key].unreadCount++;
+      if(new Date(m.sent_at)>new Date(threads[key].latestDate))threads[key].latestDate=m.sent_at;
+    });
+    // Apply tab filter at thread level
+    let threadList=Object.values(threads);
+    if(dmTabFilter==='unread')threadList=threadList.filter(t=>t.unreadCount>0);
+    else if(dmTabFilter==='sent')threadList=threadList.filter(t=>t.messages.some(m=>m.from_admin));
+    if(dmSearchQuery)threadList=threadList.filter(t=>
+      (t.empName||'').toLowerCase().includes(dmSearchQuery)||
+      t.messages.some(m=>(m.subject||'').toLowerCase().includes(dmSearchQuery)||(m.body||'').toLowerCase().includes(dmSearchQuery))
+    );
+    // Sort by latest message
+    threadList.sort((a,b)=>new Date(b.latestDate)-new Date(a.latestDate));
+    if(!threadList.length){
+      listEl.innerHTML='<p style="color:#aaa;font-size:13px;padding:20px;text-align:center;">'+
+        (dmTabFilter==='unread'?'✅ No unread messages':dmTabFilter==='sent'?'No sent messages yet.':'No messages found.')+
+        '</p>';
+      return;
+    }
+    listEl.innerHTML=threadList.map(t=>{
+      const latest=t.messages.sort((a,b)=>new Date(b.sent_at)-new Date(a.sent_at))[0];
+      const dt=new Date(t.latestDate).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+      const preview=(latest.body||latest.message||'').substring(0,65).replace(/</g,'&lt;');
+      const lastSentByYou=latest.from_admin;
+      const previewPrefix=lastSentByYou?'You: ':'';
+      const initials=getInitials(t.empName||'?');
+      const color=getAvatarColor(t.empName||'');
+      const isSelectedThread=currentDirectMsgEmployee===t.empEmail;
+      const hasUnread=t.unreadCount>0;
+      const bg=isSelectedThread?'#e8f0fc':hasUnread?'#fff':'#fafafa';
+      return '<div onclick="openDirectThread(\''+( t.empEmail||'')+'\',\''+( t.empName||'').replace(/\'/g,'\\\'')+'\',true)" style="display:flex;align-items:flex-start;gap:10px;padding:12px 14px;cursor:pointer;border-bottom:1px solid var(--border);background:'+bg+';">'+
+        '<div style="width:38px;height:38px;border-radius:50%;background:'+color+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;position:relative;">'+initials+
+        (hasUnread?'<span style="position:absolute;top:-2px;right:-2px;background:var(--red);color:#fff;border-radius:50%;width:16px;height:16px;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;">'+t.unreadCount+'</span>':'')+
+        '</div>'+
         '<div style="flex:1;min-width:0;">'+
           '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">'+
-            '<div style="font-size:13px;font-weight:'+(isUnread?'800':'600')+';color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;">'+senderName+'</div>'+
+            '<div style="font-size:13px;font-weight:'+(hasUnread?'800':'600')+';color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;">'+(t.empName||t.empEmail||'Unknown')+'</div>'+
             '<div style="font-size:11px;color:#aaa;">'+dt+'</div>'+
           '</div>'+
-          '<div style="font-size:12px;font-weight:'+(isUnread?'700':'500')+';color:'+(isUnread?'#222':'#555')+';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+(m.subject||'(no subject)')+'</div>'+
-          '<div style="font-size:11px;color:#999;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;">'+preview+'</div>'+
+          '<div style="font-size:11px;color:'+(lastSentByYou?'#1565c0':'#555')+';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-style:'+(lastSentByYou?'italic':'normal')+';">'+previewPrefix+preview+'</div>'+
+          '<div style="font-size:10px;color:#aaa;margin-top:2px;">'+t.messages.length+' message'+(t.messages.length!==1?'s':'')+'</div>'+
         '</div>'+
-        (isUnread?'<div style="width:8px;height:8px;border-radius:50%;background:var(--navy);flex-shrink:0;margin-top:6px;"></div>':'')+
       '</div>';
     }).join('');
   }catch(e){listEl.innerHTML='<p style="color:#aaa;font-size:12px;padding:16px;">Unable to load messages.</p>';}
+}
+
+async function openDirectThread(email,name,fromList){
+  currentDirectMsgEmployee=email;
+  currentDirectMsgId=null;
+  const threadEl=document.getElementById('direct-msg-thread');
+  const headerEl=document.getElementById('direct-msg-thread-header');
+  const compose=document.getElementById('direct-msg-compose');
+  if(!threadEl)return;
+  try{
+    const{data:sent}=await db.from('employee_messages').select('*').eq('to_email',email).eq('from_admin',true).order('sent_at',{ascending:true});
+    const{data:received}=await db.from('employee_messages').select('*').eq('employee_email',email).eq('from_admin',false).order('sent_at',{ascending:true});
+    const allConvo=[...(sent||[]).map(m=>({...m,_dir:'sent'})),...(received||[]).map(m=>({...m,_dir:'received'}))].sort((a,b)=>new Date(a.sent_at)-new Date(b.sent_at));
+    const empColor=getAvatarColor(name);
+    if(headerEl)headerEl.innerHTML=
+      '<div style="display:flex;align-items:center;gap:12px;">'+
+        '<div style="width:40px;height:40px;border-radius:50%;background:'+empColor+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;">'+getInitials(name)+'</div>'+
+        '<div><div style="font-size:15px;font-weight:800;color:var(--navy);">Conversation with '+name+'</div>'+
+        '<div style="font-size:12px;color:#888;">'+allConvo.length+' message'+(allConvo.length!==1?'s':'')+'</div></div>'+
+      '</div>';
+    if(!allConvo.length){
+      threadEl.innerHTML='<p style="color:#aaa;font-size:13px;text-align:center;padding:40px 0;">No messages yet. Send the first message below!</p>';
+    } else {
+      threadEl.innerHTML=allConvo.map(m=>{
+        const isSent=m._dir==='sent';
+        const dt=new Date(m.sent_at).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
+        const subj=m.subject&&!m.subject.includes('Direct Message from')?'<div style="font-size:12px;font-weight:700;color:#555;margin-bottom:6px;">'+m.subject+'</div>':'';
+        return '<div style="border:1px solid var(--border);border-left:3px solid '+(isSent?'var(--navy)':empColor)+';border-radius:8px;padding:14px 16px;margin-bottom:10px;background:'+(isSent?'#f0f4fb':'#fff')+';">'+
+          '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">'+
+            '<div style="font-size:12px;font-weight:700;color:'+(isSent?'var(--navy)':empColor)+';">'+
+              (isSent?'↑ You → '+name:'↓ '+name)+
+            '</div>'+
+            '<div style="font-size:11px;color:#aaa;">'+dt+'</div>'+
+          '</div>'+subj+
+          '<div style="font-size:13px;color:#333;white-space:pre-wrap;line-height:1.6;">'+(m.body||m.message||'').replace(/</g,'&lt;')+'</div>'+
+        '</div>';
+      }).join('');
+      threadEl.scrollTop=threadEl.scrollHeight;
+    }
+    if(compose){
+      compose.style.display='block';
+      const inp=document.getElementById('direct-msg-input');
+      if(inp){inp.value='';inp.placeholder='Reply to '+name.split(' ')[0]+'...';}
+    }
+    const unreadIds=(allConvo.filter(m=>m._dir==='received'&&!m.is_read)).map(m=>m.id);
+    if(unreadIds.length)await db.from('employee_messages').update({is_read:true,read_at:new Date().toISOString()}).in('id',unreadIds);
+    if(fromList)loadDirectMessageEmployees();
+  }catch(e){threadEl.innerHTML='<p style="color:#aaa;font-size:13px;padding:16px;">Unable to load conversation.</p>';}
 }
 
 async function openDirectMessage(id,email,name,isAdminMsg){
@@ -5421,9 +5498,9 @@ async function sendDirectMessage(){
       is_read:false,
       sent_at:new Date().toISOString()
     }]);
-    // Reload the current message detail and refresh inbox list
-    if(currentDirectMsgId)openDirectMessage(currentDirectMsgId,currentDirectMsgEmployee,allProfilesCache.find(p=>p.employee_email===currentDirectMsgEmployee)?.employee_name||'',false);
-    loadDirectMessageEmployees();
+    // Reload thread view
+    const empName=allProfilesCache.find(p=>p.employee_email===currentDirectMsgEmployee)?.employee_name||currentDirectMsgEmployee;
+    openDirectThread(currentDirectMsgEmployee,empName,true);
   }catch(e){alert('Error sending message: '+e.message);}
 }
 
