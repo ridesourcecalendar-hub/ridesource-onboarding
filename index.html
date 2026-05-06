@@ -11438,7 +11438,7 @@ async function loadMyExpenses(){
           '<div style="font-size:12px;color:#888;margin-top:2px;">'+e.expense_date+' · '+e.description.substring(0,50)+(e.description.length>50?'...':'')+'</div>'+
         '</div>'+
         '<div style="display:flex;align-items:center;gap:8px;">'+
-          (e.receipt_url?'<a href="'+e.receipt_url+'" target="_blank" style="font-size:11px;color:#1565c0;">📎 Receipt</a>':'')+
+          (e.receipt_url?'<a href="#" onclick="openReceipt(\"'+encodeURIComponent(e.receipt_url)+'\");return false;" style="font-size:11px;color:#1565c0;">📎 Receipt</a>':'')+
           '<span class="badge badge-'+statusClass+'">'+e.status+'</span>'+
         '</div>'+
       '</div>';
@@ -11558,6 +11558,24 @@ function exportVehicleExpenses(){
   const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='vehicle_expenses_'+new Date().toISOString().split('T')[0]+'.csv';a.click();
 }
 
+function openReceipt(encodedUrl){
+  const url=decodeURIComponent(encodedUrl);
+  if(!url)return;
+  // Base64 data URL — open in a new tab with an img or PDF viewer
+  if(url.startsWith('data:')){
+    const w=window.open('','_blank');
+    if(url.startsWith('data:application/pdf')){
+      w.document.write('<html><body style="margin:0;"><embed src="'+url+'" width="100%" height="100%" type="application/pdf"></body></html>');
+    } else {
+      w.document.write('<html><body style="margin:0;background:#222;display:flex;align-items:center;justify-content:center;min-height:100vh;"><img src="'+url+'" style="max-width:100%;max-height:100vh;object-fit:contain;"></body></html>');
+    }
+    w.document.close();
+  } else {
+    // Regular URL — open directly
+    window.open(url,'_blank');
+  }
+}
+
 function renderExpensesTable(){
   const el=document.getElementById('expenses-table');if(!el)return;
   const isDemo=adminStaff?.role==='demo';
@@ -11645,7 +11663,7 @@ function renderExpensesTable(){
       '<div style="font-weight:800;color:var(--navy);">$'+parseFloat(e.amount||0).toFixed(2)+'</div>'+
       '<div onclick="event.stopPropagation()">'+paymentHtml+'</div>'+
       '<div style="display:flex;gap:4px;justify-content:flex-end;" onclick="event.stopPropagation()">'+
-        (e.receipt_url?'<a href="'+e.receipt_url+'" target="_blank" style="width:26px;height:26px;border-radius:6px;border:1px solid #ddd;background:#fff;color:#1565c0;display:flex;align-items:center;justify-content:center;font-size:13px;text-decoration:none;" title="Receipt">📎</a>':'')+
+        (e.receipt_url?'<a href="#" onclick="openReceipt(\"'+encodeURIComponent(e.receipt_url)+'\");return false;" style="width:26px;height:26px;border-radius:6px;border:1px solid #ddd;background:#fff;color:#1565c0;display:flex;align-items:center;justify-content:center;font-size:13px;text-decoration:none;" title="Receipt">📎</a>':'')+
         (!isDemo?'<button style="width:26px;height:26px;border-radius:6px;border:1px solid #ddd;background:#fff;color:#555;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;" data-eid="'+e.id+'" onclick="emailExpense(this.dataset.eid)" title="Email">✉️</button>':'')+
         (isPending&&!isDemo?
           '<button style="width:26px;height:26px;border-radius:6px;border:1px solid #27AE60;background:#fff;color:#27AE60;cursor:pointer;font-size:14px;" data-eid="'+e.id+'" data-status="APPROVED" onclick="decideExpense(this.dataset.eid,this.dataset.status)" title="Approve">✓</button>'+
@@ -11663,7 +11681,7 @@ function renderExpensesTable(){
         (e.is_reimbursement?'<div><strong style="color:#1565c0;">☑️ Reimbursement Request</strong></div>':'')+
       '</div>'+
       (e.description?'<div style="color:#555;margin-bottom:6px;"><strong>Comments:</strong> '+e.description+'</div>':'')+
-      (e.receipt_url?'<div style="margin-bottom:6px;"><a href="'+e.receipt_url+'" target="_blank" style="color:#1565c0;font-size:12px;">📎 View Receipt / Invoice</a></div>':'')+
+      (e.receipt_url?'<div style="margin-bottom:6px;"><a href="#" onclick="openReceipt(\"'+encodeURIComponent(e.receipt_url)+'\");return false;" style="color:#1565c0;font-size:12px;">📎 View Receipt / Invoice</a></div>':'')+
       (e.submitted_at?'<div style="font-size:12px;color:#888;">Submitted: '+new Date(e.submitted_at).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})+'</div>':'')+
       (e.decided_by?'<div style="font-size:12px;color:#888;">'+e.status+' by '+e.decided_by+(e.decided_at?' on '+new Date(e.decided_at).toLocaleDateString():'')+'</div>':'')+
       (e.paid_to_finance&&e.paid_date?'<div style="font-size:12px;color:#27AE60;">✅ Paid on '+new Date(e.paid_date).toLocaleDateString()+(e.paid_by?' by '+e.paid_by:'')+'</div>':'')+
